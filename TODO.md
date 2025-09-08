@@ -1,0 +1,18 @@
+- Disable name tags
+- Disable death messages
+- Disable chats
+- Disable off-hand
+- Simplify opened inventory
+- Add roles
+- Add objectives
+- Add tasks
+- Add temp jamming doors with lockpick
+- Add ledge block
+- Remove survival UI
+- Remove sprint
+- Disable debug 
+- Lock brightness option
+- Add snack cabinet
+- Add drink cabinet
+- Make beds poisonable
+- Make cabinets poisonable

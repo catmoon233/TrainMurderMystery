@@ -320,8 +320,6 @@ public class TrainMurderMysteryModelGen extends FabricModelProvider {
 
     @Override
     public void generateItemModels(ItemModelGenerator generator) {
-        generator.register(TrainMurderMysteryItems.ROOM_KEY, Models.GENERATED);
-        generator.register(TrainMurderMysteryItems.LOCKPICK, Models.GENERATED);
         generator.register(TrainMurderMysteryItems.KNIFE, Models.HANDHELD);
         generator.register(TrainMurderMysteryItems.POISON_VIAL, Models.GENERATED);
         generator.register(TrainMurderMysteryItems.SCORPION, Models.GENERATED);

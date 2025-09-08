@@ -12,6 +12,7 @@
     "client.BipedEntityModelMixin",
     "client.CameraMixin",
     "client.ClientWorldMixin",
+    "client.PlayerEntityRendererMixin",
     "client.WorldRendererMixin"
   ]
 }
