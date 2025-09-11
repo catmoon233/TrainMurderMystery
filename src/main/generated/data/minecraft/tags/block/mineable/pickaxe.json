@@ -71,6 +71,12 @@
     "trainmurdermystery:neon_pillar",
     "trainmurdermystery:neon_tube",
     "#trainmurdermystery:sprinklers",
-    "trainmurdermystery:gold_ornament"
+    "trainmurdermystery:navy_steel_panel",
+    "trainmurdermystery:navy_steel_tiles",
+    "trainmurdermystery:navy_steel_tiles_panel",
+    "trainmurdermystery:smooth_navy_steel",
+    "trainmurdermystery:smooth_navy_steel_stairs",
+    "trainmurdermystery:smooth_navy_steel_slab",
+    "trainmurdermystery:smooth_navy_steel_panel"
   ]
 }

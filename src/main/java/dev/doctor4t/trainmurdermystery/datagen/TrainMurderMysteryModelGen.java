@@ -320,6 +320,13 @@ public class TrainMurderMysteryModelGen extends FabricModelProvider {
         this.registerHullGlass(generator, TrainMurderMysteryBlocks.HULL_GLASS);
         generator.registerSimpleCubeAll(TrainMurderMysteryBlocks.RHOMBUS_HULL_GLASS);
         this.registerPrivacyGlassPanel(generator, TrainMurderMysteryBlocks.PRIVACY_GLASS_PANEL);
+        generator.registerSimpleCubeAll(TrainMurderMysteryBlocks.NAVY_STEEL);
+        this.registerPanel(generator, TrainMurderMysteryBlocks.NAVY_STEEL_PANEL, TrainMurderMysteryBlocks.NAVY_STEEL);
+        generator.registerSimpleCubeAll(TrainMurderMysteryBlocks.NAVY_STEEL_TILES);
+        this.registerPanel(generator, TrainMurderMysteryBlocks.NAVY_STEEL_TILES_PANEL, TrainMurderMysteryBlocks.NAVY_STEEL_TILES);
+        this.registerFamily(generator, TrainMurderMysteryBlocks.Family.SMOOTH_NAVY_STEEL);
+        this.registerPanel(generator, TrainMurderMysteryBlocks.SMOOTH_NAVY_STEEL_PANEL, TrainMurderMysteryBlocks.SMOOTH_NAVY_STEEL);
+
     }
 
     @Override

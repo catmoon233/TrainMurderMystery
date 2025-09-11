@@ -79,6 +79,7 @@ public interface TrainMurderMysteryBlocks {
     Block SMOOTH_NAVY_STEEL_STAIRS = registrar.createWithItem("smooth_navy_steel_stairs", new StairsBlock(NAVY_STEEL.getDefaultState(), AbstractBlock.Settings.copy(NAVY_STEEL)), TrainMurderMysteryItems.BUILDING_GROUP);
     Block SMOOTH_NAVY_STEEL_SLAB = registrar.createWithItem("smooth_navy_steel_slab", new SlabBlock(AbstractBlock.Settings.copy(NAVY_STEEL)), TrainMurderMysteryItems.BUILDING_GROUP);
     Block SMOOTH_NAVY_STEEL_PANEL = registrar.createWithItem("smooth_navy_steel_panel", new PanelBlock(AbstractBlock.Settings.copy(NAVY_STEEL)), TrainMurderMysteryItems.BUILDING_GROUP);
+    Block SMOOTH_NAVY_STEEL_WALL = registrar.createWithItem("smooth_navy_steel_wall", new WallBlock(AbstractBlock.Settings.copy(NAVY_STEEL).solid()), TrainMurderMysteryItems.BUILDING_GROUP);
 
     // Glass
     Block HULL_GLASS = registrar.createWithItem("hull_glass", new PrivacyGlassBlock(AbstractBlock.Settings.copy(Blocks.BLACK_STAINED_GLASS).strength(-1.0f, 3600000.0f)), TrainMurderMysteryItems.BUILDING_GROUP);
@@ -247,6 +248,12 @@ public interface TrainMurderMysteryBlocks {
                 .stairs(DARK_STEEL_STAIRS)
                 .slab(DARK_STEEL_SLAB)
                 .wall(DARK_STEEL_WALL)
+                .build();
+
+        BlockFamily SMOOTH_NAVY_STEEL = new BlockFamily.Builder(TrainMurderMysteryBlocks.SMOOTH_NAVY_STEEL)
+                .stairs(SMOOTH_NAVY_STEEL_STAIRS)
+                .slab(SMOOTH_NAVY_STEEL_SLAB)
+                .wall(SMOOTH_NAVY_STEEL_WALL)
                 .build();
 
         BlockFamily MARBLE = new BlockFamily.Builder(TrainMurderMysteryBlocks.MARBLE)
