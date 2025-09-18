@@ -50,6 +50,7 @@ public class PlayerMoodComponent implements AutoSyncedComponent, ServerTickingCo
 
     @Environment(EnvType.CLIENT)
     public void renderHud(DrawContext context, RenderTickCounter tickCounter) {
+        if (!TMMComponents.GAME.get(this.player.getWorld()).isRunning()) return;
         if (!Objects.equals(this.previousPreferenceText, this.preferenceText)) {
             this.preferenceTextAlpha = MathHelper.lerp(tickCounter.getTickDelta(true) / 4, this.preferenceTextAlpha, 0f);
             if (this.preferenceTextAlpha <= 0.01f) this.previousPreferenceText = this.preferenceText;
@@ -61,7 +62,6 @@ public class PlayerMoodComponent implements AutoSyncedComponent, ServerTickingCo
         var textWidth = renderer.getWidth(this.previousPreferenceText);
         context.getMatrices().push();
         context.getMatrices().translate(-(24 + textWidth) * (1f - this.preferenceTextAlpha), 0, 0);
-
         var mood = MOOD_HAPPY;
         if (this.mood < 0.2f) {
             mood = MOOD_DEPRESSIVE;
@@ -69,12 +69,11 @@ public class PlayerMoodComponent implements AutoSyncedComponent, ServerTickingCo
             mood = MOOD_MID;
         }
         context.drawGuiTexture(mood, 5, 6, 14, 17);
-
         this.arrowProgress = MathHelper.lerp(tickCounter.getTickDelta(true) / 16, this.arrowProgress, 1f);
         if (this.arrowProgress < 0.99f) {
             var arrow = this.fulfilled ? ARROW_UP : ARROW_DOWN;
             context.getMatrices().push();
-            context.getMatrices().translate(0, 4 - this.arrowProgress * 4, 0);
+            context.getMatrices().translate(0, this.fulfilled ? 4 - this.arrowProgress * 4 : this.arrowProgress * 4, 0);
             context.drawSprite(7, 6, 0, 10, 13, context.guiAtlasManager.getSprite(arrow), 1f, 1f, 1f, (float) Math.sin(this.arrowProgress * Math.PI));
             context.getMatrices().pop();
         }
