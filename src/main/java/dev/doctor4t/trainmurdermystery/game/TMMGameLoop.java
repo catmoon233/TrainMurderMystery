@@ -180,7 +180,12 @@ public class TMMGameLoop {
         world.getServer().setDifficulty(Difficulty.PEACEFUL, true);
         world.setTimeOfDay(18000);
 
-        // Teleport players to play area
+        // dismount all players as it can cause issues
+        for (ServerPlayerEntity player : world.getPlayers(serverPlayerEntity -> true)) {
+            player.dismountVehicle();
+        }
+
+        // teleport players to play area
         List<ServerPlayerEntity> playerPool = world.getPlayers(serverPlayerEntity -> !serverPlayerEntity.isInCreativeMode() && !serverPlayerEntity.isSpectator() && TMMGameConstants.READY_AREA.contains(serverPlayerEntity.getPos()));
         for (ServerPlayerEntity player : playerPool) {
             Vec3d pos = player.getPos().add(Vec3d.of(TMMGameConstants.PLAY_POS.subtract(BlockPos.ofFloored(TMMGameConstants.READY_AREA.getMinPos()))));
@@ -311,6 +316,8 @@ public class TMMGameLoop {
         var teleportTarget = new TeleportTarget(world, new Vec3d(-872.5, 0, -323), Vec3d.ZERO, 90, 0, TeleportTarget.NO_OP);
         for (var player : world.getPlayers()) {
             player.changeGameMode(GameMode.ADVENTURE);
+            // dismount all players as it can cause issues
+            player.dismountVehicle();
             player.getInventory().clear();
             player.teleportTo(teleportTarget);
             PlayerMoodComponent.KEY.get(player).reset();

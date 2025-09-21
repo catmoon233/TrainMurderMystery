@@ -58,7 +58,7 @@ public abstract class WorldRendererMixin {
         if (TMMClient.isTrainMoving()) {
             doFog(0, 130);
         } else {
-            doFog(30, 200);
+            doFog(0, 200);
         }
     }
 

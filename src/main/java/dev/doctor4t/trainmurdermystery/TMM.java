@@ -54,3 +54,27 @@ public class TMM implements ModInitializer {
 // TODO: Add tasks (2-3 hours)
 // TODO: System that remembers previous roles and allows cycling of roles (3h)
 // TODO: Train chimney smoke + ringable horn?
+// TODO: - Sync scenery
+// TODO: - Up sleep chances
+// TODO: - Fix vents
+// TODO: - Sleep chat fix
+// TODO: - Fix spectators being shot by guns
+// TODO: - Fix doors not being blastable
+// TODO: - Better tasks
+// TODO: - Target system only for bonus
+// TODO: - Cabin button from inside
+// TODO: - Detective drops gun on innocent kill
+// TODO: - Players collide with each other
+// TODO: - Hitmen know each other
+// TODO: - Make the detective drop the gun on killed
+// TODO: - Louder footsteps
+// TODO: - Username when hovering over them
+// TODO: Hitman item shop
+// TODO: - Explosive for clumped up people
+// TODO: - Poison
+// TODO: - Scorpion
+// TODO: - Gun with one bullet
+// TODO: - Psycho mode
+// TODO: - Light turn off item + true darkness
+// TODO: - Crowbar
+// TODO: - Firecracker
