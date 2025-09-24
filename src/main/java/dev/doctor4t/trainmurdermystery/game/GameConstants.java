@@ -63,10 +63,10 @@ public interface GameConstants {
                     return PlayerStoreComponent.useBlackout(player);
                 }
             },
-            new ShopEntry(TMMItems.DISGUISE.getDefaultStack(), 75) {
+            new ShopEntry(TMMItems.PSYCHO_MODE.getDefaultStack(), 75) {
                 @Override
                 public boolean onBuy(@NotNull PlayerEntity player) {
-                    return PlayerStoreComponent.useDisguise(player);
+                    return PlayerStoreComponent.usePsychoMode(player);
                 }
             }
     );
@@ -74,7 +74,7 @@ public interface GameConstants {
     int BLACKOUT_MAX_DURATION = getInTicks(0, 12);
 
     //PSYCHO
-    int PSYCHO_TIMER = 30;
+    int PSYCHO_TIMER = getInTicks(0, 30);
 
     static int getInTicks(int minutes, int seconds) {
         return (minutes * 60 + seconds) * 20;

@@ -37,9 +37,10 @@ public class TMM implements ModInitializer {
         CommandRegistrationCallback.EVENT.register(((dispatcher, registryAccess, environment) -> {
             GiveRoomKeyCommand.register(dispatcher);
             SetTrainSpeedCommand.register(dispatcher);
-            StartGameCommand.register(dispatcher);
-            StopGameCommand.register(dispatcher);
-            ResetTrainCommand.register(dispatcher);
+            StartCommand.register(dispatcher);
+            StopCommand.register(dispatcher);
+            ForceStartGameCommand.register(dispatcher);
+            ForceStop.register(dispatcher);
         }));
 
         PayloadTypeRegistry.playS2C().register(ShootMuzzleS2CPayload.ID, ShootMuzzleS2CPayload.CODEC);

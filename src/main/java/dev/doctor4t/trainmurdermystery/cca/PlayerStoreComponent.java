@@ -71,8 +71,8 @@ public class PlayerStoreComponent implements AutoSyncedComponent, ServerTickingC
         return WorldBlackoutComponent.KEY.get(player.getWorld()).triggerBlackout();
     }
 
-    public static boolean useDisguise(PlayerEntity player) {
-        return true;
+    public static boolean usePsychoMode(PlayerEntity player) {
+        return PlayerPsychoComponent.KEY.get(player).startPsycho();
     }
 
     @Override

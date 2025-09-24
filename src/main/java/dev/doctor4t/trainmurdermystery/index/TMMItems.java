@@ -29,7 +29,7 @@ public @SuppressWarnings("unchecked") interface TMMItems {
     Item BODY_BAG = registrar.create("body_bag", new BodyBagItem(new Item.Settings().maxCount(1)), EQUIPMENT_GROUP);
     Item LETTER = registrar.create("letter", new Item(new Item.Settings().maxCount(1)), EQUIPMENT_GROUP);
     Item BLACKOUT = registrar.create("blackout", new Item(new Item.Settings().maxCount(1)), EQUIPMENT_GROUP);
-    Item DISGUISE = registrar.create("disguise", new Item(new Item.Settings().maxCount(1)), EQUIPMENT_GROUP);
+    Item PSYCHO_MODE = registrar.create("psycho_mode", new Item(new Item.Settings().maxCount(1)), EQUIPMENT_GROUP);
     Item POISON_VIAL = registrar.create("poison_vial", new Item(new Item.Settings().maxCount(1)), EQUIPMENT_GROUP);
     Item SCORPION = registrar.create("scorpion", new Item(new Item.Settings().maxCount(1)), EQUIPMENT_GROUP);
     Item OLD_FASHIONED = registrar.create("old_fashioned", new CocktailItem(new Item.Settings().maxCount(1).food(FoodComponents.HONEY_BOTTLE)), EQUIPMENT_GROUP);

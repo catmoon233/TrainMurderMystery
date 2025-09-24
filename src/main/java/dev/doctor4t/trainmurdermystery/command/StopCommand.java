@@ -6,15 +6,14 @@ import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 import org.jetbrains.annotations.NotNull;
 
-public class StopGameCommand {
+public class StopCommand {
     public static void register(@NotNull CommandDispatcher<ServerCommandSource> dispatcher) {
-        dispatcher.register(CommandManager.literal("tmm:stopGame")
+        dispatcher.register(CommandManager.literal("tmm:stop")
                 .requires(source -> source.hasPermissionLevel(2))
-                .executes(context -> stopGame(context.getSource())));
-    }
-
-    private static int stopGame(@NotNull ServerCommandSource source) {
-        GameFunctions.stopGame(source.getWorld());
-        return 1;
+                .executes(context -> {
+                    GameFunctions.stopGame(context.getSource().getWorld());
+                    return 1;
+                })
+        );
     }
 }

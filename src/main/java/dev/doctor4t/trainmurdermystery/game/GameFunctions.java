@@ -84,6 +84,10 @@ public class GameFunctions {
         component.setGameStatus(GameWorldComponent.GameStatus.STOPPING);
     }
 
+    public static void quickRestart(ServerWorld world) {
+        initializeGame(world);
+    }
+
     public static void initializeGame(ServerWorld world) {
         TrainWorldComponent trainComponent = TMMComponents.TRAIN.get(world);
         trainComponent.setTrainSpeed(130);

@@ -14,10 +14,14 @@ public class ShopEntry {
     }
 
     public boolean onBuy(@NotNull PlayerEntity player) {
+        return insertStackInFreeSlot(player, this.stack.copy());
+    }
+
+    public static boolean insertStackInFreeSlot(@NotNull PlayerEntity player, ItemStack stackToInsert) {
         for (var i = 0; i < 9; i++) {
             var stack = player.getInventory().getStack(i);
             if (stack.isEmpty()) {
-                player.getInventory().setStack(i, this.stack.copy());
+                player.getInventory().setStack(i, stackToInsert);
                 return true;
             }
         }

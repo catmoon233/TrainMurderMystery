@@ -1,22 +1,15 @@
 package dev.doctor4t.trainmurdermystery.client.util;
 
-import dev.doctor4t.trainmurdermystery.client.TMMClient;
-import dev.doctor4t.trainmurdermystery.game.GameFunctions;
 import dev.doctor4t.trainmurdermystery.index.TMMDataComponentTypes;
 import dev.doctor4t.trainmurdermystery.index.TMMItems;
 import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.PlayerListEntry;
 import net.minecraft.entity.player.ItemCooldownManager;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
-import net.minecraft.text.Style;
 import net.minecraft.text.Text;
 
 import java.util.List;
-import java.util.UUID;
-import java.util.function.UnaryOperator;
 
 public class TMMItemTooltips {
     private static final int COOLDOWN_COLOR = 0xC90000;
@@ -36,7 +29,7 @@ public class TMMItemTooltips {
             addTooltipsForItem(TMMItems.BODY_BAG, 1, itemStack, tooltipList);
 
             addTooltipsForItem(TMMItems.BLACKOUT, 3, itemStack, tooltipList);
-            addTooltipsForItem(TMMItems.DISGUISE, 3, itemStack, tooltipList);
+            addTooltipsForItem(TMMItems.PSYCHO_MODE, 3, itemStack, tooltipList);
         });
     }
 

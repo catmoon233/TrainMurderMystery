@@ -3,6 +3,7 @@ package dev.doctor4t.trainmurdermystery.cca;
 import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.game.GameConstants;
 import dev.doctor4t.trainmurdermystery.index.TMMItems;
+import dev.doctor4t.trainmurdermystery.util.ShopEntry;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
@@ -13,8 +14,6 @@ import org.ladysnake.cca.api.v3.component.ComponentRegistry;
 import org.ladysnake.cca.api.v3.component.sync.AutoSyncedComponent;
 import org.ladysnake.cca.api.v3.component.tick.ClientTickingComponent;
 import org.ladysnake.cca.api.v3.component.tick.ServerTickingComponent;
-
-import java.util.Optional;
 
 public class PlayerPsychoComponent implements AutoSyncedComponent, ServerTickingComponent, ClientTickingComponent {
     public static final ComponentKey<PlayerPsychoComponent> KEY = ComponentRegistry.getOrCreate(TMM.id("psycho"), PlayerPsychoComponent.class);
@@ -63,22 +62,28 @@ public class PlayerPsychoComponent implements AutoSyncedComponent, ServerTicking
         }
     }
 
-    public void startPsycho() {
-        this.setPsychoTicks(GameConstants.PSYCHO_TIMER * 20);
-        this.batStack = new ItemStack(TMMItems.BAT);
-        this.player.giveItemStack(this.batStack);
+    public boolean startPsycho() {
+        boolean ret = ShopEntry.insertStackInFreeSlot(player, new ItemStack(TMMItems.BAT));
+        if (ret) {
+            this.setPsychoTicks(GameConstants.PSYCHO_TIMER);
+        }
+        return ret;
     }
 
     @Override
     public void writeToNbt(@NotNull NbtCompound tag, RegistryWrapper.WrapperLookup registryLookup) {
         tag.putInt("psychoTicks", this.psychoTicks);
-        tag.put("batStack", this.batStack.encode(registryLookup));
+        if (this.batStack != null) {
+            tag.put("batStack", this.batStack.encode(registryLookup));
+        }
     }
 
     @Override
     public void readFromNbt(@NotNull NbtCompound tag, RegistryWrapper.WrapperLookup registryLookup) {
         this.psychoTicks = tag.contains("psychoTicks") ? tag.getInt("psychoTicks") : 0;
-        ItemStack.fromNbt(registryLookup, tag.get("batStack"))
-                .ifPresent(itemStack -> this.batStack = itemStack);
+        if (tag.contains("batStack")) {
+            ItemStack.fromNbt(registryLookup, tag.get("batStack"))
+                    .ifPresent(itemStack -> this.batStack = itemStack);
+        }
     }
 }
