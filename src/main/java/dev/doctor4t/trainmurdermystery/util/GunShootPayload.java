@@ -19,7 +19,7 @@ import org.jetbrains.annotations.NotNull;
 
 public record GunShootPayload(int target) implements CustomPayload {
 	public static final Id<GunShootPayload> ID = new Id<>(TMM.id("gunshoot"));
-    public static final PacketCodec<PacketByteBuf, GunShootPayload> CODEC = PacketCodec.tuple(PacketCodecs.INTEGER, GunShootPayload::target, GunShootPayload::new);
+	public static final PacketCodec<PacketByteBuf, GunShootPayload> CODEC = PacketCodec.tuple(PacketCodecs.INTEGER, GunShootPayload::target, GunShootPayload::new);
 
 	@Override
 	public Id<? extends CustomPayload> getId() {
@@ -35,8 +35,12 @@ public record GunShootPayload(int target) implements CustomPayload {
 				var game = TMMComponents.GAME.get(player.getWorld());
 				if (game.isCivilian(target) && game.isCivilian(player) && !player.isCreative()) {
 					PlayerMoodComponent.KEY.get(player).setMood(0);
-					player.dropSelectedItem(true);
-					ServerPlayNetworking.send(player, new GunDropPayload());
+					Scheduler.schedule(() -> {
+						player.getInventory().remove((s) -> s.isOf(TMMItems.REVOLVER), 1, player.getInventory());
+						player.dropItem(TMMItems.REVOLVER.getDefaultStack(), false, false);
+						ServerPlayNetworking.send(player, new GunDropPayload());
+						}, 4
+					);
 				}
 				GameFunctions.killPlayer(target, true);
 			}

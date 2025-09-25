@@ -23,9 +23,7 @@ public record GunDropPayload() implements CustomPayload {
 	public static class Receiver implements ClientPlayNetworking.PlayPayloadHandler<GunDropPayload> {
 		@Override
 		public void receive(@NotNull GunDropPayload payload, ClientPlayNetworking.@NotNull Context context) {
-			var player = context.player();
-			if (!player.getMainHandStack().isOf(TMMItems.REVOLVER)) return;
-			player.getMainHandStack().decrement(1);
+			context.player().getInventory().remove((s) -> s.isOf(TMMItems.REVOLVER), 1, context.player().getInventory());
 		}
 	}
 }
