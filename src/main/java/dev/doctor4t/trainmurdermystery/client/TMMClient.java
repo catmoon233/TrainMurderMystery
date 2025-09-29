@@ -12,6 +12,7 @@ import dev.doctor4t.trainmurdermystery.cca.PlayerMoodComponent;
 import dev.doctor4t.trainmurdermystery.cca.TMMComponents;
 import dev.doctor4t.trainmurdermystery.cca.TrainWorldComponent;
 import dev.doctor4t.trainmurdermystery.client.gui.StoreRenderer;
+import dev.doctor4t.trainmurdermystery.client.gui.TimeRenderer;
 import dev.doctor4t.trainmurdermystery.client.model.TMMModelLayers;
 import dev.doctor4t.trainmurdermystery.client.render.block_entity.PlateBlockEntityRenderer;
 import dev.doctor4t.trainmurdermystery.client.render.block_entity.SmallDoorBlockEntityRenderer;
@@ -215,7 +216,10 @@ public class TMMClient implements ClientModInitializer {
             }
 
             var player = MinecraftClient.getInstance().player;
-            if (player != null) StoreRenderer.tick();
+            if (player != null) {
+                StoreRenderer.tick();
+                TimeRenderer.tick();
+            }
         });
 
         ClientTickEvents.END_CLIENT_TICK.register((client) -> {

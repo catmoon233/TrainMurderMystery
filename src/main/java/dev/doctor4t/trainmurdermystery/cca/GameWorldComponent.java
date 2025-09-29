@@ -240,10 +240,14 @@ public class GameWorldComponent implements AutoSyncedComponent, ClientTickingCom
                     }
                 }
 
+                // check if out of time
+                if (winStatus == GameFunctions.WinStatus.NONE && !GameTimeComponent.KEY.get(serverWorld).hasTime()) winStatus = GameFunctions.WinStatus.TIME;
+
                 // win display
                 if (winStatus != GameFunctions.WinStatus.NONE && this.gameStatus == GameStatus.ACTIVE) {
                     for (ServerPlayerEntity player : serverWorld.getPlayers()) {
                         player.sendMessage(Text.translatable("game.win." + winStatus.name().toLowerCase(Locale.ROOT)), true);
+                        if (winStatus == GameFunctions.WinStatus.TIME && this.isHitman(player)) GameFunctions.killPlayer(player, true, null);
                     }
                     GameFunctions.stopGame(serverWorld);
                 }

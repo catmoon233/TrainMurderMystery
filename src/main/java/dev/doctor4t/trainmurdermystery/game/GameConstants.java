@@ -112,6 +112,8 @@ public interface GameConstants {
     int FIRECRACKER_TIMER = getInTicks(0, 15);
     int BLACKOUT_MIN_DURATION = getInTicks(0, 15);
     int BLACKOUT_MAX_DURATION = getInTicks(0, 20);
+    int TIME_AT_GAME_START = getInTicks(2, 0);
+    int TIME_ON_CIVILIAN_KILL = getInTicks(1, 0);
 
     static int getInTicks(int minutes, int seconds) {
         return (minutes * 60 + seconds) * 20;

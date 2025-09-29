@@ -6,10 +6,7 @@ import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import dev.doctor4t.ratatouille.client.lib.render.helpers.Easing;
 import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.client.TMMClient;
-import dev.doctor4t.trainmurdermystery.client.gui.CrosshairRenderer;
-import dev.doctor4t.trainmurdermystery.client.gui.MoodRenderer;
-import dev.doctor4t.trainmurdermystery.client.gui.RoleNameRenderer;
-import dev.doctor4t.trainmurdermystery.client.gui.StoreRenderer;
+import dev.doctor4t.trainmurdermystery.client.gui.*;
 import dev.doctor4t.trainmurdermystery.game.GameConstants;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
@@ -46,8 +43,8 @@ public class InGameHudMixin {
         var renderer = MinecraftClient.getInstance().textRenderer;
         MoodRenderer.renderHud(player, renderer, context, tickCounter);
         RoleNameRenderer.renderHud(renderer, player, context, tickCounter);
-        if (MinecraftClient.getInstance().currentScreen == null)
-            StoreRenderer.renderHud(renderer, player, context, tickCounter.getTickDelta(true));
+        if (MinecraftClient.getInstance().currentScreen == null) StoreRenderer.renderHud(renderer, player, context, tickCounter.getTickDelta(true));
+        TimeRenderer.renderHud(renderer, player, context, tickCounter.getTickDelta(true));
     }
 
     @WrapMethod(method = "renderCrosshair")
