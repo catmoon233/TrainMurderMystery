@@ -11,6 +11,7 @@ import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
 import dev.doctor4t.trainmurdermystery.cca.PlayerMoodComponent;
 import dev.doctor4t.trainmurdermystery.cca.TMMComponents;
 import dev.doctor4t.trainmurdermystery.cca.TrainWorldComponent;
+import dev.doctor4t.trainmurdermystery.client.gui.RoundTextRenderer;
 import dev.doctor4t.trainmurdermystery.client.gui.StoreRenderer;
 import dev.doctor4t.trainmurdermystery.client.gui.TimeRenderer;
 import dev.doctor4t.trainmurdermystery.client.model.TMMModelLayers;
@@ -231,11 +232,14 @@ public class TMMClient implements ClientModInitializer {
 
         ClientTickEvents.END_CLIENT_TICK.register((client) -> {
             TMMClient.handParticleManager.tick();
+            RoundTextRenderer.tick();
         });
 
         ClientPlayNetworking.registerGlobalReceiver(ShootMuzzleS2CPayload.ID, new ShootMuzzleS2CPayload.Receiver());
         ClientPlayNetworking.registerGlobalReceiver(PoisonUtils.PoisonOverlayPayload.ID, new PoisonUtils.PoisonOverlayPayload.Receiver());
         ClientPlayNetworking.registerGlobalReceiver(GunDropPayload.ID, new GunDropPayload.Receiver());
+        ClientPlayNetworking.registerGlobalReceiver(AnnounceWelcomePayload.ID, new AnnounceWelcomePayload.Receiver());
+        ClientPlayNetworking.registerGlobalReceiver(AnnounceEndingPayload.ID, new AnnounceEndingPayload.Receiver());
         ClientPlayNetworking.registerGlobalReceiver(PsychoActivatePayload.ID, new PsychoActivatePayload.Receiver());
         ClientPlayNetworking.registerGlobalReceiver(TaskCompletePayload.ID, new TaskCompletePayload.Receiver());
 
@@ -314,6 +318,7 @@ public class TMMClient implements ClientModInitializer {
         if (target instanceof ItemEntity || target instanceof NoteEntity || target instanceof FirecrackerEntity) return 0xDB9D00;
         if (target instanceof PlayerEntity player) {
             if (GameFunctions.isPlayerSpectatingOrCreative(player)) return -1;
+            if (isPlayerSpectatingOrCreative()) return 0xFFFFFF;
             if (isKiller() && gameComponent.isKiller(player)) return MathHelper.hsvToRgb(0F, 1.0F, 0.6F);
             if (gameComponent.isCivilian(player)) {
                 var mood = PlayerMoodComponent.KEY.get(target).getMood();

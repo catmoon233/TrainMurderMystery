@@ -1,5 +1,6 @@
 {
+  "parent": "trainmurdermystery:block/template_panel",
   "textures": {
-    "particle": "trainmurdermystery:item/barrier_panel"
+    "all": "trainmurdermystery:block/barrier_panel"
   }
 }

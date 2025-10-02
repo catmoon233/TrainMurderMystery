@@ -334,8 +334,8 @@ public class TrainMurderMysteryModelGen extends FabricModelProvider {
         generator.registerSimpleCubeAll(TMMBlocks.BLUE_MOQUETTE);
         generator.registerSimpleState(TMMBlocks.FOOD_PLATTER);
         generator.registerNorthDefaultHorizontalRotation(TMMBlocks.DRINK_TRAY);
-        generator.registerBuiltinWithParticle(TMMBlocks.BARRIER_PANEL, TMMBlocks.BARRIER_PANEL.asItem());
-        generator.registerItemModel(TMMBlocks.BARRIER_PANEL.asItem());
+        this.registerPanel(generator, TMMBlocks.BARRIER_PANEL, TextureMap.getId(TMMBlocks.BARRIER_PANEL));
+
         generator.registerBuiltinWithParticle(TMMBlocks.LIGHT_BARRIER, TMMBlocks.LIGHT_BARRIER.asItem());
         generator.registerItemModel(TMMBlocks.LIGHT_BARRIER.asItem());
         generator.registerNorthDefaultHorizontalRotation(TMMBlocks.HORN);

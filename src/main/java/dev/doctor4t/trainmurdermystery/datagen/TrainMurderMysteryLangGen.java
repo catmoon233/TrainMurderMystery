@@ -36,6 +36,26 @@ public class TrainMurderMysteryLangGen extends FabricLanguageProvider {
 //        builder.add("tip.letter.detective.tooltip3", "Potential next victims frequent travelers of the Harpy Express.");
 //        builder.add("tip.letter.detective.tooltip4", "Perfect situation to corner but need to keep targets safe.");
 
+        builder.add("announcement.role.civilian", "Civilian!");
+        builder.add("announcement.role.vigilante", "Vigilante!");
+        builder.add("announcement.role.killer", "Killer!");
+        builder.add("announcement.title.civilian", "Civilians");
+        builder.add("announcement.title.vigilante", "Vigilantes");
+        builder.add("announcement.title.killer", "Killers");
+
+        builder.add("announcement.welcome", "Welcome aboard %s");
+        builder.add("announcement.premise", "There are %s killers aboard the train.");
+        builder.add("announcement.premises", "There is a killer aboard the train.");
+        builder.add("announcement.goal.civilian", "Stay safe and survive till the end of the ride.");
+        builder.add("announcement.goal.vigilante", "Eliminate any murderers and protect the civilians.");
+        builder.add("announcement.goal.killer", "Eliminate a passenger to succeed, before time runs out.");
+        builder.add("announcement.goals.civilian", "Stay safe and survive till the end of the ride.");
+        builder.add("announcement.goals.vigilante", "Eliminate any murderers and protect the civilians.");
+        builder.add("announcement.goals.killer", "Eliminate %s passengers to succeed, before time runs out.");
+        builder.add("announcement.win.civilian", "Passengers Win!");
+        builder.add("announcement.win.vigilante", "Passengers Win!");
+        builder.add("announcement.win.killer", "Killers Win!");
+
         builder.add("tip.letter.name", "Dear %s, welcome aboard the Harpy Express!");
         builder.add("tip.letter.room", "Please find attached your ticket as well as the key for accessing");
         builder.add("tip.letter.room.grand_suite", "the Grand Suite");

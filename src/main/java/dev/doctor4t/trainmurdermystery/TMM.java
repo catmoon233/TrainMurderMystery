@@ -54,6 +54,8 @@ public class TMM implements ModInitializer {
         PayloadTypeRegistry.playS2C().register(GunDropPayload.ID, GunDropPayload.CODEC);
         PayloadTypeRegistry.playS2C().register(PsychoActivatePayload.ID, PsychoActivatePayload.CODEC);
         PayloadTypeRegistry.playS2C().register(TaskCompletePayload.ID, TaskCompletePayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(AnnounceWelcomePayload.ID, AnnounceWelcomePayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(AnnounceEndingPayload.ID, AnnounceEndingPayload.CODEC);
         PayloadTypeRegistry.playC2S().register(KnifeStabPayload.ID, KnifeStabPayload.CODEC);
         PayloadTypeRegistry.playC2S().register(GunShootPayload.ID, GunShootPayload.CODEC);
         PayloadTypeRegistry.playC2S().register(StoreBuyPayload.ID, StoreBuyPayload.CODEC);

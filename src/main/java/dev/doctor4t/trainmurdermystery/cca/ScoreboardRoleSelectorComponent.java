@@ -86,7 +86,10 @@ public class ScoreboardRoleSelectorComponent implements AutoSyncedComponent {
                 }
             }
         }
-        for (var player : vigilantes) player.giveItemStack(new ItemStack(TMMItems.REVOLVER));
+        for (var player : vigilantes) {
+            player.giveItemStack(new ItemStack(TMMItems.REVOLVER));
+            gameComponent.addVigilante(player);
+        }
     }
 
     @Override

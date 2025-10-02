@@ -43,6 +43,7 @@ public class InGameHudMixin {
         var renderer = MinecraftClient.getInstance().textRenderer;
         MoodRenderer.renderHud(player, renderer, context, tickCounter);
         RoleNameRenderer.renderHud(renderer, player, context, tickCounter);
+        RoundTextRenderer.renderHud(renderer, player, context);
         if (MinecraftClient.getInstance().currentScreen == null) StoreRenderer.renderHud(renderer, player, context, tickCounter.getTickDelta(true));
         TimeRenderer.renderHud(renderer, player, context, tickCounter.getTickDelta(true));
     }
@@ -70,6 +71,11 @@ public class InGameHudMixin {
         if (!TMMClient.isPlayerAliveAndInSurvival()) {
             original.call(context, x);
         }
+    }
+
+    @WrapMethod(method = "renderPlayerList")
+    private void tmm$removePlayerList(DrawContext context, RenderTickCounter tickCounter, Operation<Void> original) {
+        if (!TMMClient.isPlayerAliveAndInSurvival()) original.call(context, tickCounter);
     }
 
     @WrapMethod(method = "renderExperienceLevel")

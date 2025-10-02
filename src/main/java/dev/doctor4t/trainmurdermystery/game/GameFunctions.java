@@ -3,10 +3,14 @@ package dev.doctor4t.trainmurdermystery.game;
 import com.google.common.collect.Lists;
 import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.cca.*;
+import dev.doctor4t.trainmurdermystery.client.gui.RoleAnnouncementText;
 import dev.doctor4t.trainmurdermystery.entity.PlayerBodyEntity;
 import dev.doctor4t.trainmurdermystery.index.TMMEntities;
 import dev.doctor4t.trainmurdermystery.index.TMMItems;
 import dev.doctor4t.trainmurdermystery.index.TMMSounds;
+import dev.doctor4t.trainmurdermystery.util.AnnounceEndingPayload;
+import dev.doctor4t.trainmurdermystery.util.AnnounceWelcomePayload;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -152,6 +156,7 @@ public class GameFunctions {
             for (var item : copy) serverPlayerEntity.getItemCooldownManager().remove(item);
         }
         gameComponent.resetKillerList();
+        gameComponent.resetVigilanteList();
         GameTimeComponent.KEY.get(world).reset();
 
         var roleSelector = ScoreboardRoleSelectorComponent.KEY.get(world.getScoreboard());
@@ -204,6 +209,10 @@ public class GameFunctions {
         gameComponent.setGameStatus(GameWorldComponent.GameStatus.ACTIVE);
         trainComponent.setTime(0);
         gameComponent.sync();
+
+        for (var player : playerPool) {
+            ServerPlayNetworking.send(player, new AnnounceWelcomePayload((gameComponent.isKiller(player) ? RoleAnnouncementText.KILLER : gameComponent.isVigilante(player) ? RoleAnnouncementText.VIGILANTE : RoleAnnouncementText.CIVILIAN).ordinal(), killerCount, gameComponent.getKillsLeft()));
+        }
     }
 
     public static void finalizeGame(ServerWorld world) {
@@ -222,6 +231,8 @@ public class GameFunctions {
 
         // reset all player data
         for (var player : world.getPlayers()) {
+            PlayerEndInfoComponent.KEY.get(player).renew();
+            ServerPlayNetworking.send(player, new AnnounceEndingPayload());
             player.dismountVehicle();
             player.getInventory().clear();
             PlayerMoodComponent.KEY.get(player).reset();
@@ -240,6 +251,7 @@ public class GameFunctions {
         GameTimeComponent.KEY.get(world).reset();
         var gameComponent = TMMComponents.GAME.get(world);
         gameComponent.resetKillerList();
+        gameComponent.resetVigilanteList();
         gameComponent.setGameStatus(GameWorldComponent.GameStatus.INACTIVE);
         trainComponent.setTime(0);
         gameComponent.sync();

@@ -2,8 +2,8 @@ package dev.doctor4t.trainmurdermystery.client.gui;
 
 import dev.doctor4t.trainmurdermystery.cca.PlayerPsychoComponent;
 import dev.doctor4t.trainmurdermystery.cca.TMMComponents;
-import dev.doctor4t.trainmurdermystery.cca.WorldBlackoutComponent;
 import dev.doctor4t.trainmurdermystery.entity.NoteEntity;
+import dev.doctor4t.trainmurdermystery.game.GameFunctions;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.network.ClientPlayerEntity;
@@ -16,7 +16,6 @@ import net.minecraft.util.hit.EntityHitResult;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.random.Random;
-import net.minecraft.world.LightType;
 import org.jetbrains.annotations.NotNull;
 
 public class RoleNameRenderer {
@@ -28,10 +27,9 @@ public class RoleNameRenderer {
 
     public static void renderHud(TextRenderer renderer, @NotNull ClientPlayerEntity player, DrawContext context, RenderTickCounter tickCounter) {
         var component = TMMComponents.GAME.get(player.getWorld());
-        if (player.getWorld().getLightLevel(BlockPos.ofFloored(player.getEyePos())) < 3) {
-            return;
-        }
-        if (ProjectileUtil.getCollision(player, entity -> entity instanceof PlayerEntity, 2f) instanceof EntityHitResult entityHitResult && entityHitResult.getEntity() instanceof PlayerEntity target) {
+        if (player.getWorld().getLightLevel(BlockPos.ofFloored(player.getEyePos())) < 3) return;
+        var range = GameFunctions.isPlayerSpectatingOrCreative(player) ? 8f : 2f;
+        if (ProjectileUtil.getCollision(player, entity -> entity instanceof PlayerEntity, range) instanceof EntityHitResult entityHitResult && entityHitResult.getEntity() instanceof PlayerEntity target) {
             nametagAlpha = MathHelper.lerp(tickCounter.getTickDelta(true) / 4, nametagAlpha, 1f);
             nametag = target.getDisplayName();
             if (component.isKiller(target)) {
@@ -62,7 +60,7 @@ public class RoleNameRenderer {
             }
             context.getMatrices().pop();
         }
-        if (ProjectileUtil.getCollision(player, entity -> entity instanceof NoteEntity, 2f) instanceof EntityHitResult entityHitResult && entityHitResult.getEntity() instanceof NoteEntity note) {
+        if (ProjectileUtil.getCollision(player, entity -> entity instanceof NoteEntity, range) instanceof EntityHitResult entityHitResult && entityHitResult.getEntity() instanceof NoteEntity note) {
             noteAlpha = MathHelper.lerp(tickCounter.getTickDelta(true) / 4, noteAlpha, 1f);
             RoleNameRenderer.note[0] = Text.literal(note.getLines()[0]);
             RoleNameRenderer.note[1] = Text.literal(note.getLines()[1]);

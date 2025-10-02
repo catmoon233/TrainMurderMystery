@@ -25,6 +25,7 @@ import java.util.UUID;
 
 public class GameWorldComponent implements AutoSyncedComponent, ClientTickingComponent, ServerTickingComponent {
     private final World world;
+    public GameFunctions.WinStatus lastWinStatus = GameFunctions.WinStatus.NONE;
 
     public enum GameStatus {
         INACTIVE, STARTING, ACTIVE, STOPPING
@@ -35,6 +36,8 @@ public class GameWorldComponent implements AutoSyncedComponent, ClientTickingCom
 
     private List<UUID> killers = new ArrayList<>();
     private int killsLeft = 0;
+
+    private List<UUID> vigilantes = new ArrayList<>();
 
     private int ticksUntilNextResetAttempt = -1;
 
@@ -112,6 +115,30 @@ public class GameWorldComponent implements AutoSyncedComponent, ClientTickingCom
         setPsychosActive(0);
     }
 
+    public List<UUID> getVigilantes() {
+        return this.vigilantes;
+    }
+
+    public void addVigilante(@NotNull PlayerEntity vigilante) {
+        this.addVigilante(vigilante.getUuid());
+    }
+
+    public void addVigilante(UUID vigilante) {
+        this.vigilantes.add(vigilante);
+    }
+
+    public void setVigilantes(List<UUID> vigilantes) {
+        this.vigilantes = vigilantes;
+    }
+
+    public boolean isVigilante(@NotNull PlayerEntity player) {
+        return this.vigilantes.contains(player.getUuid());
+    }
+
+    public void resetVigilanteList() {
+        this.setVigilantes(new ArrayList<>());
+    }
+
     public void queueTrainReset() {
         ticksUntilNextResetAttempt = 20;
     }
@@ -138,6 +165,9 @@ public class GameWorldComponent implements AutoSyncedComponent, ClientTickingCom
         this.setPsychosActive(nbtCompound.getInt("PsychosActive"));
 
         this.setKillers(uuidListFromNbt(nbtCompound, "Killers"));
+        this.setVigilantes(uuidListFromNbt(nbtCompound, "Vigilantes"));
+
+        this.lastWinStatus = GameFunctions.WinStatus.values()[nbtCompound.getInt("LastWinStatus")];
     }
 
     private ArrayList<UUID> uuidListFromNbt(NbtCompound nbtCompound, String listName) {
@@ -157,6 +187,9 @@ public class GameWorldComponent implements AutoSyncedComponent, ClientTickingCom
         nbtCompound.putInt("PsychosActive", psychosActive);
 
         nbtCompound.put("Killers", nbtFromUuidList(getKillers()));
+        nbtCompound.put("Vigilantes", this.nbtFromUuidList(this.getVigilantes()));
+
+        nbtCompound.putInt("LastWinStatus", this.lastWinStatus.ordinal());
     }
 
     private NbtList nbtFromUuidList(List<UUID> list) {
@@ -250,6 +283,7 @@ public class GameWorldComponent implements AutoSyncedComponent, ClientTickingCom
                         if (winStatus == GameFunctions.WinStatus.TIME && this.isKiller(player)) GameFunctions.killPlayer(player, true, null);
                     }
                     GameFunctions.stopGame(serverWorld);
+                    this.lastWinStatus = winStatus;
                 }
             }
         }

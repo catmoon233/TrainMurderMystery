@@ -3,6 +3,7 @@ package dev.doctor4t.trainmurdermystery.client.gui;
 import dev.doctor4t.trainmurdermystery.cca.GameTimeComponent;
 import dev.doctor4t.trainmurdermystery.cca.TMMComponents;
 import dev.doctor4t.trainmurdermystery.game.GameConstants;
+import dev.doctor4t.trainmurdermystery.game.GameFunctions;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.network.ClientPlayerEntity;
@@ -15,7 +16,8 @@ public class TimeRenderer {
     public static float offsetDelta = 0f;
 
     public static void renderHud(TextRenderer renderer, @NotNull ClientPlayerEntity player, @NotNull DrawContext context, float delta) {
-        if (!TMMComponents.GAME.get(player.getWorld()).isKiller(player)) return;
+        if (!TMMComponents.GAME.get(player.getWorld()).isRunning()) return;
+        if (!TMMComponents.GAME.get(player.getWorld()).isKiller(player) && !GameFunctions.isPlayerSpectatingOrCreative(player)) return;
         var time = GameTimeComponent.KEY.get(player.getWorld()).getTime();
         if (Math.abs(view.getTarget() - time) > 10) offsetDelta = time > view.getTarget() ? .6f : -.6f;
         if (time < GameConstants.getInTicks(1, 0)) {

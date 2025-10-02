@@ -44,7 +44,8 @@
 			"trainmurdermystery:blackout",
 			"trainmurdermystery:rolecounter",
 			"trainmurdermystery:note",
-			"trainmurdermystery:time"
+			"trainmurdermystery:time",
+			"trainmurdermystery:endinfo"
 		],
 		"loom:injected_interfaces": {
 			"net/minecraft/class_5483/class_5496" : ["dev/doctor4t/trainmurdermystery/util/BlockSettingsAdditions"]
