@@ -26,7 +26,7 @@ import java.util.UUID;
 
 public class RoundTextRenderer {
     private static final Map<String, Optional<GameProfile>> failCache = new HashMap<>();
-    private static final int WELCOME_DURATION = 200 + GameConstants.FADE_TIME * 2 + GameConstants.FADE_PAUSE;
+    private static final int WELCOME_DURATION = 200 + GameConstants.FADE_TIME * 2;
     private static final int END_DURATION = 200;
     private static RoleAnnouncementText role = RoleAnnouncementText.CIVILIAN;
     private static int welcomeTime = 0;
@@ -54,7 +54,7 @@ public class RoundTextRenderer {
             context.getMatrices().pop();
         }
         var game = TMMComponents.GAME.get(player.getWorld());
-        if (endTime > 0 && !game.isRunning()) {
+        if (endTime > 0 && endTime < END_DURATION - (GameConstants.FADE_TIME * 2) && !game.isRunning()) {
             var roundEnd = GameRoundEndComponent.KEY.get(player.getWorld());
             if (roundEnd.getWinStatus() == GameFunctions.WinStatus.NONE) return;
             var endText = role.getEndText(roundEnd.getWinStatus());
@@ -150,7 +150,7 @@ public class RoundTextRenderer {
             welcomeTime--;
         }
         if (endTime > 0) {
-            if (endTime == END_DURATION) {
+            if (endTime == END_DURATION - (GameConstants.FADE_TIME * 2)) {
                 var player = MinecraftClient.getInstance().player;
                 if (player != null) player.getWorld().playSound(player, player.getX(), player.getY(), player.getZ(), GameRoundEndComponent.KEY.get(player.getWorld()).didWin(player.getUuid()) ? TMMSounds.UI_PIANO_WIN : TMMSounds.UI_PIANO_LOSE, SoundCategory.MASTER, 10f, 1f, player.getRandom().nextLong());
             }

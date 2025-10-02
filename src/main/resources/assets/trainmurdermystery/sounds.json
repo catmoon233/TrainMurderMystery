@@ -89,12 +89,6 @@
 		],
 		"subtitle": "subtitles.block.door.locked"
 	},
-	"block.train.horn": {
-		"sounds": [
-			"trainmurdermystery:block/train_horn"
-		],
-		"subtitle": "subtitles.block.train.horn"
-	},
 
 	"item.key.door": {
 		"sounds": [
@@ -195,6 +189,12 @@
 			"trainmurdermystery:ambient/blackout"
 		],
 		"subtitle": "subtitles.ambient.blackout"
+	},
+	"ambient.train.horn": {
+		"sounds": [
+			"trainmurdermystery:ambient/train_horn"
+		],
+		"subtitle": "subtitles.ambient.train.horn"
 	},
 
 	"ui.shop.buy": {

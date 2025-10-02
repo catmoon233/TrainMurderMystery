@@ -20,7 +20,6 @@ public interface TMMSounds {
     SoundEvent BLOCK_DOOR_TOGGLE = registrar.create("block.door.toggle");
     SoundEvent BLOCK_SPRINKLER_RUN = registrar.create("block.sprinkler.run");
     SoundEvent BLOCK_DOOR_LOCKED = registrar.create("block.door.locked");
-    SoundEvent BLOCK_TRAIN_HORN = registrar.create("block.train.horn");
 
     // Items
     SoundEvent ITEM_KEY_DOOR = registrar.create("item.key.door");
@@ -41,6 +40,7 @@ public interface TMMSounds {
     SoundEvent AMBIENT_TRAIN_OUTSIDE = registrar.create("ambient.train.outside");
     SoundEvent AMBIENT_PSYCHO_DRONE = registrar.create("ambient.psycho_drone");
     SoundEvent AMBIENT_BLACKOUT = registrar.create("ambient.blackout");
+    SoundEvent AMBIENT_TRAIN_HORN = registrar.create("ambient.train.horn");
 
     // UI
     SoundEvent UI_SHOP_BUY = registrar.create("ui.shop.buy");

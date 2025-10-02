@@ -211,6 +211,9 @@ public class TMMClient implements ClientModInitializer {
                     PLAYER_ENTRIES_CACHE.put(player.getUuid(), MinecraftClient.getInstance().getNetworkHandler().getPlayerListEntry(player.getUuid()));
                 }
             }
+            if (!prevGameRunning && gameComponent.isRunning()) {
+                MinecraftClient.getInstance().player.getInventory().selectedSlot = 8;
+            }
             prevGameRunning = gameComponent.isRunning();
 
             // Fade sound with game start / stop fade

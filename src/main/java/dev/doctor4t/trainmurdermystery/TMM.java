@@ -153,12 +153,13 @@ public class TMM implements ModInitializer {
 // TORECORD: Polish
 // done: Rearrange the train cars to prevent all POIs being separated by all the sleeping cars
 // TORECORD: Train chimney smoke
-// TORECORD: Ringable horn, triggers game start in lobby
-// TORECORD: Players collide with each other (Amy) + let's you step on them
-// TORECORD: System that remembers previous roles and allows cycling of roles (Amy)
+// TORECORD: Ringable horn, triggers game start in lobby and can be used as a meeting callout as everyone on the map can hear it
+// TORECORD: Players collide with each other + lets you step on them
+// TORECORD: System that remembers previous roles and allows cycling of roles
 // TORECORD: Game start and end messages
 
-// TODO: fix name and note render over each other if your cursor sees both
-// TODO: small video tutorial on how to play
-// TODO: Ability to customize time of day for supporters + snow density
 // TODO: Initial discovery mode
+// TODO: small video tutorial on how to play
+
+// POST VIDEO
+// TODO: Ability to customize time of day for supporters + snow density
