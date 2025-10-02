@@ -53,7 +53,7 @@ public class RoundTextRenderer {
             context.getMatrices().pop();
         }
         var game = TMMComponents.GAME.get(player.getWorld());
-        if (true || endTime > 0 && !game.isRunning()) {
+        if (endTime > 0 && !game.isRunning()) {
             var roundEnd = GameRoundEndComponent.KEY.get(player.getWorld());
             if (roundEnd.getWinStatus() == GameFunctions.WinStatus.NONE) return;
             var endText = role.getEndText(roundEnd.getWinStatus());
