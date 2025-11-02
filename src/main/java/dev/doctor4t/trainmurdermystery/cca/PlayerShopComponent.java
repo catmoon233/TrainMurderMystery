@@ -40,7 +40,11 @@ public class PlayerShopComponent implements AutoSyncedComponent, ServerTickingCo
     }
 
     public void addToBalance(int amount) {
-        this.balance += amount;
+        this.setBalance(this.balance + amount);
+    }
+
+    public void setBalance(int amount) {
+        this.balance = amount;
         this.sync();
     }
 

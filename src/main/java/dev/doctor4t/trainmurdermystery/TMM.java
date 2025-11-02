@@ -57,6 +57,8 @@ public class TMM implements ModInitializer {
             SetVisualCommand.register(dispatcher);
             ForceRoleCommand.register(dispatcher);
             UpdateDoorsCommand.register(dispatcher);
+            SetTimerCommand.register(dispatcher);
+            SetMoneyCommand.register(dispatcher);
         }));
 
         PayloadTypeRegistry.playS2C().register(ShootMuzzleS2CPayload.ID, ShootMuzzleS2CPayload.CODEC);
