@@ -236,7 +236,7 @@ public class PlayerMoodComponent implements AutoSyncedComponent, ServerTickingCo
     public enum Task {
         SLEEP(nbt -> new SleepTask(nbt.getInt("timer"))),
         OUTSIDE(nbt -> new OutsideTask(nbt.getInt("timer"))),
-        RAED_BOOK(nbt -> new OutsideTask(nbt.getInt("timer"))),
+        RAED_BOOK(nbt -> new ReadBookTask(nbt.getInt("timer"))),
         EAT(nbt -> new EatTask()),
         DRINK(nbt -> new DrinkTask());
 
@@ -348,13 +348,13 @@ public class PlayerMoodComponent implements AutoSyncedComponent, ServerTickingCo
 
         @Override
         public Task getType() {
-            return Task.OUTSIDE;
+            return Task.RAED_BOOK;
         }
 
         @Override
         public NbtCompound toNbt() {
             NbtCompound nbt = new NbtCompound();
-            nbt.putInt("type", Task.OUTSIDE.ordinal());
+            nbt.putInt("type", Task.RAED_BOOK.ordinal());
             nbt.putInt("timer", this.timer);
             return nbt;
         }
