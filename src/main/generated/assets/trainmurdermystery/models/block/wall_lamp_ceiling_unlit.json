@@ -1,0 +1,6 @@
+{
+  "parent": "trainmurdermystery:block/template_wall_lamp_ceiling",
+  "textures": {
+    "texture": "trainmurdermystery:block/wall_lamp_unlit"
+  }
+}

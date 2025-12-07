@@ -1,0 +1,12 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "trainmurdermystery:block/bubinga_bookshelf"
+      },
+      {
+        "model": "trainmurdermystery:block/bubinga_bookshelf_alt"
+      }
+    ]
+  }
+}

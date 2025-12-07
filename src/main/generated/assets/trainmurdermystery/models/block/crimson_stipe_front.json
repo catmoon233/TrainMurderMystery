@@ -1,0 +1,7 @@
+{
+  "parent": "trainmurdermystery:block/template_branch_front",
+  "textures": {
+    "side": "minecraft:block/crimson_stem",
+    "top": "trainmurdermystery:block/crimson_stipe_top"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "parent": "trainmurdermystery:block/template_branch_back",
+  "textures": {
+    "side": "minecraft:block/acacia_log",
+    "top": "trainmurdermystery:block/acacia_branch_top"
+  }
+}

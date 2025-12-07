@@ -1,0 +1,7 @@
+{
+  "parent": "trainmurdermystery:block/template_branch_back",
+  "textures": {
+    "side": "minecraft:block/stripped_birch_log",
+    "top": "trainmurdermystery:block/stripped_birch_branch_top"
+  }
+}

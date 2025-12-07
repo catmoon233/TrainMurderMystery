@@ -1,0 +1,7 @@
+{
+  "parent": "trainmurdermystery:block/template_walkway_top",
+  "textures": {
+    "side": "trainmurdermystery:block/stainless_steel_walkway_side",
+    "top": "trainmurdermystery:block/stainless_steel_walkway"
+  }
+}

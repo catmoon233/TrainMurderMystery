@@ -1,0 +1,6 @@
+{
+  "parent": "trainmurdermystery:block/template_branch_face_horizontal",
+  "textures": {
+    "side": "minecraft:block/stripped_dark_oak_log"
+  }
+}

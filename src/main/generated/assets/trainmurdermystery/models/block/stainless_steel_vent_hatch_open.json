@@ -1,0 +1,6 @@
+{
+  "parent": "trainmurdermystery:block/template_vent_hatch_open",
+  "textures": {
+    "texture": "trainmurdermystery:block/stainless_steel_vent_hatch"
+  }
+}

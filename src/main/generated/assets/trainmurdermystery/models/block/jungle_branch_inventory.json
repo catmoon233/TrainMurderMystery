@@ -1,0 +1,7 @@
+{
+  "parent": "trainmurdermystery:block/template_branch_inventory",
+  "textures": {
+    "side": "minecraft:block/jungle_log",
+    "top": "trainmurdermystery:block/jungle_branch_top"
+  }
+}

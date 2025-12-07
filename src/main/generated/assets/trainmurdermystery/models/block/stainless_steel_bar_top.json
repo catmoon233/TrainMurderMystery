@@ -1,0 +1,6 @@
+{
+  "parent": "trainmurdermystery:block/template_bar_top",
+  "textures": {
+    "texture": "trainmurdermystery:block/stainless_steel_bar"
+  }
+}

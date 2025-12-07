@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/outer_stairs",
+  "textures": {
+    "bottom": "trainmurdermystery:block/marble",
+    "side": "trainmurdermystery:block/marble",
+    "top": "trainmurdermystery:block/marble"
+  }
+}

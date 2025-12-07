@@ -1,0 +1,6 @@
+{
+  "parent": "trainmurdermystery:block/template_branch_face",
+  "textures": {
+    "side": "trainmurdermystery:block/dark_steel"
+  }
+}

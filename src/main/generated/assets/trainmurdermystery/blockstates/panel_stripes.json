@@ -1,0 +1,11 @@
+{
+  "variants": {
+    "axis=x": {
+      "model": "trainmurdermystery:block/panel_stripes",
+      "y": 90
+    },
+    "axis=z": {
+      "model": "trainmurdermystery:block/panel_stripes"
+    }
+  }
+}

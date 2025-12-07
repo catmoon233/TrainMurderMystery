@@ -1,0 +1,7 @@
+{
+  "parent": "trainmurdermystery:block/template_glass_panel",
+  "textures": {
+    "edge": "trainmurdermystery:block/privacy_glass_panel_trim",
+    "pane": "trainmurdermystery:block/privacy_glass_panel_opaque"
+  }
+}

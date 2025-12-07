@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/inner_stairs",
+  "textures": {
+    "bottom": "trainmurdermystery:block/ebony_herringbone",
+    "side": "trainmurdermystery:block/ebony_herringbone",
+    "top": "trainmurdermystery:block/ebony_herringbone"
+  }
+}

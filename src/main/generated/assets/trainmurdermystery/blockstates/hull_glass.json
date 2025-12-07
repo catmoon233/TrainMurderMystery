@@ -1,0 +1,10 @@
+{
+  "variants": {
+    "opaque=false": {
+      "model": "trainmurdermystery:block/hull_glass"
+    },
+    "opaque=true": {
+      "model": "trainmurdermystery:block/hull_glass_opaque"
+    }
+  }
+}

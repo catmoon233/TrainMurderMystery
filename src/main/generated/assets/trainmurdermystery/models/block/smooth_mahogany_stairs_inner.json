@@ -1,0 +1,8 @@
+{
+  "parent": "minecraft:block/inner_stairs",
+  "textures": {
+    "bottom": "trainmurdermystery:block/smooth_mahogany",
+    "side": "trainmurdermystery:block/smooth_mahogany",
+    "top": "trainmurdermystery:block/smooth_mahogany"
+  }
+}

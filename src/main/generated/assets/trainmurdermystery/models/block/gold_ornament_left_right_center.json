@@ -1,0 +1,6 @@
+{
+  "parent": "trainmurdermystery:block/template_ornament_r0",
+  "textures": {
+    "texture": "trainmurdermystery:block/gold_ornament_sides_center"
+  }
+}
