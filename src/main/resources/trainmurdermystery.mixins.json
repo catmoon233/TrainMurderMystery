@@ -18,6 +18,7 @@
     "PlayerInventoryMixin",
     "ServerPlayerEntityMixin",
     "ServerPlayNetworkHandlerMixin",
+    "TalkChatMixin",
     "client.LivingEntityRendererMixin"
   ],
   "injectors": {

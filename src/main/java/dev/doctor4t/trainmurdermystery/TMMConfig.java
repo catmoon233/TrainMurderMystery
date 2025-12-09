@@ -102,7 +102,7 @@ public class TMMConfig extends MidnightConfig {
     public static Comment cooldownsComment;
 
     @Entry(category = "cooldowns", min = 0, max = 300, isSlider = true)
-    public static int knifeCooldown = 60;
+    public static int knifeCooldown = 30;
     @Entry(category = "cooldowns", min = 0, max = 300, isSlider = true)
     public static int revolverCooldown = 10;
     @Entry(category = "cooldowns", min = 0, max = 300, isSlider = true)

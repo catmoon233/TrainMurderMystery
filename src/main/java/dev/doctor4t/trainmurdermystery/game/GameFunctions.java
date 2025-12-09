@@ -166,18 +166,7 @@ public class GameFunctions {
         }
 
         // teleport players to play area
-        for (ServerPlayerEntity player : players) {
-            player.changeGameMode(net.minecraft.world.GameMode.ADVENTURE);
-            //
-            Vec3d pos = getSpawnPos(roomToPlayer.getOrDefault(player.getUuid(), 1));
-            if (pos != null) {
-                player.requestTeleport(pos.getX(), pos.getY() + 1, pos.getZ());
-            }
-            else {
-                Vec3d pos1 = player.getPos().add(areas.getPlayAreaOffset());
-                player.requestTeleport(pos1.getX(), pos1.getY() + 1, pos1.getZ());
-            }
-        }
+
 
         // teleport non playing players
         for (ServerPlayerEntity player : serverWorld.getPlayers(serverPlayerEntity -> !players.contains(serverPlayerEntity))) {
@@ -251,7 +240,18 @@ public class GameFunctions {
             );
             serverPlayerEntity.giveItemStack(letter);
         }
-
+        for (ServerPlayerEntity player : players) {
+            player.changeGameMode(net.minecraft.world.GameMode.ADVENTURE);
+            //
+            Vec3d pos = getSpawnPos(roomToPlayer.getOrDefault(player.getUuid(), 1));
+            if (pos != null) {
+                player.requestTeleport(pos.getX(), pos.getY() + 1, pos.getZ());
+            }
+            else {
+                Vec3d pos1 = player.getPos().add(areas.getPlayAreaOffset());
+                player.requestTeleport(pos1.getX(), pos1.getY() + 1, pos1.getZ());
+            }
+        }
         gameComponent.setGameStatus(GameWorldComponent.GameStatus.ACTIVE);
         gameComponent.sync();
     }

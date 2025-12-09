@@ -78,7 +78,7 @@ public interface GameConstants {
     int SLEEP_TASK_DURATION = getInTicks(0, 8);
     int OUTSIDE_TASK_DURATION = getInTicks(0, 8);
     int READ_BOOK_TASK_DURATION = getInTicks(0, 8);
-    int EXERCISE_TASK_DURATION = getInTicks(0, 15);
+    int EXERCISE_TASK_DURATION = getInTicks(0, 7);
     int MEDITATE_TASK_DURATION = getInTicks(0, 10); // 冥想任务持续时间
     int DANCE_TASK_DURATION = getInTicks(0, 5); // 跳舞任务持续时间
     float MID_MOOD_THRESHOLD = 0.55f;
