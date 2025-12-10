@@ -85,6 +85,9 @@ dependencies {
 	modApi files("libs/moonlight-1.27.1.jar")
 	modApi files("libs/vista-1.21-1.0.9-fabric.jar")
 	modApi files("libs/LocalizedChat-fabric-1.21.1-5.2.1.jar")
+	modApi files("libs/uilib-1.0.1-1.21.1-fabric.jar")
+	modApi files("libs/architectury-13.0.8-fabric.jar")
+	modApi files("libs/cloth-config-15.0.140-fabric.jar")
 
 	// Runtime mods
 	modLocalImplementation "com.terraformersmc:modmenu:${mod_menu_version}"

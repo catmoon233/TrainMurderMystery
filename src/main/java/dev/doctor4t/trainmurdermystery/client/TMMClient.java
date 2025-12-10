@@ -25,6 +25,8 @@ import dev.doctor4t.trainmurdermystery.entity.NoteEntity;
 import dev.doctor4t.trainmurdermystery.game.GameConstants;
 import dev.doctor4t.trainmurdermystery.game.GameFunctions;
 import dev.doctor4t.trainmurdermystery.index.*;
+import dev.doctor4t.trainmurdermystery.ui.TMMCommandUI;
+import dev.doctor4t.trainmurdermystery.ui.event.KeyPressHandler;
 import dev.doctor4t.trainmurdermystery.util.*;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.fabricmc.api.ClientModInitializer;
@@ -314,6 +316,10 @@ public class TMMClient implements ClientModInitializer {
                 GLFW.GLFW_KEY_LEFT_ALT,
                 "category." + TMM.MOD_ID + ".keybinds"
         ));
+        
+        // Initialize Command UI system
+        TMMCommandUI.init();
+        KeyPressHandler.register();
     }
 
     public static TrainWorldComponent getTrainComponent() {
