@@ -84,8 +84,9 @@ public class AreasWorldComponent implements AutoSyncedComponent {
     Vec3d playAreaOffset = new Vec3d(963, 121, -175);
     Box playArea = new Box(177 ,60 ,-524, -82 ,84, -546);
 
-    Box resetTemplateArea = new Box(177 ,60 ,-524, -82 ,84, -546);
-    Box resetPasteArea = resetTemplateArea.offset(0, 55, 0);
+
+    Box resetTemplateArea = new Box(-57, 64, -531, 177, 74, -541);
+    Box resetPasteArea = new Box(177, 119, -524, -82, 139, -546);
     public PosWithOrientation getSpawnPos() {
         return spawnPos;
     }
@@ -159,8 +160,9 @@ public class AreasWorldComponent implements AutoSyncedComponent {
         this.playAreaOffset = getVec3dFromNbt(tag, "playAreaOffset");
         this.playArea = getBoxFromNbt(tag, "playArea");
 
-        this.resetTemplateArea = new Box(177 ,60 ,-524, -82 ,84, -546);
-        this.resetPasteArea = resetTemplateArea.offset(0, 55, 0);
+        // 修复：使用正确的模板区域坐标
+        this.resetTemplateArea = new Box(-57, 64, -531, 177, 74, -541);
+        this.resetPasteArea = new Box(177, 119, -524, -82, 139, -546);
     }
 
     @Override

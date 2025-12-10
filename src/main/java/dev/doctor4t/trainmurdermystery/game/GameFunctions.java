@@ -445,6 +445,28 @@ public class GameFunctions {
 
             //Mode mode = Mode.FORCE;
 
+
+            if (!serverWorld.isRegionLoaded(backupMinPos, backupMaxPos) || !serverWorld.isRegionLoaded(trainMinPos, trainMaxPos)) {
+
+                int backupChunkMinX = backupMinPos.getX() >> 4;
+                int backupChunkMinZ = backupMinPos.getZ() >> 4;
+                int backupChunkMaxX = backupMaxPos.getX() >> 4;
+                int backupChunkMaxZ = backupMaxPos.getZ() >> 4;
+                int trainChunkMinX = trainMinPos.getX() >> 4;
+                int trainChunkMinZ = trainMinPos.getZ() >> 4;
+                int trainChunkMaxX = trainMaxPos.getX() >> 4;
+                int trainChunkMaxZ = trainMaxPos.getZ() >> 4;
+                
+
+                TMM.LOGGER.info("Train reset: Loading chunks - Template: ({}, {}) to ({}, {}), Paste: ({}, {}) to ({}, {})",
+                    backupChunkMinX, backupChunkMinZ, backupChunkMaxX, backupChunkMaxZ,
+                    trainChunkMinX, trainChunkMinZ, trainChunkMaxX, trainChunkMaxZ);
+                
+
+                TMM.LOGGER.info("Train reset failed: Clone positions not loaded. Queueing another attempt.");
+                return true;
+            }
+            
             if (serverWorld.isRegionLoaded(backupMinPos, backupMaxPos) && serverWorld.isRegionLoaded(trainMinPos, trainMaxPos)) {
                 List<BlockInfo> list = Lists.newArrayList();
                 List<BlockInfo> list2 = Lists.newArrayList();
