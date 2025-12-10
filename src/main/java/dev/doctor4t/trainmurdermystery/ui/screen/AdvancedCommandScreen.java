@@ -1,16 +1,14 @@
 package dev.doctor4t.trainmurdermystery.ui.screen;
 
 import com.daqem.uilib.client.gui.AbstractScreen;
-import com.daqem.uilib.client.gui.background.Backgrounds;
 import com.daqem.uilib.client.gui.component.TextComponent;
 import com.daqem.uilib.client.gui.component.io.TextBoxComponent;
 import dev.doctor4t.trainmurdermystery.ui.ComponentFactory;
 import dev.doctor4t.trainmurdermystery.ui.components.LinearLayoutComponent;
+import dev.doctor4t.trainmurdermystery.ui.util.UIStyleHelper;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
-
-import java.util.LinkedList;
 
 public class AdvancedCommandScreen extends AbstractScreen {
 
@@ -26,32 +24,34 @@ public class AdvancedCommandScreen extends AbstractScreen {
     @Override
     public void startScreen() {
         this.setPauseScreen(false);
-        this.setBackground(Backgrounds.getDefaultBackground(this.getWidth(), this.getHeight()));
+        this.setBackground(ComponentFactory.createFrostedBackground(this.getWidth(), this.getHeight()));
 
-        // Title
         TextComponent title = new TextComponent(
             this.textRenderer,
             net.minecraft.text.Text.translatable("tmm.ui.advanced.title")
                 .copy()
-                .styled(style -> style.withBold(true))
+                .styled(style -> style.withBold(true).withColor(UIStyleHelper.TEXT_COLOR_TITLE))
         );
         title.centerHorizontally();
-        title.setY(15);
+        title.setY(25);
         this.addComponent(title);
 
         LinearLayoutComponent mainLayout = new LinearLayoutComponent(
-            this.getWidth() / 2 - 100, 30,
-            200, 0,
-            LinearLayoutComponent.Orientation.VERTICAL, 10
+            this.getWidth() / 2 - UIStyleHelper.LAYOUT_PADDING_HORIZONTAL, 50,
+            240, 0,
+            LinearLayoutComponent.Orientation.VERTICAL, UIStyleHelper.LAYOUT_SPACING_MEDIUM
         );
         this.addComponent(mainLayout);
 
         // Money Management Section
         mainLayout.addChild(ComponentFactory.createSectionTitle("tmm.ui.section.money"));
 
-        LinearLayoutComponent moneyLayout = new LinearLayoutComponent(0, 0, 0, 16, LinearLayoutComponent.Orientation.HORIZONTAL, 5);
-        moneyLayout.addChild(new TextComponent(this.textRenderer, net.minecraft.text.Text.translatable("tmm.ui.label.set_money")));
-        moneyInput = new TextBoxComponent(new LinkedList<>(), 0, 0, 100, 16, "100");
+        LinearLayoutComponent moneyLayout = new LinearLayoutComponent(0, 0, 0, UIStyleHelper.INPUT_HEIGHT, LinearLayoutComponent.Orientation.HORIZONTAL, UIStyleHelper.LAYOUT_SPACING_SMALL);
+        TextComponent moneyLabel = new TextComponent(this.textRenderer, 
+            net.minecraft.text.Text.translatable("tmm.ui.label.set_money")
+                .styled(style -> style.withColor(UIStyleHelper.TEXT_COLOR_LABEL)));
+        moneyLayout.addChild(moneyLabel);
+        moneyInput = new TextBoxComponent(0, 0, UIStyleHelper.INPUT_WIDTH, UIStyleHelper.INPUT_HEIGHT, "100");
         moneyLayout.addChild(moneyInput);
         mainLayout.addChild(moneyLayout);
 
@@ -66,9 +66,12 @@ public class AdvancedCommandScreen extends AbstractScreen {
         // Timer Section
         mainLayout.addChild(ComponentFactory.createSectionTitle("tmm.ui.section.timer"));
 
-        LinearLayoutComponent timerLayout = new LinearLayoutComponent(0, 0, 0, 16, LinearLayoutComponent.Orientation.HORIZONTAL, 5);
-        timerLayout.addChild(new TextComponent(this.textRenderer, net.minecraft.text.Text.translatable("tmm.ui.label.set_timer")));
-        timerInput = new TextBoxComponent(new LinkedList<>(), 0, 0, 100, 16, "10");
+        LinearLayoutComponent timerLayout = new LinearLayoutComponent(0, 0, 0, UIStyleHelper.INPUT_HEIGHT, LinearLayoutComponent.Orientation.HORIZONTAL, UIStyleHelper.LAYOUT_SPACING_SMALL);
+        TextComponent timerLabel = new TextComponent(this.textRenderer, 
+            net.minecraft.text.Text.translatable("tmm.ui.label.set_timer")
+                .styled(style -> style.withColor(UIStyleHelper.TEXT_COLOR_LABEL)));
+        timerLayout.addChild(timerLabel);
+        timerInput = new TextBoxComponent(0, 0, UIStyleHelper.INPUT_WIDTH, UIStyleHelper.INPUT_HEIGHT, "10");
         timerLayout.addChild(timerInput);
         mainLayout.addChild(timerLayout);
 

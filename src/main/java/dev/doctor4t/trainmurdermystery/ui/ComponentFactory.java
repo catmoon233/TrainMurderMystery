@@ -5,6 +5,8 @@ import com.daqem.uilib.client.gui.component.ButtonComponent;
 import com.daqem.uilib.client.gui.component.TextComponent;
 import com.daqem.uilib.client.gui.text.Text;
 import com.daqem.uilib.client.gui.texture.Textures;
+import dev.doctor4t.trainmurdermystery.ui.background.FrostedBackground;
+import dev.doctor4t.trainmurdermystery.ui.util.UIStyleHelper;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.text.MutableText;
@@ -41,8 +43,12 @@ public class ComponentFactory {
         TextRenderer font = MinecraftClient.getInstance().textRenderer;
         MutableText text = net.minecraft.text.Text.translatable(translationKey)
             .copy()
-            .styled(style -> style.withColor(0xFFD700));
+            .styled(style -> style.withColor(UIStyleHelper.TEXT_COLOR_TITLE).withBold(true));
 
         return new TextComponent(font, text);
+    }
+    
+    public static FrostedBackground createFrostedBackground(int width, int height) {
+        return new FrostedBackground(width, height);
     }
 }

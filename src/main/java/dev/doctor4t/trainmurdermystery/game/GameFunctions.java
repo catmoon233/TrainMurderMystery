@@ -118,7 +118,9 @@ public class GameFunctions {
         gameComponent.getGameMode().initializeGame(serverWorld, gameComponent, readyPlayerList);
         // Update replay with actual roles after assignment
         TMM.REPLAY_MANAGER.updateRolesFromComponent(gameComponent);
-
+        
+        // Set game status to ACTIVE after roles are assigned
+        gameComponent.setGameStatus(GameWorldComponent.GameStatus.ACTIVE);
         gameComponent.sync();
     }
 
@@ -253,8 +255,7 @@ public class GameFunctions {
                 player.requestTeleport(pos1.getX(), pos1.getY() + 1, pos1.getZ());
             }
         }
-        gameComponent.setGameStatus(GameWorldComponent.GameStatus.ACTIVE);
-        gameComponent.sync();
+        // Don't set game status to ACTIVE here - it will be set after roles are assigned in initializeGame()
     }
 
     private static List<ServerPlayerEntity> getReadyPlayerList(ServerWorld serverWorld) {

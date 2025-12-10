@@ -1,11 +1,11 @@
 package dev.doctor4t.trainmurdermystery.ui.screen;
 
 import com.daqem.uilib.client.gui.AbstractScreen;
-import com.daqem.uilib.client.gui.background.Backgrounds;
 import com.daqem.uilib.client.gui.component.TextComponent;
 import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
 import dev.doctor4t.trainmurdermystery.ui.ComponentFactory;
 import dev.doctor4t.trainmurdermystery.ui.components.LinearLayoutComponent;
+import dev.doctor4t.trainmurdermystery.ui.util.UIStyleHelper;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.world.World;
@@ -22,30 +22,29 @@ public class CommandMenuScreen extends AbstractScreen {
     @Override
     public void startScreen() {
         this.setPauseScreen(false);
-        this.setBackground(Backgrounds.getDefaultBackground(this.getWidth(), this.getHeight()));
+        this.setBackground(ComponentFactory.createFrostedBackground(this.getWidth(), this.getHeight()));
 
-        // Title
         TextComponent title = new TextComponent(
             this.textRenderer,
             net.minecraft.text.Text.translatable("tmm.ui.command_menu.title")
                 .copy()
-                .styled(style -> style.withBold(true))
+                .styled(style -> style.withBold(true).withColor(UIStyleHelper.TEXT_COLOR_TITLE))
         );
         title.centerHorizontally();
-        title.setY(20);
+        title.setY(30);
         this.addComponent(title);
 
         LinearLayoutComponent layout = new LinearLayoutComponent(
-            this.getWidth() / 2 - 100, 40,
-            200, 0,
-            LinearLayoutComponent.Orientation.VERTICAL, 5
+            this.getWidth() / 2 - 120, 60,
+            240, 0,
+            LinearLayoutComponent.Orientation.VERTICAL, UIStyleHelper.LAYOUT_SPACING_SMALL
         );
         this.addComponent(layout);
 
         // Game Control Section
         layout.addChild(ComponentFactory.createSectionTitle("tmm.ui.section.game_control"));
         layout.addChild(ComponentFactory.createButton("tmm.ui.button.start_murder", (component, screen, mouseX, mouseY, button) -> {
-            executeCommand("tmm:start murder");
+            executeCommand("tmm:start harpymodloader:modded");
             return true;
         }));
         layout.addChild(ComponentFactory.createButton("tmm.ui.button.start_discovery", (component, screen, mouseX, mouseY, button) -> {

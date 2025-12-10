@@ -149,6 +149,11 @@ public class TMMConfig extends MidnightConfig {
     @Entry(category = "game")
     public static boolean verboseTrainResetLogs = false;
 
+    @Environment(EnvType.CLIENT)
+    public static boolean isUltraPerfMode() {
+        return ultraPerfMode;
+    }
+
     /**
      * 初始化配置系统
      * 必须在mod初始化时调用以生成配置文件
@@ -157,7 +162,7 @@ public class TMMConfig extends MidnightConfig {
         TMM.LOGGER.error("TMMConfig.init() 方法被调用");
         // 统一使用MidnightConfig初始化，它会处理客户端和服务端的差异
         MidnightConfig.init(TMM.MOD_ID, TMMConfig.class);
-        
+
         // 服务端需要额外加载配置到内存
         if (net.fabricmc.loader.api.FabricLoader.getInstance().getEnvironmentType() == EnvType.SERVER) {
             try {
@@ -254,7 +259,7 @@ public class TMMConfig extends MidnightConfig {
             // 读取客户端配置
             if (json.has("ultraPerfMode")) ultraPerfMode = json.get("ultraPerfMode").getAsBoolean();
             if (json.has("disableScreenShake")) disableScreenShake = json.get("disableScreenShake").getAsBoolean();
-            
+
             TMM.LOGGER.debug("配置解析成功");
         } catch (Exception e) {
             TMM.LOGGER.error("配置解析失败: {}", jsonContent, e);
@@ -278,7 +283,7 @@ public class TMMConfig extends MidnightConfig {
                     if (DEFAULT_VALUES.containsKey(fieldName)) {
                         field.setAccessible(true);
                         Object defaultValue = DEFAULT_VALUES.get(fieldName);
-                        
+
                         // 安全地设置字段值，处理类型转换
                         if (field.getType() == boolean.class || field.getType() == Boolean.class) {
                             field.setBoolean(null, (Boolean) defaultValue);
@@ -287,7 +292,7 @@ public class TMMConfig extends MidnightConfig {
                         } else {
                             field.set(null, defaultValue);
                         }
-                        
+
                         TMM.LOGGER.debug("重置字段 {} 为默认值: {}", fieldName, defaultValue);
                     }
                 }
@@ -315,7 +320,7 @@ public class TMMConfig extends MidnightConfig {
         if (net.fabricmc.loader.api.FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT) {
             applyClientConfig();
         }
-        
+
         TMM.LOGGER.debug("配置已保存");
     }
 
