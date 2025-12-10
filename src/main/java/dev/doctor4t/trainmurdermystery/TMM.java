@@ -98,20 +98,46 @@ public class TMM implements ModInitializer {
 
         // server lock to supporters
         ServerPlayerEvents.JOIN.register(player -> {
+            GameWorldComponent gameWorldComponent = GameWorldComponent.KEY.get(player.getWorld());
+            
+            // 优化：提前检查是否启用锁定，避免不必要的API调用
+            if (!gameWorldComponent.isLockedToSupporters()) {
+                // 服务器未锁定，直接允许加入
+                if (gameWorldComponent.getGameStatus() == GameWorldComponent.GameStatus.ACTIVE) {
+                    // gameWorldComponent.addPlayer(player); // Removed as method does not exist
+                }
+                if (REPLAY_MANAGER != null) {
+                    REPLAY_MANAGER.recordPlayerName(player);
+                    REPLAY_MANAGER.addEvent(GameReplayData.EventType.PLAYER_JOIN, null, player.getUuid(), null, null);
+                }
+                return;
+            }
+            
+            // 服务器已锁定，需要验证支持者身份
             DataSyncAPI.refreshAllPlayerData(player.getUuid()).thenRunAsync(() -> {
-                // check if player is supporter now, if not kick
-                if (GameWorldComponent.KEY.get(player.getWorld()).isLockedToSupporters()) {
-                    player.networkHandler.disconnect(Text.translatable("Server is reserved to doctor4t supporters."));
+                try {
+                    // 再次检查锁定状态（可能在异步期间已更改）
+                    if (GameWorldComponent.KEY.get(player.getWorld()).isLockedToSupporters()) {
+                        // 检查玩家是否为支持者
+                        if (!isSupporter(player)) {
+                            LOGGER.info("Player {} attempted to join locked server (supporters only)", player.getName().getString());
+                            player.networkHandler.disconnect(Text.translatable("Server is reserved to doctor4t supporters."));
+                            return;
+                        }
+                    }
+                    
+                    // 支持者或锁定已解除，允许加入
+                    if (REPLAY_MANAGER != null) {
+                        REPLAY_MANAGER.recordPlayerName(player);
+                        REPLAY_MANAGER.addEvent(GameReplayData.EventType.PLAYER_JOIN, null, player.getUuid(), null, null);
+                    }
+                } catch (Exception e) {
+                    LOGGER.error("Error checking supporter status for player {}", player.getName().getString(), e);
                 }
             }, player.getWorld().getServer());
 
-            GameWorldComponent gameWorldComponent = GameWorldComponent.KEY.get(player.getWorld());
             if (gameWorldComponent.getGameStatus() == GameWorldComponent.GameStatus.ACTIVE) {
                 // gameWorldComponent.addPlayer(player); // Removed as method does not exist
-            }
-            if (REPLAY_MANAGER != null) {
-                REPLAY_MANAGER.recordPlayerName(player);
-                REPLAY_MANAGER.addEvent(GameReplayData.EventType.PLAYER_JOIN, null, player.getUuid(), null, null);
             }
         });
 

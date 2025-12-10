@@ -10,9 +10,7 @@ import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.packet.CustomPayload;
 import net.minecraft.util.Identifier;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public record ReplayPayload(GameReplay replay) implements CustomPayload {
     public static final CustomPayload.Id<ReplayPayload> ID = new CustomPayload.Id<>(TMM.id("replay"));
@@ -40,7 +38,12 @@ public record ReplayPayload(GameReplay replay) implements CustomPayload {
         for (int i = 0; i < numPlayers; i++) {
             UUID uuid = buf.readUuid();
             String name = buf.readString();
-            Role role = TMMRoles.ROLES.get(buf.readInt());
+            Identifier roleId = buf.readIdentifier();
+
+            Role role = TMMRoles.ROLES.stream()
+                    .filter(r -> r.identifier().equals(roleId))
+                    .findFirst()
+                    .orElse(TMMRoles.CIVILIAN);
             players.add(new GameReplay.ReplayPlayerInfo(uuid, name, role));
         }
 
@@ -48,21 +51,27 @@ public record ReplayPayload(GameReplay replay) implements CustomPayload {
         List<GameReplay.ReplayEvent> timelineEvents = new ArrayList<>();
         for (int i = 0; i < numEvents; i++) {
             GameReplay.EventType eventType = buf.readEnumConstant(GameReplay.EventType.class);
-            long timestamp = buf.readLong();
+            long timestamp = buf.readInt(); // OPTIMIZATION
             GameReplay.EventDetails details = null;
 
             switch (eventType) {
-                case PLAYER_KILL:
-                    UUID killerUuid = buf.readUuid();
-                    UUID victimUuid = buf.readUuid();
+                case PLAYER_KILL: {
+                    int killerIndex = buf.readVarInt();
+                    UUID killerUuid = players.get(killerIndex).uuid();
+                    int victimIndex = buf.readVarInt();
+                    UUID victimUuid = players.get(victimIndex).uuid();
                     Identifier deathReason = buf.readIdentifier();
                     details = new GameReplay.PlayerKillDetails(killerUuid, victimUuid, deathReason);
                     break;
-                case PLAYER_POISONED:
-                    UUID poisonerUuid = buf.readUuid();
-                    UUID poisonedVictimUuid = buf.readUuid();
+                }
+                case PLAYER_POISONED: {
+                    int poisonerIndex = buf.readVarInt();
+                    UUID poisonerUuid = players.get(poisonerIndex).uuid();
+                    int victimIndex = buf.readVarInt();
+                    UUID poisonedVictimUuid = players.get(victimIndex).uuid();
                     details = new GameReplay.PlayerPoisonedDetails(poisonerUuid, poisonedVictimUuid);
                     break;
+                }
                 // Add more cases for other event types
             }
             timelineEvents.add(new GameReplay.ReplayEvent(eventType, timestamp, details));
@@ -81,22 +90,28 @@ public record ReplayPayload(GameReplay replay) implements CustomPayload {
             buf.writeIdentifier(playerInfo.finalRole().identifier());
         }
 
+
+        Map<UUID, Integer> playerUuidToIndex = new HashMap<>();
+        for (int i = 0; i < replay.players().size(); i++) {
+            playerUuidToIndex.put(replay.players().get(i).uuid(), i);
+        }
+
         buf.writeInt(replay.timelineEvents().size());
         for (GameReplay.ReplayEvent event : replay.timelineEvents()) {
             buf.writeEnumConstant(event.eventType());
-            buf.writeLong(event.timestamp());
+            buf.writeInt((int) event.timestamp());
 
             switch (event.eventType()) {
                 case PLAYER_KILL:
                     GameReplay.PlayerKillDetails killDetails = (GameReplay.PlayerKillDetails) event.details();
-                    buf.writeUuid(killDetails.killerUuid());
-                    buf.writeUuid(killDetails.victimUuid());
+                    buf.writeVarInt(playerUuidToIndex.get(killDetails.killerUuid()));
+                    buf.writeVarInt(playerUuidToIndex.get(killDetails.victimUuid()));
                     buf.writeIdentifier(killDetails.deathReason());
                     break;
                 case PLAYER_POISONED:
                     GameReplay.PlayerPoisonedDetails poisonedDetails = (GameReplay.PlayerPoisonedDetails) event.details();
-                    buf.writeUuid(poisonedDetails.poisonerUuid());
-                    buf.writeUuid(poisonedDetails.victimUuid());
+                    buf.writeVarInt(playerUuidToIndex.get(poisonedDetails.poisonerUuid()));
+                    buf.writeVarInt(playerUuidToIndex.get(poisonedDetails.victimUuid()));
                     break;
                 // Add more cases for other event types
             }

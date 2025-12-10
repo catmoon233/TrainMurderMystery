@@ -90,8 +90,8 @@ public record GunShootPayload(int target) implements CustomPayload {
             player.getWorld().playSound(null, player.getX(), player.getEyeY(), player.getZ(), TMMSounds.ITEM_REVOLVER_SHOOT, SoundCategory.PLAYERS, 5f, 1f + player.getRandom().nextFloat() * .1f - .05f);
 
             for (ServerPlayerEntity tracking : PlayerLookup.tracking(player))
-                ServerPlayNetworking.send(tracking, new ShootMuzzleS2CPayload(player.getUuidAsString()));
-            ServerPlayNetworking.send(player, new ShootMuzzleS2CPayload(player.getUuidAsString()));
+                ServerPlayNetworking.send(tracking, new ShootMuzzleS2CPayload(player.getId()));
+            ServerPlayNetworking.send(player, new ShootMuzzleS2CPayload(player.getId()));
             if (!player.isCreative())
                 player.getItemCooldownManager().set(mainHandStack.getItem(), GameConstants.ITEM_COOLDOWNS.getOrDefault(mainHandStack.getItem(), 0));
         }

@@ -84,7 +84,7 @@ public class PoisonUtils {
             }
 
             ServerPlayNetworking.send(
-                    player, new PoisonOverlayPayload("game.player.stung")
+                    player, new PoisonOverlayPayload()
             );
         }
     }
@@ -204,20 +204,12 @@ public class PoisonUtils {
     }
 
 
-    public record PoisonOverlayPayload(String translationKey) implements CustomPayload {
+    public record PoisonOverlayPayload() implements CustomPayload {
         public static final Id<PoisonOverlayPayload> ID =
                 new Id<>(TMM.id("poisoned_text"));
 
         public static final PacketCodec<RegistryByteBuf, PoisonOverlayPayload> CODEC =
-                PacketCodec.of(PoisonOverlayPayload::write, PoisonOverlayPayload::read);
-
-        private void write(RegistryByteBuf buf) {
-            buf.writeString(translationKey);
-        }
-
-        private static PoisonOverlayPayload read(RegistryByteBuf buf) {
-            return new PoisonOverlayPayload(buf.readString());
-        }
+                PacketCodec.unit(new PoisonOverlayPayload());
 
         @Override
         public Id<? extends CustomPayload> getId() {
@@ -228,7 +220,7 @@ public class PoisonUtils {
             @Override
             public void receive(@NotNull PoisonOverlayPayload payload, ClientPlayNetworking.@NotNull Context context) {
                 MinecraftClient client = MinecraftClient.getInstance();
-                client.execute(() -> client.inGameHud.setOverlayMessage(Text.translatable(payload.translationKey()), false));
+                client.execute(() -> client.inGameHud.setOverlayMessage(Text.translatable("game.player.stung"), false));
             }
         }
     }
