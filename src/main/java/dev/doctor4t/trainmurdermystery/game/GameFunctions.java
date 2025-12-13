@@ -604,6 +604,6 @@ public class GameFunctions {
     }
 
     public enum WinStatus {
-        NONE, KILLERS, PASSENGERS, TIME, LOOSE_END
+        NONE, KILLERS, PASSENGERS, TIME, LOOSE_END,GAMBLER
     }
 }

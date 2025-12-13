@@ -5,6 +5,7 @@ import net.minecraft.text.Text;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.function.Function;
 
@@ -52,6 +53,8 @@ public class RoleAnnouncementTexts {
                 case NONE -> null;
                 case PASSENGERS, TIME -> this == KILLER ? this.getLoseText() : this.winText;
                 case KILLERS -> this == KILLER ? this.winText : this.getLoseText();
+                case GAMBLER ->
+                        Text.translatable("announcement.win.gambler" , winner).withColor(new Color(128, 0, 128).getRGB());
                 case LOOSE_END ->
                         Text.translatable("announcement.win." + LOOSE_END.name.toLowerCase(), winner).withColor(LOOSE_END.colour);
             };
