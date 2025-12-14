@@ -17,6 +17,7 @@
     "MoonlightMessageMixin",
     "PlayerEntityMixin",
     "PlayerInventoryMixin",
+    "SeatPosFixMixin",
     "ServerPlayerEntityMixin",
     "ServerPlayNetworkHandlerMixin",
     "TalkChatMixin",

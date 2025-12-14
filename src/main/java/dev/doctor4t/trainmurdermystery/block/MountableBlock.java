@@ -53,6 +53,7 @@ public abstract class MountableBlock extends Block {
             seatEntity.setSeatPos(pos);
             world.spawnEntity(seatEntity);
             player.startRiding(seatEntity);
+            player.stopRiding();
 
             return ActionResult.success(false);
         } else {
