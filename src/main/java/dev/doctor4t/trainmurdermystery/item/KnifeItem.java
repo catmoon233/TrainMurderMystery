@@ -49,7 +49,7 @@ public class KnifeItem extends Item {
     }
 
     public static HitResult getKnifeTarget(PlayerEntity user) {
-        return ProjectileUtil.getCollision(user, entity -> entity instanceof PlayerEntity player && GameFunctions.isPlayerAliveAndSurvival(player), 4.5f);
+        return ProjectileUtil.getCollision(user, entity -> entity instanceof PlayerEntity player && GameFunctions.isPlayerAliveAndSurvival(player), 4f);
     }
 
     @Override
@@ -59,6 +59,6 @@ public class KnifeItem extends Item {
 
     @Override
     public int getMaxUseTime(ItemStack stack, LivingEntity user) {
-        return 72000;
+        return 120;
     }
 }

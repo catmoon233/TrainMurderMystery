@@ -32,11 +32,15 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.ChunkPos;
+import net.minecraft.world.Heightmap;
+import net.minecraft.world.chunk.WorldChunk;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Optional;
+import java.util.Set;
 
 public class TMM implements ModInitializer {
     public static final String MOD_ID = "trainmurdermystery";
@@ -180,8 +184,12 @@ public class TMM implements ModInitializer {
         BlockPos playerPos = BlockPos.ofFloored(player.getEyePos());
         for (int x = -1; x <= 1; x += 2) {
             for (int z = -1; z <= 1; z += 2) {
+
                 mutable.set(playerPos.getX() + x, playerPos.getY(), playerPos.getZ() + z);
-                if (player.getWorld().isSkyVisible(mutable)) {
+                final var chunkPos = player.getChunkPos();
+                final var chunk = player.getWorld().getChunk(chunkPos.x, chunkPos.z);
+                final var i = chunk.getHeightmap(Heightmap.Type.MOTION_BLOCKING).get(mutable.getX()&15, mutable.getZ()&15)-1;
+                if (i< player.getY()+3) {
                     return !(player.getWorld().getBlockState(playerPos).getBlock() instanceof DoorPartBlock);
                 }
             }
