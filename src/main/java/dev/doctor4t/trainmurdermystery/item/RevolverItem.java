@@ -30,9 +30,9 @@ public class RevolverItem extends Item {
         ItemStack stack = user.getStackInHand(hand);
         
         // 检查物品是否已经损坏（耐久度为0）
-        if (stack.getDamage() >= stack.getMaxDamage()-1) {
-            return TypedActionResult.fail(stack);
-        }
+//        if (stack.getDamage() >= stack.getMaxDamage()-1) {
+//            return TypedActionResult.fail(stack);
+//        }
         
         if (world.isClient) {
             HitResult collision = getGunTarget(user);
@@ -46,7 +46,7 @@ public class RevolverItem extends Item {
             spawnHandParticle();
         } else {
             // 在服务端消耗耐久度
-            stack.setDamage(stack.getDamage() + 1);
+//            stack.setDamage(stack.getDamage() + 1);
         }
         return TypedActionResult.consume(stack);
     }
