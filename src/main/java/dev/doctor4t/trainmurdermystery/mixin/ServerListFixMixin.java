@@ -20,9 +20,9 @@ import java.util.UUID;
 
 @Mixin(QueryResponseS2CPacket.class)
 public abstract class ServerListFixMixin implements Packet<ClientQueryPacketListener> {
-    @Redirect(method = "write",at = @At(value = "INVOKE", target = "Lnet/minecraft/network/PacketByteBuf;encodeAsJson(Lcom/mojang/serialization/Codec;Ljava/lang/Object;)V"))
-    public <T>  void write(PacketByteBuf instance, Codec<T> codec, T value) {
-        var value1 = (ServerMetadata) value;
-        instance.encodeAsJson(ServerMetadata.CODEC,new ServerMetadata(value1.description(), Optional.of(new ServerMetadata.Players(-1,1, List.of(new GameProfile(UUID.randomUUID(),"服务器维护中，建地图中，请进二服")))),value1.version(),value1.favicon(),value1.secureChatEnforced()));
-    }
+//    @Redirect(method = "write",at = @At(value = "INVOKE", target = "Lnet/minecraft/network/PacketByteBuf;encodeAsJson(Lcom/mojang/serialization/Codec;Ljava/lang/Object;)V"))
+//    public <T>  void write(PacketByteBuf instance, Codec<T> codec, T value) {
+//        var value1 = (ServerMetadata) value;
+//        instance.encodeAsJson(ServerMetadata.CODEC,new ServerMetadata(value1.description(), Optional.of(new ServerMetadata.Players(-1,1, List.of(new GameProfile(UUID.randomUUID(),"服务器维护中，建地图中，请进二服")))),value1.version(),value1.favicon(),value1.secureChatEnforced()));
+//    }
 }

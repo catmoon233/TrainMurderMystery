@@ -11,6 +11,22 @@ import org.ladysnake.cca.api.v3.component.ComponentKey;
 import org.ladysnake.cca.api.v3.component.ComponentRegistry;
 import org.ladysnake.cca.api.v3.component.sync.AutoSyncedComponent;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonArray;
+import org.ladysnake.cca.api.v3.world.WorldSyncCallback;
+
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.HashMap;
+import java.util.Map;
+
 public class AreasWorldComponent implements AutoSyncedComponent {
     public static final ComponentKey<AreasWorldComponent> KEY = ComponentRegistry.getOrCreate(TMM.id("areas"), AreasWorldComponent.class);
     private final World world;
@@ -85,7 +101,14 @@ public class AreasWorldComponent implements AutoSyncedComponent {
     Box playArea = new Box(177 ,60 ,-524, -82 ,84, -546);
 
     Box resetTemplateArea = new Box(177 ,60 ,-524, -82 ,84, -546);
-    Box resetPasteArea = resetTemplateArea.offset(0, 55, 0);
+    Box resetPasteArea = new Box(177 ,115 ,-524, -82 ,139, -546); // Default: resetTemplateArea.offset(0, 55, 0)
+    
+    // Room count
+    int roomCount = 7;
+    
+    // Room positions map
+    Map<Integer, Vec3d> roomPositions = new HashMap<>();
+    
     public PosWithOrientation getSpawnPos() {
         return spawnPos;
     }
@@ -141,13 +164,273 @@ public class AreasWorldComponent implements AutoSyncedComponent {
     public void setResetPasteArea(Box resetPasteArea) {
         this.resetPasteArea = resetPasteArea;
     }
+    
+    public int getRoomCount() {
+        return roomCount;
+    }
+    
+    public void setRoomCount(int roomCount) {
+        this.roomCount = roomCount;
+    }
+    
+    public Map<Integer, Vec3d> getRoomPositions() {
+        return roomPositions;
+    }
+    
+    public void setRoomPositions(Map<Integer, Vec3d> roomPositions) {
+        this.roomPositions = roomPositions;
+    }
+    
+    public Vec3d getRoomPosition(int roomNumber) {
+        return roomPositions.get(roomNumber);
+    }
+    
+    public void setRoomPosition(int roomNumber, Vec3d position) {
+        this.roomPositions.put(roomNumber, position);
+    }
 
     public AreasWorldComponent(World world) {
         this.world = world;
+        // Initialize default room positions
+        initializeDefaultRoomPositions();
+    }
+    
+    private void initializeDefaultRoomPositions() {
+        roomPositions.put(1, new Vec3d(116, 122, -539));
+        roomPositions.put(2, new Vec3d(124, 122, -534));
+        roomPositions.put(3, new Vec3d(131, 122, -534));
+        roomPositions.put(4, new Vec3d(144, 122, -540));
+        roomPositions.put(5, new Vec3d(119, 128, -537));
+        roomPositions.put(6, new Vec3d(132, 128, -536));
+        roomPositions.put(7, new Vec3d(146, 128, -537));
     }
 
     public void sync() {
         KEY.sync(this.world);
+    }
+    public void loadFromFile() {
+        try {
+            Path areasFilePath = Paths.get(world.getServer().getRunDirectory().toString(), "world", "areas.json");
+            File areasFile = areasFilePath.toFile();
+
+            if (areasFile.exists()) {
+                FileReader reader = new FileReader(areasFile);
+                JsonObject jsonObject = JsonParser.parseReader(reader).getAsJsonObject();
+                reader.close();
+
+                if (jsonObject.has("spawnPos")) {
+                    JsonObject spawnPosObj = jsonObject.getAsJsonObject("spawnPos");
+                    this.spawnPos = new PosWithOrientation(
+                            spawnPosObj.get("x").getAsDouble(),
+                            spawnPosObj.get("y").getAsDouble(),
+                            spawnPosObj.get("z").getAsDouble(),
+                            spawnPosObj.get("yaw").getAsFloat(),
+                            spawnPosObj.get("pitch").getAsFloat()
+                    );
+                }
+
+                if (jsonObject.has("spectatorSpawnPos")) {
+                    JsonObject spectatorSpawnPosObj = jsonObject.getAsJsonObject("spectatorSpawnPos");
+                    this.spectatorSpawnPos = new PosWithOrientation(
+                            spectatorSpawnPosObj.get("x").getAsDouble(),
+                            spectatorSpawnPosObj.get("y").getAsDouble(),
+                            spectatorSpawnPosObj.get("z").getAsDouble(),
+                            spectatorSpawnPosObj.get("yaw").getAsFloat(),
+                            spectatorSpawnPosObj.get("pitch").getAsFloat()
+                    );
+                }
+
+                if (jsonObject.has("readyArea")) {
+                    JsonObject readyAreaObj = jsonObject.getAsJsonObject("readyArea");
+                    this.readyArea = new Box(
+                            readyAreaObj.get("minX").getAsDouble(),
+                            readyAreaObj.get("minY").getAsDouble(),
+                            readyAreaObj.get("minZ").getAsDouble(),
+                            readyAreaObj.get("maxX").getAsDouble(),
+                            readyAreaObj.get("maxY").getAsDouble(),
+                            readyAreaObj.get("maxZ").getAsDouble()
+                    );
+                }
+
+                if (jsonObject.has("playAreaOffset")) {
+                    JsonObject playAreaOffsetObj = jsonObject.getAsJsonObject("playAreaOffset");
+                    this.playAreaOffset = new Vec3d(
+                            playAreaOffsetObj.get("x").getAsDouble(),
+                            playAreaOffsetObj.get("y").getAsDouble(),
+                            playAreaOffsetObj.get("z").getAsDouble()
+                    );
+                }
+
+                if (jsonObject.has("playArea")) {
+                    JsonObject playAreaObj = jsonObject.getAsJsonObject("playArea");
+                    this.playArea = new Box(
+                            playAreaObj.get("minX").getAsDouble(),
+                            playAreaObj.get("minY").getAsDouble(),
+                            playAreaObj.get("minZ").getAsDouble(),
+                            playAreaObj.get("maxX").getAsDouble(),
+                            playAreaObj.get("maxY").getAsDouble(),
+                            playAreaObj.get("maxZ").getAsDouble()
+                    );
+                }
+
+                if (jsonObject.has("resetTemplateArea")) {
+                    JsonObject resetTemplateAreaObj = jsonObject.getAsJsonObject("resetTemplateArea");
+                    this.resetTemplateArea = new Box(
+                            resetTemplateAreaObj.get("minX").getAsDouble(),
+                            resetTemplateAreaObj.get("minY").getAsDouble(),
+                            resetTemplateAreaObj.get("minZ").getAsDouble(),
+                            resetTemplateAreaObj.get("maxX").getAsDouble(),
+                            resetTemplateAreaObj.get("maxY").getAsDouble(),
+                            resetTemplateAreaObj.get("maxZ").getAsDouble()
+                    );
+                }
+                
+                // Load resetPasteArea if present, otherwise derive from resetTemplateArea
+                if (jsonObject.has("resetPasteArea")) {
+                    JsonObject resetPasteAreaObj = jsonObject.getAsJsonObject("resetPasteArea");
+                    this.resetPasteArea = new Box(
+                            resetPasteAreaObj.get("minX").getAsDouble(),
+                            resetPasteAreaObj.get("minY").getAsDouble(),
+                            resetPasteAreaObj.get("minZ").getAsDouble(),
+                            resetPasteAreaObj.get("maxX").getAsDouble(),
+                            resetPasteAreaObj.get("maxY").getAsDouble(),
+                            resetPasteAreaObj.get("maxZ").getAsDouble()
+                    );
+                } else {
+                    // Default behavior: offset resetTemplateArea by (0, 55, 0)
+                    this.resetPasteArea = this.resetTemplateArea.offset(0, 55, 0);
+                }
+                
+                // Load room count
+                if (jsonObject.has("roomCount")) {
+                    this.roomCount = jsonObject.get("roomCount").getAsInt();
+                }
+                
+                // Load room positions
+                if (jsonObject.has("roomPositions")) {
+                    JsonObject roomPositionsObj = jsonObject.getAsJsonObject("roomPositions");
+                    this.roomPositions.clear();
+                    for (String key : roomPositionsObj.keySet()) {
+                        try {
+                            int roomNumber = Integer.parseInt(key);
+                            JsonObject posObj = roomPositionsObj.getAsJsonObject(key);
+                            Vec3d position = new Vec3d(
+                                    posObj.get("x").getAsDouble(),
+                                    posObj.get("y").getAsDouble(),
+                                    posObj.get("z").getAsDouble()
+                            );
+                            this.roomPositions.put(roomNumber, position);
+                        } catch (NumberFormatException e) {
+                            TMM.LOGGER.warn("Invalid room number in areas.json: " + key);
+                        }
+                    }
+                }
+
+            }
+        } catch (Exception e) {
+            TMM.LOGGER.error("Failed to load areas from file", e);
+        }
+    }
+
+    public void saveToFile() {
+        try {
+            Path areasDirPath = Paths.get(world.getServer().getRunDirectory().toString(), "world");
+            File areasDir = areasDirPath.toFile();
+            if (!areasDir.exists()) {
+                areasDir.mkdirs();
+            }
+
+            Path areasFilePath = Paths.get(areasDirPath.toString(), "areas.json");
+            File areasFile = areasFilePath.toFile();
+
+            JsonObject jsonObject = new JsonObject();
+
+            // Save spawn position
+            JsonObject spawnPosObj = new JsonObject();
+            spawnPosObj.addProperty("x", this.spawnPos.pos.x);
+            spawnPosObj.addProperty("y", this.spawnPos.pos.y);
+            spawnPosObj.addProperty("z", this.spawnPos.pos.z);
+            spawnPosObj.addProperty("yaw", this.spawnPos.yaw);
+            spawnPosObj.addProperty("pitch", this.spawnPos.pitch);
+            jsonObject.add("spawnPos", spawnPosObj);
+
+            // Save spectator spawn position
+            JsonObject spectatorSpawnPosObj = new JsonObject();
+            spectatorSpawnPosObj.addProperty("x", this.spectatorSpawnPos.pos.x);
+            spectatorSpawnPosObj.addProperty("y", this.spectatorSpawnPos.pos.y);
+            spectatorSpawnPosObj.addProperty("z", this.spectatorSpawnPos.pos.z);
+            spectatorSpawnPosObj.addProperty("yaw", this.spectatorSpawnPos.yaw);
+            spectatorSpawnPosObj.addProperty("pitch", this.spectatorSpawnPos.pitch);
+            jsonObject.add("spectatorSpawnPos", spectatorSpawnPosObj);
+
+            // Save ready area
+            JsonObject readyAreaObj = new JsonObject();
+            readyAreaObj.addProperty("minX", this.readyArea.minX);
+            readyAreaObj.addProperty("minY", this.readyArea.minY);
+            readyAreaObj.addProperty("minZ", this.readyArea.minZ);
+            readyAreaObj.addProperty("maxX", this.readyArea.maxX);
+            readyAreaObj.addProperty("maxY", this.readyArea.maxY);
+            readyAreaObj.addProperty("maxZ", this.readyArea.maxZ);
+            jsonObject.add("readyArea", readyAreaObj);
+
+            // Save play area offset
+            JsonObject playAreaOffsetObj = new JsonObject();
+            playAreaOffsetObj.addProperty("x", this.playAreaOffset.x);
+            playAreaOffsetObj.addProperty("y", this.playAreaOffset.y);
+            playAreaOffsetObj.addProperty("z", this.playAreaOffset.z);
+            jsonObject.add("playAreaOffset", playAreaOffsetObj);
+
+            // Save play area
+            JsonObject playAreaObj = new JsonObject();
+            playAreaObj.addProperty("minX", this.playArea.minX);
+            playAreaObj.addProperty("minY", this.playArea.minY);
+            playAreaObj.addProperty("minZ", this.playArea.minZ);
+            playAreaObj.addProperty("maxX", this.playArea.maxX);
+            playAreaObj.addProperty("maxY", this.playArea.maxY);
+            playAreaObj.addProperty("maxZ", this.playArea.maxZ);
+            jsonObject.add("playArea", playAreaObj);
+
+            // Save reset template area
+            JsonObject resetTemplateAreaObj = new JsonObject();
+            resetTemplateAreaObj.addProperty("minX", this.resetTemplateArea.minX);
+            resetTemplateAreaObj.addProperty("minY", this.resetTemplateArea.minY);
+            resetTemplateAreaObj.addProperty("minZ", this.resetTemplateArea.minZ);
+            resetTemplateAreaObj.addProperty("maxX", this.resetTemplateArea.maxX);
+            resetTemplateAreaObj.addProperty("maxY", this.resetTemplateArea.maxY);
+            resetTemplateAreaObj.addProperty("maxZ", this.resetTemplateArea.maxZ);
+            jsonObject.add("resetTemplateArea", resetTemplateAreaObj);
+            
+            // Save reset paste area
+            JsonObject resetPasteAreaObj = new JsonObject();
+            resetPasteAreaObj.addProperty("minX", this.resetPasteArea.minX);
+            resetPasteAreaObj.addProperty("minY", this.resetPasteArea.minY);
+            resetPasteAreaObj.addProperty("minZ", this.resetPasteArea.minZ);
+            resetPasteAreaObj.addProperty("maxX", this.resetPasteArea.maxX);
+            resetPasteAreaObj.addProperty("maxY", this.resetPasteArea.maxY);
+            resetPasteAreaObj.addProperty("maxZ", this.resetPasteArea.maxZ);
+            jsonObject.add("resetPasteArea", resetPasteAreaObj);
+            
+            // Save room count
+            jsonObject.addProperty("roomCount", this.roomCount);
+            
+            // Save room positions
+            JsonObject roomPositionsObj = new JsonObject();
+            for (Map.Entry<Integer, Vec3d> entry : this.roomPositions.entrySet()) {
+                JsonObject posObj = new JsonObject();
+                posObj.addProperty("x", entry.getValue().x);
+                posObj.addProperty("y", entry.getValue().y);
+                posObj.addProperty("z", entry.getValue().z);
+                roomPositionsObj.add(String.valueOf(entry.getKey()), posObj);
+            }
+            jsonObject.add("roomPositions", roomPositionsObj);
+
+            // Write to file
+            FileWriter writer = new FileWriter(areasFile);
+            new Gson().toJson(jsonObject, writer);
+            writer.close();
+        } catch (IOException e) {
+            TMM.LOGGER.error("Failed to save areas to file", e);
+        }
     }
 
     @Override
@@ -160,7 +443,7 @@ public class AreasWorldComponent implements AutoSyncedComponent {
         this.playArea = getBoxFromNbt(tag, "playArea");
 
         this.resetTemplateArea = new Box(177 ,60 ,-524, -82 ,84, -546);
-        this.resetPasteArea = resetTemplateArea.offset(0, 55, 0);
+        this.resetPasteArea = new Box(177 ,115 ,-524, -82 ,139, -546); // Default: resetTemplateArea.offset(0, 55, 0)
     }
 
     @Override

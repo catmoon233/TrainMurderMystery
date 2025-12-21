@@ -6,6 +6,7 @@
   "mixins": [
     "AbstractBlockInvoker",
     "AbstractBlockSettingsMixin",
+    "CanRightClickMixin",
     "CemaraMixin",
     "ChatMixin2",
     "DedicatedPlayerManagerMixin",

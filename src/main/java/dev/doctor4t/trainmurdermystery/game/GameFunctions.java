@@ -31,6 +31,7 @@ import net.minecraft.entity.ItemEntity;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.item.Item;
 import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -124,28 +125,53 @@ public class GameFunctions {
         gameComponent.sync();
     }
 
-    public static Vec3d getSpawnPos(int room){
-        if (room == 1) {
-            return new Vec3d(116 ,122 ,-539);
-        } else if (room == 2) {
-            return new Vec3d(124 ,122, -534);
-        } else if (room == 3) {
-            return new Vec3d(131,122,-534);
+    public static Vec3d getSpawnPos(AreasWorldComponent areas, int room){
+        // Try to get position from configured room positions
+        Vec3d configuredPos = areas.getRoomPosition(room);
+        if (configuredPos != null) {
+            return configuredPos;
         }
-         else if (room == 4) {
-            return new Vec3d(144,122,-540);
-        }
-         else if (room == 5) {
-            return new Vec3d(119,128,-537);
-        }
-         else if (room == 6) {
-            return new Vec3d(132,128,-536);
-        }
-         if (room == 7) {
-            return new Vec3d(146,128,-537);
+        
+        // Fallback to default positions based on room count
+        int roomCount = areas.getRoomCount();
+        if (roomCount >= 7) {
+            if (room == 1) {
+                return new Vec3d(116, 122, -539);
+            } else if (room == 2) {
+                return new Vec3d(124, 122, -534);
+            } else if (room == 3) {
+                return new Vec3d(131, 122, -534);
+            } else if (room == 4) {
+                return new Vec3d(144, 122, -540);
+            } else if (room == 5) {
+                return new Vec3d(119, 128, -537);
+            } else if (room == 6) {
+                return new Vec3d(132, 128, -536);
+            } else if (room == 7) {
+                return new Vec3d(146, 128, -537);
+            }
+        } else if (roomCount >= 4) {
+            // Handle 4-6 rooms
+            switch (room) {
+                case 1: return new Vec3d(116, 122, -539);
+                case 2: return new Vec3d(124, 122, -534);
+                case 3: return new Vec3d(131, 122, -534);
+                case 4: return new Vec3d(144, 122, -540);
+            }
+        } else if (roomCount >= 2) {
+            // Handle 2-3 rooms
+            switch (room) {
+                case 1: return new Vec3d(116, 122, -539);
+                case 2: return new Vec3d(131, 122, -534);
+                case 3: return new Vec3d(144, 122, -540);
+            }
+        } else if (roomCount == 1) {
+            // Handle single room
+            return new Vec3d(131, 122, -534);
         }
         return null;
     }
+    
     public static Map<UUID, Integer> roomToPlayer = new HashMap<>();
     private static void baseInitialize(ServerWorld serverWorld, GameWorldComponent gameComponent, List<ServerPlayerEntity> players) {
         AreasWorldComponent areas = AreasWorldComponent.KEY.get(serverWorld);
@@ -203,9 +229,10 @@ public class GameFunctions {
         // select rooms
         Collections.shuffle(players);
         int roomNumber = 0;
+        int roomCount = areas.getRoomCount(); // Get room count from config
         for (ServerPlayerEntity serverPlayerEntity : players) {
             ItemStack itemStack = new ItemStack(TMMItems.KEY);
-            roomNumber = roomNumber % 7 + 1;
+            roomNumber = roomNumber % roomCount + 1;
             int finalRoomNumber = roomNumber;
             itemStack.apply(DataComponentTypes.LORE, LoreComponent.DEFAULT, component -> new LoreComponent(Text.literal("Room " + finalRoomNumber).getWithStyle(Style.EMPTY.withItalic(false).withColor(0xFF8C00))));
             serverPlayerEntity.giveItemStack(itemStack);
@@ -246,7 +273,7 @@ public class GameFunctions {
         for (ServerPlayerEntity player : players) {
             player.changeGameMode(net.minecraft.world.GameMode.ADVENTURE);
             //
-            Vec3d pos = getSpawnPos(roomToPlayer.getOrDefault(player.getUuid(), 1));
+            Vec3d pos = getSpawnPos(areas, roomToPlayer.getOrDefault(player.getUuid(), 1));
             if (pos != null) {
                 player.requestTeleport(pos.getX(), pos.getY() + 1, pos.getZ());
             }
@@ -265,6 +292,8 @@ public class GameFunctions {
 
     public static void finalizeGame(ServerWorld world) {
         GameWorldComponent gameComponent = GameWorldComponent.KEY.get(world);
+       var areasWorldComponent = AreasWorldComponent.KEY.get(world);
+        areasWorldComponent.loadFromFile();
         gameComponent.getGameMode().finalizeGame(world, gameComponent);
         TMM.REPLAY_MANAGER.finalizeReplay(gameComponent.getLastWinStatus());
 
@@ -406,7 +435,7 @@ public class GameFunctions {
     }
 
     public static boolean shouldDropOnDeath(@NotNull ItemStack stack) {
-        return !stack.isEmpty() && (stack.isOf(TMMItems.REVOLVER) || ShouldDropOnDeath.EVENT.invoker().shouldDrop(stack));
+        return !stack.isEmpty() && (stack.isOf(TMMItems.REVOLVER)|| stack.isOf(Items.SPYGLASS) || ShouldDropOnDeath.EVENT.invoker().shouldDrop(stack));
     }
 
     public static boolean isPlayerAliveAndSurvival(PlayerEntity player) {
