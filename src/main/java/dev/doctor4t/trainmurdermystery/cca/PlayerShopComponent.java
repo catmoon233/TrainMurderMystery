@@ -1,7 +1,9 @@
 package dev.doctor4t.trainmurdermystery.cca;
 
 import dev.doctor4t.trainmurdermystery.TMM;
+import dev.doctor4t.trainmurdermystery.client.TMMClient;
 import dev.doctor4t.trainmurdermystery.game.GameConstants;
+import dev.doctor4t.trainmurdermystery.game.ShopContent;
 import dev.doctor4t.trainmurdermystery.index.TMMItems;
 import dev.doctor4t.trainmurdermystery.index.TMMSounds;
 import dev.doctor4t.trainmurdermystery.util.ShopEntry;
@@ -15,6 +17,7 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.text.Text;
 import net.minecraft.util.Formatting;
+import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
 import org.ladysnake.cca.api.v3.component.ComponentKey;
 import org.ladysnake.cca.api.v3.component.ComponentRegistry;
@@ -73,7 +76,13 @@ public class PlayerShopComponent implements AutoSyncedComponent, ServerTickingCo
     }
 
     private @NotNull List<ShopEntry> getShopEntries() {
-        return GameConstants.getShopEntries();
+
+        if (TMMClient.gameComponent!=null && TMMClient.isPlayerAliveAndInSurvival()) {
+            return ShopContent.getShopEntries(
+                TMMClient.gameComponent.getRole( player).getIdentifier()
+            );
+        }
+        return ShopContent.defaultEntries;
     }
 
     @Override

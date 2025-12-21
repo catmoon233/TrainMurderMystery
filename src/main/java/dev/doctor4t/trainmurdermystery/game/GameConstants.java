@@ -2,6 +2,7 @@ package dev.doctor4t.trainmurdermystery.game;
 
 import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.TMMConfig;
+import dev.doctor4t.trainmurdermystery.api.Role;
 import dev.doctor4t.trainmurdermystery.cca.PlayerShopComponent;
 import dev.doctor4t.trainmurdermystery.index.TMMItems;
 import dev.doctor4t.trainmurdermystery.util.ShopEntry;
@@ -88,33 +89,10 @@ public interface GameConstants {
     int ITEM_PSYCHOSIS_REROLL_TIME = 200;
 
     // Shop Variables
-    static List<ShopEntry> getShopEntries() {
-        List<ShopEntry> entries = new ArrayList<>();
-        entries.add(new ShopEntry(TMMItems.KNIFE.getDefaultStack(), TMMConfig.knifePrice, ShopEntry.Type.WEAPON));
-        entries.add(new ShopEntry(TMMItems.REVOLVER.getDefaultStack(), TMMConfig.revolverPrice, ShopEntry.Type.WEAPON));
-        entries.add(new ShopEntry(TMMItems.GRENADE.getDefaultStack(), TMMConfig.grenadePrice, ShopEntry.Type.WEAPON));
-        entries.add(new ShopEntry(TMMItems.PSYCHO_MODE.getDefaultStack(), TMMConfig.psychoModePrice, ShopEntry.Type.WEAPON) {
-            @Override
-            public boolean onBuy(@NotNull PlayerEntity player) {
-                return PlayerShopComponent.usePsychoMode(player);
-            }
-        });
-        entries.add(new ShopEntry(TMMItems.POISON_VIAL.getDefaultStack(), TMMConfig.poisonVialPrice, ShopEntry.Type.POISON));
-        entries.add(new ShopEntry(TMMItems.SCORPION.getDefaultStack(), TMMConfig.scorpionPrice, ShopEntry.Type.POISON));
-        entries.add(new ShopEntry(TMMItems.FIRECRACKER.getDefaultStack(), TMMConfig.firecrackerPrice, ShopEntry.Type.TOOL));
-        entries.add(new ShopEntry(TMMItems.LOCKPICK.getDefaultStack(), TMMConfig.lockpickPrice, ShopEntry.Type.TOOL));
-        entries.add(new ShopEntry(TMMItems.CROWBAR.getDefaultStack(), TMMConfig.crowbarPrice, ShopEntry.Type.TOOL));
-        entries.add(new ShopEntry(TMMItems.BODY_BAG.getDefaultStack(), TMMConfig.bodyBagPrice, ShopEntry.Type.TOOL));
-        entries.add(new ShopEntry(TMMItems.BLACKOUT.getDefaultStack(), TMMConfig.blackoutPrice, ShopEntry.Type.TOOL) {
-            @Override
-            public boolean onBuy(@NotNull PlayerEntity player) {
-                return PlayerShopComponent.useBlackout(player);
-            }
-        });
-        entries.add(new ShopEntry(new ItemStack(TMMItems.NOTE, 4), TMMConfig.notePrice, ShopEntry.Type.TOOL));
-        return entries;
-    }
-    
+
+
+
+
     static int getMoneyStart() {
         return TMMConfig.startingMoney;
     }
@@ -127,7 +105,10 @@ public interface GameConstants {
             return 0;
         };
     }
-    
+
+
+
+
     static int getMoneyPerKill() {
         return TMMConfig.moneyPerKill;
     }

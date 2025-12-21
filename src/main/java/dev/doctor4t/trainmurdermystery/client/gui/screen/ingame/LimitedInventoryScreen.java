@@ -6,6 +6,7 @@ import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
 import dev.doctor4t.trainmurdermystery.client.TMMClient;
 import dev.doctor4t.trainmurdermystery.client.gui.StoreRenderer;
 import dev.doctor4t.trainmurdermystery.game.GameConstants;
+import dev.doctor4t.trainmurdermystery.game.ShopContent;
 import dev.doctor4t.trainmurdermystery.util.ShopEntry;
 import dev.doctor4t.trainmurdermystery.util.StoreBuyPayload;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
@@ -59,7 +60,12 @@ public class LimitedInventoryScreen extends LimitedHandledScreen<PlayerScreenHan
         return (T)this.addSelectableChild(drawableElement);
     }
     public   List<ShopEntry> getShopEntries() {
-        return GameConstants.getShopEntries();
+        if (TMMClient.gameComponent!=null && TMMClient.isPlayerAliveAndInSurvival()) {
+            return ShopContent.getShopEntries(
+                    TMMClient.gameComponent.getRole( player).getIdentifier()
+            );
+        }
+        return ShopContent.defaultEntries;
     }
 
     @Override

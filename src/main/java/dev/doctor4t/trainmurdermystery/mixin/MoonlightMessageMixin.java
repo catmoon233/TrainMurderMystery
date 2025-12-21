@@ -14,9 +14,9 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 public abstract class MoonlightMessageMixin<D extends WorldSavedData>
 
 {
-    @Inject(method = "isSyncable", at = @At("HEAD"), cancellable = true)
-    public void isSyncable(CallbackInfoReturnable<Boolean> cir) {
-            cir.setReturnValue(false);
-
-    }
+//    @Inject(method = "isSyncable", at = @At("HEAD"), cancellable = true)
+//    public void isSyncable(CallbackInfoReturnable<Boolean> cir) {
+//            cir.setReturnValue(false);
+//
+//    }
 }
