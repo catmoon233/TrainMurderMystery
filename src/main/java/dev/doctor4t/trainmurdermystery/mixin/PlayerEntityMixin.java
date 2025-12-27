@@ -20,21 +20,19 @@ import dev.doctor4t.trainmurdermystery.item.CocktailItem;
 import dev.doctor4t.trainmurdermystery.util.PlayerStaminaGetter;
 import dev.doctor4t.trainmurdermystery.util.PoisonUtils;
 import dev.doctor4t.trainmurdermystery.util.Scheduler;
-import net.minecraft.component.type.FoodComponent;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.EquipmentSlot;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.util.Arm;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
 import net.minecraft.util.Unit;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.World;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.food.FoodProperties;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -46,11 +44,11 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.UUID;
 
-@Mixin(PlayerEntity.class)
+@Mixin(Player.class)
 public abstract class PlayerEntityMixin extends LivingEntity implements PlayerStaminaGetter {
 
 
-	@Shadow public abstract float getAttackCooldownProgress(float baseTime);
+	@Shadow public abstract float getAttackStrengthScale(float baseTime);
 
 	@Override
 	public float trainmurdermystery$getStamina() {
@@ -64,27 +62,27 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerSt
 	@Unique
 	private Scheduler.ScheduledTask poisonSleepTask;
 
-	protected PlayerEntityMixin(EntityType<? extends LivingEntity> entityType, World world) {
+	protected PlayerEntityMixin(EntityType<? extends LivingEntity> entityType, Level world) {
 		super(entityType, world);
 	}
 
 
 
 
-	@ModifyReturnValue(method = "getMovementSpeed", at = @At("RETURN"))
+	@ModifyReturnValue(method = "getSpeed", at = @At("RETURN"))
 	public float tmm$overrideMovementSpeed(float original) {
-		if (GameFunctions.isPlayerAliveAndSurvival((PlayerEntity) (Object) this)) {
+		if (GameFunctions.isPlayerAliveAndSurvival((Player) (Object) this)) {
 			return this.isSprinting() ? 0.1f : 0.07f;
 		} else {
 			return original;
 		}
 	}
 
-	@Inject(method = "tickMovement", at = @At("HEAD"))
+	@Inject(method = "aiStep", at = @At("HEAD"))
 	public void tmm$limitSprint(CallbackInfo ci) {
-		GameWorldComponent gameComponent = GameWorldComponent.KEY.get(this.getWorld());
-		if (GameFunctions.isPlayerAliveAndSurvival((PlayerEntity) (Object) this) && gameComponent != null && gameComponent.isRunning()) {
-			Role role = gameComponent.getRole((PlayerEntity) (Object) this);
+		GameWorldComponent gameComponent = GameWorldComponent.KEY.get(this.level());
+		if (GameFunctions.isPlayerAliveAndSurvival((Player) (Object) this) && gameComponent != null && gameComponent.isRunning()) {
+			Role role = gameComponent.getRole((Player) (Object) this);
 			if (role != null && role.getMaxSprintTime() >= 0) {
 				if (this.isSprinting()) {
 					sprintingTicks = Math.max(sprintingTicks - 1, 0);
@@ -102,38 +100,38 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerSt
 
 	@WrapMethod(method = "attack")
 	public void attack(Entity target, Operation<Void> original) {
-		PlayerEntity self = (PlayerEntity) (Object) this;
+		Player self = (Player) (Object) this;
 
-		if (getMainHandStack().isOf(TMMItems.BAT) && target instanceof PlayerEntity playerTarget && this.getAttackCooldownProgress(0.5F) >= 1f) {
+		if (getMainHandItem().is(TMMItems.BAT) && target instanceof Player playerTarget && this.getAttackStrengthScale(0.5F) >= 1f) {
 			GameFunctions.killPlayer(playerTarget, true, self, GameConstants.DeathReasons.BAT);
-			self.getEntityWorld().playSound(self,
+			self.getCommandSenderWorld().playSound(self,
 					playerTarget.getX(), playerTarget.getEyeY(), playerTarget.getZ(),
-					TMMSounds.ITEM_BAT_HIT, SoundCategory.PLAYERS,
+					TMMSounds.ITEM_BAT_HIT, SoundSource.PLAYERS,
 					3f, 1f);
 			return;
 		}
 
-		if (!GameFunctions.isPlayerAliveAndSurvival(self) || this.getMainHandStack().isOf(TMMItems.KNIFE)
+		if (!GameFunctions.isPlayerAliveAndSurvival(self) || this.getMainHandItem().is(TMMItems.KNIFE)
 				|| IsPlayerPunchable.EVENT.invoker().gotPunchable(target) || AllowPlayerPunching.EVENT.invoker().allowPunching(self)) {
 			original.call(target);
 		}
 	}
 
-	@Inject(method = "eatFood", at = @At(value = "INVOKE", target = "Lnet/minecraft/entity/player/HungerManager;eat(Lnet/minecraft/component/type/FoodComponent;)V", shift = At.Shift.AFTER))
-	private void tmm$poisonedFoodEffect(@NotNull World world, ItemStack stack, FoodComponent foodComponent, CallbackInfoReturnable<ItemStack> cir) {
-		if (world.isClient) return;
+	@Inject(method = "eat(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/food/FoodProperties;)Lnet/minecraft/world/item/ItemStack;", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/food/FoodData;eat(Lnet/minecraft/world/food/FoodProperties;)V", shift = At.Shift.AFTER))
+	private void tmm$poisonedFoodEffect(@NotNull Level world, ItemStack stack, FoodProperties foodComponent, CallbackInfoReturnable<ItemStack> cir) {
+		if (world.isClientSide) return;
 		String poisoner = stack.getOrDefault(TMMDataComponentTypes.POISONER, null);
 		if (poisoner != null) {
 			int poisonTicks = PlayerPoisonComponent.KEY.get(this).poisonTicks;
 			if (poisonTicks == -1) {
-				PlayerPoisonComponent.KEY.get(this).setPoisonTicks(world.getRandom().nextBetween(PlayerPoisonComponent.clampTime.getLeft(), PlayerPoisonComponent.clampTime.getRight()), UUID.fromString(poisoner));
+				PlayerPoisonComponent.KEY.get(this).setPoisonTicks(world.getRandom().nextIntBetweenInclusive(PlayerPoisonComponent.clampTime.getA(), PlayerPoisonComponent.clampTime.getB()), UUID.fromString(poisoner));
 			} else {
-				PlayerPoisonComponent.KEY.get(this).setPoisonTicks(MathHelper.clamp(poisonTicks - world.getRandom().nextBetween(100, 300), 0, PlayerPoisonComponent.clampTime.getRight()), UUID.fromString(poisoner));
+				PlayerPoisonComponent.KEY.get(this).setPoisonTicks(Mth.clamp(poisonTicks - world.getRandom().nextIntBetweenInclusive(100, 300), 0, PlayerPoisonComponent.clampTime.getB()), UUID.fromString(poisoner));
 			}
 		}
 	}
 
-	@Inject(method = "wakeUp(ZZ)V", at = @At("HEAD"))
+	@Inject(method = "stopSleepInBed(ZZ)V", at = @At("HEAD"))
 	private void tmm$poisonSleep(boolean skipSleepTimer, boolean updateSleepingPlayers, CallbackInfo ci) {
 		if (this.poisonSleepTask != null) {
 			this.poisonSleepTask.cancel();
@@ -141,10 +139,10 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerSt
 		}
 	}
 
-	@Inject(method = "trySleep", at = @At("TAIL"))
-	private void tmm$poisonSleepMessage(BlockPos pos, CallbackInfoReturnable<Either<PlayerEntity.SleepFailureReason, Unit>> cir) {
-		PlayerEntity self = (PlayerEntity) (Object) (this);
-		if (cir.getReturnValue().right().isPresent() && self instanceof ServerPlayerEntity serverPlayer) {
+	@Inject(method = "startSleepInBed", at = @At("TAIL"))
+	private void tmm$poisonSleepMessage(BlockPos pos, CallbackInfoReturnable<Either<Player.BedSleepingProblem, Unit>> cir) {
+		Player self = (Player) (Object) (this);
+		if (cir.getReturnValue().right().isPresent() && self instanceof ServerPlayer serverPlayer) {
 			if (this.poisonSleepTask != null) this.poisonSleepTask.cancel();
 
 			this.poisonSleepTask = Scheduler.schedule(
@@ -154,25 +152,25 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerSt
 		}
 	}
 
-	@Inject(method = "canConsume(Z)Z", at = @At("HEAD"), cancellable = true)
+	@Inject(method = "canEat(Z)Z", at = @At("HEAD"), cancellable = true)
 	private void tmm$allowEatingRegardlessOfHunger(boolean ignoreHunger, @NotNull CallbackInfoReturnable<Boolean> cir) {
 		cir.setReturnValue(true);
 	}
 
-	@Inject(method = "eatFood", at = @At("HEAD"))
-	private void tmm$eat(World world, ItemStack stack, FoodComponent foodComponent, @NotNull CallbackInfoReturnable<ItemStack> cir) {
+	@Inject(method = "eat(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/food/FoodProperties;)Lnet/minecraft/world/item/ItemStack;", at = @At("HEAD"))
+	private void tmm$eat(Level world, ItemStack stack, FoodProperties foodComponent, @NotNull CallbackInfoReturnable<ItemStack> cir) {
 		if (!(stack.getItem() instanceof CocktailItem)) {
 			PlayerMoodComponent.KEY.get(this).eatFood();
 		}
 	}
 
-	@Inject(method = "writeCustomDataToNbt", at = @At("TAIL"))
-	private void tmm$saveData(NbtCompound nbt, CallbackInfo ci) {
+	@Inject(method = "addAdditionalSaveData", at = @At("TAIL"))
+	private void tmm$saveData(CompoundTag nbt, CallbackInfo ci) {
 		nbt.putFloat("sprintingTicks", this.sprintingTicks);
 	}
 
-	@Inject(method = "readCustomDataFromNbt", at = @At("TAIL"))
-	private void tmm$readData(NbtCompound nbt, CallbackInfo ci) {
+	@Inject(method = "readAdditionalSaveData", at = @At("TAIL"))
+	private void tmm$readData(CompoundTag nbt, CallbackInfo ci) {
 		this.sprintingTicks = nbt.getFloat("sprintingTicks");
 	}
 }

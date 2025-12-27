@@ -3,55 +3,54 @@ package dev.doctor4t.trainmurdermystery.item;
 import dev.doctor4t.trainmurdermystery.block.SmallDoorBlock;
 import dev.doctor4t.trainmurdermystery.block_entity.SmallDoorBlockEntity;
 import dev.doctor4t.trainmurdermystery.util.AdventureUsable;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.enums.DoubleBlockHalf;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.LoreComponent;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemUsageContext;
-import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
-
 import java.util.List;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.ItemLore;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 
 public class KeyItem extends Item implements AdventureUsable {
-    public KeyItem(Settings settings) {
+    public KeyItem(Properties settings) {
         super(settings);
     }
 
     @Override
-    public ActionResult useOnBlock(ItemUsageContext context) {
-        PlayerEntity player = context.getPlayer();
-        World world = context.getWorld();
-        BlockPos pos = context.getBlockPos();
+    public InteractionResult useOn(UseOnContext context) {
+        Player player = context.getPlayer();
+        Level world = context.getLevel();
+        BlockPos pos = context.getClickedPos();
         BlockState state = world.getBlockState(pos);
 
         if (state.getBlock() instanceof SmallDoorBlock) {
-            BlockPos lowerPos = state.get(SmallDoorBlock.HALF) == DoubleBlockHalf.LOWER ? pos : pos.down();
+            BlockPos lowerPos = state.getValue(SmallDoorBlock.HALF) == DoubleBlockHalf.LOWER ? pos : pos.below();
             if (world.getBlockEntity(lowerPos) instanceof SmallDoorBlockEntity entity) {
-                ItemStack mainHandStack = player.getMainHandStack();
-                LoreComponent loreComponent = mainHandStack.get(DataComponentTypes.LORE);
+                ItemStack mainHandStack = player.getMainHandItem();
+                ItemLore loreComponent = mainHandStack.get(DataComponents.LORE);
                 if (loreComponent != null) {
-                    List<Text> lines = loreComponent.lines();
+                    List<Component> lines = loreComponent.lines();
                     if (lines == null || lines.isEmpty()) {
-                        return ActionResult.PASS;
+                        return InteractionResult.PASS;
                     }
 
                     // Sneaking creative player with key sets the door to require a key with the same name
-                    if (player.isCreative() && player.isSneaking()) {
+                    if (player.isCreative() && player.isShiftKeyDown()) {
                         String roomName = lines.getFirst().getString();
                         entity.setKeyName(roomName);
-                        return ActionResult.SUCCESS;
+                        return InteractionResult.SUCCESS;
                     }
                 }
             }
 
-            return ActionResult.PASS;
+            return InteractionResult.PASS;
         }
-        return super.useOnBlock(context);
+        return super.useOn(context);
     }
 }

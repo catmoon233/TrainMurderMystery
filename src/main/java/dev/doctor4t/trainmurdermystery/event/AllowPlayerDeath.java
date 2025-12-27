@@ -1,8 +1,8 @@
 package dev.doctor4t.trainmurdermystery.event;
 
 import net.fabricmc.fabric.api.event.Event;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.Player;
 
 import static net.fabricmc.fabric.api.event.EventFactory.createArrayBacked;
 
@@ -25,5 +25,5 @@ public interface AllowPlayerDeath {
     });
 
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
-    boolean allowDeath(PlayerEntity player, Identifier deathReason);
+    boolean allowDeath(Player player, ResourceLocation deathReason);
 }

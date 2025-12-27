@@ -5,78 +5,78 @@ import dev.doctor4t.trainmurdermystery.block.property.OrnamentShape;
 import dev.doctor4t.trainmurdermystery.index.TMMProperties;
 import dev.doctor4t.trainmurdermystery.mixin.AbstractBlockInvoker;
 import dev.doctor4t.trainmurdermystery.util.BlockUtils;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.FacingBlock;
-import net.minecraft.block.ShapeContext;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemPlacementContext;
-import net.minecraft.item.ItemStack;
-import net.minecraft.state.StateManager;
-import net.minecraft.state.property.EnumProperty;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.ItemActionResult;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec2f;
-import net.minecraft.util.math.Vec3i;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.world.BlockView;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.Vec3i;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.DirectionalBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec2;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 
-public class OrnamentBlock extends FacingBlock {
+public class OrnamentBlock extends DirectionalBlock {
 
     public static final EnumProperty<OrnamentShape> SHAPE = TMMProperties.ORNAMENT_SHAPE;
 
-    public OrnamentBlock(Settings settings) {
+    public OrnamentBlock(Properties settings) {
         super(settings);
-        this.setDefaultState(super.getDefaultState()
-                .with(FACING, Direction.NORTH)
-                .with(SHAPE, OrnamentShape.CENTER));
+        this.registerDefaultState(super.defaultBlockState()
+                .setValue(FACING, Direction.NORTH)
+                .setValue(SHAPE, OrnamentShape.CENTER));
     }
 
     @Override
-    protected MapCodec<? extends FacingBlock> getCodec() {
+    protected MapCodec<? extends DirectionalBlock> codec() {
         return null;
     }
 
     @Nullable
     @Override
-    public BlockState getPlacementState(ItemPlacementContext ctx) {
-        BlockPos pos = ctx.getBlockPos();
-        Direction side = ctx.getSide();
-        World world = ctx.getWorld();
+    public BlockState getStateForPlacement(BlockPlaceContext ctx) {
+        BlockPos pos = ctx.getClickedPos();
+        Direction side = ctx.getClickedFace();
+        Level world = ctx.getLevel();
         BlockState state = world.getBlockState(pos);
-        Vec2f hit = BlockUtils.get2DHit(ctx.getHitPos(), pos, side);
+        Vec2 hit = BlockUtils.get2DHit(ctx.getClickLocation(), pos, side);
         boolean topRight = hit.x + hit.y > 1;
         boolean bottomRight = hit.x - hit.y > 0;
-        boolean center = ctx.shouldCancelInteraction();
+        boolean center = ctx.isSecondaryUseActive();
         OrnamentShape shape = center ? OrnamentShape.CENTER :
                 topRight && bottomRight ? OrnamentShape.RIGHT :
                         topRight ? OrnamentShape.TOP :
                                 !bottomRight ? OrnamentShape.LEFT : OrnamentShape.BOTTOM;
-        if (state.isOf(this)) {
-            OrnamentShape originalShape = state.get(SHAPE);
+        if (state.is(this)) {
+            OrnamentShape originalShape = state.getValue(SHAPE);
             OrnamentShape newShape = originalShape.with(shape);
             if (originalShape == newShape) return null;
-            return state.with(SHAPE, newShape);
+            return state.setValue(SHAPE, newShape);
         }
-        return this.getDefaultState()
-                .with(FACING, side)
-                .with(SHAPE, shape);
+        return this.defaultBlockState()
+                .setValue(FACING, side)
+                .setValue(SHAPE, shape);
     }
 
     @Override
-    public boolean canReplace(BlockState state, ItemPlacementContext context) {
-        return (context.getStack().isOf(this.asItem())) || super.canReplace(state, context);
+    public boolean canBeReplaced(BlockState state, BlockPlaceContext context) {
+        return (context.getItemInHand().is(this.asItem())) || super.canBeReplaced(state, context);
     }
 
     @Override
-    public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
-        return switch (state.get(FACING)) {
+    public VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
+        return switch (state.getValue(FACING)) {
             case NORTH -> GlassPanelBlock.NORTH_COLLISION_SHAPE;
             case EAST -> GlassPanelBlock.EAST_COLLISION_SHAPE;
             case SOUTH -> GlassPanelBlock.SOUTH_COLLISION_SHAPE;
@@ -87,29 +87,29 @@ public class OrnamentBlock extends FacingBlock {
     }
 
     @Override
-    protected ItemActionResult onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
-        if (!player.shouldCancelInteraction() && !player.getMainHandStack().isOf(this.asItem())) {
-            Direction dir = state.get(FACING);
-            BlockPos behindBlockPos = pos.subtract(new Vec3i(dir.getOffsetX(), dir.getOffsetY(), dir.getOffsetZ()));
+    protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
+        if (!player.isSecondaryUseActive() && !player.getMainHandItem().is(this.asItem())) {
+            Direction dir = state.getValue(FACING);
+            BlockPos behindBlockPos = pos.subtract(new Vec3i(dir.getStepX(), dir.getStepY(), dir.getStepZ()));
             BlockState blockBehindOrnament = world.getBlockState(behindBlockPos);
-            return ((AbstractBlockInvoker) blockBehindOrnament.getBlock()).tmm$invokeOnUseWithItem(stack, blockBehindOrnament, world, behindBlockPos, player, hand, hit.withBlockPos(behindBlockPos));
+            return ((AbstractBlockInvoker) blockBehindOrnament.getBlock()).tmm$invokeOnUseWithItem(stack, blockBehindOrnament, world, behindBlockPos, player, hand, hit.withPosition(behindBlockPos));
         }
-        return super.onUseWithItem(stack, state, world, pos, player, hand, hit);
+        return super.useItemOn(stack, state, world, pos, player, hand, hit);
     }
 
     @Override
-    protected ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
-        if (!player.shouldCancelInteraction() && !player.getMainHandStack().isOf(this.asItem())) {
-            Direction dir = state.get(FACING);
-            BlockPos behindBlockPos = pos.subtract(new Vec3i(dir.getOffsetX(), dir.getOffsetY(), dir.getOffsetZ()));
+    protected InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player player, BlockHitResult hit) {
+        if (!player.isSecondaryUseActive() && !player.getMainHandItem().is(this.asItem())) {
+            Direction dir = state.getValue(FACING);
+            BlockPos behindBlockPos = pos.subtract(new Vec3i(dir.getStepX(), dir.getStepY(), dir.getStepZ()));
             BlockState blockBehindOrnament = world.getBlockState(behindBlockPos);
-                return ((AbstractBlockInvoker) blockBehindOrnament.getBlock()).tmm$invokeOnUse(blockBehindOrnament, world, behindBlockPos, player, hit.withBlockPos(behindBlockPos));
+                return ((AbstractBlockInvoker) blockBehindOrnament.getBlock()).tmm$invokeOnUse(blockBehindOrnament, world, behindBlockPos, player, hit.withPosition(behindBlockPos));
         }
-        return super.onUse(state, world, pos, player, hit);
+        return super.useWithoutItem(state, world, pos, player, hit);
     }
 
     @Override
-    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(FACING, SHAPE);
     }
 }

@@ -7,9 +7,9 @@ import com.daqem.uilib.client.gui.text.Text;
 import com.daqem.uilib.client.gui.texture.Textures;
 import dev.doctor4t.trainmurdermystery.ui.background.FrostedBackground;
 import dev.doctor4t.trainmurdermystery.ui.util.UIStyleHelper;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.text.MutableText;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.network.chat.MutableComponent;
 
 public class ComponentFactory {
 
@@ -17,8 +17,8 @@ public class ComponentFactory {
     private static final int BUTTON_HEIGHT = 20;
 
     public static ButtonComponent createButton(String translationKey, OnClickEvent<ButtonComponent> onClick) {
-        TextRenderer font = MinecraftClient.getInstance().textRenderer;
-        MutableText text = net.minecraft.text.Text.translatable(translationKey);
+        Font font = Minecraft.getInstance().font;
+        MutableComponent text = net.minecraft.network.chat.Component.translatable(translationKey);
 
         ButtonComponent button = new ButtonComponent(
             Textures.MINECRAFT_BUTTON,
@@ -40,10 +40,10 @@ public class ComponentFactory {
     }
 
     public static TextComponent createSectionTitle(String translationKey) {
-        TextRenderer font = MinecraftClient.getInstance().textRenderer;
-        MutableText text = net.minecraft.text.Text.translatable(translationKey)
+        Font font = Minecraft.getInstance().font;
+        MutableComponent text = net.minecraft.network.chat.Component.translatable(translationKey)
             .copy()
-            .styled(style -> style.withColor(UIStyleHelper.TEXT_COLOR_TITLE).withBold(true));
+            .withStyle(style -> style.withColor(UIStyleHelper.TEXT_COLOR_TITLE).withBold(true));
 
         return new TextComponent(font, text);
     }

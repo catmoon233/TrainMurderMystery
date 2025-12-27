@@ -3,37 +3,37 @@ package dev.doctor4t.trainmurdermystery.item;
 import dev.doctor4t.trainmurdermystery.entity.FirecrackerEntity;
 import dev.doctor4t.trainmurdermystery.index.TMMEntities;
 import dev.doctor4t.trainmurdermystery.util.AdventureUsable;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemUsageContext;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.core.Direction;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 
 public class FirecrackerItem extends Item implements AdventureUsable {
-    public FirecrackerItem(Settings settings) {
+    public FirecrackerItem(Properties settings) {
         super(settings);
     }
 
     @Override
-    public ActionResult useOnBlock(@NotNull ItemUsageContext context) {
-        if (context.getSide().equals(Direction.UP)) {
-            PlayerEntity player = context.getPlayer();
-            World world = player.getWorld();
-            if (!world.isClient) {
+    public InteractionResult useOn(@NotNull UseOnContext context) {
+        if (context.getClickedFace().equals(Direction.UP)) {
+            Player player = context.getPlayer();
+            Level world = player.level();
+            if (!world.isClientSide) {
                 FirecrackerEntity firecracker = TMMEntities.FIRECRACKER.create(world);
-                Vec3d spawnPos = context.getHitPos();
+                Vec3 spawnPos = context.getClickLocation();
 
-                firecracker.setPosition(spawnPos.getX(), spawnPos.getY(), spawnPos.getZ());
-                firecracker.setYaw(player.getHeadYaw());
-                world.spawnEntity(firecracker);
-                if (!player.isCreative()) player.getStackInHand(context.getHand()).decrement(1);
+                firecracker.setPos(spawnPos.x(), spawnPos.y(), spawnPos.z());
+                firecracker.setYRot(player.getYHeadRot());
+                world.addFreshEntity(firecracker);
+                if (!player.isCreative()) player.getItemInHand(context.getHand()).shrink(1);
             }
-            return ActionResult.SUCCESS;
+            return InteractionResult.SUCCESS;
         }
 
-        return ActionResult.PASS;
+        return InteractionResult.PASS;
     }
 }

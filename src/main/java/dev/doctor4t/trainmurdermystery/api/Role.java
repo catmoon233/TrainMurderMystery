@@ -1,18 +1,17 @@
 package dev.doctor4t.trainmurdermystery.api;
 
 import dev.doctor4t.trainmurdermystery.client.gui.screen.ingame.LimitedInventoryScreen;
-import net.minecraft.util.Identifier;
-
 import java.util.function.Consumer;
+import net.minecraft.resources.ResourceLocation;
 
 public final class Role {
-    private final Identifier identifier;
+    private final ResourceLocation identifier;
     private final int color;
     private final boolean isInnocent;
     private final boolean canUseKiller;
     private final MoodType moodType;
 
-    public Identifier getIdentifier() {
+    public ResourceLocation getIdentifier() {
         return identifier;
     }
 
@@ -56,7 +55,7 @@ public final class Role {
      * @param maxSprintTime the maximum sprint time in ticks
      * @param canSeeTime    if the role can see the game timer
      */
-    public Role(Identifier identifier, int color, boolean isInnocent, boolean canUseKiller, MoodType moodType, int maxSprintTime, boolean canSeeTime) {
+    public Role(ResourceLocation identifier, int color, boolean isInnocent, boolean canUseKiller, MoodType moodType, int maxSprintTime, boolean canSeeTime) {
         this.identifier = identifier;
         this.color = color;
         this.isInnocent = isInnocent;
@@ -70,7 +69,7 @@ public final class Role {
         this.addChild = addChild;
         return this;
     }
-    public Identifier identifier() {
+    public ResourceLocation identifier() {
         return identifier;
     }
 

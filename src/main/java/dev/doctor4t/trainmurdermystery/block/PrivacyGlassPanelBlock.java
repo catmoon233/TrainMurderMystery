@@ -1,45 +1,45 @@
 package dev.doctor4t.trainmurdermystery.block;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.state.StateManager;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.random.Random;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.phys.BlockHitResult;
 
 public class PrivacyGlassPanelBlock extends GlassPanelBlock implements PrivacyBlock {
 
-    public PrivacyGlassPanelBlock(Settings settings) {
+    public PrivacyGlassPanelBlock(Properties settings) {
         super(settings);
-        this.setDefaultState(super.getDefaultState()
-                .with(OPAQUE, false)
-                .with(INTERACTION_COOLDOWN, false));
+        this.registerDefaultState(super.defaultBlockState()
+                .setValue(OPAQUE, false)
+                .setValue(INTERACTION_COOLDOWN, false));
     }
 
     @Override
-    public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
-        if (!player.shouldCancelInteraction() && !player.getMainHandStack().isOf(this.asItem()) && this.canInteract(state, pos, world, player, Hand.MAIN_HAND)) {
+    public InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player player, BlockHitResult hit) {
+        if (!player.isSecondaryUseActive() && !player.getMainHandItem().is(this.asItem()) && this.canInteract(state, pos, world, player, InteractionHand.MAIN_HAND)) {
             this.toggle(state, world, pos);
 
-            return ActionResult.success(world.isClient);
+            return InteractionResult.sidedSuccess(world.isClientSide);
         }
 
-        return super.onUse(state, world, pos, player, hit);
+        return super.useWithoutItem(state, world, pos, player, hit);
     }
 
     @Override
-    public void scheduledTick(BlockState state, ServerWorld world, BlockPos pos, Random random) {
+    public void tick(BlockState state, ServerLevel world, BlockPos pos, RandomSource random) {
         this.toggle(state, world, pos);
     }
 
     @Override
-    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(OPAQUE, INTERACTION_COOLDOWN);
-        super.appendProperties(builder);
+        super.createBlockStateDefinition(builder);
     }
 }

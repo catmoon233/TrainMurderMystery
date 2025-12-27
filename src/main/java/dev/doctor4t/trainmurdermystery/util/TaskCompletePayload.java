@@ -5,17 +5,17 @@ import dev.doctor4t.trainmurdermystery.client.gui.MoodRenderer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.packet.CustomPayload;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import org.jetbrains.annotations.NotNull;
 
-public record TaskCompletePayload() implements CustomPayload {
-    public static final Id<TaskCompletePayload> ID = new Id<>(TMM.id("taskcomplete"));
-    public static final PacketCodec<PacketByteBuf, TaskCompletePayload> CODEC = PacketCodec.unit(new TaskCompletePayload());
+public record TaskCompletePayload() implements CustomPacketPayload {
+    public static final Type<TaskCompletePayload> ID = new Type<>(TMM.id("taskcomplete"));
+    public static final StreamCodec<FriendlyByteBuf, TaskCompletePayload> CODEC = StreamCodec.unit(new TaskCompletePayload());
 
     @Override
-    public Id<? extends CustomPayload> getId() {
+    public Type<? extends CustomPacketPayload> type() {
         return ID;
     }
 

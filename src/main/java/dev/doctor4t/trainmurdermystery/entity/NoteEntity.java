@@ -1,27 +1,27 @@
 package dev.doctor4t.trainmurdermystery.entity;
 
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.data.DataTracker;
-import net.minecraft.entity.data.TrackedData;
-import net.minecraft.entity.data.TrackedDataHandlerRegistry;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.util.math.Direction;
-import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.function.Supplier;
+import net.minecraft.core.Direction;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.syncher.EntityDataAccessor;
+import net.minecraft.network.syncher.EntityDataSerializers;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.level.Level;
 
 public class NoteEntity extends Entity {
-    private static final TrackedData<Integer> DIRECTION = DataTracker.registerData(NoteEntity.class, TrackedDataHandlerRegistry.INTEGER);
-    private static final TrackedData<String> LINE1 = DataTracker.registerData(NoteEntity.class, TrackedDataHandlerRegistry.STRING);
-    private static final TrackedData<String> LINE2 = DataTracker.registerData(NoteEntity.class, TrackedDataHandlerRegistry.STRING);
-    private static final TrackedData<String> LINE3 = DataTracker.registerData(NoteEntity.class, TrackedDataHandlerRegistry.STRING);
-    private static final TrackedData<String> LINE4 = DataTracker.registerData(NoteEntity.class, TrackedDataHandlerRegistry.STRING);
+    private static final EntityDataAccessor<Integer> DIRECTION = SynchedEntityData.defineId(NoteEntity.class, EntityDataSerializers.INT);
+    private static final EntityDataAccessor<String> LINE1 = SynchedEntityData.defineId(NoteEntity.class, EntityDataSerializers.STRING);
+    private static final EntityDataAccessor<String> LINE2 = SynchedEntityData.defineId(NoteEntity.class, EntityDataSerializers.STRING);
+    private static final EntityDataAccessor<String> LINE3 = SynchedEntityData.defineId(NoteEntity.class, EntityDataSerializers.STRING);
+    private static final EntityDataAccessor<String> LINE4 = SynchedEntityData.defineId(NoteEntity.class, EntityDataSerializers.STRING);
     public final int seed;
 
-    public NoteEntity(EntityType<?> type, World world) {
+    public NoteEntity(EntityType<?> type, Level world) {
         super(type, world);
         this.seed = this.random.nextInt();
     }
@@ -32,58 +32,58 @@ public class NoteEntity extends Entity {
 
         Supplier<Float> randomGiver = () -> (random.nextFloat() - .5f) * .2f;
         if (random.nextFloat() < .1f) {
-            this.getWorld().addParticle(ParticleTypes.WAX_ON, this.getX() + randomGiver.get(), this.getY() + randomGiver.get() + this.getHeight() / 2f, this.getZ() + randomGiver.get(), 0, 0, 0);
+            this.level().addParticle(ParticleTypes.WAX_ON, this.getX() + randomGiver.get(), this.getY() + randomGiver.get() + this.getBbHeight() / 2f, this.getZ() + randomGiver.get(), 0, 0, 0);
         }
     }
 
     public String[] getLines() {
         return new String[]{
-                this.dataTracker.get(LINE1),
-                this.dataTracker.get(LINE2),
-                this.dataTracker.get(LINE3),
-                this.dataTracker.get(LINE4)
+                this.entityData.get(LINE1),
+                this.entityData.get(LINE2),
+                this.entityData.get(LINE3),
+                this.entityData.get(LINE4)
         };
     }
 
     public void setLines(String @NotNull [] lines) {
-        if (lines.length > 0) this.dataTracker.set(LINE1, lines[0]);
-        if (lines.length > 1) this.dataTracker.set(LINE2, lines[1]);
-        if (lines.length > 2) this.dataTracker.set(LINE3, lines[2]);
-        if (lines.length > 3) this.dataTracker.set(LINE4, lines[3]);
+        if (lines.length > 0) this.entityData.set(LINE1, lines[0]);
+        if (lines.length > 1) this.entityData.set(LINE2, lines[1]);
+        if (lines.length > 2) this.entityData.set(LINE3, lines[2]);
+        if (lines.length > 3) this.entityData.set(LINE4, lines[3]);
     }
 
     public @NotNull Direction getDirection() {
-        return Direction.values()[this.dataTracker.get(DIRECTION)];
+        return Direction.values()[this.entityData.get(DIRECTION)];
     }
 
     public void setDirection(@NotNull Direction direction) {
-        this.dataTracker.set(DIRECTION, direction.getId());
+        this.entityData.set(DIRECTION, direction.get3DDataValue());
     }
 
     @Override
-    protected void initDataTracker(DataTracker.@NotNull Builder builder) {
-        builder.add(DIRECTION, Direction.NORTH.getId());
-        builder.add(LINE1, "");
-        builder.add(LINE2, "");
-        builder.add(LINE3, "");
-        builder.add(LINE4, "");
+    protected void defineSynchedData(SynchedEntityData.@NotNull Builder builder) {
+        builder.define(DIRECTION, Direction.NORTH.get3DDataValue());
+        builder.define(LINE1, "");
+        builder.define(LINE2, "");
+        builder.define(LINE3, "");
+        builder.define(LINE4, "");
     }
 
     @Override
-    protected void writeCustomDataToNbt(@NotNull NbtCompound nbt) {
-        nbt.putInt("Direction", this.dataTracker.get(DIRECTION));
-        nbt.putString("Line1", this.dataTracker.get(LINE1));
-        nbt.putString("Line2", this.dataTracker.get(LINE2));
-        nbt.putString("Line3", this.dataTracker.get(LINE3));
-        nbt.putString("Line4", this.dataTracker.get(LINE4));
+    protected void addAdditionalSaveData(@NotNull CompoundTag nbt) {
+        nbt.putInt("Direction", this.entityData.get(DIRECTION));
+        nbt.putString("Line1", this.entityData.get(LINE1));
+        nbt.putString("Line2", this.entityData.get(LINE2));
+        nbt.putString("Line3", this.entityData.get(LINE3));
+        nbt.putString("Line4", this.entityData.get(LINE4));
     }
 
     @Override
-    protected void readCustomDataFromNbt(@NotNull NbtCompound nbt) {
-        if (nbt.contains("Direction")) this.dataTracker.set(DIRECTION, nbt.getInt("Direction"));
-        if (nbt.contains("Line1")) this.dataTracker.set(LINE1, nbt.getString("Line1"));
-        if (nbt.contains("Line2")) this.dataTracker.set(LINE2, nbt.getString("Line2"));
-        if (nbt.contains("Line3")) this.dataTracker.set(LINE3, nbt.getString("Line3"));
-        if (nbt.contains("Line4")) this.dataTracker.set(LINE4, nbt.getString("Line4"));
+    protected void readAdditionalSaveData(@NotNull CompoundTag nbt) {
+        if (nbt.contains("Direction")) this.entityData.set(DIRECTION, nbt.getInt("Direction"));
+        if (nbt.contains("Line1")) this.entityData.set(LINE1, nbt.getString("Line1"));
+        if (nbt.contains("Line2")) this.entityData.set(LINE2, nbt.getString("Line2"));
+        if (nbt.contains("Line3")) this.entityData.set(LINE3, nbt.getString("Line3"));
+        if (nbt.contains("Line4")) this.entityData.set(LINE4, nbt.getString("Line4"));
     }
 }

@@ -3,12 +3,12 @@ package dev.doctor4t.trainmurdermystery.block_entity;
 import dev.doctor4t.trainmurdermystery.block.DoorPartBlock;
 import dev.doctor4t.trainmurdermystery.block.SmallDoorBlock;
 import dev.doctor4t.trainmurdermystery.index.TMMBlockEntities;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.block.enums.DoubleBlockHalf;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 
 public class SmallDoorBlockEntity extends DoorBlockEntity {
 
@@ -26,25 +26,25 @@ public class SmallDoorBlockEntity extends DoorBlockEntity {
 
     @Override
     protected void toggleBlocks() {
-        if (this.world == null) {
+        if (this.level == null) {
             return;
         }
-        this.world.setBlockState(this.pos, this.getCachedState().with(SmallDoorBlock.OPEN, this.open), Block.NOTIFY_LISTENERS | Block.FORCE_STATE);
-        this.world.setBlockState(this.pos.up(), this.getCachedState().with(SmallDoorBlock.OPEN, this.open).with(SmallDoorBlock.HALF, DoubleBlockHalf.UPPER), Block.NOTIFY_LISTENERS | Block.FORCE_STATE);
+        this.level.setBlock(this.worldPosition, this.getBlockState().setValue(SmallDoorBlock.OPEN, this.open), Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
+        this.level.setBlock(this.worldPosition.above(), this.getBlockState().setValue(SmallDoorBlock.OPEN, this.open).setValue(SmallDoorBlock.HALF, DoubleBlockHalf.UPPER), Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
     }
 
     @Override
     protected void toggleOpen() {
         super.toggleOpen();
-        if (this.world == null) {
+        if (this.level == null) {
             return;
         }
         Direction facing = this.getFacing();
-        BlockPos neighborPos = this.getPos().offset(facing.rotateYCounterclockwise());
-        BlockState neighborState = this.world.getBlockState(neighborPos);
-        if (neighborState.isOf(this.getCachedState().getBlock())
-                && neighborState.get(DoorPartBlock.FACING).getOpposite() == facing
-                && this.world.getBlockEntity(neighborPos) instanceof SmallDoorBlockEntity neighborEntity) {
+        BlockPos neighborPos = this.getBlockPos().relative(facing.getCounterClockWise());
+        BlockState neighborState = this.level.getBlockState(neighborPos);
+        if (neighborState.is(this.getBlockState().getBlock())
+                && neighborState.getValue(DoorPartBlock.FACING).getOpposite() == facing
+                && this.level.getBlockEntity(neighborPos) instanceof SmallDoorBlockEntity neighborEntity) {
             neighborEntity.toggle(true);
         }
     }

@@ -6,10 +6,6 @@ import dev.doctor4t.trainmurdermystery.api.Role;
 import dev.doctor4t.trainmurdermystery.cca.PlayerShopComponent;
 import dev.doctor4t.trainmurdermystery.index.TMMItems;
 import dev.doctor4t.trainmurdermystery.util.ShopEntry;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -17,6 +13,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.Item;
 
 public interface GameConstants {
     // Logistics
@@ -140,12 +138,12 @@ public interface GameConstants {
     }
 
     interface DeathReasons {
-        Identifier GENERIC = TMM.id("generic");
-        Identifier KNIFE = TMM.id("knife_stab");
-        Identifier GUN = TMM.id("gun_shot");
-        Identifier BAT = TMM.id("bat_hit");
-        Identifier GRENADE = TMM.id("grenade");
-        Identifier POISON = TMM.id("poison");
-        Identifier FELL_OUT_OF_TRAIN = TMM.id("fell_out_of_train");
+        ResourceLocation GENERIC = TMM.id("generic");
+        ResourceLocation KNIFE = TMM.id("knife_stab");
+        ResourceLocation GUN = TMM.id("gun_shot");
+        ResourceLocation BAT = TMM.id("bat_hit");
+        ResourceLocation GRENADE = TMM.id("grenade");
+        ResourceLocation POISON = TMM.id("poison");
+        ResourceLocation FELL_OUT_OF_TRAIN = TMM.id("fell_out_of_train");
     }
 }

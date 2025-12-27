@@ -1,9 +1,9 @@
 package dev.doctor4t.trainmurdermystery.index.tag;
 
 import dev.doctor4t.trainmurdermystery.TMM;
-import net.minecraft.block.Block;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.tag.TagKey;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.tags.TagKey;
+import net.minecraft.world.level.block.Block;
 
 public interface TMMBlockTags {
 
@@ -14,6 +14,6 @@ public interface TMMBlockTags {
     TagKey<Block> SPRINKLERS = create("sprinklers");
 
     private static TagKey<Block> create(String id) {
-        return TagKey.of(RegistryKeys.BLOCK, TMM.id(id));
+        return TagKey.create(Registries.BLOCK, TMM.id(id));
     }
 }

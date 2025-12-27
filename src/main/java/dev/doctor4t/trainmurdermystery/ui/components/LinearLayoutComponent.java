@@ -2,10 +2,9 @@ package dev.doctor4t.trainmurdermystery.ui.components;
 
 import com.daqem.uilib.api.client.gui.component.IComponent;
 import com.daqem.uilib.client.gui.component.AbstractComponent;
-import net.minecraft.client.gui.DrawContext;
-
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.client.gui.GuiGraphics;
 
 public class LinearLayoutComponent extends AbstractComponent<LinearLayoutComponent> {
 
@@ -44,7 +43,7 @@ public class LinearLayoutComponent extends AbstractComponent<LinearLayoutCompone
     }
 
     @Override
-    public void render(DrawContext graphics, int mouseX, int mouseY, float delta) {
+    public void render(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
         updateLayout();
         for (IComponent<?> child : children) {
             child.renderBase(graphics, mouseX, mouseY, delta);
@@ -52,7 +51,7 @@ public class LinearLayoutComponent extends AbstractComponent<LinearLayoutCompone
     }
 
     @Override
-    public void renderTooltipsBase(DrawContext graphics, int mouseX, int mouseY, float delta) {
+    public void renderTooltipsBase(GuiGraphics graphics, int mouseX, int mouseY, float delta) {
         super.renderTooltipsBase(graphics, mouseX, mouseY, delta);
         for (IComponent<?> child : children) {
             child.renderTooltipsBase(graphics, mouseX, mouseY, delta);

@@ -1,9 +1,8 @@
 package dev.doctor4t.trainmurdermystery.client.gui.screen.ingame;
 
-import net.minecraft.client.gui.Drawable;
-
 import java.util.List;
+import net.minecraft.client.gui.components.Renderable;
 
 public interface DrawableGet {
-    List<Drawable> getDrawable();
+    List<Renderable> getDrawable();
 }

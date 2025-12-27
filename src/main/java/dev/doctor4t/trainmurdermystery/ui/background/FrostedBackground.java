@@ -2,7 +2,7 @@ package dev.doctor4t.trainmurdermystery.ui.background;
 
 import com.daqem.uilib.client.gui.background.AbstractBackground;
 import dev.doctor4t.trainmurdermystery.ui.util.UIStyleHelper;
-import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.GuiGraphics;
 
 public class FrostedBackground extends AbstractBackground<FrostedBackground> {
 
@@ -11,7 +11,7 @@ public class FrostedBackground extends AbstractBackground<FrostedBackground> {
     }
 
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+    public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
         // 渲染半透明黑色背景 (ARGB: 0x40000000 = 25% opacity black)
         context.fill(0, 0, this.getWidth(), this.getHeight(), 0x40000000);
         

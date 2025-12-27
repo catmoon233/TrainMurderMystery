@@ -1,17 +1,17 @@
 package dev.doctor4t.trainmurdermystery.block;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.Vec3;
 
 public class ToiletBlock extends CouchBlock {
-    public ToiletBlock(Settings settings) {
+    public ToiletBlock(Properties settings) {
         super(settings);
     }
 
     @Override
-    public Vec3d getNorthFacingSitPos(World world, BlockState state, BlockPos pos) {
-        return new Vec3d(0.5f, 1, 0.6f);
+    public Vec3 getNorthFacingSitPos(Level world, BlockState state, BlockPos pos) {
+        return new Vec3(0.5f, 1, 0.6f);
     }
 }

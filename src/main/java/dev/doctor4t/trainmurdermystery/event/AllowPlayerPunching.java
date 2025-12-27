@@ -1,7 +1,7 @@
 package dev.doctor4t.trainmurdermystery.event;
 
 import net.fabricmc.fabric.api.event.Event;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.world.entity.player.Player;
 
 import static net.fabricmc.fabric.api.event.EventFactory.createArrayBacked;
 
@@ -20,5 +20,5 @@ public interface AllowPlayerPunching {
         return false;
     });
 
-    boolean allowPunching(PlayerEntity player);
+    boolean allowPunching(Player player);
 }

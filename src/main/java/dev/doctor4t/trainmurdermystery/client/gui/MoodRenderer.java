@@ -10,14 +10,14 @@ import dev.doctor4t.trainmurdermystery.client.TMMClient;
 import dev.doctor4t.trainmurdermystery.game.GameConstants;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.render.RenderTickCounter;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.client.DeltaTracker;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
@@ -26,15 +26,15 @@ import java.util.Map;
 import java.util.Random;
 
 public class MoodRenderer {
-    public static final Identifier ARROW_UP = TMM.id("hud/arrow_up");
-    public static final Identifier ARROW_DOWN = TMM.id("hud/arrow_down");
-    public static final Identifier MOOD_HAPPY = TMM.id("hud/mood_happy");
-    public static final Identifier MOOD_MID = TMM.id("hud/mood_mid");
-    public static final Identifier MOOD_DEPRESSIVE = TMM.id("hud/mood_depressive");
-    public static final Identifier MOOD_KILLER = TMM.id("hud/mood_killer");
-    public static final Identifier MOOD_PSYCHO = TMM.id("hud/mood_psycho");
-    public static final Identifier MOOD_PSYCHO_HIT = TMM.id("hud/mood_psycho_hit");
-    public static final Identifier MOOD_PSYCHO_EYES = TMM.id("hud/mood_psycho_eyes");
+    public static final ResourceLocation ARROW_UP = TMM.id("hud/arrow_up");
+    public static final ResourceLocation ARROW_DOWN = TMM.id("hud/arrow_down");
+    public static final ResourceLocation MOOD_HAPPY = TMM.id("hud/mood_happy");
+    public static final ResourceLocation MOOD_MID = TMM.id("hud/mood_mid");
+    public static final ResourceLocation MOOD_DEPRESSIVE = TMM.id("hud/mood_depressive");
+    public static final ResourceLocation MOOD_KILLER = TMM.id("hud/mood_killer");
+    public static final ResourceLocation MOOD_PSYCHO = TMM.id("hud/mood_psycho");
+    public static final ResourceLocation MOOD_PSYCHO_HIT = TMM.id("hud/mood_psycho_hit");
+    public static final ResourceLocation MOOD_PSYCHO_EYES = TMM.id("hud/mood_psycho_eyes");
     private static final Map<PlayerMoodComponent.Task, TaskRenderer> renderers = new HashMap<>();
     public static Random random = new Random();
     public static float arrowProgress = 1f;
@@ -44,14 +44,14 @@ public class MoodRenderer {
     public static float moodAlpha = 0f;
 
     @Environment(EnvType.CLIENT)
-    public static void renderHud(@NotNull PlayerEntity player, TextRenderer textRenderer, DrawContext context, RenderTickCounter tickCounter) {
-        GameWorldComponent gameWorldComponent = GameWorldComponent.KEY.get(player.getWorld());
+    public static void renderHud(@NotNull Player player, Font textRenderer, GuiGraphics context, DeltaTracker tickCounter) {
+        GameWorldComponent gameWorldComponent = GameWorldComponent.KEY.get(player.level());
         if (!gameWorldComponent.isRunning() || !TMMClient.isPlayerAliveAndInSurvival() || gameWorldComponent.getGameMode() != TMMGameModes.MURDER)
             return;
         PlayerMoodComponent component = PlayerMoodComponent.KEY.get(player);
         float oldMood = moodRender;
-        moodRender = MathHelper.lerp(tickCounter.getTickDelta(true) / 8, moodRender, component.getMood());
-        moodAlpha = MathHelper.lerp(tickCounter.getTickDelta(true) / 16, moodAlpha, renderers.isEmpty() ? 0f : 1f);
+        moodRender = Mth.lerp(tickCounter.getGameTimeDeltaPartialTick(true) / 8, moodRender, component.getMood());
+        moodAlpha = Mth.lerp(tickCounter.getGameTimeDeltaPartialTick(true) / 16, moodAlpha, renderers.isEmpty() ? 0f : 1f);
         PlayerPsychoComponent psycho = PlayerPsychoComponent.KEY.get(player);
         if (psycho.getPsychoTicks() > 0) {
             renderPsycho(player, textRenderer, context, psycho, tickCounter);
@@ -68,7 +68,7 @@ public class MoodRenderer {
             TaskRenderer task = renderers.get(taskType);
             if (task != null) {
                 task.present = false;
-                if (task.tick(component.tasks.get(taskType), tickCounter.getTickDelta(true))) toRemove.add(taskType);
+                if (task.tick(component.tasks.get(taskType), tickCounter.getGameTimeDeltaPartialTick(true))) toRemove.add(taskType);
             }
         }
         for (PlayerMoodComponent.Task task : toRemove) renderers.remove(task);
@@ -80,15 +80,15 @@ public class MoodRenderer {
         TaskRenderer maxRenderer = null;
         for (Map.Entry<PlayerMoodComponent.Task, TaskRenderer> entry : renderers.entrySet()) {
             TaskRenderer renderer = entry.getValue();
-            context.getMatrices().push();
-            context.getMatrices().translate(0, 10 * renderer.offset, 0);
-            context.drawTextWithShadow(textRenderer, renderer.text, 22, 6, MathHelper.packRgb(1f, 1f, 1f) | ((int) (renderer.alpha * 255) << 24));
-            context.getMatrices().pop();
+            context.pose().pushPose();
+            context.pose().translate(0, 10 * renderer.offset, 0);
+            context.drawString(textRenderer, renderer.text, 22, 6, Mth.color(1f, 1f, 1f) | ((int) (renderer.alpha * 255) << 24));
+            context.pose().popPose();
             if (maxRenderer == null || renderer.offset > maxRenderer.offset) maxRenderer = renderer;
         }
         if (maxRenderer != null) {
-            moodOffset = MathHelper.lerp(tickCounter.getTickDelta(true) / 8, moodOffset, maxRenderer.offset);
-            moodTextWidth = MathHelper.lerp(tickCounter.getTickDelta(true) / 32, moodTextWidth, textRenderer.getWidth(maxRenderer.text));
+            moodOffset = Mth.lerp(tickCounter.getGameTimeDeltaPartialTick(true) / 8, moodOffset, maxRenderer.offset);
+            moodTextWidth = Mth.lerp(tickCounter.getGameTimeDeltaPartialTick(true) / 32, moodTextWidth, textRenderer.width(maxRenderer.text));
         }
         Role role = gameWorldComponent.getRole(player);
         if (role != null) {
@@ -98,13 +98,13 @@ public class MoodRenderer {
                 renderCivilian(textRenderer, context, oldMood);
             }
         }
-        arrowProgress = MathHelper.lerp(tickCounter.getTickDelta(true) / 24, arrowProgress, 0f);
+        arrowProgress = Mth.lerp(tickCounter.getGameTimeDeltaPartialTick(true) / 24, arrowProgress, 0f);
     }
 
-    private static void renderCivilian(@NotNull TextRenderer textRenderer, @NotNull DrawContext context, float prevMood) {
-        context.getMatrices().push();
-        context.getMatrices().translate(0, 3 * moodOffset, 0);
-        Identifier mood = MOOD_HAPPY;
+    private static void renderCivilian(@NotNull Font textRenderer, @NotNull GuiGraphics context, float prevMood) {
+        context.pose().pushPose();
+        context.pose().translate(0, 3 * moodOffset, 0);
+        ResourceLocation mood = MOOD_HAPPY;
         if (moodRender < GameConstants.DEPRESSIVE_MOOD_THRESHOLD) {
             mood = MOOD_DEPRESSIVE;
         } else if (moodRender < GameConstants.MID_MOOD_THRESHOLD) {
@@ -117,88 +117,88 @@ public class MoodRenderer {
                 arrowProgress = -1f;
             }
         }
-        context.drawGuiTexture(mood, 5, 6, 14, 17);
+        context.blitSprite(mood, 5, 6, 14, 17);
         if (Math.abs(arrowProgress) > 0.01f) {
             boolean up = arrowProgress > 0;
-            Identifier arrow = up ? ARROW_UP : ARROW_DOWN;
-            context.getMatrices().push();
-            if (!up) context.getMatrices().translate(0, 4, 0);
-            context.getMatrices().translate(0, arrowProgress * 4, 0);
-            context.drawSprite(7, 6, 0, 10, 13, context.guiAtlasManager.getSprite(arrow), 1f, 1f, 1f, (float) Math.sin(Math.abs(arrowProgress) * Math.PI));
-            context.getMatrices().pop();
+            ResourceLocation arrow = up ? ARROW_UP : ARROW_DOWN;
+            context.pose().pushPose();
+            if (!up) context.pose().translate(0, 4, 0);
+            context.pose().translate(0, arrowProgress * 4, 0);
+            context.blit(7, 6, 0, 10, 13, context.sprites.getSprite(arrow), 1f, 1f, 1f, (float) Math.sin(Math.abs(arrowProgress) * Math.PI));
+            context.pose().popPose();
         }
-        context.getMatrices().pop();
-        context.getMatrices().push();
-        context.getMatrices().translate(0, 10 * moodOffset, 0);
-        context.getMatrices().translate(26, 8 + textRenderer.fontHeight, 0);
-        context.getMatrices().scale((moodTextWidth - 8) * moodRender, 1, 1);
-        context.fill(0, 0, 1, 1, MathHelper.hsvToRgb(moodRender / 3.0F, 1.0F, 1.0F) | ((int) (moodAlpha * 255) << 24));
-        context.getMatrices().pop();
+        context.pose().popPose();
+        context.pose().pushPose();
+        context.pose().translate(0, 10 * moodOffset, 0);
+        context.pose().translate(26, 8 + textRenderer.lineHeight, 0);
+        context.pose().scale((moodTextWidth - 8) * moodRender, 1, 1);
+        context.fill(0, 0, 1, 1, Mth.hsvToRgb(moodRender / 3.0F, 1.0F, 1.0F) | ((int) (moodAlpha * 255) << 24));
+        context.pose().popPose();
     }
 
-    private static void renderKiller(@NotNull TextRenderer textRenderer, @NotNull DrawContext context) {
-        context.getMatrices().push();
-        context.getMatrices().translate(0, 3 * moodOffset, 0);
-        context.drawGuiTexture(MOOD_KILLER, 5, 6, 14, 17);
-        context.getMatrices().pop();
-        context.getMatrices().push();
-        context.getMatrices().translate(0, 10 * moodOffset, 0);
-        context.getMatrices().translate(26, 8 + textRenderer.fontHeight, 0);
-        context.getMatrices().scale((moodTextWidth - 8) * moodRender, 1, 1);
-        context.fill(0, 0, 1, 1, MathHelper.hsvToRgb(0F, 1.0F, 0.6F) | ((int) (moodAlpha * 255) << 24));
-        context.getMatrices().pop();
+    private static void renderKiller(@NotNull Font textRenderer, @NotNull GuiGraphics context) {
+        context.pose().pushPose();
+        context.pose().translate(0, 3 * moodOffset, 0);
+        context.blitSprite(MOOD_KILLER, 5, 6, 14, 17);
+        context.pose().popPose();
+        context.pose().pushPose();
+        context.pose().translate(0, 10 * moodOffset, 0);
+        context.pose().translate(26, 8 + textRenderer.lineHeight, 0);
+        context.pose().scale((moodTextWidth - 8) * moodRender, 1, 1);
+        context.fill(0, 0, 1, 1, Mth.hsvToRgb(0F, 1.0F, 0.6F) | ((int) (moodAlpha * 255) << 24));
+        context.pose().popPose();
     }
 
-    private static void renderPsycho(@NotNull PlayerEntity player, @NotNull TextRenderer renderer, @NotNull DrawContext context, PlayerPsychoComponent component, @NotNull RenderTickCounter tickCounter) {
-        int colour = MathHelper.hsvToRgb(0F, 1.0F, 0.5F);
-        MutableText text = Text.translatable("game.psycho_mode.text").withColor(colour);
-        int width = renderer.getWidth(text);
+    private static void renderPsycho(@NotNull Player player, @NotNull Font renderer, @NotNull GuiGraphics context, PlayerPsychoComponent component, @NotNull DeltaTracker tickCounter) {
+        int colour = Mth.hsvToRgb(0F, 1.0F, 0.5F);
+        MutableComponent text = Component.translatable("game.psycho_mode.text").withColor(colour);
+        int width = renderer.width(text);
         random.setSeed(System.currentTimeMillis());
 
-        context.getMatrices().push();
-        context.getMatrices().translate(random.nextGaussian() / 3, random.nextGaussian() / 3, 0);
+        context.pose().pushPose();
+        context.pose().translate(random.nextGaussian() / 3, random.nextGaussian() / 3, 0);
         context.enableScissor(22, 6, 180, 23);
         for (int i = -1; i <= 3; i++) {
-            float value = 1 - ((player.age + tickCounter.getTickDelta(true)) / 64) % 1;
-            context.getMatrices().push();
-            context.getMatrices().translate(value * (width + 4), 6, 0);
-            context.drawTextWithShadow(renderer, text, i * (width + 4), 0, colour | 255 << 24);
-            context.getMatrices().pop();
+            float value = 1 - ((player.tickCount + tickCounter.getGameTimeDeltaPartialTick(true)) / 64) % 1;
+            context.pose().pushPose();
+            context.pose().translate(value * (width + 4), 6, 0);
+            context.drawString(renderer, text, i * (width + 4), 0, colour | 255 << 24);
+            context.pose().popPose();
         }
         context.disableScissor();
-        context.getMatrices().pop();
+        context.pose().popPose();
 
-        context.getMatrices().push();
-        context.getMatrices().translate(random.nextGaussian() / 3, random.nextGaussian() / 3, 0);
-        context.getMatrices().push();
-        context.getMatrices().translate(26, 8 + renderer.fontHeight, 0);
-        float duration = Math.max(1f, component.getPsychoTicks() - tickCounter.getTickDelta(true)) / GameConstants.getPsychoTimer();
-        context.getMatrices().scale(150 * duration, 1, 1);
+        context.pose().pushPose();
+        context.pose().translate(random.nextGaussian() / 3, random.nextGaussian() / 3, 0);
+        context.pose().pushPose();
+        context.pose().translate(26, 8 + renderer.lineHeight, 0);
+        float duration = Math.max(1f, component.getPsychoTicks() - tickCounter.getGameTimeDeltaPartialTick(true)) / GameConstants.getPsychoTimer();
+        context.pose().scale(150 * duration, 1, 1);
         context.fill(0, 0, 1, 1, colour | ((int) (0.9f * 255) << 24));
-        context.getMatrices().pop();
-        context.getMatrices().pop();
+        context.pose().popPose();
+        context.pose().popPose();
 
-        context.getMatrices().push();
-        context.getMatrices().translate(random.nextGaussian() / 3, random.nextGaussian() / 3, 0);
+        context.pose().pushPose();
+        context.pose().translate(random.nextGaussian() / 3, random.nextGaussian() / 3, 0);
         for (int i = 1; i <= 12; i++) {
-            int tick = (player.age - i) * 40;
-            if ((player.age - i) % 2 != 0) continue;
+            int tick = (player.tickCount - i) * 40;
+            if ((player.tickCount - i) % 2 != 0) continue;
             random.setSeed(tick);
             float alpha = (12 - i) / 12f;
-            context.getMatrices().push();
+            context.pose().pushPose();
             float moodScale = 0.2f + (GameConstants.getPsychoModeArmour() - component.armour) * 0.8f;
             float eyeScale = 0.8f;
-            context.getMatrices().translate(
+            context.pose().translate(
                     (random.nextFloat() - random.nextFloat()) * moodScale * i,
                     (random.nextFloat() - random.nextFloat()) * moodScale * i, -i * 3);
-            context.drawSprite(5, 6, 0, 14, 17, context.guiAtlasManager.getSprite(component.armour == GameConstants.getPsychoModeArmour() ? MOOD_PSYCHO : MOOD_PSYCHO_HIT), 1f, 1f, 1f, alpha);
-            context.getMatrices().translate(
+            context.blit(5, 6, 0, 14, 17, context.sprites.getSprite(component.armour == GameConstants.getPsychoModeArmour() ? MOOD_PSYCHO : MOOD_PSYCHO_HIT), 1f, 1f, 1f, alpha);
+            context.pose().translate(
                     (random.nextFloat() - random.nextFloat()) * eyeScale * i,
                     (random.nextFloat() - random.nextFloat()) * eyeScale * i, 1);
-            context.drawSprite(5, 6, 0, 14, 17, context.guiAtlasManager.getSprite(MOOD_PSYCHO_EYES), 1f, 1f, 1f, alpha);
-            context.getMatrices().pop();
+            context.blit(5, 6, 0, 14, 17, context.sprites.getSprite(MOOD_PSYCHO_EYES), 1f, 1f, 1f, alpha);
+            context.pose().popPose();
         }
-        context.getMatrices().pop();
+        context.pose().popPose();
     }
 
     private static class TaskRenderer {
@@ -206,14 +206,14 @@ public class MoodRenderer {
         public float offset = -1f;
         public float alpha = 0.075f;
         public boolean present = false;
-        public Text text = Text.empty();
+        public Component text = Component.empty();
 
         public boolean tick(PlayerMoodComponent.TrainTask present, float delta) {
             if (present != null)
-                this.text = Text.translatable("task." + (TMMClient.isKiller() ? "fake" : "feel")).append(Text.translatable("task." + present.getName()));
+                this.text = Component.translatable("task." + (TMMClient.isKiller() ? "fake" : "feel")).append(Component.translatable("task." + present.getName()));
             this.present = present != null;
-            this.alpha = MathHelper.lerp(delta / 16, this.alpha, present != null ? 1f : 0f);
-            this.offset = MathHelper.lerp(delta / 32, this.offset, this.index);
+            this.alpha = Mth.lerp(delta / 16, this.alpha, present != null ? 1f : 0f);
+            this.offset = Mth.lerp(delta / 32, this.offset, this.index);
             return this.alpha < 0.075f || (((int) (this.alpha * 255.0f) << 24) & -67108864) == 0;
         }
     }

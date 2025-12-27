@@ -9,25 +9,22 @@ import dev.doctor4t.trainmurdermystery.index.TMMBlocks;
 import dev.doctor4t.trainmurdermystery.index.tag.TMMItemTags;
 import dev.doctor4t.trainmurdermystery.util.TaskCompletePayload;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.block.Block;
-import net.minecraft.block.Blocks;
-import net.minecraft.client.gui.screen.ingame.BookScreen;
-import net.minecraft.client.gui.screen.ingame.LecternScreen;
-import net.minecraft.entity.attribute.EntityAttributeModifier;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.registry.RegistryKeys;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.registry.entry.RegistryEntryList;
-import net.minecraft.screen.LecternScreenHandler;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Util;
+import net.minecraft.Util;
+import net.minecraft.core.Holder;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.HolderSet;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.inventory.LecternMenu;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.block.Blocks;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.ladysnake.cca.api.v3.component.ComponentKey;
@@ -43,7 +40,7 @@ import static dev.doctor4t.trainmurdermystery.TMM.isSkyVisibleAdjacent;
 
 public class PlayerMoodComponent implements AutoSyncedComponent, ServerTickingComponent, ClientTickingComponent {
     public static final ComponentKey<PlayerMoodComponent> KEY = ComponentRegistry.getOrCreate(TMM.id("mood"), PlayerMoodComponent.class);
-    private final PlayerEntity player;
+    private final Player player;
     public final Map<Task, TrainTask> tasks = new HashMap<>();
     public final Map<Task, Integer> timesGotten = new HashMap<>();
     private int nextTaskTimer = 0;
@@ -51,7 +48,7 @@ public class PlayerMoodComponent implements AutoSyncedComponent, ServerTickingCo
     private final HashMap<UUID, ItemStack> psychosisItems = new HashMap<>();
     private static List<Item> cachedPsychosisItems = null;
 
-    public PlayerMoodComponent(PlayerEntity player) {
+    public PlayerMoodComponent(Player player) {
         this.player = player;
     }
 
@@ -70,14 +67,14 @@ public class PlayerMoodComponent implements AutoSyncedComponent, ServerTickingCo
 
     private List<Item> getPsychosisItemPool() {
         if (cachedPsychosisItems == null) {
-            cachedPsychosisItems = this.player.getRegistryManager()
-                    .createRegistryLookup()
-                    .getOrThrow(RegistryKeys.ITEM)
-                    .getOptional(TMMItemTags.PSYCHOSIS_ITEMS)
-                    .map(RegistryEntryList.ListBacked::stream)
-                    .map(stream -> stream.map(RegistryEntry::value).toList())
+            cachedPsychosisItems = this.player.registryAccess()
+                    .asGetterLookup()
+                    .lookupOrThrow(Registries.ITEM)
+                    .get(TMMItemTags.PSYCHOSIS_ITEMS)
+                    .map(HolderSet.ListBacked::stream)
+                    .map(stream -> stream.map(Holder::value).toList())
                     .orElseGet(() -> {
-                        TMM.LOGGER.error("Server provided empty tag {}", TMMItemTags.PSYCHOSIS_ITEMS.id());
+                        TMM.LOGGER.error("Server provided empty tag {}", TMMItemTags.PSYCHOSIS_ITEMS.location());
                         return List.of();
                     });
         }
@@ -86,14 +83,14 @@ public class PlayerMoodComponent implements AutoSyncedComponent, ServerTickingCo
 
     @Override
     public void clientTick() {
-        if (!GameWorldComponent.KEY.get(this.player.getWorld()).isRunning() || !TMMClient.isPlayerAliveAndInSurvival())
+        if (!GameWorldComponent.KEY.get(this.player.level()).isRunning() || !TMMClient.isPlayerAliveAndInSurvival())
             return;
         if (!this.tasks.isEmpty()) this.setMood(this.mood - this.tasks.size() * GameConstants.MOOD_DRAIN);
 
         if (this.isLowerThanMid()) {
             // imagine random items for players
-            for (PlayerEntity playerEntity : this.player.getWorld().getPlayers()) {
-                if (!playerEntity.equals(this.player) && this.player.getWorld().getRandom().nextInt(GameConstants.ITEM_PSYCHOSIS_REROLL_TIME) == 0) {
+            for (Player playerEntity : this.player.level().players()) {
+                if (!playerEntity.equals(this.player) && this.player.level().getRandom().nextInt(GameConstants.ITEM_PSYCHOSIS_REROLL_TIME) == 0) {
                     ItemStack psychosisStack;
                     List<Item> taggedItems = getPsychosisItemPool();
 
@@ -101,11 +98,11 @@ public class PlayerMoodComponent implements AutoSyncedComponent, ServerTickingCo
                         Item item = Util.getRandom(taggedItems, this.player.getRandom());
                         psychosisStack = new ItemStack(item);
                     } else {
-                        psychosisStack = playerEntity.getMainHandStack();
+                        psychosisStack = playerEntity.getMainHandItem();
                     }
 
                     //this.psychosisItems.put(playerEntity.getUuid(), playerEntity.getRandom().nextFloat() < GameConstants.ITEM_PSYCHOSIS_CHANCE ? PSYCHOSIS_ITEM_POOL[playerEntity.getRandom().nextInt(PSYCHOSIS_ITEM_POOL.length)].getDefaultStack() : playerEntity.getMainHandStack());
-                    this.psychosisItems.put(playerEntity.getUuid(), psychosisStack);
+                    this.psychosisItems.put(playerEntity.getUUID(), psychosisStack);
                 }
             }
         } else {
@@ -115,7 +112,7 @@ public class PlayerMoodComponent implements AutoSyncedComponent, ServerTickingCo
 
     @Override
     public void serverTick() {
-        GameWorldComponent gameWorldComponent = GameWorldComponent.KEY.get(this.player.getWorld());
+        GameWorldComponent gameWorldComponent = GameWorldComponent.KEY.get(this.player.level());
         if (!gameWorldComponent.isRunning() || !GameFunctions.isPlayerAliveAndSurvival(this.player)) return;
         if (!this.tasks.isEmpty()) this.setMood(this.mood - this.tasks.size() * GameConstants.MOOD_DRAIN);
         boolean shouldSync = false;
@@ -137,7 +134,7 @@ public class PlayerMoodComponent implements AutoSyncedComponent, ServerTickingCo
             if (task.isFulfilled(this.player)) {
                 removals.add(task.getType());
                 this.setMood(this.mood + GameConstants.MOOD_GAIN);
-                if (this.player instanceof ServerPlayerEntity tempPlayer)
+                if (this.player instanceof ServerPlayer tempPlayer)
                     ServerPlayNetworking.send(tempPlayer, new TaskCompletePayload());
                 shouldSync = true;
             }
@@ -179,7 +176,7 @@ public class PlayerMoodComponent implements AutoSyncedComponent, ServerTickingCo
     }
 
     public float getMood() {
-        GameWorldComponent gameWorldComponent = GameWorldComponent.KEY.get(this.player.getWorld());
+        GameWorldComponent gameWorldComponent = GameWorldComponent.KEY.get(this.player.level());
 
         Role role = gameWorldComponent.getRole(player);
         if (gameWorldComponent.isRunning() && role != null && role.getMoodType() == Role.MoodType.REAL) {
@@ -188,7 +185,7 @@ public class PlayerMoodComponent implements AutoSyncedComponent, ServerTickingCo
     }
 
     public void setMood(float mood) {
-        Role role = GameWorldComponent.KEY.get(this.player.getWorld()).getRole(player);
+        Role role = GameWorldComponent.KEY.get(this.player.level()).getRole(player);
 
         if (role != null && role.getMoodType() == Role.MoodType.REAL) {
             float clampedMood = Math.clamp(mood, 0, 1);
@@ -233,20 +230,20 @@ public class PlayerMoodComponent implements AutoSyncedComponent, ServerTickingCo
     }
 
     @Override
-    public void writeToNbt(@NotNull NbtCompound tag, RegistryWrapper.@NotNull WrapperLookup registryLookup) {
+    public void writeToNbt(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registryLookup) {
         tag.putFloat("mood", this.mood);
-        NbtList tasks = new NbtList();
+        ListTag tasks = new ListTag();
         for (TrainTask task : this.tasks.values()) tasks.add(task.toNbt());
         tag.put("tasks", tasks);
     }
 
     @Override
-    public void readFromNbt(@NotNull NbtCompound tag, RegistryWrapper.@NotNull WrapperLookup registryLookup) {
-        this.mood = tag.contains("mood", NbtElement.FLOAT_TYPE) ? tag.getFloat("mood") : 1f;
+    public void readFromNbt(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registryLookup) {
+        this.mood = tag.contains("mood", Tag.TAG_FLOAT) ? tag.getFloat("mood") : 1f;
         this.tasks.clear();
-        if (tag.contains("tasks", NbtElement.LIST_TYPE)) {
-            for (NbtElement element : tag.getList("tasks", NbtElement.COMPOUND_TYPE)) {
-                if (element instanceof NbtCompound compound && compound.contains("type")) {
+        if (tag.contains("tasks", Tag.TAG_LIST)) {
+            for (Tag element : tag.getList("tasks", Tag.TAG_COMPOUND)) {
+                if (element instanceof CompoundTag compound && compound.contains("type")) {
                     int type = compound.getInt("type");
                     if (type < 0 || type >= Task.values().length) continue;
                     Task typeEnum = Task.values()[type];
@@ -265,9 +262,9 @@ public class PlayerMoodComponent implements AutoSyncedComponent, ServerTickingCo
 	EXERCISE(nbt -> new ExerciseTask(nbt.getInt("timer"))),
 	MEDITATE(nbt -> new MeditateTask(nbt.getInt("timer"))); // 添加冥想任务
 
-	public final @NotNull Function<NbtCompound, TrainTask> setFunction;
+	public final @NotNull Function<CompoundTag, TrainTask> setFunction;
 
-	Task(@NotNull Function<NbtCompound, TrainTask> function) {
+	Task(@NotNull Function<CompoundTag, TrainTask> function) {
 		this.setFunction = function;
 	}
     }
@@ -280,12 +277,12 @@ public class PlayerMoodComponent implements AutoSyncedComponent, ServerTickingCo
         }
 
         @Override
-        public void tick(@NotNull PlayerEntity player) {
+        public void tick(@NotNull Player player) {
             if (player.isSleeping() && this.timer > 0) this.timer--;
         }
 
         @Override
-        public boolean isFulfilled(@NotNull PlayerEntity player) {
+        public boolean isFulfilled(@NotNull Player player) {
             return this.timer <= 0;
         }
 
@@ -300,8 +297,8 @@ public class PlayerMoodComponent implements AutoSyncedComponent, ServerTickingCo
         }
 
         @Override
-        public NbtCompound toNbt() {
-            NbtCompound nbt = new NbtCompound();
+        public CompoundTag toNbt() {
+            CompoundTag nbt = new CompoundTag();
             nbt.putInt("type", Task.SLEEP.ordinal());
             nbt.putInt("timer", this.timer);
             return nbt;
@@ -316,12 +313,12 @@ public class PlayerMoodComponent implements AutoSyncedComponent, ServerTickingCo
         }
 
         @Override
-        public void tick(@NotNull PlayerEntity player) {
+        public void tick(@NotNull Player player) {
             if (isSkyVisibleAdjacent(player) && this.timer > 0) this.timer--;
         }
 
         @Override
-        public boolean isFulfilled(@NotNull PlayerEntity player) {
+        public boolean isFulfilled(@NotNull Player player) {
             return this.timer <= 0;
         }
 
@@ -336,8 +333,8 @@ public class PlayerMoodComponent implements AutoSyncedComponent, ServerTickingCo
         }
 
         @Override
-        public NbtCompound toNbt() {
-            NbtCompound nbt = new NbtCompound();
+        public CompoundTag toNbt() {
+            CompoundTag nbt = new CompoundTag();
             nbt.putInt("type", Task.OUTSIDE.ordinal());
             nbt.putInt("timer", this.timer);
             return nbt;
@@ -352,17 +349,17 @@ public class PlayerMoodComponent implements AutoSyncedComponent, ServerTickingCo
         }
 
         @Override
-        public void tick(@NotNull PlayerEntity player) {
+        public void tick(@NotNull Player player) {
 
 
-            if (player.currentScreenHandler instanceof LecternScreenHandler && this.timer > 0) {
+            if (player.containerMenu instanceof LecternMenu && this.timer > 0) {
                 this.timer--;
 
             }
         }
 
         @Override
-        public boolean isFulfilled(@NotNull PlayerEntity player) {
+        public boolean isFulfilled(@NotNull Player player) {
             return this.timer <= 0;
         }
 
@@ -377,8 +374,8 @@ public class PlayerMoodComponent implements AutoSyncedComponent, ServerTickingCo
         }
 
         @Override
-        public NbtCompound toNbt() {
-            NbtCompound nbt = new NbtCompound();
+        public CompoundTag toNbt() {
+            CompoundTag nbt = new CompoundTag();
             nbt.putInt("type", Task.RAED_BOOK.ordinal());
             nbt.putInt("timer", this.timer);
             return nbt;
@@ -389,7 +386,7 @@ public class PlayerMoodComponent implements AutoSyncedComponent, ServerTickingCo
         public boolean fulfilled = false;
 
         @Override
-        public boolean isFulfilled(@NotNull PlayerEntity player) {
+        public boolean isFulfilled(@NotNull Player player) {
             return this.fulfilled;
         }
 
@@ -404,8 +401,8 @@ public class PlayerMoodComponent implements AutoSyncedComponent, ServerTickingCo
         }
 
         @Override
-        public NbtCompound toNbt() {
-            NbtCompound nbt = new NbtCompound();
+        public CompoundTag toNbt() {
+            CompoundTag nbt = new CompoundTag();
             nbt.putInt("type", Task.EAT.ordinal());
             return nbt;
         }
@@ -415,7 +412,7 @@ public class PlayerMoodComponent implements AutoSyncedComponent, ServerTickingCo
         public boolean fulfilled = false;
 
         @Override
-        public boolean isFulfilled(@NotNull PlayerEntity player) {
+        public boolean isFulfilled(@NotNull Player player) {
             return this.fulfilled;
         }
 
@@ -430,8 +427,8 @@ public class PlayerMoodComponent implements AutoSyncedComponent, ServerTickingCo
         }
 
         @Override
-        public NbtCompound toNbt() {
-            NbtCompound nbt = new NbtCompound();
+        public CompoundTag toNbt() {
+            CompoundTag nbt = new CompoundTag();
             nbt.putInt("type", Task.DRINK.ordinal());
             return nbt;
         }
@@ -445,15 +442,15 @@ public class PlayerMoodComponent implements AutoSyncedComponent, ServerTickingCo
         }
 
         @Override
-        public void tick(@NotNull PlayerEntity player) {
+        public void tick(@NotNull Player player) {
             // 玩家必须在跑步状态下才能完成锻炼任务
-            if ( player.getWorld().getBlockState(player.getBlockPos().add(0, -1, 0)).getBlock() == Blocks.BLACK_CONCRETE && this.timer > 0) {
+            if ( player.level().getBlockState(player.blockPosition().offset(0, -1, 0)).getBlock() == Blocks.BLACK_CONCRETE && this.timer > 0) {
                 this.timer--;
             }
         }
 
         @Override
-        public boolean isFulfilled(@NotNull PlayerEntity player) {
+        public boolean isFulfilled(@NotNull Player player) {
             return this.timer <= 0;
         }
 
@@ -468,8 +465,8 @@ public class PlayerMoodComponent implements AutoSyncedComponent, ServerTickingCo
         }
 
         @Override
-        public NbtCompound toNbt() {
-            NbtCompound nbt = new NbtCompound();
+        public CompoundTag toNbt() {
+            CompoundTag nbt = new CompoundTag();
             nbt.putInt("type", Task.EXERCISE.ordinal());
             nbt.putInt("timer", this.timer);
             return nbt;
@@ -488,15 +485,15 @@ public class PlayerMoodComponent implements AutoSyncedComponent, ServerTickingCo
         }
 
         @Override
-        public void tick(@NotNull PlayerEntity player) {
+        public void tick(@NotNull Player player) {
             // 玩家必须蹲下且保持静止才能完成冥想任务
-            if (player.isInSneakingPose() && player.getVelocity().lengthSquared() < 0.01 && this.timer > 0) {
+            if (player.isCrouching() && player.getDeltaMovement().lengthSqr() < 0.01 && this.timer > 0) {
                 this.timer--;
             }
         }
 
         @Override
-        public boolean isFulfilled(@NotNull PlayerEntity player) {
+        public boolean isFulfilled(@NotNull Player player) {
             return this.timer <= 0;
         }
 
@@ -511,8 +508,8 @@ public class PlayerMoodComponent implements AutoSyncedComponent, ServerTickingCo
         }
 
         @Override
-        public NbtCompound toNbt() {
-            NbtCompound nbt = new NbtCompound();
+        public CompoundTag toNbt() {
+            CompoundTag nbt = new CompoundTag();
             nbt.putInt("type", Task.MEDITATE.ordinal());
             nbt.putInt("timer", this.timer);
             return nbt;
@@ -522,25 +519,25 @@ public class PlayerMoodComponent implements AutoSyncedComponent, ServerTickingCo
 
 
     public interface TrainTask {
-        default void tick(@NotNull PlayerEntity player) {
+        default void tick(@NotNull Player player) {
         }
 
-        boolean isFulfilled(PlayerEntity player);
+        boolean isFulfilled(Player player);
 
         String getName();
 
         Task getType();
 
-        NbtCompound toNbt();
+        CompoundTag toNbt();
     }
 
     /**
      * 根据玩家的情绪值更新其移动速度
      */
     private void updatePlayerMovementSpeed() {
-        if (this.player instanceof ServerPlayerEntity) {
+        if (this.player instanceof ServerPlayer) {
             // 获取当前玩家的移动速度属性
-            var speedAttribute = this.player.getAttributeInstance(EntityAttributes.GENERIC_MOVEMENT_SPEED);
+            var speedAttribute = this.player.getAttribute(Attributes.MOVEMENT_SPEED);
             
             if (speedAttribute != null) {
                 // 移除之前可能添加的修饰符
@@ -549,20 +546,20 @@ public class PlayerMoodComponent implements AutoSyncedComponent, ServerTickingCo
                 // 根据情绪值添加新的修饰符
                 if (this.isLowerThanDepressed()) {
                     // 抑郁状态 - 降低20%速度
-                    EntityAttributeModifier modifier = new EntityAttributeModifier(
+                    AttributeModifier modifier = new AttributeModifier(
                             TMM.id("mood_speed_modifier"),
                             -0.2,
-                            EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL
+                            AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL
                     );
-                    speedAttribute.addTemporaryModifier(modifier);
+                    speedAttribute.addTransientModifier(modifier);
                 } else if (this.isHigherThanAngry()) {
                     // 愤怒状态 - 提高15%速度
-                    EntityAttributeModifier modifier = new EntityAttributeModifier(
+                    AttributeModifier modifier = new AttributeModifier(
                             TMM.id("mood_speed_modifier"),
                             0.15,
-                            EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL
+                            AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL
                     );
-                    speedAttribute.addTemporaryModifier(modifier);
+                    speedAttribute.addTransientModifier(modifier);
                 }
                 // 正常情绪范围内保持默认速度
             }

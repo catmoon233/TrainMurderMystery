@@ -6,27 +6,26 @@ import dev.doctor4t.trainmurdermystery.block.property.OrnamentShape;
 import dev.doctor4t.trainmurdermystery.index.TMMBlocks;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricBlockLootTableProvider;
-import net.minecraft.block.BedBlock;
-import net.minecraft.block.Block;
-import net.minecraft.block.enums.BedPart;
-import net.minecraft.data.family.BlockFamily;
-import net.minecraft.loot.LootPool;
-import net.minecraft.loot.LootTable;
-import net.minecraft.loot.condition.BlockStatePropertyLootCondition;
-import net.minecraft.loot.entry.ItemEntry;
-import net.minecraft.loot.function.SetCountLootFunction;
-import net.minecraft.loot.provider.number.ConstantLootNumberProvider;
-import net.minecraft.predicate.StatePredicate;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.util.math.Direction;
-
+import net.minecraft.advancements.critereon.StatePropertiesPredicate;
+import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.data.BlockFamily;
+import net.minecraft.world.level.block.BedBlock;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.properties.BedPart;
+import net.minecraft.world.level.storage.loot.LootPool;
+import net.minecraft.world.level.storage.loot.LootTable;
+import net.minecraft.world.level.storage.loot.entries.LootItem;
+import net.minecraft.world.level.storage.loot.functions.SetItemCountFunction;
+import net.minecraft.world.level.storage.loot.predicates.LootItemBlockStatePropertyCondition;
+import net.minecraft.world.level.storage.loot.providers.number.ConstantValue;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class TMMBlockLootTableGen extends FabricBlockLootTableProvider {
 
-    public TMMBlockLootTableGen(FabricDataOutput dataOutput, CompletableFuture<RegistryWrapper.WrapperLookup> registryLookup) {
+    public TMMBlockLootTableGen(FabricDataOutput dataOutput, CompletableFuture<HolderLookup.Provider> registryLookup) {
         super(dataOutput, registryLookup);
     }
 
@@ -55,7 +54,7 @@ public class TMMBlockLootTableGen extends FabricBlockLootTableProvider {
         this.addSelfDrop(TMMBlocks.METAL_SHEET_STAIRS);
         this.addSelfDrop(TMMBlocks.METAL_SHEET_SLAB);
         this.addSelfDrop(TMMBlocks.METAL_SHEET_WALL);
-        this.addSelfDrop(TMMBlocks.METAL_SHEET_DOOR, this::doorDrops);
+        this.addSelfDrop(TMMBlocks.METAL_SHEET_DOOR, this::createDoorTable);
         this.addSelfDrop(TMMBlocks.METAL_SHEET_WALKWAY);
         this.addSelfDrop(TMMBlocks.STAINLESS_STEEL_LADDER);
         this.addFamily(TMMBlocks.Family.STAINLESS_STEEL);
@@ -78,19 +77,19 @@ public class TMMBlockLootTableGen extends FabricBlockLootTableProvider {
         this.addFamily(TMMBlocks.Family.MAHOGANY_HERRINGBONE);
         this.addFamily(TMMBlocks.Family.SMOOTH_MAHOGANY);
         this.addSelfDrop(TMMBlocks.MAHOGANY_PANEL, this::panelDrops);
-        this.addSelfDrop(TMMBlocks.MAHOGANY_CABINET, this::nameableContainerDrops);
+        this.addSelfDrop(TMMBlocks.MAHOGANY_CABINET, this::createNameableBlockEntityTable);
         this.addSelfDrop(TMMBlocks.MAHOGANY_BOOKSHELF);
         this.addFamily(TMMBlocks.Family.BUBINGA);
         this.addFamily(TMMBlocks.Family.BUBINGA_HERRINGBONE);
         this.addFamily(TMMBlocks.Family.SMOOTH_BUBINGA);
         this.addSelfDrop(TMMBlocks.BUBINGA_PANEL, this::panelDrops);
-        this.addSelfDrop(TMMBlocks.BUBINGA_CABINET, this::nameableContainerDrops);
+        this.addSelfDrop(TMMBlocks.BUBINGA_CABINET, this::createNameableBlockEntityTable);
         this.addSelfDrop(TMMBlocks.BUBINGA_BOOKSHELF);
         this.addFamily(TMMBlocks.Family.EBONY);
         this.addFamily(TMMBlocks.Family.EBONY_HERRINGBONE);
         this.addFamily(TMMBlocks.Family.SMOOTH_EBONY);
         this.addSelfDrop(TMMBlocks.EBONY_PANEL, this::panelDrops);
-        this.addSelfDrop(TMMBlocks.EBONY_CABINET, this::nameableContainerDrops);
+        this.addSelfDrop(TMMBlocks.EBONY_CABINET, this::createNameableBlockEntityTable);
         this.addSelfDrop(TMMBlocks.TRIMMED_EBONY_STAIRS);
         this.addSelfDrop(TMMBlocks.EBONY_BOOKSHELF);
         this.addSelfDrop(TMMBlocks.OAK_BRANCH);
@@ -117,15 +116,15 @@ public class TMMBlockLootTableGen extends FabricBlockLootTableProvider {
         this.addSelfDrop(TMMBlocks.STRIPPED_WARPED_STIPE);
         this.addSelfDrop(TMMBlocks.PANEL_STRIPES);
         this.addSelfDrop(TMMBlocks.RAIL_BEAM);
-        this.addSelfDrop(TMMBlocks.TRIMMED_RAILING_POST, block -> this.drops(TMMBlocks.TRIMMED_RAILING));
-        this.addSelfDrop(TMMBlocks.DIAGONAL_TRIMMED_RAILING, block -> this.drops(TMMBlocks.TRIMMED_RAILING));
+        this.addSelfDrop(TMMBlocks.TRIMMED_RAILING_POST, block -> this.createSingleItemTable(TMMBlocks.TRIMMED_RAILING));
+        this.addSelfDrop(TMMBlocks.DIAGONAL_TRIMMED_RAILING, block -> this.createSingleItemTable(TMMBlocks.TRIMMED_RAILING));
         this.addSelfDrop(TMMBlocks.TRIMMED_RAILING);
         // Furniture / Decor
-        this.addSelfDrop(TMMBlocks.CARGO_BOX, this::nameableContainerDrops);
+        this.addSelfDrop(TMMBlocks.CARGO_BOX, this::createNameableBlockEntityTable);
         this.addSelfDrop(TMMBlocks.WHITE_LOUNGE_COUCH);
         this.addSelfDrop(TMMBlocks.WHITE_OTTOMAN);
-        this.addSelfDrop(TMMBlocks.WHITE_TRIMMED_BED, block -> this.dropsWithProperty(block, BedBlock.PART, BedPart.HEAD));
-        this.addSelfDrop(TMMBlocks.RED_TRIMMED_BED, block -> this.dropsWithProperty(block, BedBlock.PART, BedPart.HEAD));
+        this.addSelfDrop(TMMBlocks.WHITE_TRIMMED_BED, block -> this.createSinglePropConditionTable(block, BedBlock.PART, BedPart.HEAD));
+        this.addSelfDrop(TMMBlocks.RED_TRIMMED_BED, block -> this.createSinglePropConditionTable(block, BedBlock.PART, BedPart.HEAD));
         this.addSelfDrop(TMMBlocks.BLUE_LOUNGE_COUCH);
         this.addSelfDrop(TMMBlocks.TOILET_BLOCK);
         this.addSelfDrop(TMMBlocks.GREEN_LOUNGE_COUCH);
@@ -168,47 +167,47 @@ public class TMMBlockLootTableGen extends FabricBlockLootTableProvider {
     }
 
     private void addSelfDrop(Block block) {
-        this.addSelfDrop(block, this::drops);
+        this.addSelfDrop(block, this::createSingleItemTable);
     }
 
     private void addSelfDrop(Block block, Function<Block, LootTable.Builder> function) {
-        if (block.getHardness() == -1.0f) {
+        if (block.defaultDestroyTime() == -1.0f) {
             // Register drops as nothing if block is unbreakable
-            this.addDrop(block, dropsNothing());
+            this.add(block, noDrop());
         } else {
-            this.addDrop(block, function);
+            this.add(block, function);
         }
     }
 
     private void addNothingDrop(Block block) {
-        this.addDrop(block, dropsNothing());
+        this.add(block, noDrop());
     }
 
-    private ConstantLootNumberProvider count(float value) {
-        return ConstantLootNumberProvider.create(value);
+    private ConstantValue count(float value) {
+        return ConstantValue.exactly(value);
     }
 
     private LootTable.Builder panelDrops(Block block) {
-        return LootTable.builder().pool(LootPool.builder().with(
-                this.addSurvivesExplosionCondition(block, ItemEntry.builder(block))
+        return LootTable.lootTable().withPool(LootPool.lootPool().add(
+                this.applyExplosionCondition(block, LootItem.lootTableItem(block))
                         .apply(
                                 Direction.values(),
-                                direction -> SetCountLootFunction.builder(this.count(1), true)
-                                        .conditionally(BlockStatePropertyLootCondition.builder(block).properties(
-                                                StatePredicate.Builder.create().exactMatch(PanelBlock.getProperty(direction), true)
+                                direction -> SetItemCountFunction.setCount(this.count(1), true)
+                                        .when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(block).setProperties(
+                                                StatePropertiesPredicate.Builder.properties().hasProperty(PanelBlock.getFaceProperty(direction), true)
                                         ))
-                        ).apply(SetCountLootFunction.builder(this.count(-1f), true))
+                        ).apply(SetItemCountFunction.setCount(this.count(-1f), true))
         ));
     }
 
     private LootTable.Builder ornamentDrops(Block block) {
-        return LootTable.builder().pool(LootPool.builder().with(
-                this.addSurvivesExplosionCondition(block, ItemEntry.builder(block))
+        return LootTable.lootTable().withPool(LootPool.lootPool().add(
+                this.applyExplosionCondition(block, LootItem.lootTableItem(block))
                         .apply(
                                 OrnamentShape.values(),
-                                shape -> SetCountLootFunction.builder(this.count(shape.getCount()), false)
-                                        .conditionally(BlockStatePropertyLootCondition.builder(block).properties(
-                                                StatePredicate.Builder.create().exactMatch(OrnamentBlock.SHAPE, shape)
+                                shape -> SetItemCountFunction.setCount(this.count(shape.getCount()), false)
+                                        .when(LootItemBlockStatePropertyCondition.hasBlockStateProperties(block).setProperties(
+                                                StatePropertiesPredicate.Builder.properties().hasProperty(OrnamentBlock.SHAPE, shape)
                                         ))
                         )
         ));

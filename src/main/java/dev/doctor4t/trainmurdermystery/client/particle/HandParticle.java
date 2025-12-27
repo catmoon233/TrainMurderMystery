@@ -1,10 +1,9 @@
 package dev.doctor4t.trainmurdermystery.client.particle;
 
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.util.Identifier;
-
 import java.awt.*;
 import java.util.function.Function;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.resources.ResourceLocation;
 
 public class HandParticle {
     public float x, y, z;
@@ -12,7 +11,7 @@ public class HandParticle {
     public float age;
     public float maxAge;
     public float size;
-    public Identifier texture;
+    public ResourceLocation texture;
     public int light;
     public int frames;
     public boolean loop;
@@ -23,7 +22,7 @@ public class HandParticle {
     public float[] aColors = {1f};
 
 
-    public Function<Identifier, RenderLayer> renderLayerFactory;
+    public Function<ResourceLocation, RenderType> renderLayerFactory;
 
     public HandParticle() {
         this.u0 = 0f;
@@ -43,7 +42,7 @@ public class HandParticle {
         this.frames = 1;
         this.size = 1f;
 
-        this.renderLayerFactory = RenderLayer::getEntityTranslucent;
+        this.renderLayerFactory = RenderType::entityTranslucent;
     }
 
     public boolean tick(float dt) {
@@ -72,7 +71,7 @@ public class HandParticle {
         return this;
     }
 
-    public HandParticle setTexture(Identifier texture) {
+    public HandParticle setTexture(ResourceLocation texture) {
         this.texture = texture;
         return this;
     }
@@ -101,7 +100,7 @@ public class HandParticle {
         return this;
     }
 
-    public HandParticle setRenderLayer(Function<Identifier, RenderLayer> factory) {
+    public HandParticle setRenderLayer(Function<ResourceLocation, RenderType> factory) {
         this.renderLayerFactory = factory;
         return this;
     }

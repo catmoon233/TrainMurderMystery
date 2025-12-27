@@ -6,9 +6,9 @@ import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
 import dev.doctor4t.trainmurdermystery.ui.ComponentFactory;
 import dev.doctor4t.trainmurdermystery.ui.components.LinearLayoutComponent;
 import dev.doctor4t.trainmurdermystery.ui.util.UIStyleHelper;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.world.World;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.world.level.Level;
 
 /**
  * Main command UI screen for quick access to TMM commands
@@ -16,7 +16,7 @@ import net.minecraft.world.World;
 public class CommandMenuScreen extends AbstractScreen {
 
     public CommandMenuScreen() {
-        super(net.minecraft.text.Text.translatable("tmm.ui.command_menu.title"));
+        super(net.minecraft.network.chat.Component.translatable("tmm.ui.command_menu.title"));
     }
 
     @Override
@@ -25,10 +25,10 @@ public class CommandMenuScreen extends AbstractScreen {
         this.setBackground(ComponentFactory.createFrostedBackground(this.getWidth(), this.getHeight()));
 
         TextComponent title = new TextComponent(
-            this.textRenderer,
-            net.minecraft.text.Text.translatable("tmm.ui.command_menu.title")
+            this.font,
+            net.minecraft.network.chat.Component.translatable("tmm.ui.command_menu.title")
                 .copy()
-                .styled(style -> style.withBold(true).withColor(UIStyleHelper.TEXT_COLOR_TITLE))
+                .withStyle(style -> style.withBold(true).withColor(UIStyleHelper.TEXT_COLOR_TITLE))
         );
         title.centerHorizontally();
         title.setY(30);
@@ -78,31 +78,31 @@ public class CommandMenuScreen extends AbstractScreen {
             return true;
         }));
         layout.addChild(ComponentFactory.createButton("tmm.ui.button.advanced", (component, screen, mouseX, mouseY, button) -> {
-            MinecraftClient.getInstance().setScreen(new AdvancedCommandScreen(CommandMenuScreen.this));
+            Minecraft.getInstance().setScreen(new AdvancedCommandScreen(CommandMenuScreen.this));
             return true;
         }));
     }
 
     private void executeCommand(String command) {
-        if (MinecraftClient.getInstance().player != null) {
-            MinecraftClient.getInstance().player.networkHandler.sendCommand(command.replaceFirst("/", ""));
+        if (Minecraft.getInstance().player != null) {
+            Minecraft.getInstance().player.connection.sendUnsignedCommand(command.replaceFirst("/", ""));
         }
     }
 
     @Override
-    public void onTickScreen(DrawContext drawContext, int mouseX, int mouseY, float delta) {
+    public void onTickScreen(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
         // Game status display
-        if (MinecraftClient.getInstance().world != null) {
-            World world = MinecraftClient.getInstance().world;
+        if (Minecraft.getInstance().level != null) {
+            Level world = Minecraft.getInstance().level;
             GameWorldComponent game = GameWorldComponent.KEY.get(world);
 
             String status = game.isRunning() ? "Running" : "Not Running";
-            net.minecraft.text.Text statusText = net.minecraft.text.Text.literal("Game Status: ")
-                .append(net.minecraft.text.Text.literal(status)
-                    .styled(style -> style.withColor(game.isRunning() ? 0x00FF00 : 0xFF0000)));
+            net.minecraft.network.chat.Component statusText = net.minecraft.network.chat.Component.literal("Game Status: ")
+                .append(net.minecraft.network.chat.Component.literal(status)
+                    .withStyle(style -> style.withColor(game.isRunning() ? 0x00FF00 : 0xFF0000)));
 
-            drawContext.drawText(
-                this.textRenderer,
+            drawContext.drawString(
+                this.font,
                 statusText,
                 10, 10,
                 0xFFFFFF,

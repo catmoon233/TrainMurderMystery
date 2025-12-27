@@ -2,9 +2,9 @@ package dev.doctor4t.trainmurdermystery.util;
 
 import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.Identifier;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 public class ShopEntry {
@@ -17,13 +17,13 @@ public class ShopEntry {
         POISON("gui/shop_slot_poison"),
         TOOL("gui/shop_slot_tool");
 
-        final Identifier texture;
+        final ResourceLocation texture;
 
         Type(String texture) {
             this.texture = TMM.id(texture);
         }
 
-        public Identifier getTexture() {
+        public ResourceLocation getTexture() {
             return texture;
         }
     }
@@ -34,17 +34,17 @@ public class ShopEntry {
         this.type = type;
     }
 
-    public boolean onBuy(@NotNull PlayerEntity player) {
-        if (GameWorldComponent.KEY.get(player.getWorld()).canUseKillerFeatures(player)) {
+    public boolean onBuy(@NotNull Player player) {
+        if (GameWorldComponent.KEY.get(player.level()).canUseKillerFeatures(player)) {
             return insertStackInFreeSlot(player, this.stack.copy());
         } else return false;
     }
 
-    public static boolean insertStackInFreeSlot(@NotNull PlayerEntity player, ItemStack stackToInsert) {
+    public static boolean insertStackInFreeSlot(@NotNull Player player, ItemStack stackToInsert) {
         for (int i = 0; i < 9; i++) {
-            ItemStack stack = player.getInventory().getStack(i);
+            ItemStack stack = player.getInventory().getItem(i);
             if (stack.isEmpty()) {
-                player.getInventory().setStack(i, stackToInsert);
+                player.getInventory().setItem(i, stackToInsert);
                 return true;
             }
         }

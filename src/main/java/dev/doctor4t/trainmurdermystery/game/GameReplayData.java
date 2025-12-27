@@ -1,12 +1,5 @@
 package dev.doctor4t.trainmurdermystery.game;
 
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.registry.Registries;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
 import dev.doctor4t.trainmurdermystery.index.TMMItems;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,6 +8,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import net.minecraft.ChatFormatting;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 
 public class GameReplayData {
     private int playerCount;
@@ -150,7 +149,7 @@ public class GameReplayData {
             return message;
         }
 
-        private static final Map<Identifier, Item> DEATH_REASON_TO_ITEM = new HashMap<>();
+        private static final Map<ResourceLocation, Item> DEATH_REASON_TO_ITEM = new HashMap<>();
 
         static {
             DEATH_REASON_TO_ITEM.put(dev.doctor4t.trainmurdermystery.game.GameConstants.DeathReasons.BAT, TMMItems.BAT);
@@ -161,46 +160,46 @@ public class GameReplayData {
             // 注意：FELL_OUT_OF_TRAIN 和 GENERIC 没有对应物品
         }
 
-        private Text getItemUsedText() {
-            Identifier id = Identifier.tryParse(itemUsed);
+        private Component getItemUsedText() {
+            ResourceLocation id = ResourceLocation.tryParse(itemUsed);
             if (id == null) {
-                return Text.literal(itemUsed);
+                return Component.literal(itemUsed);
             }
             // 检查是否是死亡原因标识符
             Item item = DEATH_REASON_TO_ITEM.get(id);
             if (item != null) {
-                return new ItemStack(item).toHoverableText();
+                return new ItemStack(item).getDisplayName();
             }
             // 否则，尝试作为普通物品获取
-            ItemStack stack = Registries.ITEM.getOrEmpty(id)
+            ItemStack stack = BuiltInRegistries.ITEM.getOptional(id)
                     .map(ItemStack::new)
                     .orElse(ItemStack.EMPTY);
             if (!stack.isEmpty()) {
-                return stack.toHoverableText();
+                return stack.getDisplayName();
             }
             // 回退到可读的标识符路径
             String path = id.getPath();
             String readable = Arrays.stream(path.split("_"))
                     .map(s -> s.substring(0, 1).toUpperCase() + s.substring(1))
                     .collect(Collectors.joining(" "));
-            return Text.literal(readable);
+            return Component.literal(readable);
         }
 
 
-        public Text toText(GameReplayManager manager, GameReplayData replayData) {
-            Text sourceName = sourcePlayer != null ? manager.getPlayerName(sourcePlayer) : Text.literal("未知玩家").formatted(Formatting.GRAY);
-            Text targetName = targetPlayer != null ? manager.getPlayerName(targetPlayer) : Text.literal("未知玩家").formatted(Formatting.GRAY);
+        public Component toText(GameReplayManager manager, GameReplayData replayData) {
+            Component sourceName = sourcePlayer != null ? manager.getPlayerName(sourcePlayer) : Component.literal("未知玩家").withStyle(ChatFormatting.GRAY);
+            Component targetName = targetPlayer != null ? manager.getPlayerName(targetPlayer) : Component.literal("未知玩家").withStyle(ChatFormatting.GRAY);
 
             return switch (type) {
-                case KILL -> Text.translatable("tmm.replay.event.kill", sourceName, getItemUsedText(), targetName);
-                case POISON -> Text.translatable("tmm.replay.event.poison", sourceName, getItemUsedText(), targetName);
-                case CUSTOM_MESSAGE -> Text.literal(message).formatted(Formatting.WHITE);
-                case GAME_START -> Text.translatable("tmm.replay.event.game_start").formatted(Formatting.GREEN);
-                case GAME_END -> Text.translatable("tmm.replay.event.game_end", Text.literal(replayData.getWinningTeam()).formatted(Formatting.GOLD)).formatted(Formatting.GREEN);
-                case ROLE_ASSIGNMENT -> Text.translatable("tmm.replay.event.role_assignment", targetName, Text.literal(message).formatted(Formatting.YELLOW));
-                case ITEM_USE -> Text.translatable("tmm.replay.event.item_use", sourceName, getItemUsedText());
-                case PLAYER_JOIN -> Text.translatable("tmm.replay.event.player_join", sourceName).formatted(Formatting.GRAY);
-                case PLAYER_LEAVE -> Text.translatable("tmm.replay.event.player_leave", sourceName).formatted(Formatting.GRAY);
+                case KILL -> Component.translatable("tmm.replay.event.kill", sourceName, getItemUsedText(), targetName);
+                case POISON -> Component.translatable("tmm.replay.event.poison", sourceName, getItemUsedText(), targetName);
+                case CUSTOM_MESSAGE -> Component.literal(message).withStyle(ChatFormatting.WHITE);
+                case GAME_START -> Component.translatable("tmm.replay.event.game_start").withStyle(ChatFormatting.GREEN);
+                case GAME_END -> Component.translatable("tmm.replay.event.game_end", Component.literal(replayData.getWinningTeam()).withStyle(ChatFormatting.GOLD)).withStyle(ChatFormatting.GREEN);
+                case ROLE_ASSIGNMENT -> Component.translatable("tmm.replay.event.role_assignment", targetName, Component.literal(message).withStyle(ChatFormatting.YELLOW));
+                case ITEM_USE -> Component.translatable("tmm.replay.event.item_use", sourceName, getItemUsedText());
+                case PLAYER_JOIN -> Component.translatable("tmm.replay.event.player_join", sourceName).withStyle(ChatFormatting.GRAY);
+                case PLAYER_LEAVE -> Component.translatable("tmm.replay.event.player_leave", sourceName).withStyle(ChatFormatting.GRAY);
             };
         }
     }

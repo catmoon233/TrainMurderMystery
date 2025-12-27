@@ -4,19 +4,18 @@ import dev.doctor4t.trainmurdermystery.index.TMMBlocks;
 import dev.doctor4t.trainmurdermystery.index.tag.TMMBlockTags;
 import net.fabricmc.fabric.api.datagen.v1.FabricDataOutput;
 import net.fabricmc.fabric.api.datagen.v1.provider.FabricTagProvider;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.registry.tag.BlockTags;
-
+import net.minecraft.core.HolderLookup;
+import net.minecraft.tags.BlockTags;
 import java.util.concurrent.CompletableFuture;
 
 public class TMMBlockTagGen extends FabricTagProvider.BlockTagProvider {
 
-    public TMMBlockTagGen(FabricDataOutput output, CompletableFuture<RegistryWrapper.WrapperLookup> registriesFuture) {
+    public TMMBlockTagGen(FabricDataOutput output, CompletableFuture<HolderLookup.Provider> registriesFuture) {
         super(output, registriesFuture);
     }
 
     @Override
-    protected void configure(RegistryWrapper.WrapperLookup arg) {
+    protected void addTags(HolderLookup.Provider arg) {
 
         this.getOrCreateTagBuilder(TMMBlockTags.BRANCHES)
                 .add(TMMBlocks.STAINLESS_STEEL_BRANCH)
@@ -168,6 +167,7 @@ public class TMMBlockTagGen extends FabricTagProvider.BlockTagProvider {
                 .add(TMMBlocks.SMOOTH_EBONY_SLAB);
 
         this.getOrCreateTagBuilder(BlockTags.WALLS)
+
                 .add(TMMBlocks.TARNISHED_GOLD_WALL)
                 .add(TMMBlocks.GOLD_WALL)
                 .add(TMMBlocks.PRISTINE_GOLD_WALL)
@@ -188,7 +188,7 @@ public class TMMBlockTagGen extends FabricTagProvider.BlockTagProvider {
                 .add(TMMBlocks.METAL_SHEET_DOOR)
                 .add(TMMBlocks.COCKPIT_DOOR);
 
-        this.getOrCreateTagBuilder(BlockTags.AXE_MINEABLE)
+        this.getOrCreateTagBuilder(BlockTags.MINEABLE_WITH_AXE)
                 .addTag(TMMBlockTags.BRANCHES)
                 .add(TMMBlocks.MAHOGANY_HERRINGBONE)
                 .add(TMMBlocks.MAHOGANY_HERRINGBONE_STAIRS)
@@ -238,7 +238,7 @@ public class TMMBlockTagGen extends FabricTagProvider.BlockTagProvider {
                 .add(TMMBlocks.BUBINGA_BOOKSHELF)
                 .add(TMMBlocks.EBONY_BOOKSHELF);
 
-        this.getOrCreateTagBuilder(BlockTags.PICKAXE_MINEABLE)
+        this.getOrCreateTagBuilder(BlockTags.MINEABLE_WITH_PICKAXE)
                 .addTag(TMMBlockTags.VENT_SHAFTS)
                 .add(TMMBlocks.STAINLESS_STEEL_VENT_HATCH)
                 .add(TMMBlocks.DARK_STEEL_VENT_HATCH)
@@ -348,7 +348,7 @@ public class TMMBlockTagGen extends FabricTagProvider.BlockTagProvider {
                 .add(TMMBlocks.RAIL_BEAM);
 
 
-        this.getOrCreateTagBuilder(BlockTags.INSIDE_STEP_SOUND_BLOCKS)
+        this.tag(BlockTags.INSIDE_STEP_SOUND_BLOCKS)
                 .addTag(TMMBlockTags.VENT_SHAFTS);
     }
 }

@@ -5,12 +5,6 @@ import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.api.TMMRoles;
 import dev.doctor4t.trainmurdermystery.client.gui.RoleAnnouncementTexts;
 import dev.doctor4t.trainmurdermystery.game.GameFunctions;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 import org.ladysnake.cca.api.v3.component.ComponentKey;
 import org.ladysnake.cca.api.v3.component.ComponentRegistry;
@@ -19,14 +13,20 @@ import org.ladysnake.cca.api.v3.component.sync.AutoSyncedComponent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.Level;
 
 public class GameRoundEndComponent implements AutoSyncedComponent {
     public static final ComponentKey<GameRoundEndComponent> KEY = ComponentRegistry.getOrCreate(TMM.id("roundend"), GameRoundEndComponent.class);
-    private final World world;
+    private final Level world;
     private final List<RoundEndData> players = new ArrayList<>();
     private GameFunctions.WinStatus winStatus = GameFunctions.WinStatus.NONE;
 
-    public GameRoundEndComponent(World world) {
+    public GameRoundEndComponent(Level world) {
         this.world = world;
     }
 
@@ -34,9 +34,9 @@ public class GameRoundEndComponent implements AutoSyncedComponent {
         KEY.sync(this.world);
     }
 
-    public void setRoundEndData(@NotNull List<ServerPlayerEntity> players, GameFunctions.WinStatus winStatus) {
+    public void setRoundEndData(@NotNull List<ServerPlayer> players, GameFunctions.WinStatus winStatus) {
         this.players.clear();
-        for (ServerPlayerEntity player : players) {
+        for (ServerPlayer player : players) {
             RoleAnnouncementTexts.RoleAnnouncementText role = RoleAnnouncementTexts.BLANK;
             GameWorldComponent game = GameWorldComponent.KEY.get(this.world);
             if (game.canUseKillerFeatures(player)) {
@@ -74,28 +74,28 @@ public class GameRoundEndComponent implements AutoSyncedComponent {
     }
 
     @Override
-    public void writeToNbt(@NotNull NbtCompound tag, RegistryWrapper.WrapperLookup registryLookup) {
-        NbtList list = new NbtList();
+    public void writeToNbt(@NotNull CompoundTag tag, HolderLookup.Provider registryLookup) {
+        ListTag list = new ListTag();
         for (RoundEndData detail : this.players) list.add(detail.writeToNbt());
         tag.put("players", list);
         tag.putInt("winstatus", this.winStatus.ordinal());
     }
 
     @Override
-    public void readFromNbt(@NotNull NbtCompound tag, RegistryWrapper.WrapperLookup registryLookup) {
+    public void readFromNbt(@NotNull CompoundTag tag, HolderLookup.Provider registryLookup) {
         this.players.clear();
-        for (NbtElement element : tag.getList("players", 10)) this.players.add(new RoundEndData((NbtCompound) element));
+        for (Tag element : tag.getList("players", 10)) this.players.add(new RoundEndData((CompoundTag) element));
         this.winStatus = GameFunctions.WinStatus.values()[tag.getInt("winstatus")];
     }
 
     public record RoundEndData(GameProfile player, RoleAnnouncementTexts.RoleAnnouncementText role, boolean wasDead) {
-        public RoundEndData(@NotNull NbtCompound tag) {
-            this(new GameProfile(tag.getUuid("uuid"), tag.getString("name")), RoleAnnouncementTexts.ROLE_ANNOUNCEMENT_TEXTS.get(tag.getInt("role")), tag.getBoolean("wasDead"));
+        public RoundEndData(@NotNull CompoundTag tag) {
+            this(new GameProfile(tag.getUUID("uuid"), tag.getString("name")), RoleAnnouncementTexts.ROLE_ANNOUNCEMENT_TEXTS.get(tag.getInt("role")), tag.getBoolean("wasDead"));
         }
 
-        public @NotNull NbtCompound writeToNbt() {
-            NbtCompound tag = new NbtCompound();
-            tag.putUuid("uuid", this.player.getId());
+        public @NotNull CompoundTag writeToNbt() {
+            CompoundTag tag = new CompoundTag();
+            tag.putUUID("uuid", this.player.getId());
             tag.putString("name", this.player.getName());
             tag.putInt("role", RoleAnnouncementTexts.ROLE_ANNOUNCEMENT_TEXTS.indexOf(this.role));
             tag.putBoolean("wasDead", this.wasDead);

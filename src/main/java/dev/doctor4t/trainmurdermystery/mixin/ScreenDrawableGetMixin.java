@@ -1,21 +1,21 @@
 package dev.doctor4t.trainmurdermystery.mixin;
 
 import dev.doctor4t.trainmurdermystery.client.gui.screen.ingame.DrawableGet;
-import net.minecraft.client.gui.Drawable;
-import net.minecraft.client.gui.screen.Screen;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
 import java.util.List;
+import net.minecraft.client.gui.components.Renderable;
+import net.minecraft.client.gui.screens.Screen;
 
 @Mixin(Screen.class)
 public class ScreenDrawableGetMixin implements DrawableGet {
 
-    @Shadow @Final private List<Drawable> drawables;
+    @Shadow @Final private List<Renderable> renderables;
 
     @Override
-    public List<Drawable> getDrawable() {
-        return this.drawables;
+    public List<Renderable> getDrawable() {
+        return this.renderables;
     }
 }

@@ -6,11 +6,11 @@ import dev.doctor4t.trainmurdermystery.event.CanSeePoison;
 import dev.doctor4t.trainmurdermystery.index.TMMParticles;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -25,14 +25,14 @@ public class BeveragePlateBlockEntityMixin {
 
     // haha I love writing extremely cursed mixins
     @Inject(method = "clientTick", at = @At("HEAD"))
-    private static void tickWithoutFearOfCrashing(World world, BlockPos pos, BlockState state, BlockEntity blockEntity, CallbackInfo ci) {
+    private static void tickWithoutFearOfCrashing(Level world, BlockPos pos, BlockState state, BlockEntity blockEntity, CallbackInfo ci) {
         if (!(blockEntity instanceof BeveragePlateBlockEntity tray)) {
             return;
         }
-        if ((!TMMClient.isKiller() && !CanSeePoison.EVENT.invoker().visible(MinecraftClient.getInstance().player)) || tray.getPoisoner() == null) {
+        if ((!TMMClient.isKiller() && !CanSeePoison.EVENT.invoker().visible(Minecraft.getInstance().player)) || tray.getPoisoner() == null) {
             return;
         }
-        if (world.getRandom().nextBetween(0, 20) < 17) {
+        if (world.getRandom().nextIntBetweenInclusive(0, 20) < 17) {
             return;
         }
         world.addParticle(

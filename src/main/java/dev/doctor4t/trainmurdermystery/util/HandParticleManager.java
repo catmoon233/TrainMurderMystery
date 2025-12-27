@@ -1,15 +1,15 @@
 package dev.doctor4t.trainmurdermystery.util;
 
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import dev.doctor4t.trainmurdermystery.client.particle.HandParticle;
-import net.minecraft.client.render.OverlayTexture;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.VertexConsumer;
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.util.math.MatrixStack;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
 
 import java.util.concurrent.CopyOnWriteArrayList;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.texture.OverlayTexture;
 
 public class HandParticleManager {
     private final CopyOnWriteArrayList<HandParticle> particles = new CopyOnWriteArrayList<>();
@@ -27,18 +27,18 @@ public class HandParticleManager {
         });
     }
 
-    public void render(MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light) {
+    public void render(PoseStack matrices, MultiBufferSource vertexConsumers, int light) {
         vector = new Vector3f(0f, 0f, 1f);
         if (particles.isEmpty()) return;
 
-        MatrixStack.Entry entry = matrices.peek();
-        Matrix4f model = entry.getPositionMatrix();
+        PoseStack.Pose entry = matrices.last();
+        Matrix4f model = entry.pose();
 
         Vector3f right = new Vector3f(1, 0, 0);
         Vector3f up = new Vector3f(0, 1, 0);
 
         for (HandParticle p : particles) {
-            RenderLayer rl = p.renderLayerFactory.apply(p.texture);
+            RenderType rl = p.renderLayerFactory.apply(p.texture);
             VertexConsumer consumer = vertexConsumers.getBuffer(rl);
 
             float half = p.size * 0.5f;
@@ -106,12 +106,12 @@ public class HandParticleManager {
         float displayG = g * a;
         float displayB = b * a;
 
-        consumer.vertex(model, pos.x, pos.y, pos.z)
-                .color(displayR, displayG, displayB, a)
-                .texture(u, v)
-                .overlay(OverlayTexture.DEFAULT_UV)
-                .light(p.light)
-                .normal(0f, 1f, 0f);
+        consumer.addVertex(model, pos.x, pos.y, pos.z)
+                .setColor(displayR, displayG, displayB, a)
+                .setUv(u, v)
+                .setOverlay(OverlayTexture.NO_OVERLAY)
+                .setLight(p.light)
+                .setNormal(0f, 1f, 0f);
     }
 
     private static float lerp(float t, float a, float b) {

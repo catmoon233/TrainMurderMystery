@@ -1,49 +1,49 @@
 package dev.doctor4t.trainmurdermystery.block;
 
 import com.mojang.serialization.MapCodec;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.HorizontalFacingBlock;
-import net.minecraft.block.ShapeContext;
-import net.minecraft.item.ItemPlacementContext;
-import net.minecraft.state.StateManager;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.world.BlockView;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.HorizontalDirectionalBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
-public class LedgeBlock extends HorizontalFacingBlock {
-    public static final MapCodec<LedgeBlock> CODEC = createCodec(LedgeBlock::new);
+public class LedgeBlock extends HorizontalDirectionalBlock {
+    public static final MapCodec<LedgeBlock> CODEC = simpleCodec(LedgeBlock::new);
 
-    protected static final VoxelShape NORTH_SHAPE = Block.createCuboidShape(0, 14, 0, 16, 16, 8);
-    protected static final VoxelShape EAST_SHAPE = Block.createCuboidShape(8, 14, 0, 16, 16, 16);
-    protected static final VoxelShape SOUTH_SHAPE = Block.createCuboidShape(0, 14, 8, 16, 16, 16);
-    protected static final VoxelShape WEST_SHAPE = Block.createCuboidShape(0, 14, 0, 8, 16, 16);
+    protected static final VoxelShape NORTH_SHAPE = Block.box(0, 14, 0, 16, 16, 8);
+    protected static final VoxelShape EAST_SHAPE = Block.box(8, 14, 0, 16, 16, 16);
+    protected static final VoxelShape SOUTH_SHAPE = Block.box(0, 14, 8, 16, 16, 16);
+    protected static final VoxelShape WEST_SHAPE = Block.box(0, 14, 0, 8, 16, 16);
 
-    protected static final VoxelShape NORTH_SHAPE_SMALL = Block.createCuboidShape(0, 14, 0, 16, 16, 2);
-    protected static final VoxelShape EAST_SHAPE_SMALL = Block.createCuboidShape(14, 14, 0, 16, 16, 16);
-    protected static final VoxelShape SOUTH_SHAPE_SMALL = Block.createCuboidShape(0, 14, 14, 16, 16, 16);
-    protected static final VoxelShape WEST_SHAPE_SMALL = Block.createCuboidShape(0, 14, 0, 2, 16, 16);
+    protected static final VoxelShape NORTH_SHAPE_SMALL = Block.box(0, 14, 0, 16, 16, 2);
+    protected static final VoxelShape EAST_SHAPE_SMALL = Block.box(14, 14, 0, 16, 16, 16);
+    protected static final VoxelShape SOUTH_SHAPE_SMALL = Block.box(0, 14, 14, 16, 16, 16);
+    protected static final VoxelShape WEST_SHAPE_SMALL = Block.box(0, 14, 0, 2, 16, 16);
 
-    public LedgeBlock(Settings settings) {
+    public LedgeBlock(Properties settings) {
         super(settings);
-        this.setDefaultState(super.getDefaultState()
-                .with(FACING, Direction.NORTH));
+        this.registerDefaultState(super.defaultBlockState()
+                .setValue(FACING, Direction.NORTH));
     }
 
     @Override
-    protected MapCodec<? extends HorizontalFacingBlock> getCodec() {
+    protected MapCodec<? extends HorizontalDirectionalBlock> codec() {
         return CODEC;
     }
 
     @Override
-    public BlockState getPlacementState(ItemPlacementContext ctx) {
-        return this.getDefaultState().with(FACING, ctx.getHorizontalPlayerFacing());
+    public BlockState getStateForPlacement(BlockPlaceContext ctx) {
+        return this.defaultBlockState().setValue(FACING, ctx.getHorizontalDirection());
     }
 
     @Override
-    public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
-        return switch (state.get(FACING)) {
+    public VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
+        return switch (state.getValue(FACING)) {
             case NORTH -> NORTH_SHAPE_SMALL;
             case SOUTH -> SOUTH_SHAPE_SMALL;
             case WEST -> WEST_SHAPE_SMALL;
@@ -52,8 +52,8 @@ public class LedgeBlock extends HorizontalFacingBlock {
         };
     }
 
-    public VoxelShape getCollisionShapeBig(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
-        return switch (state.get(FACING)) {
+    public VoxelShape getCollisionShapeBig(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
+        return switch (state.getValue(FACING)) {
             case NORTH -> NORTH_SHAPE;
             case SOUTH -> SOUTH_SHAPE;
             case WEST -> WEST_SHAPE;
@@ -62,8 +62,8 @@ public class LedgeBlock extends HorizontalFacingBlock {
         };
     }
 
-    public VoxelShape getCollisionShapeSmall(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
-        return switch (state.get(FACING)) {
+    public VoxelShape getCollisionShapeSmall(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
+        return switch (state.getValue(FACING)) {
             case NORTH -> NORTH_SHAPE_SMALL;
             case SOUTH -> SOUTH_SHAPE_SMALL;
             case WEST -> WEST_SHAPE_SMALL;
@@ -73,15 +73,15 @@ public class LedgeBlock extends HorizontalFacingBlock {
     }
 
     @Override
-    protected VoxelShape getCollisionShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
-        if (!context.isAbove(state.getOutlineShape(world, pos), pos, true)) {
+    protected VoxelShape getCollisionShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
+        if (!context.isAbove(state.getShape(world, pos), pos, true)) {
             return getCollisionShapeSmall(state, world, pos, context);
         }
         return getCollisionShapeBig(state, world, pos, context);
     }
 
     @Override
-    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(FACING);
     }
 }

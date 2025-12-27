@@ -2,22 +2,22 @@ package dev.doctor4t.trainmurdermystery.client.gui;
 
 import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
 import dev.doctor4t.trainmurdermystery.cca.PlayerShopComponent;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.util.math.MathHelper;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.util.Mth;
 
 public class StoreRenderer {
     public static MoneyNumberRenderer view = new MoneyNumberRenderer();
     public static float offsetDelta = 0f;
 
-    public static void renderHud(TextRenderer renderer, @NotNull ClientPlayerEntity player, @NotNull DrawContext context, float delta) {
-        if (!GameWorldComponent.KEY.get(player.getWorld()).canUseKillerFeatures(player)) return;
+    public static void renderHud(Font renderer, @NotNull LocalPlayer player, @NotNull GuiGraphics context, float delta) {
+        if (!GameWorldComponent.KEY.get(player.level()).canUseKillerFeatures(player)) return;
         int balance = PlayerShopComponent.KEY.get(player).balance;
         if (view.getTarget() != balance) {
             offsetDelta = balance > view.getTarget() ? .6f : -.6f;
@@ -26,12 +26,12 @@ public class StoreRenderer {
         float r = offsetDelta > 0 ? 1f - offsetDelta : 1f;
         float g = offsetDelta < 0 ? 1f + offsetDelta : 1f;
         float b = 1f - Math.abs(offsetDelta);
-        int colour = MathHelper.packRgb(r, g, b) | 0xFF000000;
-        context.getMatrices().push();
-        context.getMatrices().translate(context.getScaledWindowWidth() - 12, 6, 0);
+        int colour = Mth.color(r, g, b) | 0xFF000000;
+        context.pose().pushPose();
+        context.pose().translate(context.guiWidth() - 12, 6, 0);
         view.render(renderer, context, 0, 0, colour, delta);
-        context.getMatrices().pop();
-        offsetDelta = MathHelper.lerp(delta / 16, offsetDelta, 0f);
+        context.pose().popPose();
+        offsetDelta = Mth.lerp(delta / 16, offsetDelta, 0f);
     }
 
     public static void tick() {
@@ -59,19 +59,19 @@ public class StoreRenderer {
             for (ScrollingDigit digit : this.digits) digit.update();
         }
 
-        public void render(TextRenderer renderer, @NotNull DrawContext context, int x, int y, int colour, float delta) {
-            context.getMatrices().push();
-            context.getMatrices().translate(x, y, 0);
-            context.drawTextWithShadow(renderer, "\uE781", 0, 0, colour);
+        public void render(Font renderer, @NotNull GuiGraphics context, int x, int y, int colour, float delta) {
+            context.pose().pushPose();
+            context.pose().translate(x, y, 0);
+            context.drawString(renderer, "\uE781", 0, 0, colour);
             int offset = -8;
             for (ScrollingDigit digit : this.digits) {
-                context.getMatrices().push();
-                context.getMatrices().translate(offset, 0, 0);
+                context.pose().pushPose();
+                context.pose().translate(offset, 0, 0);
                 digit.render(renderer, context, colour, delta);
                 offset -= 8;
-                context.getMatrices().pop();
+                context.pose().popPose();
             }
-            context.getMatrices().pop();
+            context.pose().popPose();
         }
 
         public float getTarget() {
@@ -91,31 +91,31 @@ public class StoreRenderer {
 
         public void update() {
             this.lastValue = this.value;
-            this.value = MathHelper.lerp(0.15f, this.value, this.target);
+            this.value = Mth.lerp(0.15f, this.value, this.target);
             if (Math.abs(this.value - this.target) < 0.01f) this.value = this.target;
         }
 
-        public void render(@NotNull TextRenderer renderer, @NotNull DrawContext context, int colour, float delta) {
-            if (MathHelper.floor(this.lastValue) != MathHelper.floor(this.value)) {
-                ClientPlayerEntity player = MinecraftClient.getInstance().player;
+        public void render(@NotNull Font renderer, @NotNull GuiGraphics context, int colour, float delta) {
+            if (Mth.floor(this.lastValue) != Mth.floor(this.value)) {
+                LocalPlayer player = Minecraft.getInstance().player;
 //                if (player != null)player.getWorld().playSound(player, player.getX(), player.getY(), player.getZ(), TMMSounds.BALANCE_CLICK, SoundCategory.PLAYERS, 0.1f, 1 + this.lastValue - this.value, player.getRandom().nextLong());
             }
-            float value = MathHelper.lerp(delta, this.lastValue, this.value);
-            int digit = MathHelper.floor(value) % 10;
-            int digitNext = MathHelper.floor(value + 1) % 10;
+            float value = Mth.lerp(delta, this.lastValue, this.value);
+            int digit = Mth.floor(value) % 10;
+            int digitNext = Mth.floor(value + 1) % 10;
             float offset = value % 1;
             colour &= 0xFFFFFF;
-            context.getMatrices().push();
-            context.getMatrices().translate(0, -offset * (renderer.fontHeight + 2), 0);
+            context.pose().pushPose();
+            context.pose().translate(0, -offset * (renderer.lineHeight + 2), 0);
             float alpha = (1.0f - Math.abs(offset)) * 255.0f;
             if (value < 1 && !this.force) alpha *= value;
             int baseColour = colour | (int) alpha << 24;
             int nextColour = colour | (int) (Math.abs(offset) * 255.0f) << 24;
             if ((baseColour & -67108864) != 0)
-                context.drawTextWithShadow(renderer, String.valueOf(digit), 0, 0, baseColour);
+                context.drawString(renderer, String.valueOf(digit), 0, 0, baseColour);
             if ((nextColour & -67108864) != 0)
-                context.drawTextWithShadow(renderer, String.valueOf(digitNext), 0, renderer.fontHeight + 2, nextColour);
-            context.getMatrices().pop();
+                context.drawString(renderer, String.valueOf(digitNext), 0, renderer.lineHeight + 2, nextColour);
+            context.pose().popPose();
         }
 
         public void setTarget(float target) {

@@ -2,45 +2,45 @@ package dev.doctor4t.trainmurdermystery.mixin.client.restrictions;
 
 import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+import com.mojang.blaze3d.vertex.PoseStack;
 import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.cca.PlayerPsychoComponent;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.AbstractClientPlayerEntity;
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.entity.PlayerEntityRenderer;
-import net.minecraft.client.util.SkinTextures;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.entity.player.PlayerRenderer;
+import net.minecraft.client.resources.PlayerSkin;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(PlayerEntityRenderer.class)
+@Mixin(PlayerRenderer.class)
 public class PlayerEntityRendererMixin {
-    @WrapMethod(method = "renderLabelIfPresent(Lnet/minecraft/client/network/AbstractClientPlayerEntity;Lnet/minecraft/text/Text;Lnet/minecraft/client/util/math/MatrixStack;Lnet/minecraft/client/render/VertexConsumerProvider;IF)V")
-    protected void tmm$disableNameTags(AbstractClientPlayerEntity abstractClientPlayerEntity, Text text, MatrixStack matrixStack, VertexConsumerProvider vertexConsumerProvider, int i, float f, Operation<Void> original) {
+    @WrapMethod(method = "renderNameTag(Lnet/minecraft/client/player/AbstractClientPlayer;Lnet/minecraft/network/chat/Component;Lcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;IF)V")
+    protected void tmm$disableNameTags(AbstractClientPlayer abstractClientPlayerEntity, Component text, PoseStack matrixStack, MultiBufferSource vertexConsumerProvider, int i, float f, Operation<Void> original) {
     }
 
-    @Inject(method = "getTexture(Lnet/minecraft/client/network/AbstractClientPlayerEntity;)Lnet/minecraft/util/Identifier;", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "getTextureLocation(Lnet/minecraft/client/player/AbstractClientPlayer;)Lnet/minecraft/resources/ResourceLocation;", at = @At("HEAD"), cancellable = true)
     private void tmm$psychoSkinTexture(
-            AbstractClientPlayerEntity abstractClientPlayerEntity, CallbackInfoReturnable<Identifier> cir) {
+            AbstractClientPlayer abstractClientPlayerEntity, CallbackInfoReturnable<ResourceLocation> cir) {
         if (PlayerPsychoComponent.KEY.get(abstractClientPlayerEntity).getPsychoTicks() > 0) {
-            SkinTextures.Model model = abstractClientPlayerEntity.getSkinTextures().model();
-            String suffix = (model == SkinTextures.Model.SLIM) ? "_thin" : "";
-            Identifier texture = TMM.id("textures/entity/psycho" + suffix + ".png");
+            PlayerSkin.Model model = abstractClientPlayerEntity.getSkin().model();
+            String suffix = (model == PlayerSkin.Model.SLIM) ? "_thin" : "";
+            ResourceLocation texture = TMM.id("textures/entity/psycho" + suffix + ".png");
 
             cir.setReturnValue(texture);
         }
     }
 
-    @ModifyVariable(method = "renderArm", at = @At("STORE"), ordinal = 0)
-    private Identifier tmm$psychoArmTexture(Identifier skinTexture) {
-        if (PlayerPsychoComponent.KEY.get(MinecraftClient.getInstance().player).getPsychoTicks() > 0) {
-            SkinTextures.Model model = MinecraftClient.getInstance().player.getSkinTextures().model();
-            String suffix = model == SkinTextures.Model.SLIM ? "_thin" : "";
+    @ModifyVariable(method = "renderHand", at = @At("STORE"), ordinal = 0)
+    private ResourceLocation tmm$psychoArmTexture(ResourceLocation skinTexture) {
+        if (PlayerPsychoComponent.KEY.get(Minecraft.getInstance().player).getPsychoTicks() > 0) {
+            PlayerSkin.Model model = Minecraft.getInstance().player.getSkin().model();
+            String suffix = model == PlayerSkin.Model.SLIM ? "_thin" : "";
             return TMM.id("textures/entity/psycho" + suffix + ".png");
         }
         return skinTexture;

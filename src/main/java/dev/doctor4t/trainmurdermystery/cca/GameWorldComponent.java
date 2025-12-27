@@ -7,20 +7,6 @@ import dev.doctor4t.trainmurdermystery.api.TMMGameModes;
 import dev.doctor4t.trainmurdermystery.api.TMMRoles;
 import dev.doctor4t.trainmurdermystery.game.GameConstants;
 import dev.doctor4t.trainmurdermystery.game.GameFunctions;
-import net.minecraft.block.Block;
-import net.minecraft.block.Blocks;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtElement;
-import net.minecraft.nbt.NbtHelper;
-import net.minecraft.nbt.NbtList;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.ladysnake.cca.api.v3.component.ComponentKey;
@@ -33,10 +19,23 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtUtils;
+import net.minecraft.nbt.Tag;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
 
 public class GameWorldComponent implements AutoSyncedComponent, ServerTickingComponent, ClientTickingComponent {
     public static final ComponentKey<GameWorldComponent> KEY = ComponentRegistry.getOrCreate(TMM.id("game"), GameWorldComponent.class);
-    private final World world;
+    private final Level world;
 
     private boolean lockedToSupporters = false;
     private boolean enableWeights = false;
@@ -72,7 +71,7 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
 
     private float backfireChance = 0f;
 
-    public GameWorldComponent(World world) {
+    public GameWorldComponent(Level world) {
         this.world = world;
     }
 
@@ -94,7 +93,7 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
     }
 
     public void setFade(int fade) {
-        this.fade = MathHelper.clamp(fade, 0, GameConstants.FADE_TIME + GameConstants.FADE_PAUSE);
+        this.fade = Mth.clamp(fade, 0, GameConstants.FADE_TIME + GameConstants.FADE_PAUSE);
     }
 
     public void setGameStatus(GameStatus gameStatus) {
@@ -110,8 +109,8 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
         return this.gameStatus == GameStatus.ACTIVE || this.gameStatus == GameStatus.STOPPING;
     }
 
-    public void addRole(PlayerEntity player, Role role) {
-        this.addRole(player.getUuid(), role);
+    public void addRole(Player player, Role role) {
+        this.addRole(player.getUUID(), role);
     }
 
     public void addRole(UUID player, Role role) {
@@ -134,8 +133,8 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
         return roles;
     }
 
-    public Role getRole(PlayerEntity player) {
-        return getRole(player.getUuid());
+    public Role getRole(Player player) {
+        return getRole(player.getUUID());
     }
 
     public @Nullable Role getRole(UUID uuid) {
@@ -163,18 +162,18 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
         return ret;
     }
 
-    public boolean isRole(@NotNull PlayerEntity player, Role role) {
-        return isRole(player.getUuid(), role);
+    public boolean isRole(@NotNull Player player, Role role) {
+        return isRole(player.getUUID(), role);
     }
 
     public boolean isRole(@NotNull UUID uuid, Role role) {
         return this.roles.get(uuid) == role;
     }
 
-    public boolean canUseKillerFeatures(@NotNull PlayerEntity player) {
+    public boolean canUseKillerFeatures(@NotNull Player player) {
         return getRole(player) != null && getRole(player).canUseKiller();
     }
-    public boolean isInnocent(@NotNull PlayerEntity player) {
+    public boolean isInnocent(@NotNull Player player) {
         return getRole(player) != null && getRole(player).isInnocent();
     }
 
@@ -245,11 +244,11 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
     }
 
     @Override
-    public void readFromNbt(@NotNull NbtCompound nbtCompound, RegistryWrapper.WrapperLookup wrapperLookup) {
+    public void readFromNbt(@NotNull CompoundTag nbtCompound, HolderLookup.Provider wrapperLookup) {
         this.lockedToSupporters = nbtCompound.getBoolean("LockedToSupporters");
         this.enableWeights = nbtCompound.getBoolean("EnableWeights");
 
-        this.gameMode = TMMGameModes.GAME_MODES.get(Identifier.of(nbtCompound.getString("GameMode")));
+        this.gameMode = TMMGameModes.GAME_MODES.get(ResourceLocation.parse(nbtCompound.getString("GameMode")));
         this.gameStatus = GameStatus.valueOf(nbtCompound.getString("GameStatus"));
 
         this.fade = nbtCompound.getInt("Fade");
@@ -262,7 +261,7 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
         }
 
         if (nbtCompound.contains("LooseEndWinner")) {
-            this.looseEndWinner = nbtCompound.getUuid("LooseEndWinner");
+            this.looseEndWinner = nbtCompound.getUUID("LooseEndWinner");
         } else {
             this.looseEndWinner = null;
         }
@@ -274,16 +273,16 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
         }
     }
 
-    private ArrayList<UUID> uuidListFromNbt(NbtCompound nbtCompound, String listName) {
+    private ArrayList<UUID> uuidListFromNbt(CompoundTag nbtCompound, String listName) {
         ArrayList<UUID> ret = new ArrayList<>();
-        for (NbtElement e : nbtCompound.getList(listName, NbtElement.INT_ARRAY_TYPE)) {
-            ret.add(NbtHelper.toUuid(e));
+        for (Tag e : nbtCompound.getList(listName, Tag.TAG_INT_ARRAY)) {
+            ret.add(NbtUtils.loadUUID(e));
         }
         return ret;
     }
 
     @Override
-    public void writeToNbt(@NotNull NbtCompound nbtCompound, RegistryWrapper.WrapperLookup wrapperLookup) {
+    public void writeToNbt(@NotNull CompoundTag nbtCompound, HolderLookup.Provider wrapperLookup) {
         nbtCompound.putBoolean("LockedToSupporters", lockedToSupporters);
         nbtCompound.putBoolean("EnableWeights", enableWeights);
 
@@ -299,15 +298,15 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
             nbtCompound.put(role.identifier().toString(), nbtFromUuidList(getAllWithRole(role)));
         }
 
-        if (this.looseEndWinner != null) nbtCompound.putUuid("LooseEndWinner", this.looseEndWinner);
+        if (this.looseEndWinner != null) nbtCompound.putUUID("LooseEndWinner", this.looseEndWinner);
 
         nbtCompound.putString("LastWinStatus", this.lastWinStatus.toString());
     }
 
-    private NbtList nbtFromUuidList(List<UUID> list) {
-        NbtList ret = new NbtList();
+    private ListTag nbtFromUuidList(List<UUID> list) {
+        ListTag ret = new ListTag();
         for (UUID player : list) {
-            ret.add(NbtHelper.fromUuid(player));
+            ret.add(NbtUtils.createUUID(player));
         }
         return ret;
     }
@@ -326,7 +325,7 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
     public void serverTick() {
         tickCommon();
 
-        if (!(this.world instanceof ServerWorld serverWorld)) {
+        if (!(this.world instanceof ServerLevel serverWorld)) {
             return;
         }
 
@@ -342,20 +341,20 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
         }
 
         // if not running and spectators or not in lobby reset them
-        if (serverWorld.getTime() % 20 == 0) {
-            for (ServerPlayerEntity player : serverWorld.getPlayers()) {
-                if (!isRunning() && (player.isSpectator() && serverWorld.getServer().getPermissionLevel(player.getGameProfile()) < 2 || (GameFunctions.isPlayerAliveAndSurvival(player) && areas.playArea.contains(player.getPos())))) {
+        if (serverWorld.getGameTime() % 20 == 0) {
+            for (ServerPlayer player : serverWorld.players()) {
+                if (!isRunning() && (player.isSpectator() && serverWorld.getServer().getProfilePermissions(player.getGameProfile()) < 2 || (GameFunctions.isPlayerAliveAndSurvival(player) && areas.playArea.contains(player.position())))) {
                     GameFunctions.resetPlayer(player);
                 }
             }
         }
 
-        if (serverWorld.getServer().getOverworld().equals(serverWorld)) {
+        if (serverWorld.getServer().overworld().equals(serverWorld)) {
             TrainWorldComponent trainComponent = TrainWorldComponent.KEY.get(serverWorld);
 
             // spectator limits
             if (trainComponent.getSpeed() > 0) {
-                for (ServerPlayerEntity player : serverWorld.getPlayers()) {
+                for (ServerPlayer player : serverWorld.players()) {
                     if (!GameFunctions.isPlayerAliveAndSurvival(player) && isBound()) {
                         GameFunctions.limitPlayerToBox(player, areas.playArea);
                     }
@@ -363,18 +362,18 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
             }
 
             if (this.isRunning()) {
-                for (ServerPlayerEntity player : serverWorld.getPlayers()) {
+                for (ServerPlayer player : serverWorld.players()) {
                     if (GameFunctions.isPlayerAliveAndSurvival(player)) {
                         // kill players who fell off the train
-                        final var block = player.getWorld().getBlockState(new BlockPos((int) player.getX(), (int) player.getY(), (int) player.getZ())).getBlock();
-                        final var block1 = player.getWorld().getBlockState(new BlockPos((int) player.getX(), (int) (player.getY()-1), (int) player.getZ())).getBlock();
+                        final var block = player.level().getBlockState(new BlockPos((int) player.getX(), (int) player.getY(), (int) player.getZ())).getBlock();
+                        final var block1 = player.level().getBlockState(new BlockPos((int) player.getX(), (int) (player.getY()-1), (int) player.getZ())).getBlock();
                         if (player.getY() < areas.playArea.minY || (block == Blocks.WATER && block1 == Blocks.WATER)) {
-                            GameFunctions.killPlayer(player, false, player.getLastAttacker() instanceof PlayerEntity killerPlayer ? killerPlayer : null, GameConstants.DeathReasons.FELL_OUT_OF_TRAIN);
+                            GameFunctions.killPlayer(player, false, player.getLastAttacker() instanceof Player killerPlayer ? killerPlayer : null, GameConstants.DeathReasons.FELL_OUT_OF_TRAIN);
                         }
 
                         // put players with no role in spectator mode
                         if (GameWorldComponent.KEY.get(world).getRole(player) == null) {
-                            player.changeGameMode(net.minecraft.world.GameMode.SPECTATOR);
+                            player.setGameMode(net.minecraft.world.level.GameType.SPECTATOR);
                         }
                     }
 
@@ -386,7 +385,7 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
             }
         }
 
-        if (serverWorld.getTime() % 40 == 0) {
+        if (serverWorld.getGameTime() % 40 == 0) {
             this.sync();
         }
     }
@@ -397,7 +396,7 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
             this.setFade(fade + 1);
 
             if (this.getFade() >= GameConstants.FADE_TIME + GameConstants.FADE_PAUSE) {
-                if (world instanceof ServerWorld serverWorld) {
+                if (world instanceof ServerLevel serverWorld) {
                     if (this.getGameStatus() == GameStatus.STARTING)
                         GameFunctions.initializeGame(serverWorld);
                     if (this.getGameStatus() == GameStatus.STOPPING)

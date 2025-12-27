@@ -1,43 +1,43 @@
 package dev.doctor4t.trainmurdermystery.block.entity;
 
 import dev.doctor4t.trainmurdermystery.block.MountableBlock;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.data.DataTracker;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.nbt.NbtHelper;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.NbtUtils;
+import net.minecraft.network.syncher.SynchedEntityData;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.Nullable;
 
 public class SeatEntity extends Entity {
     @Nullable
     BlockPos seatPos;
 
-    public SeatEntity(EntityType<?> type, World world) {
+    public SeatEntity(EntityType<?> type, Level world) {
         super(type, world);
     }
 
     @Override
-    protected void initDataTracker(DataTracker.Builder builder) {
+    protected void defineSynchedData(SynchedEntityData.Builder builder) {
 
     }
 
     @Override
-    protected void readCustomDataFromNbt(NbtCompound nbt) {
-        NbtHelper.toBlockPos(nbt, "seatPos").ifPresent(this::setSeatPos);
+    protected void readAdditionalSaveData(CompoundTag nbt) {
+        NbtUtils.readBlockPos(nbt, "seatPos").ifPresent(this::setSeatPos);
     }
 
     @Override
-    protected void writeCustomDataToNbt(NbtCompound nbt) {
-        if (this.getSeatPos() != null) nbt.put("seatPos", NbtHelper.fromBlockPos(this.getSeatPos()));
+    protected void addAdditionalSaveData(CompoundTag nbt) {
+        if (this.getSeatPos() != null) nbt.put("seatPos", NbtUtils.writeBlockPos(this.getSeatPos()));
     }
 
     @Override
     public void tick() {
-        if (!this.getWorld().isClient) {
-            if (this.getSeatPos() == null || !this.hasPassengers() || !(this.getWorld().getBlockState(this.getSeatPos()).getBlock() instanceof MountableBlock)) {
-                this.removeAllPassengers();
+        if (!this.level().isClientSide) {
+            if (this.getSeatPos() == null || !this.isVehicle() || !(this.level().getBlockState(this.getSeatPos()).getBlock() instanceof MountableBlock)) {
+                this.ejectPassengers();
                 this.discard();
             }
         }

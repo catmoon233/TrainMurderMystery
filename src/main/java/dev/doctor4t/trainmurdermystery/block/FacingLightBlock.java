@@ -1,36 +1,36 @@
 package dev.doctor4t.trainmurdermystery.block;
 
 import dev.doctor4t.trainmurdermystery.index.TMMProperties;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.FacingBlock;
-import net.minecraft.item.ItemPlacementContext;
-import net.minecraft.state.StateManager;
-import net.minecraft.state.property.BooleanProperty;
-import net.minecraft.util.math.Direction;
+import net.minecraft.core.Direction;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.DirectionalBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import org.jetbrains.annotations.Nullable;
 
-public abstract class FacingLightBlock extends FacingBlock {
+public abstract class FacingLightBlock extends DirectionalBlock {
 
     public static final BooleanProperty ACTIVE = TMMProperties.ACTIVE;
 
-    public FacingLightBlock(Settings settings) {
+    public FacingLightBlock(Properties settings) {
         super(settings);
-        this.setDefaultState(super.getDefaultState()
-                .with(FACING, Direction.DOWN)
-                .with(ACTIVE, true));
+        this.registerDefaultState(super.defaultBlockState()
+                .setValue(FACING, Direction.DOWN)
+                .setValue(ACTIVE, true));
     }
 
     @Nullable
     @Override
-    public BlockState getPlacementState(ItemPlacementContext ctx) {
-        return this.getDefaultState()
-                .with(FACING, ctx.getSide())
-                .with(ACTIVE, true);
+    public BlockState getStateForPlacement(BlockPlaceContext ctx) {
+        return this.defaultBlockState()
+                .setValue(FACING, ctx.getClickedFace())
+                .setValue(ACTIVE, true);
     }
 
     @Override
-    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(FACING, ACTIVE);
     }
 }

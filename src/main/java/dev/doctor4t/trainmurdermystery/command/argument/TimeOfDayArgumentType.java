@@ -3,15 +3,14 @@ package dev.doctor4t.trainmurdermystery.command.argument;
 import com.mojang.brigadier.context.CommandContext;
 import com.mojang.serialization.Codec;
 import dev.doctor4t.trainmurdermystery.cca.TrainWorldComponent;
-import net.minecraft.command.argument.EnumArgumentType;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.util.StringIdentifiable;
-
 import java.util.Arrays;
 import java.util.Locale;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.arguments.StringRepresentableArgument;
+import net.minecraft.util.StringRepresentable;
 
-public class TimeOfDayArgumentType extends EnumArgumentType<TrainWorldComponent.TimeOfDay> {
-    private static final Codec<TrainWorldComponent.TimeOfDay> CODEC = StringIdentifiable.createCodec(
+public class TimeOfDayArgumentType extends StringRepresentableArgument<TrainWorldComponent.TimeOfDay> {
+    private static final Codec<TrainWorldComponent.TimeOfDay> CODEC = StringRepresentable.fromEnumWithMapping(
             TimeOfDayArgumentType::getValues, name -> name.toLowerCase(Locale.ROOT)
     );
 
@@ -27,12 +26,12 @@ public class TimeOfDayArgumentType extends EnumArgumentType<TrainWorldComponent.
         return new TimeOfDayArgumentType();
     }
 
-    public static TrainWorldComponent.TimeOfDay getTimeofday(CommandContext<ServerCommandSource> context, String id) {
+    public static TrainWorldComponent.TimeOfDay getTimeofday(CommandContext<CommandSourceStack> context, String id) {
         return context.getArgument(id, TrainWorldComponent.TimeOfDay.class);
     }
 
     @Override
-    protected String transformValueName(String name) {
+    protected String convertId(String name) {
         return name.toLowerCase(Locale.ROOT);
     }
 }

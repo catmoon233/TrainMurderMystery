@@ -1,7 +1,7 @@
 package dev.doctor4t.trainmurdermystery.event;
 
 import net.fabricmc.fabric.api.event.Event;
-import net.minecraft.entity.Entity;
+import net.minecraft.world.entity.Entity;
 
 import static net.fabricmc.fabric.api.event.EventFactory.createArrayBacked;
 

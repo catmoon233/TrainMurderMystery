@@ -3,58 +3,63 @@ package dev.doctor4t.trainmurdermystery.block;
 import com.mojang.serialization.MapCodec;
 import dev.doctor4t.trainmurdermystery.block_entity.SprinklerBlockEntity;
 import dev.doctor4t.trainmurdermystery.index.TMMBlockEntities;
-import net.minecraft.block.*;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.BlockEntityTicker;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.block.enums.BlockFace;
-import net.minecraft.item.ItemPlacementContext;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.state.StateManager;
-import net.minecraft.state.property.BooleanProperty;
-import net.minecraft.state.property.DirectionProperty;
-import net.minecraft.state.property.Properties;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.random.Random;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.world.BlockView;
-import net.minecraft.world.World;
-import net.minecraft.world.WorldView;
+
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelReader;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.EntityBlock;
+import net.minecraft.world.level.block.FaceAttachedHorizontalDirectionalBlock;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.AttachFace;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 
-public class SprinklerBlock extends WallMountedBlock implements BlockEntityProvider {
-    public static final BooleanProperty POWERED = Properties.POWERED;
-    public static final DirectionProperty FACING = Properties.HORIZONTAL_FACING;
-    public static final MapCodec<SprinklerBlock> CODEC = createCodec(SprinklerBlock::new);
-    protected static final VoxelShape UP_SHAPE = Block.createCuboidShape(3.0, 0.0, 3.0, 13.0, 3.0, 13.0);
-    protected static final VoxelShape DOWN_SHAPE = Block.createCuboidShape(3.0, 13.0, 3.0, 13.0, 16.0, 13.0);
-    protected static final VoxelShape EAST_SHAPE = Block.createCuboidShape(0.0, 3.0, 3.0, 3.0, 13.0, 13.0);
-    protected static final VoxelShape WEST_SHAPE = Block.createCuboidShape(13.0, 3.0, 3.0, 16.0, 13.0, 13.0);
-    protected static final VoxelShape SOUTH_SHAPE = Block.createCuboidShape(3.0, 3.0, 0.0, 13.0, 13.0, 3.0);
-    protected static final VoxelShape NORTH_SHAPE = Block.createCuboidShape(3.0, 3.0, 13.0, 13.0, 13.0, 16.0);
+public class SprinklerBlock extends FaceAttachedHorizontalDirectionalBlock implements EntityBlock {
+    public static final BooleanProperty POWERED = BlockStateProperties.POWERED;
+    public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
+    public static final MapCodec<SprinklerBlock> CODEC = simpleCodec(SprinklerBlock::new);
+    protected static final VoxelShape UP_SHAPE = Block.box(3.0, 0.0, 3.0, 13.0, 3.0, 13.0);
+    protected static final VoxelShape DOWN_SHAPE = Block.box(3.0, 13.0, 3.0, 13.0, 16.0, 13.0);
+    protected static final VoxelShape EAST_SHAPE = Block.box(0.0, 3.0, 3.0, 3.0, 13.0, 13.0);
+    protected static final VoxelShape WEST_SHAPE = Block.box(13.0, 3.0, 3.0, 16.0, 13.0, 13.0);
+    protected static final VoxelShape SOUTH_SHAPE = Block.box(3.0, 3.0, 0.0, 13.0, 13.0, 3.0);
+    protected static final VoxelShape NORTH_SHAPE = Block.box(3.0, 3.0, 13.0, 13.0, 13.0, 16.0);
 
-    public SprinklerBlock(Settings settings) {
+    public SprinklerBlock(Properties settings) {
         super(settings);
-        this.setDefaultState(this.getStateManager().getDefaultState().with(POWERED, false).with(FACING, Direction.NORTH).with(FACE, BlockFace.WALL));
+        this.registerDefaultState(this.getStateDefinition().any().setValue(POWERED, false).setValue(FACING, Direction.NORTH).setValue(FACE, AttachFace.WALL));
     }
 
-    public static Direction getDirection(BlockState state) {
-        return switch (state.get(FACE)) {
+    public static Direction getConnectedDirection(BlockState state) {
+        return switch (state.getValue(FACE)) {
             case CEILING -> Direction.DOWN;
             case FLOOR -> Direction.UP;
-            default -> state.get(FACING);
+            default -> state.getValue(FACING);
         };
     }
 
     @Override
-    protected MapCodec<? extends WallMountedBlock> getCodec() {
+    protected MapCodec<? extends FaceAttachedHorizontalDirectionalBlock> codec() {
         return CODEC;
     }
 
     @Override
-    public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
-        return switch (getDirection(state)) {
+    public VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
+        return switch (getConnectedDirection(state)) {
             case SOUTH -> SOUTH_SHAPE;
             case WEST -> WEST_SHAPE;
             case EAST -> EAST_SHAPE;
@@ -65,52 +70,52 @@ public class SprinklerBlock extends WallMountedBlock implements BlockEntityProvi
     }
 
     @Override
-    public boolean canPlaceAt(BlockState state, WorldView world, BlockPos pos) {
+    public boolean canSurvive(BlockState state, LevelReader world, BlockPos pos) {
         return true;
     }
 
     @Nullable
     @Override
-    public BlockState getPlacementState(ItemPlacementContext ctx) {
-        BlockState state = super.getPlacementState(ctx);
+    public BlockState getStateForPlacement(BlockPlaceContext ctx) {
+        BlockState state = super.getStateForPlacement(ctx);
         if (state != null) {
-            return state.with(POWERED, ctx.getWorld().isReceivingRedstonePower(ctx.getBlockPos()));
+            return state.setValue(POWERED, ctx.getLevel().hasNeighborSignal(ctx.getClickedPos()));
         }
         return null;
     }
 
     @Override
-    public void neighborUpdate(BlockState state, World world, BlockPos pos, Block block, BlockPos fromPos, boolean notify) {
-        if (!world.isClient) {
-            if (world.isReceivingRedstonePower(pos) || world.isReceivingRedstonePower(fromPos)) {
-                world.scheduleBlockTick(pos, this, 4);
+    public void neighborChanged(BlockState state, Level world, BlockPos pos, Block block, BlockPos fromPos, boolean notify) {
+        if (!world.isClientSide) {
+            if (world.hasNeighborSignal(pos) || world.hasNeighborSignal(fromPos)) {
+                world.scheduleTick(pos, this, 4);
             }
         }
     }
 
     @Override
-    public void scheduledTick(BlockState state, ServerWorld world, BlockPos pos, Random random) {
+    public void tick(BlockState state, ServerLevel world, BlockPos pos, RandomSource random) {
         BlockState cycle = state.cycle(POWERED);
-        world.setBlockState(pos, cycle, Block.NOTIFY_LISTENERS);
+        world.setBlock(pos, cycle, Block.UPDATE_CLIENTS);
         world.getBlockEntity(pos, TMMBlockEntities.SPRINKLER).ifPresent(entity -> {
-            entity.setPowered(cycle.get(POWERED));
+            entity.setPowered(cycle.getValue(POWERED));
             entity.sync();
         });
     }
 
     @Override
-    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(POWERED, FACING, FACE);
     }
 
     @Override
-    public @Nullable BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
+    public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new SprinklerBlockEntity(pos, state);
     }
 
     @Override
-    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
-        if (!world.isClient || !type.equals(TMMBlockEntities.SPRINKLER)) {
+    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level world, BlockState state, BlockEntityType<T> type) {
+        if (!world.isClientSide || !type.equals(TMMBlockEntities.SPRINKLER)) {
             return null;
         }
         return SprinklerBlockEntity::clientTick;

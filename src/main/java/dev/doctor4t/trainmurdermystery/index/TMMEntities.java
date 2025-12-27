@@ -8,33 +8,33 @@ import dev.doctor4t.trainmurdermystery.entity.GrenadeEntity;
 import dev.doctor4t.trainmurdermystery.entity.NoteEntity;
 import dev.doctor4t.trainmurdermystery.entity.PlayerBodyEntity;
 import net.fabricmc.fabric.api.object.builder.v1.entity.FabricDefaultAttributeRegistry;
-import net.minecraft.entity.EntityType;
-import net.minecraft.entity.SpawnGroup;
+import net.minecraft.world.entity.EntityType;
+import net.minecraft.world.entity.MobCategory;
 
 public interface TMMEntities {
     EntityTypeRegistrar registrar = new EntityTypeRegistrar(TMM.MOD_ID);
 
-    EntityType<SeatEntity> SEAT = registrar.create("seat", EntityType.Builder.create(SeatEntity::new, SpawnGroup.MISC)
-            .dimensions(1f, 1f)
-            .maxTrackingRange(128)
-            .disableSummon()
+    EntityType<SeatEntity> SEAT = registrar.create("seat", EntityType.Builder.of(SeatEntity::new, MobCategory.MISC)
+            .sized(1f, 1f)
+            .clientTrackingRange(128)
+            .noSummon()
     );
-    EntityType<PlayerBodyEntity> PLAYER_BODY = registrar.create("player_body", EntityType.Builder.create(PlayerBodyEntity::new, SpawnGroup.MISC)
-            .dimensions(1f, 0.25f)
-            .maxTrackingRange(128)
-            .disableSummon()
+    EntityType<PlayerBodyEntity> PLAYER_BODY = registrar.create("player_body", EntityType.Builder.of(PlayerBodyEntity::new, MobCategory.MISC)
+            .sized(1f, 0.25f)
+            .clientTrackingRange(128)
+            .noSummon()
     );
-    EntityType<FirecrackerEntity> FIRECRACKER = registrar.create("firecracker", EntityType.Builder.create(FirecrackerEntity::new, SpawnGroup.MISC)
-            .dimensions(.2f, .2f)
-            .maxTrackingRange(128)
+    EntityType<FirecrackerEntity> FIRECRACKER = registrar.create("firecracker", EntityType.Builder.of(FirecrackerEntity::new, MobCategory.MISC)
+            .sized(.2f, .2f)
+            .clientTrackingRange(128)
     );
-    EntityType<GrenadeEntity> GRENADE = registrar.create("grenade", EntityType.Builder.create(GrenadeEntity::new, SpawnGroup.MISC)
-            .dimensions(.2f, .2f)
-            .maxTrackingRange(128)
+    EntityType<GrenadeEntity> GRENADE = registrar.create("grenade", EntityType.Builder.of(GrenadeEntity::new, MobCategory.MISC)
+            .sized(.2f, .2f)
+            .clientTrackingRange(128)
     );
-    EntityType<NoteEntity> NOTE = registrar.create("note", EntityType.Builder.create(NoteEntity::new, SpawnGroup.MISC)
-            .dimensions(.45f, .45f)
-            .maxTrackingRange(128)
+    EntityType<NoteEntity> NOTE = registrar.create("note", EntityType.Builder.of(NoteEntity::new, MobCategory.MISC)
+            .sized(.45f, .45f)
+            .clientTrackingRange(128)
     );
 
     static void initialize() {

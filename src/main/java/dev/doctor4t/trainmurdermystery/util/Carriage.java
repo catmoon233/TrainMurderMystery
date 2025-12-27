@@ -1,8 +1,7 @@
 package dev.doctor4t.trainmurdermystery.util;
 
-import net.minecraft.util.math.Box;
-
 import java.util.List;
+import net.minecraft.world.phys.AABB;
 
-public record Carriage(List<Box> areas, String name) {
+public record Carriage(List<AABB> areas, String name) {
 }

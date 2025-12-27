@@ -1,8 +1,8 @@
 package dev.doctor4t.trainmurdermystery.block.property;
 
-import net.minecraft.util.StringIdentifiable;
+import net.minecraft.util.StringRepresentable;
 
-public enum OrnamentShape implements StringIdentifiable {
+public enum OrnamentShape implements StringRepresentable {
     LEFT("left", 0b10000),
     RIGHT("right", 0b01000),
     TOP("top", 0b00100),
@@ -48,7 +48,7 @@ public enum OrnamentShape implements StringIdentifiable {
     }
 
     @Override
-    public String asString() {
+    public String getSerializedName() {
         return this.name;
     }
 }

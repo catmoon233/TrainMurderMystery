@@ -4,21 +4,6 @@ import com.google.common.collect.Sets;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.datafixers.util.Pair;
 import dev.doctor4t.trainmurdermystery.client.TMMClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.screen.ingame.ScreenHandlerProvider;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.texture.Sprite;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.item.ItemStack;
-import net.minecraft.screen.ScreenHandler;
-import net.minecraft.screen.slot.Slot;
-import net.minecraft.screen.slot.SlotActionType;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.Util;
-import net.minecraft.util.math.MathHelper;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
@@ -26,8 +11,23 @@ import org.lwjgl.glfw.GLFW;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import net.minecraft.ChatFormatting;
+import net.minecraft.Util;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.inventory.MenuAccess;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.inventory.ClickType;
+import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
 
-public abstract class LimitedHandledScreen<T extends ScreenHandler> extends Screen implements ScreenHandlerProvider<T> {
+public abstract class LimitedHandledScreen<T extends AbstractContainerMenu> extends Screen implements MenuAccess<T> {
     protected int backgroundWidth = 176;
     protected int backgroundHeight = 32;
     protected final T handler;
@@ -64,7 +64,7 @@ public abstract class LimitedHandledScreen<T extends ScreenHandler> extends Scre
         return 134;
     }
 
-    public LimitedHandledScreen(T handler, PlayerInventory inventory, Text title) {
+    public LimitedHandledScreen(T handler, Inventory inventory, Component title) {
         super(title);
         this.handler = handler;
         this.cancelNextRelease = true;
@@ -77,13 +77,13 @@ public abstract class LimitedHandledScreen<T extends ScreenHandler> extends Scre
     }
 
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+    public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
         int i = this.x;
         int j = this.y - getYOffset();
         super.render(context, mouseX, mouseY, delta);
         RenderSystem.disableDepthTest();
-        context.getMatrices().push();
-        context.getMatrices().translate((float) i, (float) j, 0.0F);
+        context.pose().pushPose();
+        context.pose().translate((float) i, (float) j, 0.0F);
         this.focusedSlot = null;
 
         for (int k = 0; k < this.handler.slots.size(); k++) {
@@ -96,24 +96,24 @@ public abstract class LimitedHandledScreen<T extends ScreenHandler> extends Scre
                     this.focusedSlot = slot;
                     int l = slot.x;
                     int m = slot.y;
-                    if (this.focusedSlot.canBeHighlighted()) {
+                    if (this.focusedSlot.isHighlightable()) {
                         drawSlotHighlight(context, l, m, 0);
                     }
                 }
             }
         }
 
-        ItemStack itemStack = this.touchDragStack.isEmpty() ? this.handler.getCursorStack() : this.touchDragStack;
+        ItemStack itemStack = this.touchDragStack.isEmpty() ? this.handler.getCarried() : this.touchDragStack;
         if (!itemStack.isEmpty()) {
             int n = 8;
             int l = this.touchDragStack.isEmpty() ? 8 : 16;
             String string = null;
             if (!this.touchDragStack.isEmpty() && this.touchIsRightClickDrag) {
-                itemStack = itemStack.copyWithCount(MathHelper.ceil((float) itemStack.getCount() / 2.0F));
+                itemStack = itemStack.copyWithCount(Mth.ceil((float) itemStack.getCount() / 2.0F));
             } else if (this.cursorDragging && this.cursorDragSlots.size() > 1) {
                 itemStack = itemStack.copyWithCount(this.draggedStackRemainder);
                 if (itemStack.isEmpty()) {
-                    string = Formatting.YELLOW + "0";
+                    string = ChatFormatting.YELLOW + "0";
                 }
             }
 
@@ -121,7 +121,7 @@ public abstract class LimitedHandledScreen<T extends ScreenHandler> extends Scre
         }
 
         if (!this.touchDropReturningStack.isEmpty()) {
-            float f = (float) (Util.getMeasuringTimeMs() - this.touchDropTime) / 100.0F;
+            float f = (float) (Util.getMillis() - this.touchDropTime) / 100.0F;
             if (f >= 1.0F) {
                 f = 1.0F;
                 this.touchDropReturningStack = ItemStack.EMPTY;
@@ -134,67 +134,67 @@ public abstract class LimitedHandledScreen<T extends ScreenHandler> extends Scre
             this.drawItem(context, this.touchDropReturningStack, o, p, null);
         }
 
-        context.getMatrices().pop();
+        context.pose().popPose();
         RenderSystem.enableDepthTest();
     }
 
     private static boolean isHotbarSlot(Slot slot) {
-        return slot.id >= 36 && slot.id <= 44;
+        return slot.index >= 36 && slot.index <= 44;
     }
 
     @Override
-    public void renderBackground(DrawContext context, int mouseX, int mouseY, float delta) {
-        this.renderInGameBackground(context);
+    public void renderBackground(GuiGraphics context, int mouseX, int mouseY, float delta) {
+        this.renderTransparentBackground(context);
         this.drawBackground(context, delta, mouseX, mouseY);
     }
 
-    public static void drawSlotHighlight(@NotNull DrawContext context, int x, int y, int z) {
-        context.fillGradient(RenderLayer.getGuiOverlay(), x, y, x + 16, y + 16, -2130706433, -2130706433, z);
+    public static void drawSlotHighlight(@NotNull GuiGraphics context, int x, int y, int z) {
+        context.fillGradient(RenderType.guiOverlay(), x, y, x + 16, y + 16, -2130706433, -2130706433, z);
     }
 
-    protected void drawMouseoverTooltip(DrawContext context, int x, int y) {
-        if (!this.handler.getCursorStack().isEmpty() || this.focusedSlot == null || !this.focusedSlot.hasStack())
+    protected void drawMouseoverTooltip(GuiGraphics context, int x, int y) {
+        if (!this.handler.getCarried().isEmpty() || this.focusedSlot == null || !this.focusedSlot.hasItem())
             return;
-        this.renderLimitedInventoryTooltip(context, this.focusedSlot.getStack());
+        this.renderLimitedInventoryTooltip(context, this.focusedSlot.getItem());
     }
 
-    public void renderLimitedInventoryTooltip(DrawContext context, ItemStack itemStack) {
-        List<Text> tooltips = this.getTooltipFromItem(itemStack);
-        List<Text> name = new ArrayList<>();
+    public void renderLimitedInventoryTooltip(GuiGraphics context, ItemStack itemStack) {
+        List<Component> tooltips = this.getTooltipFromItem(itemStack);
+        List<Component> name = new ArrayList<>();
         name.add(tooltips.getFirst());
         tooltips.removeFirst();
-        int nameWidth = this.textRenderer.getWidth(itemStack.getName().getString());
+        int nameWidth = this.font.width(itemStack.getHoverName().getString());
         int tooltipWidth = 0;
-        for (Text text : tooltips) {
-            int newWidth = this.textRenderer.getWidth(text.getString());
+        for (Component text : tooltips) {
+            int newWidth = this.font.width(text.getString());
             if (newWidth > tooltipWidth) tooltipWidth = newWidth;
         }
-        context.drawTooltip(this.textRenderer, name, itemStack.getTooltipData(), this.x + 76 - (nameWidth / 2), this.y - 2);
+        context.renderTooltip(this.font, name, itemStack.getTooltipImage(), this.x + 76 - (nameWidth / 2), this.y - 2);
         if (tooltipWidth > 0)
-            context.drawTooltip(this.textRenderer, tooltips, itemStack.getTooltipData(), this.x + 76 - (tooltipWidth / 2), this.y + 50);
+            context.renderTooltip(this.font, tooltips, itemStack.getTooltipImage(), this.x + 76 - (tooltipWidth / 2), this.y + 50);
     }
 
-    protected List<Text> getTooltipFromItem(ItemStack stack) {
-        return getTooltipFromItem(this.client, stack);
+    protected List<Component> getTooltipFromItem(ItemStack stack) {
+        return getTooltipFromItem(this.minecraft, stack);
     }
 
-    private void drawItem(DrawContext context, ItemStack stack, int x, int y, String amountText) {
-        context.getMatrices().push();
-        context.getMatrices().translate(0.0F, 0.0F, 232.0F);
-        context.drawItem(stack, x, y);
-        context.drawItemInSlot(this.textRenderer, stack, x, y - (this.touchDragStack.isEmpty() ? 0 : 8), amountText);
-        context.getMatrices().pop();
+    private void drawItem(GuiGraphics context, ItemStack stack, int x, int y, String amountText) {
+        context.pose().pushPose();
+        context.pose().translate(0.0F, 0.0F, 232.0F);
+        context.renderItem(stack, x, y);
+        context.renderItemDecorations(this.font, stack, x, y - (this.touchDragStack.isEmpty() ? 0 : 8), amountText);
+        context.pose().popPose();
     }
 
-    protected abstract void drawBackground(DrawContext context, float delta, int mouseX, int mouseY);
+    protected abstract void drawBackground(GuiGraphics context, float delta, int mouseX, int mouseY);
 
-    protected void drawSlot(DrawContext context, Slot slot) {
+    protected void drawSlot(GuiGraphics context, Slot slot) {
         int i = slot.x;
         int j = slot.y;
-        ItemStack itemStack = slot.getStack();
+        ItemStack itemStack = slot.getItem();
         boolean bl = false;
         boolean bl2 = slot == this.touchDragSlotStart && !this.touchDragStack.isEmpty() && !this.touchIsRightClickDrag;
-        ItemStack itemStack2 = this.handler.getCursorStack();
+        ItemStack itemStack2 = this.handler.getCarried();
         String string = null;
         if (slot == this.touchDragSlotStart && !this.touchDragStack.isEmpty() && this.touchIsRightClickDrag && !itemStack.isEmpty()) {
             itemStack = itemStack.copyWithCount(itemStack.getCount() / 2);
@@ -203,14 +203,14 @@ public abstract class LimitedHandledScreen<T extends ScreenHandler> extends Scre
                 return;
             }
 
-            if (ScreenHandler.canInsertItemIntoSlot(slot, itemStack2, true) && this.handler.canInsertIntoSlot(slot)) {
+            if (AbstractContainerMenu.canItemQuickReplace(slot, itemStack2, true) && this.handler.canDragTo(slot)) {
                 bl = true;
-                int k = Math.min(itemStack2.getMaxCount(), slot.getMaxItemCount(itemStack2));
-                int l = slot.getStack().isEmpty() ? 0 : slot.getStack().getCount();
-                int m = ScreenHandler.calculateStackSize(this.cursorDragSlots, this.heldButtonType, itemStack2) + l;
+                int k = Math.min(itemStack2.getMaxStackSize(), slot.getMaxStackSize(itemStack2));
+                int l = slot.getItem().isEmpty() ? 0 : slot.getItem().getCount();
+                int m = AbstractContainerMenu.getQuickCraftPlaceCount(this.cursorDragSlots, this.heldButtonType, itemStack2) + l;
                 if (m > k) {
                     m = k;
-                    string = Formatting.YELLOW.toString() + k;
+                    string = ChatFormatting.YELLOW.toString() + k;
                 }
 
                 itemStack = itemStack2.copyWithCount(m);
@@ -220,13 +220,13 @@ public abstract class LimitedHandledScreen<T extends ScreenHandler> extends Scre
             }
         }
 
-        context.getMatrices().push();
-        context.getMatrices().translate(0.0F, 0.0F, 100.0F);
+        context.pose().pushPose();
+        context.pose().translate(0.0F, 0.0F, 100.0F);
         if (itemStack.isEmpty() && isHotbarSlot(slot)) {
-            Pair<Identifier, Identifier> pair = slot.getBackgroundSprite();
+            Pair<ResourceLocation, ResourceLocation> pair = slot.getNoItemIcon();
             if (pair != null) {
-                Sprite sprite = this.client.getSpriteAtlas(pair.getFirst()).apply(pair.getSecond());
-                context.drawSprite(i, j, 0, 16, 16, sprite);
+                TextureAtlasSprite sprite = this.minecraft.getTextureAtlas(pair.getFirst()).apply(pair.getSecond());
+                context.blit(i, j, 0, 16, 16, sprite);
                 bl2 = true;
             }
         }
@@ -237,31 +237,31 @@ public abstract class LimitedHandledScreen<T extends ScreenHandler> extends Scre
             }
 
             int k = slot.x + slot.y * this.backgroundWidth;
-            if (slot.disablesDynamicDisplay()) {
-                context.drawItemWithoutEntity(itemStack, i, j, k);
+            if (slot.isFake()) {
+                context.renderFakeItem(itemStack, i, j, k);
             } else {
-                context.drawItem(itemStack, i, j, k);
+                context.renderItem(itemStack, i, j, k);
             }
 
-            context.drawItemInSlot(this.textRenderer, itemStack, i, j, string);
+            context.renderItemDecorations(this.font, itemStack, i, j, string);
         }
 
-        context.getMatrices().pop();
+        context.pose().popPose();
     }
 
     private void calculateOffset() {
-        ItemStack itemStack = this.handler.getCursorStack();
+        ItemStack itemStack = this.handler.getCarried();
         if (!itemStack.isEmpty() && this.cursorDragging) {
             if (this.heldButtonType == 2) {
-                this.draggedStackRemainder = itemStack.getMaxCount();
+                this.draggedStackRemainder = itemStack.getMaxStackSize();
             } else {
                 this.draggedStackRemainder = itemStack.getCount();
 
                 for (Slot slot : this.cursorDragSlots) {
-                    ItemStack itemStack2 = slot.getStack();
+                    ItemStack itemStack2 = slot.getItem();
                     int i = itemStack2.isEmpty() ? 0 : itemStack2.getCount();
-                    int j = Math.min(itemStack.getMaxCount(), slot.getMaxItemCount(itemStack));
-                    int k = Math.min(ScreenHandler.calculateStackSize(this.cursorDragSlots, this.heldButtonType, itemStack) + i, j);
+                    int j = Math.min(itemStack.getMaxStackSize(), slot.getMaxStackSize(itemStack));
+                    int k = Math.min(AbstractContainerMenu.getQuickCraftPlaceCount(this.cursorDragSlots, this.heldButtonType, itemStack) + i, j);
                     this.draggedStackRemainder -= k - i;
                 }
             }
@@ -285,9 +285,9 @@ public abstract class LimitedHandledScreen<T extends ScreenHandler> extends Scre
         if (super.mouseClicked(mouseX, mouseY, button)) {
             return true;
         } else {
-            boolean bl = this.client.options.pickItemKey.matchesMouse(button) && this.client.interactionManager.hasCreativeInventory();
+            boolean bl = this.minecraft.options.keyPickItem.matchesMouse(button) && this.minecraft.gameMode.hasInfiniteItems();
             Slot slot = this.getSlotAt(mouseX, mouseY);
-            long l = Util.getMeasuringTimeMs();
+            long l = Util.getMillis();
             this.doubleClicking = this.lastClickedSlot == slot && l - this.lastButtonClickTime < 250L && this.lastClickedButton == button;
             this.cancelNextRelease = false;
             if (button != 0 && button != GLFW.GLFW_MOUSE_BUTTON_RIGHT && !bl) {
@@ -298,17 +298,17 @@ public abstract class LimitedHandledScreen<T extends ScreenHandler> extends Scre
                 boolean bl2 = this.isClickOutsideBounds(mouseX, mouseY, i, j, button);
                 int k = -1;
                 if (slot != null) {
-                    k = slot.id;
+                    k = slot.index;
                 }
 
-                if (this.client.options.getTouchscreen().getValue() && bl2 && this.handler.getCursorStack().isEmpty()) {
-                    this.close();
+                if (this.minecraft.options.touchscreen().get() && bl2 && this.handler.getCarried().isEmpty()) {
+                    this.onClose();
                     return true;
                 }
 
                 if (k != -1) {
-                    if (this.client.options.getTouchscreen().getValue()) {
-                        if (slot != null && slot.hasStack()) {
+                    if (this.minecraft.options.touchscreen().get()) {
+                        if (slot != null && slot.hasItem()) {
                             this.touchDragSlotStart = slot;
                             this.touchDragStack = ItemStack.EMPTY;
                             this.touchIsRightClickDrag = button == GLFW.GLFW_MOUSE_BUTTON_RIGHT;
@@ -316,11 +316,11 @@ public abstract class LimitedHandledScreen<T extends ScreenHandler> extends Scre
                             this.touchDragSlotStart = null;
                         }
                     } else if (!this.cursorDragging) {
-                        if (this.handler.getCursorStack().isEmpty()) {
+                        if (this.handler.getCarried().isEmpty()) {
                             if (bl) {
-                                this.onMouseClick(slot, k, button, SlotActionType.CLONE);
+                                this.onMouseClick(slot, k, button, ClickType.CLONE);
                             } else {
-                                SlotActionType slotActionType = SlotActionType.PICKUP;
+                                ClickType slotActionType = ClickType.PICKUP;
                                 this.onMouseClick(slot, k, button, slotActionType);
                             }
 
@@ -349,15 +349,15 @@ public abstract class LimitedHandledScreen<T extends ScreenHandler> extends Scre
     }
 
     private void onMouseClick(int button) {
-        if (this.focusedSlot != null && this.handler.getCursorStack().isEmpty()) {
-            if (this.client.options.swapHandsKey.matchesMouse(button)) {
-                this.onMouseClick(this.focusedSlot, this.focusedSlot.id, 40, SlotActionType.SWAP);
+        if (this.focusedSlot != null && this.handler.getCarried().isEmpty()) {
+            if (this.minecraft.options.keySwapOffhand.matchesMouse(button)) {
+                this.onMouseClick(this.focusedSlot, this.focusedSlot.index, 40, ClickType.SWAP);
                 return;
             }
 
             for (int i = 0; i < 9; i++) {
-                if (this.client.options.hotbarKeys[i].matchesMouse(button)) {
-                    this.onMouseClick(this.focusedSlot, this.focusedSlot.id, i, SlotActionType.SWAP);
+                if (this.minecraft.options.keyHotbarSlots[i].matchesMouse(button)) {
+                    this.onMouseClick(this.focusedSlot, this.focusedSlot.index, i, ClickType.SWAP);
                 }
             }
         }
@@ -370,22 +370,22 @@ public abstract class LimitedHandledScreen<T extends ScreenHandler> extends Scre
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double deltaX, double deltaY) {
         Slot slot = this.getSlotAt(mouseX, mouseY);
-        ItemStack itemStack = this.handler.getCursorStack();
-        if (this.touchDragSlotStart != null && this.client.options.getTouchscreen().getValue()) {
+        ItemStack itemStack = this.handler.getCarried();
+        if (this.touchDragSlotStart != null && this.minecraft.options.touchscreen().get()) {
             if (button == 0 || button == 1) {
                 if (this.touchDragStack.isEmpty()) {
-                    if (slot != this.touchDragSlotStart && !this.touchDragSlotStart.getStack().isEmpty()) {
-                        this.touchDragStack = this.touchDragSlotStart.getStack().copy();
+                    if (slot != this.touchDragSlotStart && !this.touchDragSlotStart.getItem().isEmpty()) {
+                        this.touchDragStack = this.touchDragSlotStart.getItem().copy();
                     }
-                } else if (this.touchDragStack.getCount() > 1 && slot != null && ScreenHandler.canInsertItemIntoSlot(slot, this.touchDragStack, false)) {
-                    long l = Util.getMeasuringTimeMs();
+                } else if (this.touchDragStack.getCount() > 1 && slot != null && AbstractContainerMenu.canItemQuickReplace(slot, this.touchDragStack, false)) {
+                    long l = Util.getMillis();
                     if (this.touchHoveredSlot == slot) {
                         if (l - this.touchDropTimer > 500L) {
-                            this.onMouseClick(this.touchDragSlotStart, this.touchDragSlotStart.id, 0, SlotActionType.PICKUP);
-                            this.onMouseClick(slot, slot.id, 1, SlotActionType.PICKUP);
-                            this.onMouseClick(this.touchDragSlotStart, this.touchDragSlotStart.id, 0, SlotActionType.PICKUP);
+                            this.onMouseClick(this.touchDragSlotStart, this.touchDragSlotStart.index, 0, ClickType.PICKUP);
+                            this.onMouseClick(slot, slot.index, 1, ClickType.PICKUP);
+                            this.onMouseClick(this.touchDragSlotStart, this.touchDragSlotStart.index, 0, ClickType.PICKUP);
                             this.touchDropTimer = l + 750L;
-                            this.touchDragStack.decrement(1);
+                            this.touchDragStack.shrink(1);
                         }
                     } else {
                         this.touchHoveredSlot = slot;
@@ -397,9 +397,9 @@ public abstract class LimitedHandledScreen<T extends ScreenHandler> extends Scre
                 && slot != null
                 && !itemStack.isEmpty()
                 && (itemStack.getCount() > this.cursorDragSlots.size() || this.heldButtonType == 2)
-                && ScreenHandler.canInsertItemIntoSlot(slot, itemStack, true)
-                && slot.canInsert(itemStack)
-                && this.handler.canInsertIntoSlot(slot)) {
+                && AbstractContainerMenu.canItemQuickReplace(slot, itemStack, true)
+                && slot.mayPlace(itemStack)
+                && this.handler.canDragTo(slot)) {
             this.cursorDragSlots.add(slot);
             this.calculateOffset();
         }
@@ -414,11 +414,11 @@ public abstract class LimitedHandledScreen<T extends ScreenHandler> extends Scre
         int j = this.y;
         int k = GLFW.GLFW_KEY_UNKNOWN;
         if (slot != null) {
-            k = slot.id;
+            k = slot.index;
         }
 
-        if (this.doubleClicking && slot != null && button == 0 && this.handler.canInsertIntoSlot(ItemStack.EMPTY, slot)) {
-            this.onMouseClick(slot, k, button, SlotActionType.PICKUP_ALL);
+        if (this.doubleClicking && slot != null && button == 0 && this.handler.canTakeItemForPickAll(ItemStack.EMPTY, slot)) {
+            this.onMouseClick(slot, k, button, ClickType.PICKUP_ALL);
 
             this.doubleClicking = false;
             this.lastButtonClickTime = 0L;
@@ -435,54 +435,54 @@ public abstract class LimitedHandledScreen<T extends ScreenHandler> extends Scre
                 return true;
             }
 
-            if (this.touchDragSlotStart != null && this.client.options.getTouchscreen().getValue()) {
+            if (this.touchDragSlotStart != null && this.minecraft.options.touchscreen().get()) {
                 if (button == 0 || button == GLFW.GLFW_MOUSE_BUTTON_RIGHT) {
                     if (this.touchDragStack.isEmpty() && slot != this.touchDragSlotStart) {
-                        this.touchDragStack = this.touchDragSlotStart.getStack();
+                        this.touchDragStack = this.touchDragSlotStart.getItem();
                     }
 
-                    boolean bl2 = ScreenHandler.canInsertItemIntoSlot(slot, this.touchDragStack, false);
+                    boolean bl2 = AbstractContainerMenu.canItemQuickReplace(slot, this.touchDragStack, false);
                     if (k != GLFW.GLFW_KEY_UNKNOWN && !this.touchDragStack.isEmpty() && bl2) {
-                        this.onMouseClick(this.touchDragSlotStart, this.touchDragSlotStart.id, button, SlotActionType.PICKUP);
-                        this.onMouseClick(slot, k, 0, SlotActionType.PICKUP);
-                        if (this.handler.getCursorStack().isEmpty()) {
+                        this.onMouseClick(this.touchDragSlotStart, this.touchDragSlotStart.index, button, ClickType.PICKUP);
+                        this.onMouseClick(slot, k, 0, ClickType.PICKUP);
+                        if (this.handler.getCarried().isEmpty()) {
                             this.touchDropReturningStack = ItemStack.EMPTY;
                         } else {
-                            this.onMouseClick(this.touchDragSlotStart, this.touchDragSlotStart.id, button, SlotActionType.PICKUP);
-                            this.touchDropX = MathHelper.floor(mouseX - (double) i);
-                            this.touchDropY = MathHelper.floor(mouseY - (double) j);
+                            this.onMouseClick(this.touchDragSlotStart, this.touchDragSlotStart.index, button, ClickType.PICKUP);
+                            this.touchDropX = Mth.floor(mouseX - (double) i);
+                            this.touchDropY = Mth.floor(mouseY - (double) j);
                             this.touchDropOriginSlot = this.touchDragSlotStart;
                             this.touchDropReturningStack = this.touchDragStack;
-                            this.touchDropTime = Util.getMeasuringTimeMs();
+                            this.touchDropTime = Util.getMillis();
                         }
                     } else if (!this.touchDragStack.isEmpty()) {
-                        this.touchDropX = MathHelper.floor(mouseX - (double) i);
-                        this.touchDropY = MathHelper.floor(mouseY - (double) j);
+                        this.touchDropX = Mth.floor(mouseX - (double) i);
+                        this.touchDropY = Mth.floor(mouseY - (double) j);
                         this.touchDropOriginSlot = this.touchDragSlotStart;
                         this.touchDropReturningStack = this.touchDragStack;
-                        this.touchDropTime = Util.getMeasuringTimeMs();
+                        this.touchDropTime = Util.getMillis();
                     }
 
                     this.endTouchDrag();
                 }
             } else if (this.cursorDragging && !this.cursorDragSlots.isEmpty()) {
-                this.onMouseClick(null, -999, ScreenHandler.packQuickCraftData(0, this.heldButtonType), SlotActionType.QUICK_CRAFT);
+                this.onMouseClick(null, -999, AbstractContainerMenu.getQuickcraftMask(0, this.heldButtonType), ClickType.QUICK_CRAFT);
 
                 for (Slot slot2x : this.cursorDragSlots) {
-                    this.onMouseClick(slot2x, slot2x.id, ScreenHandler.packQuickCraftData(1, this.heldButtonType), SlotActionType.QUICK_CRAFT);
+                    this.onMouseClick(slot2x, slot2x.index, AbstractContainerMenu.getQuickcraftMask(1, this.heldButtonType), ClickType.QUICK_CRAFT);
                 }
 
-                this.onMouseClick(null, -999, ScreenHandler.packQuickCraftData(2, this.heldButtonType), SlotActionType.QUICK_CRAFT);
-            } else if (!this.handler.getCursorStack().isEmpty()) {
-                if (this.client.options.pickItemKey.matchesMouse(button)) {
-                    this.onMouseClick(slot, k, button, SlotActionType.CLONE);
+                this.onMouseClick(null, -999, AbstractContainerMenu.getQuickcraftMask(2, this.heldButtonType), ClickType.QUICK_CRAFT);
+            } else if (!this.handler.getCarried().isEmpty()) {
+                if (this.minecraft.options.keyPickItem.matchesMouse(button)) {
+                    this.onMouseClick(slot, k, button, ClickType.CLONE);
                 } else {
-                    this.onMouseClick(slot, k, button, SlotActionType.PICKUP);
+                    this.onMouseClick(slot, k, button, ClickType.PICKUP);
                 }
             }
         }
 
-        if (this.handler.getCursorStack().isEmpty()) {
+        if (this.handler.getCarried().isEmpty()) {
             this.lastButtonClickTime = 0L;
         }
 
@@ -508,32 +508,32 @@ public abstract class LimitedHandledScreen<T extends ScreenHandler> extends Scre
     }
 
     /**
-     * @see net.minecraft.screen.ScreenHandler#onSlotClick(int, int, net.minecraft.screen.slot.SlotActionType, net.minecraft.entity.player.PlayerEntity)
+     * @see net.minecraft.world.inventory.AbstractContainerMenu#clicked(int, int, net.minecraft.world.inventory.ClickType, net.minecraft.world.entity.player.Player)
      */
-    protected void onMouseClick(Slot slot, int slotId, int button, SlotActionType actionType) {
+    protected void onMouseClick(Slot slot, int slotId, int button, ClickType actionType) {
         if (slot != null) {
-            slotId = slot.id;
+            slotId = slot.index;
         }
 
-        this.client.interactionManager.clickSlot(this.handler.syncId, slotId, button, actionType, this.client.player);
+        this.minecraft.gameMode.handleInventoryMouseClick(this.handler.containerId, slotId, button, actionType, this.minecraft.player);
     }
 
     protected void onSlotChangedState(int slotId, int handlerId, boolean newState) {
-        this.client.interactionManager.slotChangedState(slotId, handlerId, newState);
+        this.minecraft.gameMode.handleSlotStateChanged(slotId, handlerId, newState);
     }
 
     @Override
     public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
         if (super.keyPressed(keyCode, scanCode, modifiers)) {
             return true;
-        } else if (this.client.options.inventoryKey.matchesKey(keyCode, scanCode)) {
-            this.close();
+        } else if (this.minecraft.options.keyInventory.matches(keyCode, scanCode)) {
+            this.onClose();
             return true;
         } else {
             this.handleHotbarKeyPressed(keyCode, scanCode);
-            if (this.focusedSlot != null && this.focusedSlot.hasStack()) {
-                if (this.client.options.pickItemKey.matchesKey(keyCode, scanCode)) {
-                    this.onMouseClick(this.focusedSlot, this.focusedSlot.id, 0, SlotActionType.CLONE);
+            if (this.focusedSlot != null && this.focusedSlot.hasItem()) {
+                if (this.minecraft.options.keyPickItem.matches(keyCode, scanCode)) {
+                    this.onMouseClick(this.focusedSlot, this.focusedSlot.index, 0, ClickType.CLONE);
                 }
             }
 
@@ -542,15 +542,15 @@ public abstract class LimitedHandledScreen<T extends ScreenHandler> extends Scre
     }
 
     protected boolean handleHotbarKeyPressed(int keyCode, int scanCode) {
-        if (this.handler.getCursorStack().isEmpty() && this.focusedSlot != null) {
-            if (this.client.options.swapHandsKey.matchesKey(keyCode, scanCode)) {
-                this.onMouseClick(this.focusedSlot, this.focusedSlot.id, 40, SlotActionType.SWAP);
+        if (this.handler.getCarried().isEmpty() && this.focusedSlot != null) {
+            if (this.minecraft.options.keySwapOffhand.matches(keyCode, scanCode)) {
+                this.onMouseClick(this.focusedSlot, this.focusedSlot.index, 40, ClickType.SWAP);
                 return true;
             }
 
             for (int i = 0; i < 9; i++) {
-                if (this.client.options.hotbarKeys[i].matchesKey(keyCode, scanCode)) {
-                    this.onMouseClick(this.focusedSlot, this.focusedSlot.id, i, SlotActionType.SWAP);
+                if (this.minecraft.options.keyHotbarSlots[i].matches(keyCode, scanCode)) {
+                    this.onMouseClick(this.focusedSlot, this.focusedSlot.index, i, ClickType.SWAP);
                     return true;
                 }
             }
@@ -561,13 +561,13 @@ public abstract class LimitedHandledScreen<T extends ScreenHandler> extends Scre
 
     @Override
     public void removed() {
-        if (this.client.player != null) {
-            this.handler.onClosed(this.client.player);
+        if (this.minecraft.player != null) {
+            this.handler.removed(this.minecraft.player);
         }
     }
 
     @Override
-    public boolean shouldPause() {
+    public boolean isPauseScreen() {
         return false;
     }
 
@@ -576,13 +576,13 @@ public abstract class LimitedHandledScreen<T extends ScreenHandler> extends Scre
         super.tick();
 
         if (TMMClient.gameComponent.getFade() > 0) {
-            this.client.player.closeHandledScreen();
+            this.minecraft.player.closeContainer();
         }
 
-        if (this.client.player.isAlive() && !this.client.player.isRemoved()) {
+        if (this.minecraft.player.isAlive() && !this.minecraft.player.isRemoved()) {
             this.handledScreenTick();
         } else {
-            this.client.player.closeHandledScreen();
+            this.minecraft.player.closeContainer();
         }
     }
 
@@ -590,13 +590,13 @@ public abstract class LimitedHandledScreen<T extends ScreenHandler> extends Scre
     }
 
     @Override
-    public T getScreenHandler() {
+    public T getMenu() {
         return this.handler;
     }
 
     @Override
-    public void close() {
-        this.client.player.closeHandledScreen();
-        super.close();
+    public void onClose() {
+        this.minecraft.player.closeContainer();
+        super.onClose();
     }
 }

@@ -2,13 +2,13 @@ package dev.doctor4t.trainmurdermystery.index;
 
 import dev.doctor4t.ratatouille.util.registrar.SoundEventRegistrar;
 import dev.doctor4t.trainmurdermystery.TMM;
-import net.minecraft.sound.BlockSoundGroup;
-import net.minecraft.sound.SoundEvent;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.level.block.SoundType;
 
 public interface TMMSounds {
     SoundEventRegistrar registrar = new SoundEventRegistrar(TMM.MOD_ID);
 
-    BlockSoundGroup VENT_SHAFT = registrar.createBlockSoundGroup("block.vent_shaft", 1f, 1f);
+    SoundType VENT_SHAFT = registrar.createBlockSoundGroup("block.vent_shaft", 1f, 1f);
 
     // Block special sounds
     SoundEvent BLOCK_CARGO_BOX_OPEN = registrar.create("block.cargo_box.open");

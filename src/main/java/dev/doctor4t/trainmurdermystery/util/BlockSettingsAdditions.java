@@ -1,7 +1,7 @@
 package dev.doctor4t.trainmurdermystery.util;
 
-import net.minecraft.block.AbstractBlock;
+import net.minecraft.world.level.block.state.BlockBehaviour;
 
 public interface BlockSettingsAdditions {
-    AbstractBlock.Settings tmm$setCollidable(boolean collidable);
+    BlockBehaviour.Properties tmm$setCollidable(boolean collidable);
 }

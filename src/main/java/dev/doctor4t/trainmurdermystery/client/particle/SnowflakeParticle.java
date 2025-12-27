@@ -1,17 +1,17 @@
 package dev.doctor4t.trainmurdermystery.client.particle;
 
+import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.Camera;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.*;
-import net.minecraft.client.render.Camera;
-import net.minecraft.client.render.VertexConsumer;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.particle.SimpleParticleType;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.core.particles.SimpleParticleType;
+import net.minecraft.util.Mth;
 import org.joml.Quaternionf;
 
-public class SnowflakeParticle extends SpriteBillboardParticle {
+public class SnowflakeParticle extends TextureSheetParticle {
     private final float yRand;
     private final float zRand;
 
@@ -25,12 +25,12 @@ public class SnowflakeParticle extends SpriteBillboardParticle {
     private final float angleRandY;
     private final float angleRandZ;
 
-    public SnowflakeParticle(ClientWorld world, double x, double y, double z, double velocityX, double velocityY, double velocityZ, SpriteProvider spriteProvider) {
+    public SnowflakeParticle(ClientLevel world, double x, double y, double z, double velocityX, double velocityY, double velocityZ, SpriteSet spriteProvider) {
         super(world, x, y, z, velocityX, velocityY, velocityZ);
 
-        this.velocityX = velocityX;
-        this.velocityY = velocityY;
-        this.velocityZ = velocityZ;
+        this.xd = velocityX;
+        this.yd = velocityY;
+        this.zd = velocityZ;
 
         this.zRand = world.random.nextFloat() * 2 - 1;
         this.yRand = world.random.nextFloat() * 2 - 1;
@@ -39,15 +39,15 @@ public class SnowflakeParticle extends SpriteBillboardParticle {
         this.angleRandY = (world.random.nextFloat() * 2 - 1) * .1f;
         this.angleRandZ = (world.random.nextFloat() * 2 - 1) * .1f;
 
-        this.maxAge = 40 + world.random.nextInt(20);
-        this.scale = .1f + world.random.nextFloat() * .1f;
+        this.lifetime = 40 + world.random.nextInt(20);
+        this.quadSize = .1f + world.random.nextFloat() * .1f;
         this.alpha = 0f;
 
-        this.setSprite(spriteProvider.getSprite(world.random));
+        this.setSprite(spriteProvider.get(world.random));
     }
 
-    public ParticleTextureSheet getType() {
-        return ParticleTextureSheet.PARTICLE_SHEET_OPAQUE;
+    public ParticleRenderType getRenderType() {
+        return ParticleRenderType.PARTICLE_SHEET_OPAQUE;
     }
 
     public void tick() {
@@ -55,8 +55,8 @@ public class SnowflakeParticle extends SpriteBillboardParticle {
         this.alpha += 0.01f;
 
         float v = .2f;
-        this.velocityZ = Math.sin(this.zRand + this.age / 2f + MinecraftClient.getInstance().getRenderTickCounter().getTickDelta(true)) * v;
-        this.velocityY = -.1f + Math.sin(this.yRand + this.age / 2f + MinecraftClient.getInstance().getRenderTickCounter().getTickDelta(true)) * v;
+        this.zd = Math.sin(this.zRand + this.age / 2f + Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true)) * v;
+        this.yd = -.1f + Math.sin(this.yRand + this.age / 2f + Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true)) * v;
 
         this.prevAngleX = angleX;
         this.prevAngleY = angleY;
@@ -66,34 +66,34 @@ public class SnowflakeParticle extends SpriteBillboardParticle {
         this.angleY += angleRandY;
         this.angleZ += angleRandZ;
 
-        if (this.onGround || this.velocityX == 0) {
-            this.markDead();
+        if (this.onGround || this.xd == 0) {
+            this.remove();
         }
     }
 
     @Override
-    public void buildGeometry(VertexConsumer vertexConsumer, Camera camera, float tickDelta) {
+    public void render(VertexConsumer vertexConsumer, Camera camera, float tickDelta) {
         Quaternionf quaternionf = new Quaternionf();
-        this.getRotator().setRotation(quaternionf, camera, tickDelta);
+        this.getFacingCameraMode().setRotation(quaternionf, camera, tickDelta);
         quaternionf.rotateXYZ(
-                MathHelper.lerp(tickDelta, this.prevAngleX, this.angleX),
-                MathHelper.lerp(tickDelta, this.prevAngleY, this.angleY),
-                MathHelper.lerp(tickDelta, this.prevAngleZ, this.angleZ)
+                Mth.lerp(tickDelta, this.prevAngleX, this.angleX),
+                Mth.lerp(tickDelta, this.prevAngleY, this.angleY),
+                Mth.lerp(tickDelta, this.prevAngleZ, this.angleZ)
         );
 
-        this.method_60373(vertexConsumer, camera, quaternionf, tickDelta);
+        this.renderRotatedQuad(vertexConsumer, camera, quaternionf, tickDelta);
     }
 
     @Environment(EnvType.CLIENT)
-    public static class Factory implements ParticleFactory<SimpleParticleType> {
-        private final SpriteProvider spriteProvider;
+    public static class Factory implements ParticleProvider<SimpleParticleType> {
+        private final SpriteSet spriteProvider;
 
-        public Factory(SpriteProvider spriteProvider) {
+        public Factory(SpriteSet spriteProvider) {
             this.spriteProvider = spriteProvider;
         }
 
         @Override
-        public Particle createParticle(SimpleParticleType parameters, ClientWorld world, double x, double y, double z, double velocityX, double velocityY, double velocityZ) {
+        public Particle createParticle(SimpleParticleType parameters, ClientLevel world, double x, double y, double z, double velocityX, double velocityY, double velocityZ) {
             return new SnowflakeParticle(world, x, y, z, velocityX, velocityY, velocityZ, this.spriteProvider);
         }
     }

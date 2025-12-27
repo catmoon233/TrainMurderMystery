@@ -9,46 +9,46 @@ import dev.doctor4t.trainmurdermystery.cca.PlayerPsychoComponent;
 import dev.doctor4t.trainmurdermystery.client.TMMClient;
 import dev.doctor4t.trainmurdermystery.index.TMMItems;
 import dev.doctor4t.trainmurdermystery.index.tag.TMMItemTags;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.client.render.item.HeldItemRenderer;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.util.Hand;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.ItemInHandRenderer;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Inventory;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 
-@Mixin(MinecraftClient.class)
+@Mixin(Minecraft.class)
 public class MinecraftClientMixin {
     @Shadow
     @Nullable
-    public ClientPlayerEntity player;
+    public LocalPlayer player;
 
-    @ModifyReturnValue(method = "hasOutline", at = @At("RETURN"))
+    @ModifyReturnValue(method = "shouldEntityAppearGlowing", at = @At("RETURN"))
     public boolean tmm$hasInstinctOutline(boolean original, @Local(argsOnly = true) Entity entity) {
         if (TMMClient.getInstinctHighlight(entity) != -1) return true;
         return original;
     }
 
-    @WrapWithCondition(method = "doItemUse",
+    @WrapWithCondition(method = "startUseItem",
             at = @At(
                     value = "INVOKE",
-                    target = "Lnet/minecraft/client/render/item/HeldItemRenderer;resetEquipProgress(Lnet/minecraft/util/Hand;)V"
+                    target = "Lnet/minecraft/client/renderer/ItemInHandRenderer;itemUsed(Lnet/minecraft/world/InteractionHand;)V"
             ))
-    private boolean tmm$cancelRevolverUpdateAnimation(HeldItemRenderer instance, Hand hand) {
-        return !MinecraftClient.getInstance().player.getStackInHand(hand).isIn(TMMItemTags.GUNS);
+    private boolean tmm$cancelRevolverUpdateAnimation(ItemInHandRenderer instance, InteractionHand hand) {
+        return !Minecraft.getInstance().player.getItemInHand(hand).is(TMMItemTags.GUNS);
     }
 
-    @WrapOperation(method = "handleInputEvents", at = @At(value = "FIELD", target = "Lnet/minecraft/entity/player/PlayerInventory;selectedSlot:I"))
-    private void tmm$invalid(@NotNull PlayerInventory instance, int value, Operation<Void> original) {
-        int oldSlot = instance.selectedSlot;
+    @WrapOperation(method = "handleKeybinds", at = @At(value = "FIELD", target = "Lnet/minecraft/world/entity/player/Inventory;selected:I"))
+    private void tmm$invalid(@NotNull Inventory instance, int value, Operation<Void> original) {
+        int oldSlot = instance.selected;
         PlayerPsychoComponent component = PlayerPsychoComponent.KEY.get(instance.player);
         if (component.getPsychoTicks() > 0 &&
-                (instance.getStack(oldSlot).isOf(TMMItems.BAT)) &&
-                (!instance.getStack(value).isOf(TMMItems.BAT))
+                (instance.getItem(oldSlot).is(TMMItems.BAT)) &&
+                (!instance.getItem(value).is(TMMItems.BAT))
         ) return;
         original.call(instance, value);
     }

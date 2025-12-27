@@ -18,9 +18,9 @@ import net.caffeinemc.mods.sodium.client.render.chunk.region.RenderRegion;
 import net.caffeinemc.mods.sodium.client.render.chunk.shader.ChunkShaderInterface;
 import net.caffeinemc.mods.sodium.client.render.chunk.terrain.TerrainRenderPass;
 import net.caffeinemc.mods.sodium.client.render.viewport.CameraTransform;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkSectionPos;
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.SectionPos;
 import org.lwjgl.system.MemoryUtil;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
@@ -113,7 +113,7 @@ public abstract class DefaultChunkRendererMixin {
             int height = 116;
             int tileLength = 32 * chunkSize;
             int tileSize = tileLength * 3;
-            float time = TMMClient.trainComponent.getTime() + MinecraftClient.getInstance().getRenderTickCounter().getTickDelta(true);
+            float time = TMMClient.trainComponent.getTime() + Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(true);
 
             BlockPos blockPos = new BlockPos(
                     region.getOriginX() + LocalSectionIndex.unpackX(sectionIndex) * 16,
@@ -121,11 +121,11 @@ public abstract class DefaultChunkRendererMixin {
                     region.getOriginZ() + LocalSectionIndex.unpackZ(sectionIndex) * 16
             );
 
-            boolean trainSection = ChunkSectionPos.getSectionCoord(blockPos.getY()) >= 4;
+            boolean trainSection = SectionPos.blockToSectionCoord(blockPos.getY()) >= 4;
             float v1 = (float) ((double) blockPos.getX() - camera.fracX);
             float v2 = (float) ((double) blockPos.getY() - camera.fracY);
             float v3 = (float) ((double) blockPos.getZ() - camera.fracZ);
-            int zSection = blockPos.getZ() / chunkSize - ChunkSectionPos.getSectionCoord(camera.intZ);
+            int zSection = blockPos.getZ() / chunkSize - SectionPos.blockToSectionCoord(camera.intZ);
 
             float finalX = v1;
             float finalY = v2;

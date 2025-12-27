@@ -4,60 +4,60 @@ import dev.doctor4t.trainmurdermystery.cca.PlayerNoteComponent;
 import dev.doctor4t.trainmurdermystery.entity.NoteEntity;
 import dev.doctor4t.trainmurdermystery.index.TMMEntities;
 import dev.doctor4t.trainmurdermystery.util.AdventureUsable;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.item.ItemUsageContext;
-import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.TypedActionResult;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.core.Direction;
+import net.minecraft.network.chat.Component;
+import net.minecraft.util.Mth;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.InteractionResultHolder;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.context.UseOnContext;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 
 public class NoteItem extends Item implements AdventureUsable {
-    public NoteItem(Settings settings) {
+    public NoteItem(Properties settings) {
         super(settings);
     }
 
     @Override
-    public TypedActionResult<ItemStack> use(@NotNull World world, PlayerEntity user, Hand hand) {
+    public InteractionResultHolder<ItemStack> use(@NotNull Level world, Player user, InteractionHand hand) {
         return super.use(world, user, hand);
     }
 
     @Override
-    public ActionResult useOnBlock(@NotNull ItemUsageContext context) {
-        PlayerEntity player = context.getPlayer();
-        if (player == null || player.isSneaking()) return ActionResult.PASS;
+    public InteractionResult useOn(@NotNull UseOnContext context) {
+        Player player = context.getPlayer();
+        if (player == null || player.isShiftKeyDown()) return InteractionResult.PASS;
         PlayerNoteComponent component = PlayerNoteComponent.KEY.get(player);
         if (!component.written) {
-            player.sendMessage(Text.literal("I should write something first").withColor(MathHelper.hsvToRgb(0F, 1.0F, 0.6F)), true);
-            return ActionResult.PASS;
+            player.displayClientMessage(Component.literal("I should write something first").withColor(Mth.hsvToRgb(0F, 1.0F, 0.6F)), true);
+            return InteractionResult.PASS;
         }
-        World world = player.getWorld();
-        if (world.isClient) return ActionResult.PASS;
+        Level world = player.level();
+        if (world.isClientSide) return InteractionResult.PASS;
         NoteEntity note = TMMEntities.NOTE.create(world);
 
-        if (note == null) return ActionResult.PASS;
+        if (note == null) return InteractionResult.PASS;
 
-        switch (context.getSide()) {
+        switch (context.getClickedFace()) {
             case DOWN -> {
-                return ActionResult.PASS;
+                return InteractionResult.PASS;
             }
-            case UP -> note.setYaw(player.getHeadYaw());
-            case NORTH, SOUTH, WEST, EAST -> note.setYaw(180f + (world.random.nextFloat() - .5f) * 30f);
+            case UP -> note.setYRot(player.getYHeadRot());
+            case NORTH, SOUTH, WEST, EAST -> note.setYRot(180f + (world.random.nextFloat() - .5f) * 30f);
         }
 
-        Direction side = context.getSide();
+        Direction side = context.getClickedFace();
         note.setDirection(side);
         note.setLines(component.text);
-        Vec3d hitPos = context.getHitPos().add(context.getHitPos().subtract(player.getEyePos()).normalize().multiply(-.01f)).subtract(0, note.getHeight() / 2f, 0);
-        note.setPosition(hitPos.getX(), hitPos.getY(), hitPos.getZ());
-        world.spawnEntity(note);
-        if (!player.isCreative()) player.getStackInHand(context.getHand()).decrement(1);
-        return ActionResult.SUCCESS;
+        Vec3 hitPos = context.getClickLocation().add(context.getClickLocation().subtract(player.getEyePosition()).normalize().scale(-.01f)).subtract(0, note.getBbHeight() / 2f, 0);
+        note.setPos(hitPos.x(), hitPos.y(), hitPos.z());
+        world.addFreshEntity(note);
+        if (!player.isCreative()) player.getItemInHand(context.getHand()).shrink(1);
+        return InteractionResult.SUCCESS;
     }
 }

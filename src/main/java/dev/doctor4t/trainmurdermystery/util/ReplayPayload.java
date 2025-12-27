@@ -5,40 +5,39 @@ import dev.doctor4t.trainmurdermystery.api.Role;
 import dev.doctor4t.trainmurdermystery.api.TMMRoles;
 import dev.doctor4t.trainmurdermystery.game.GameFunctions;
 import dev.doctor4t.trainmurdermystery.game.GameReplay;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.util.Identifier;
-
 import java.util.*;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
 
-public record ReplayPayload(GameReplay replay) implements CustomPayload {
-    public static final CustomPayload.Id<ReplayPayload> ID = new CustomPayload.Id<>(TMM.id("replay"));
-    public static final PacketCodec<PacketByteBuf, ReplayPayload> CODEC = PacketCodec.of(ReplayPayload::write, ReplayPayload::new);
+public record ReplayPayload(GameReplay replay) implements CustomPacketPayload {
+    public static final CustomPacketPayload.Type<ReplayPayload> ID = new CustomPacketPayload.Type<>(TMM.id("replay"));
+    public static final StreamCodec<FriendlyByteBuf, ReplayPayload> CODEC = StreamCodec.ofMember(ReplayPayload::write, ReplayPayload::new);
 
-    private ReplayPayload(PacketByteBuf buf) {
+    private ReplayPayload(FriendlyByteBuf buf) {
         this(readReplay(buf));
     }
 
-    private void write(PacketByteBuf buf) {
+    private void write(FriendlyByteBuf buf) {
         writeReplay(buf, replay);
     }
 
     @Override
-    public Id<? extends CustomPayload> getId() {
+    public Type<? extends CustomPacketPayload> type() {
         return ID;
     }
 
-    private static GameReplay readReplay(PacketByteBuf buf) {
+    private static GameReplay readReplay(FriendlyByteBuf buf) {
         int playerCount = buf.readInt();
-        GameFunctions.WinStatus winningTeam = buf.readEnumConstant(GameFunctions.WinStatus.class);
+        GameFunctions.WinStatus winningTeam = buf.readEnum(GameFunctions.WinStatus.class);
 
         int numPlayers = buf.readInt();
         List<GameReplay.ReplayPlayerInfo> players = new ArrayList<>();
         for (int i = 0; i < numPlayers; i++) {
-            UUID uuid = buf.readUuid();
-            String name = buf.readString();
-            Identifier roleId = buf.readIdentifier();
+            UUID uuid = buf.readUUID();
+            String name = buf.readUtf();
+            ResourceLocation roleId = buf.readResourceLocation();
 
             Role role = TMMRoles.ROLES.stream()
                     .filter(r -> r.identifier().equals(roleId))
@@ -50,7 +49,7 @@ public record ReplayPayload(GameReplay replay) implements CustomPayload {
         int numEvents = buf.readInt();
         List<GameReplay.ReplayEvent> timelineEvents = new ArrayList<>();
         for (int i = 0; i < numEvents; i++) {
-            GameReplay.EventType eventType = buf.readEnumConstant(GameReplay.EventType.class);
+            GameReplay.EventType eventType = buf.readEnum(GameReplay.EventType.class);
             long timestamp = buf.readInt();
             GameReplay.EventDetails details = null;
 
@@ -60,7 +59,7 @@ public record ReplayPayload(GameReplay replay) implements CustomPayload {
                     UUID killerUuid = players.get(killerIndex).uuid();
                     int victimIndex = buf.readVarInt();
                     UUID victimUuid = players.get(victimIndex).uuid();
-                    Identifier deathReason = buf.readIdentifier();
+                    ResourceLocation deathReason = buf.readResourceLocation();
                     details = new GameReplay.PlayerKillDetails(killerUuid, victimUuid, deathReason);
                     break;
                 }
@@ -79,15 +78,15 @@ public record ReplayPayload(GameReplay replay) implements CustomPayload {
         return new GameReplay(playerCount, winningTeam, players, timelineEvents);
     }
 
-    private static void writeReplay(PacketByteBuf buf, GameReplay replay) {
+    private static void writeReplay(FriendlyByteBuf buf, GameReplay replay) {
         buf.writeInt(replay.playerCount());
-        buf.writeEnumConstant(replay.winningTeam());
+        buf.writeEnum(replay.winningTeam());
 
         buf.writeInt(replay.players().size());
         for (GameReplay.ReplayPlayerInfo playerInfo : replay.players()) {
-            buf.writeUuid(playerInfo.uuid());
-            buf.writeString(playerInfo.name());
-            buf.writeIdentifier(playerInfo.finalRole().identifier());
+            buf.writeUUID(playerInfo.uuid());
+            buf.writeUtf(playerInfo.name());
+            buf.writeResourceLocation(playerInfo.finalRole().identifier());
         }
 
 
@@ -98,7 +97,7 @@ public record ReplayPayload(GameReplay replay) implements CustomPayload {
 
         buf.writeInt(replay.timelineEvents().size());
         for (GameReplay.ReplayEvent event : replay.timelineEvents()) {
-            buf.writeEnumConstant(event.eventType());
+            buf.writeEnum(event.eventType());
             buf.writeInt((int) event.timestamp());
 
             switch (event.eventType()) {
@@ -106,7 +105,7 @@ public record ReplayPayload(GameReplay replay) implements CustomPayload {
                     GameReplay.PlayerKillDetails killDetails = (GameReplay.PlayerKillDetails) event.details();
                     buf.writeVarInt(playerUuidToIndex.get(killDetails.killerUuid()));
                     buf.writeVarInt(playerUuidToIndex.get(killDetails.victimUuid()));
-                    buf.writeIdentifier(killDetails.deathReason());
+                    buf.writeResourceLocation(killDetails.deathReason());
                     break;
                 case PLAYER_POISONED:
                     GameReplay.PlayerPoisonedDetails poisonedDetails = (GameReplay.PlayerPoisonedDetails) event.details();

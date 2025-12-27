@@ -1,30 +1,30 @@
 package dev.doctor4t.trainmurdermystery.network;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.level.Level;
 public class NetworkHandler {
     // 优化：减少发送距离从96格到64格，减少网络占用
     private static final int NETWORK_RANGE = 64;
     private static final int NETWORK_RANGE_SQUARED = NETWORK_RANGE * NETWORK_RANGE;
     
-    public static void sendToNearBy(World world, BlockPos pos, CustomPayload toSend) {
-        if (world instanceof ServerWorld) {
-            ServerWorld serverWorld = (ServerWorld) world;
+    public static void sendToNearBy(Level world, BlockPos pos, CustomPacketPayload toSend) {
+        if (world instanceof ServerLevel) {
+            ServerLevel serverWorld = (ServerLevel) world;
 
-            serverWorld.getServer().getPlayerManager().getPlayerList().stream()
-                    .filter(p -> p.squaredDistanceTo(pos.getX(), pos.getY(), pos.getZ()) < NETWORK_RANGE_SQUARED)
+            serverWorld.getServer().getPlayerList().getPlayers().stream()
+                    .filter(p -> p.distanceToSqr(pos.getX(), pos.getY(), pos.getZ()) < NETWORK_RANGE_SQUARED)
                     .forEach(p -> ServerPlayNetworking.send(p, toSend));
         }
     }
 
-    public static void sendToClientPlayer(CustomPayload toSend, ServerPlayerEntity player) {
+    public static void sendToClientPlayer(CustomPacketPayload toSend, ServerPlayer player) {
         ServerPlayNetworking.send(player, toSend);
     }
-    public static void sendToServer(CustomPayload toSend) {
+    public static void sendToServer(CustomPacketPayload toSend) {
         ClientPlayNetworking.send(toSend);
     }
 }

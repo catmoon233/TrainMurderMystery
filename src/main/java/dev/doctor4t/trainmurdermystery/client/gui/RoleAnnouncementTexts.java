@@ -1,13 +1,13 @@
 package dev.doctor4t.trainmurdermystery.client.gui;
 
 import dev.doctor4t.trainmurdermystery.game.GameFunctions;
-import net.minecraft.text.Text;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.function.Function;
+import net.minecraft.network.chat.Component;
 
 public class RoleAnnouncementTexts {
     public static final ArrayList<RoleAnnouncementTexts.RoleAnnouncementText> ROLE_ANNOUNCEMENT_TEXTS = new ArrayList<>();
@@ -26,37 +26,37 @@ public class RoleAnnouncementTexts {
     public static class RoleAnnouncementText {
         private final String name;
         public final int colour;
-        public final Text roleText;
-        public final Text titleText;
-        public final Text welcomeText;
-        public final Function<Integer, Text> premiseText;
-        public final Function<Integer, Text> goalText;
-        public final Text winText;
+        public final Component roleText;
+        public final Component titleText;
+        public final Component welcomeText;
+        public final Function<Integer, Component> premiseText;
+        public final Function<Integer, Component> goalText;
+        public final Component winText;
 
         public RoleAnnouncementText(String name, int colour) {
             this.name = name;
             this.colour = colour;
-            this.roleText = Text.translatable("announcement.role." + this.name.toLowerCase()).withColor(this.colour);
-            this.titleText = Text.translatable("announcement.title." + this.name.toLowerCase()).withColor(this.colour);
-            this.welcomeText = Text.translatable("announcement.welcome", this.roleText).withColor(0xF0F0F0);
-            this.premiseText = (count) -> Text.translatable(count == 1 ? "announcement.premise" : "announcement.premises", count);
-            this.goalText = (count) -> Text.translatable((count == 1 ? "announcement.goal." : "announcement.goals.") + this.name.toLowerCase(), count).withColor(this.colour);
-            this.winText = Text.translatable("announcement.win." + this.name.toLowerCase()).withColor(this.colour);
+            this.roleText = Component.translatable("announcement.role." + this.name.toLowerCase()).withColor(this.colour);
+            this.titleText = Component.translatable("announcement.title." + this.name.toLowerCase()).withColor(this.colour);
+            this.welcomeText = Component.translatable("announcement.welcome", this.roleText).withColor(0xF0F0F0);
+            this.premiseText = (count) -> Component.translatable(count == 1 ? "announcement.premise" : "announcement.premises", count);
+            this.goalText = (count) -> Component.translatable((count == 1 ? "announcement.goal." : "announcement.goals.") + this.name.toLowerCase(), count).withColor(this.colour);
+            this.winText = Component.translatable("announcement.win." + this.name.toLowerCase()).withColor(this.colour);
         }
 
-        public Text getLoseText() {
+        public Component getLoseText() {
             return this == KILLER ? CIVILIAN.winText : KILLER.winText;
         }
 
-        public @Nullable Text getEndText(GameFunctions.@NotNull WinStatus status, Text winner) {
+        public @Nullable Component getEndText(GameFunctions.@NotNull WinStatus status, Component winner) {
             return switch (status) {
                 case NONE -> null;
                 case PASSENGERS, TIME -> this == KILLER ? this.getLoseText() : this.winText;
                 case KILLERS -> this == KILLER ? this.winText : this.getLoseText();
                 case GAMBLER ->
-                        Text.translatable("announcement.win.gambler" , winner).withColor(new Color(128, 0, 128).getRGB());
+                        Component.translatable("announcement.win.gambler" , winner).withColor(new Color(128, 0, 128).getRGB());
                 case LOOSE_END ->
-                        Text.translatable("announcement.win." + LOOSE_END.name.toLowerCase(), winner).withColor(LOOSE_END.colour);
+                        Component.translatable("announcement.win." + LOOSE_END.name.toLowerCase(), winner).withColor(LOOSE_END.colour);
             };
         }
     }

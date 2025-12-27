@@ -2,54 +2,54 @@ package dev.doctor4t.trainmurdermystery.block;
 
 import dev.doctor4t.trainmurdermystery.index.TMMProperties;
 import dev.doctor4t.trainmurdermystery.index.TMMSounds;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.PillarBlock;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.state.StateManager;
-import net.minecraft.state.property.BooleanProperty;
-import net.minecraft.state.property.Properties;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
-import net.minecraft.util.ItemActionResult;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.world.World;
-import net.minecraft.world.WorldAccess;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.RotatedPillarBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.phys.BlockHitResult;
 
-public class NeonPillarBlock extends PillarBlock {
-    public static final BooleanProperty LIT = Properties.LIT;
+public class NeonPillarBlock extends RotatedPillarBlock {
+    public static final BooleanProperty LIT = BlockStateProperties.LIT;
     public static final BooleanProperty ACTIVE = TMMProperties.ACTIVE;
 
-    public NeonPillarBlock(Settings settings) {
+    public NeonPillarBlock(Properties settings) {
         super(settings);
-        this.setDefaultState(super.getDefaultState().with(LIT, false).with(ACTIVE, true));
+        this.registerDefaultState(super.defaultBlockState().setValue(LIT, false).setValue(ACTIVE, true));
     }
 
     @Override
-    protected ItemActionResult onUseWithItem(ItemStack stack, BlockState state, World world, BlockPos pos, PlayerEntity player, Hand hand, BlockHitResult hit) {
+    protected ItemInteractionResult useItemOn(ItemStack stack, BlockState state, Level world, BlockPos pos, Player player, InteractionHand hand, BlockHitResult hit) {
         if (!stack.isEmpty()) {
-            return ItemActionResult.SKIP_DEFAULT_BLOCK_INTERACTION;
+            return ItemInteractionResult.SKIP_DEFAULT_BLOCK_INTERACTION;
         }
-        return super.onUseWithItem(stack, state, world, pos, player, hand, hit);
+        return super.useItemOn(stack, state, world, pos, player, hand, hit);
     }
 
     @Override
-    protected ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
-        if (player.shouldCancelInteraction()) {
-            return ActionResult.PASS;
+    protected InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player player, BlockHitResult hit) {
+        if (player.isSecondaryUseActive()) {
+            return InteractionResult.PASS;
         }
-        boolean lit = state.get(LIT);
-        Direction.Axis axis = state.get(AXIS);
+        boolean lit = state.getValue(LIT);
+        Direction.Axis axis = state.getValue(AXIS);
         Direction direction = switch (axis) {
             case X -> Direction.EAST;
             case Y -> Direction.UP;
             case Z -> Direction.SOUTH;
         };
-        BlockPos.Mutable mutable = pos.mutableCopy();
+        BlockPos.MutableBlockPos mutable = pos.mutable();
         while (this.toggle(world, mutable, axis, lit)) {
             mutable.move(direction);
         }
@@ -57,34 +57,34 @@ public class NeonPillarBlock extends PillarBlock {
         while (this.toggle(world, mutable, axis, lit)) {
             mutable.move(direction.getOpposite());
         }
-        world.playSound(null, pos, TMMSounds.BLOCK_LIGHT_TOGGLE, SoundCategory.BLOCKS, 0.5f, lit ? 1f : 1.2f);
-        if (!state.get(ACTIVE)) {
-            world.playSound(player, pos, TMMSounds.BLOCK_BUTTON_TOGGLE_NO_POWER, SoundCategory.BLOCKS, 0.1f, 1f);
+        world.playSound(null, pos, TMMSounds.BLOCK_LIGHT_TOGGLE, SoundSource.BLOCKS, 0.5f, lit ? 1f : 1.2f);
+        if (!state.getValue(ACTIVE)) {
+            world.playSound(player, pos, TMMSounds.BLOCK_BUTTON_TOGGLE_NO_POWER, SoundSource.BLOCKS, 0.1f, 1f);
         }
-        return ActionResult.success(world.isClient);
+        return InteractionResult.sidedSuccess(world.isClientSide);
     }
 
     @Override
-    protected BlockState getStateForNeighborUpdate(BlockState state, Direction direction, BlockState neighborState, WorldAccess world, BlockPos pos, BlockPos neighborPos) {
-        Direction.Axis axis = state.get(AXIS);
-        if (direction.getAxis() == axis && neighborState.isOf(this) && neighborState.get(AXIS) == axis) {
-            return state.with(ACTIVE, neighborState.get(ACTIVE));
+    protected BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, LevelAccessor world, BlockPos pos, BlockPos neighborPos) {
+        Direction.Axis axis = state.getValue(AXIS);
+        if (direction.getAxis() == axis && neighborState.is(this) && neighborState.getValue(AXIS) == axis) {
+            return state.setValue(ACTIVE, neighborState.getValue(ACTIVE));
         }
         return state;
     }
 
-    private boolean toggle(World world, BlockPos pos, Direction.Axis axis, boolean lit) {
+    private boolean toggle(Level world, BlockPos pos, Direction.Axis axis, boolean lit) {
         BlockState state = world.getBlockState(pos);
-        if (state.isOf(this) && state.get(AXIS) == axis && state.get(LIT) == lit) {
-            world.setBlockState(pos, state.with(LIT, !lit));
+        if (state.is(this) && state.getValue(AXIS) == axis && state.getValue(LIT) == lit) {
+            world.setBlockAndUpdate(pos, state.setValue(LIT, !lit));
             return true;
         }
         return false;
     }
 
     @Override
-    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
-        super.appendProperties(builder);
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        super.createBlockStateDefinition(builder);
         builder.add(LIT, ACTIVE);
     }
 }

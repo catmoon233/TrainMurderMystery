@@ -1,6 +1,7 @@
 package dev.doctor4t.trainmurdermystery.client;
 
 import com.google.common.collect.Maps;
+import com.mojang.blaze3d.platform.InputConstants;
 import dev.doctor4t.ratatouille.client.util.OptionLocker;
 import dev.doctor4t.ratatouille.client.util.ambience.AmbienceUtil;
 import dev.doctor4t.ratatouille.client.util.ambience.BackgroundAmbience;
@@ -36,29 +37,28 @@ import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
-import net.minecraft.block.Block;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.AbstractClientPlayerEntity;
-import net.minecraft.client.network.ClientPlayNetworkHandler;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.client.network.PlayerListEntry;
-import net.minecraft.client.option.CloudRenderMode;
-import net.minecraft.client.option.KeyBinding;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.block.entity.BlockEntityRendererFactories;
-import net.minecraft.client.render.entity.EmptyEntityRenderer;
-import net.minecraft.client.render.entity.FlyingItemEntityRenderer;
-import net.minecraft.client.render.model.UnbakedModel;
-import net.minecraft.client.util.InputUtil;
-import net.minecraft.client.util.ModelIdentifier;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.ItemEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.registry.Registries;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.Vec3d;
+import net.minecraft.client.CloudStatus;
+import net.minecraft.client.KeyMapping;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientPacketListener;
+import net.minecraft.client.multiplayer.PlayerInfo;
+import net.minecraft.client.player.AbstractClientPlayer;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
+import net.minecraft.client.renderer.entity.NoopRenderer;
+import net.minecraft.client.renderer.entity.ThrownItemRenderer;
+import net.minecraft.client.resources.model.ModelResourceLocation;
+import net.minecraft.client.resources.model.UnbakedModel;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Mth;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.item.ItemEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.phys.Vec3;
 import org.lwjgl.glfw.GLFW;
 
 import java.util.*;
@@ -66,20 +66,20 @@ import java.util.*;
 public class TMMClient implements ClientModInitializer {
     private static float soundLevel = 0f;
     public static HandParticleManager handParticleManager;
-    public static Map<PlayerEntity, Vec3d> particleMap;
+    public static Map<Player, Vec3> particleMap;
     private static boolean prevGameRunning;
     public static GameWorldComponent gameComponent;
     public static TrainWorldComponent trainComponent;
     public static PlayerMoodComponent moodComponent;
 
-    public static final Map<UUID, PlayerListEntry> PLAYER_ENTRIES_CACHE = Maps.newHashMap();
+    public static final Map<UUID, PlayerInfo> PLAYER_ENTRIES_CACHE = Maps.newHashMap();
 
-    public static KeyBinding instinctKeybind;
+    public static KeyMapping instinctKeybind;
     public static float prevInstinctLightLevel = -.04f;
     public static float instinctLightLevel = -.04f;
 
     public static boolean shouldDisableHudAndDebug() {
-        MinecraftClient client = MinecraftClient.getInstance();
+        Minecraft client = Minecraft.getInstance();
         return (client == null || (client.player != null && !client.player.isCreative() && !client.player.isSpectator()));
     }
 
@@ -96,16 +96,16 @@ public class TMMClient implements ClientModInitializer {
         TMMParticles.registerFactories();
 
         // Entity renderer registration
-        EntityRendererRegistry.register(TMMEntities.SEAT, EmptyEntityRenderer::new);
+        EntityRendererRegistry.register(TMMEntities.SEAT, NoopRenderer::new);
         EntityRendererRegistry.register(TMMEntities.FIRECRACKER, FirecrackerEntityRenderer::new);
-        EntityRendererRegistry.register(TMMEntities.GRENADE, FlyingItemEntityRenderer::new);
+        EntityRendererRegistry.register(TMMEntities.GRENADE, ThrownItemRenderer::new);
         EntityRendererRegistry.register(TMMEntities.NOTE, NoteEntityRenderer::new);
 
         // Register entity model layers
         TMMModelLayers.initialize();
 
         // Block render layers
-        BlockRenderLayerMap.INSTANCE.putBlocks(RenderLayer.getCutout(),
+        BlockRenderLayerMap.INSTANCE.putBlocks(RenderType.cutout(),
                 TMMBlocks.STAINLESS_STEEL_VENT_HATCH,
                 TMMBlocks.DARK_STEEL_VENT_HATCH,
                 TMMBlocks.TARNISHED_GOLD_VENT_HATCH,
@@ -143,7 +143,7 @@ public class TMMClient implements ClientModInitializer {
                 TMMBlocks.LIGHT_BARRIER,
                 TMMBlocks.HORN
         );
-        BlockRenderLayerMap.INSTANCE.putBlocks(RenderLayer.getTranslucent(),
+        BlockRenderLayerMap.INSTANCE.putBlocks(RenderType.translucent(),
                 TMMBlocks.RHOMBUS_GLASS,
                 TMMBlocks.PRIVACY_GLASS_PANEL,
                 TMMBlocks.CULLING_BLACK_HULL,
@@ -157,47 +157,47 @@ public class TMMClient implements ClientModInitializer {
         ModelLoadingPlugin.register(customModelProvider);
 
         // Block Entity Renderers
-        BlockEntityRendererFactories.register(
+        BlockEntityRenderers.register(
                 TMMBlockEntities.SMALL_GLASS_DOOR,
                 ctx -> new SmallDoorBlockEntityRenderer(TMM.id("textures/entity/small_glass_door.png"), ctx)
         );
-        BlockEntityRendererFactories.register(
+        BlockEntityRenderers.register(
                 TMMBlockEntities.SMALL_WOOD_DOOR,
                 ctx -> new SmallDoorBlockEntityRenderer(TMM.id("textures/entity/small_wood_door.png"), ctx)
         );
-        BlockEntityRendererFactories.register(
+        BlockEntityRenderers.register(
                 TMMBlockEntities.ANTHRACITE_STEEL_DOOR,
                 ctx -> new SmallDoorBlockEntityRenderer(TMM.id("textures/entity/anthracite_steel_door.png"), ctx)
         );
-        BlockEntityRendererFactories.register(
+        BlockEntityRenderers.register(
                 TMMBlockEntities.KHAKI_STEEL_DOOR,
                 ctx -> new SmallDoorBlockEntityRenderer(TMM.id("textures/entity/khaki_steel_door.png"), ctx)
         );
-        BlockEntityRendererFactories.register(
+        BlockEntityRenderers.register(
                 TMMBlockEntities.MAROON_STEEL_DOOR,
                 ctx -> new SmallDoorBlockEntityRenderer(TMM.id("textures/entity/maroon_steel_door.png"), ctx)
         );
-        BlockEntityRendererFactories.register(
+        BlockEntityRenderers.register(
                 TMMBlockEntities.MUNTZ_STEEL_DOOR,
                 ctx -> new SmallDoorBlockEntityRenderer(TMM.id("textures/entity/muntz_steel_door.png"), ctx)
         );
-        BlockEntityRendererFactories.register(
+        BlockEntityRenderers.register(
                 TMMBlockEntities.NAVY_STEEL_DOOR,
                 ctx -> new SmallDoorBlockEntityRenderer(TMM.id("textures/entity/navy_steel_door.png"), ctx)
         );
-        BlockEntityRendererFactories.register(
+        BlockEntityRenderers.register(
                 TMMBlockEntities.WHEEL,
                 ctx -> new WheelBlockEntityRenderer(TMM.id("textures/entity/wheel.png"), ctx)
         );
-        BlockEntityRendererFactories.register(
+        BlockEntityRenderers.register(
                 TMMBlockEntities.RUSTED_WHEEL,
                 ctx -> new WheelBlockEntityRenderer(TMM.id("textures/entity/rusted_wheel.png"), ctx)
         );
-        BlockEntityRendererFactories.register(
+        BlockEntityRenderers.register(
                 TMMBlockEntities.BEVERAGE_PLATE,
                 PlateBlockEntityRenderer::new
         );
-        BlockEntityRendererFactories.register(TMMBlockEntities.HORN, HornBlockEntityRenderer::new);
+        BlockEntityRenderers.register(TMMBlockEntities.HORN, HornBlockEntityRenderer::new);
 
         // Ambience
         //AmbienceUtil.registerBackgroundAmbience(new BackgroundAmbience(TMMSounds.AMBIENT_TRAIN_INSIDE, player -> isTrainMoving() && !TMM.isSkyVisibleAdjacent(player), 20));
@@ -209,7 +209,7 @@ public class TMMClient implements ClientModInitializer {
         ClientTickEvents.START_WORLD_TICK.register(clientWorld -> {
             gameComponent = GameWorldComponent.KEY.get(clientWorld);
             trainComponent = TrainWorldComponent.KEY.get(clientWorld);
-            moodComponent = PlayerMoodComponent.KEY.get(MinecraftClient.getInstance().player);
+            moodComponent = PlayerMoodComponent.KEY.get(Minecraft.getInstance().player);
         });
 
         // Lock options
@@ -219,7 +219,7 @@ public class TMMClient implements ClientModInitializer {
         }
         OptionLocker.overrideOption("showSubtitles", false);
         OptionLocker.overrideOption("autoJump", false);
-        OptionLocker.overrideOption("renderClouds", CloudRenderMode.OFF);
+        OptionLocker.overrideOption("renderClouds", CloudStatus.OFF);
         OptionLocker.overrideSoundCategoryVolume("music", 0.0);
         OptionLocker.overrideSoundCategoryVolume("record", 0.1);
         OptionLocker.overrideSoundCategoryVolume("weather", 1.0);
@@ -242,30 +242,30 @@ public class TMMClient implements ClientModInitializer {
             } else {
                 instinctLightLevel -= .1f;
             }
-            instinctLightLevel = MathHelper.clamp(instinctLightLevel, -.04f, .5f);
+            instinctLightLevel = Mth.clamp(instinctLightLevel, -.04f, .5f);
 
             // Cache player entries
-            for (AbstractClientPlayerEntity player : clientWorld.getPlayers()) {
-                ClientPlayNetworkHandler networkHandler = MinecraftClient.getInstance().getNetworkHandler();
+            for (AbstractClientPlayer player : clientWorld.players()) {
+                ClientPacketListener networkHandler = Minecraft.getInstance().getConnection();
                 if (networkHandler != null) {
-                    PLAYER_ENTRIES_CACHE.put(player.getUuid(), networkHandler.getPlayerListEntry(player.getUuid()));
+                    PLAYER_ENTRIES_CACHE.put(player.getUUID(), networkHandler.getPlayerInfo(player.getUUID()));
                 }
             }
             if (!prevGameRunning && gameComponent.isRunning()) {
-                MinecraftClient.getInstance().player.getInventory().selectedSlot = 8;
+                Minecraft.getInstance().player.getInventory().selected = 8;
             }
             prevGameRunning = gameComponent.isRunning();
 
             // Fade sound with game start / stop fade
             GameWorldComponent component = GameWorldComponent.KEY.get(clientWorld);
             if (component.getFade() > 0) {
-                MinecraftClient.getInstance().getSoundManager().updateSoundVolume(SoundCategory.MASTER, MathHelper.map(component.getFade(), 0, GameConstants.FADE_TIME, soundLevel, 0));
+                Minecraft.getInstance().getSoundManager().updateSourceVolume(SoundSource.MASTER, Mth.map(component.getFade(), 0, GameConstants.FADE_TIME, soundLevel, 0));
             } else {
-                MinecraftClient.getInstance().getSoundManager().updateSoundVolume(SoundCategory.MASTER, soundLevel);
-                soundLevel = MinecraftClient.getInstance().options.getSoundVolume(SoundCategory.MASTER);
+                Minecraft.getInstance().getSoundManager().updateSourceVolume(SoundSource.MASTER, soundLevel);
+                soundLevel = Minecraft.getInstance().options.getSoundSourceVolume(SoundSource.MASTER);
             }
 
-            ClientPlayerEntity player = MinecraftClient.getInstance().player;
+            LocalPlayer player = Minecraft.getInstance().player;
             if (player != null) {
                 StoreRenderer.tick();
                 TimeRenderer.tick();
@@ -310,9 +310,9 @@ public class TMMClient implements ClientModInitializer {
         ClientPlayNetworking.registerGlobalReceiver(TaskCompletePayload.ID, new TaskCompletePayload.Receiver());
 
         // Instinct keybind
-        instinctKeybind = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+        instinctKeybind = KeyBindingHelper.registerKeyBinding(new KeyMapping(
                 "key." + TMM.MOD_ID + ".instinct",
-                InputUtil.Type.KEYSYM,
+                InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_LEFT_ALT,
                 "category." + TMM.MOD_ID + ".keybinds"
         ));
@@ -336,33 +336,33 @@ public class TMMClient implements ClientModInitializer {
 
     public static class CustomModelProvider implements ModelLoadingPlugin {
 
-        private final Map<Identifier, UnbakedModel> modelIdToBlock = new Object2ObjectOpenHashMap<>();
-        private final Set<Identifier> withInventoryVariant = new HashSet<>();
+        private final Map<ResourceLocation, UnbakedModel> modelIdToBlock = new Object2ObjectOpenHashMap<>();
+        private final Set<ResourceLocation> withInventoryVariant = new HashSet<>();
 
         public void register(Block block, UnbakedModel model) {
-            this.register(Registries.BLOCK.getId(block), model);
+            this.register(BuiltInRegistries.BLOCK.getKey(block), model);
         }
 
-        public void register(Identifier id, UnbakedModel model) {
+        public void register(ResourceLocation id, UnbakedModel model) {
             this.modelIdToBlock.put(id, model);
         }
 
         public void markInventoryVariant(Block block) {
-            this.markInventoryVariant(Registries.BLOCK.getId(block));
+            this.markInventoryVariant(BuiltInRegistries.BLOCK.getKey(block));
         }
 
-        public void markInventoryVariant(Identifier id) {
+        public void markInventoryVariant(ResourceLocation id) {
             this.withInventoryVariant.add(id);
         }
 
         @Override
         public void onInitializeModelLoader(Context ctx) {
             ctx.modifyModelOnLoad().register((model, context) -> {
-                ModelIdentifier topLevelId = context.topLevelId();
+                ModelResourceLocation topLevelId = context.topLevelId();
                 if (topLevelId == null) {
                     return model;
                 }
-                Identifier id = topLevelId.id();
+                ResourceLocation id = topLevelId.id();
                 if (topLevelId.getVariant().equals("inventory") && !this.withInventoryVariant.contains(id)) {
                     return model;
                 }
@@ -375,15 +375,15 @@ public class TMMClient implements ClientModInitializer {
     }
 
     public static boolean isPlayerAliveAndInSurvival() {
-        return GameFunctions.isPlayerAliveAndSurvival(MinecraftClient.getInstance().player);
+        return GameFunctions.isPlayerAliveAndSurvival(Minecraft.getInstance().player);
     }
 
     public static boolean isPlayerSpectatingOrCreative() {
-        return GameFunctions.isPlayerSpectatingOrCreative(MinecraftClient.getInstance().player);
+        return GameFunctions.isPlayerSpectatingOrCreative(Minecraft.getInstance().player);
     }
 
     public static boolean isKiller() {
-        return gameComponent != null && gameComponent.canUseKillerFeatures(MinecraftClient.getInstance().player);
+        return gameComponent != null && gameComponent.canUseKillerFeatures(Minecraft.getInstance().player);
     }
 
     public static int getInstinctHighlight(Entity target) {
@@ -391,9 +391,9 @@ public class TMMClient implements ClientModInitializer {
 //        if (target instanceof PlayerBodyEntity) return 0x606060;
         if (target instanceof ItemEntity || target instanceof NoteEntity || target instanceof FirecrackerEntity)
             return 0xDB9D00;
-        if (target instanceof PlayerEntity player) {
+        if (target instanceof Player player) {
             if (GameFunctions.isPlayerSpectatingOrCreative(player)) return -1;
-            if (isKiller() && gameComponent.canUseKillerFeatures(player)) return MathHelper.hsvToRgb(0F, 1.0F, 0.6F);
+            if (isKiller() && gameComponent.canUseKillerFeatures(player)) return Mth.hsvToRgb(0F, 1.0F, 0.6F);
             if (gameComponent.isInnocent(player)) {
                 float mood = PlayerMoodComponent.KEY.get(target).getMood();
                 if (mood < GameConstants.DEPRESSIVE_MOOD_THRESHOLD) {
@@ -410,7 +410,7 @@ public class TMMClient implements ClientModInitializer {
     }
 
     public static boolean isInstinctEnabled() {
-        return instinctKeybind.isPressed() && ((isKiller() && isPlayerAliveAndInSurvival()) || isPlayerSpectatingOrCreative());
+        return instinctKeybind.isDown() && ((isKiller() && isPlayerAliveAndInSurvival()) || isPlayerSpectatingOrCreative());
     }
 
     public static Object getLockedRenderDistance(boolean ultraPerfMode) {

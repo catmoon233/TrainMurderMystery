@@ -1,17 +1,17 @@
 package dev.doctor4t.trainmurdermystery.api;
 
 import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 
 public abstract class GameMode {
-    public final Identifier identifier;
+    public final ResourceLocation identifier;
     public final int defaultStartTime;
     public final int minPlayerCount;
 
@@ -20,17 +20,17 @@ public abstract class GameMode {
      * @param defaultStartTime the default time at which the timer will be set at the start of the game mode, in minutes
      * @param minPlayerCount the minimum amount of players required to start the game mode
      */
-    public GameMode(Identifier identifier, int defaultStartTime, int minPlayerCount) {
+    public GameMode(ResourceLocation identifier, int defaultStartTime, int minPlayerCount) {
         this.identifier = identifier;
         this.defaultStartTime = defaultStartTime;
         this.minPlayerCount = minPlayerCount;
     }
 
-    public void readFromNbt(@NotNull NbtCompound nbtCompound, RegistryWrapper.WrapperLookup wrapperLookup) {
+    public void readFromNbt(@NotNull CompoundTag nbtCompound, HolderLookup.Provider wrapperLookup) {
 
     }
 
-    public void writeToNbt(@NotNull NbtCompound nbtCompound, RegistryWrapper.WrapperLookup wrapperLookup) {
+    public void writeToNbt(@NotNull CompoundTag nbtCompound, HolderLookup.Provider wrapperLookup) {
 
     }
 
@@ -38,11 +38,11 @@ public abstract class GameMode {
 
     public void tickClientGameLoop() {}
 
-    public abstract void tickServerGameLoop(ServerWorld serverWorld, GameWorldComponent gameWorldComponent);
+    public abstract void tickServerGameLoop(ServerLevel serverWorld, GameWorldComponent gameWorldComponent);
 
-    public abstract void initializeGame(ServerWorld serverWorld, GameWorldComponent gameWorldComponent, List<ServerPlayerEntity> players);
+    public abstract void initializeGame(ServerLevel serverWorld, GameWorldComponent gameWorldComponent, List<ServerPlayer> players);
 
-    public void finalizeGame(ServerWorld serverWorld, GameWorldComponent gameWorldComponent) {
+    public void finalizeGame(ServerLevel serverWorld, GameWorldComponent gameWorldComponent) {
 
     }
 }

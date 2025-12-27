@@ -5,10 +5,10 @@ import dev.doctor4t.trainmurdermystery.game.GameConstants;
 import dev.doctor4t.trainmurdermystery.game.GameFunctions;
 import dev.doctor4t.trainmurdermystery.index.TMMItems;
 import dev.doctor4t.trainmurdermystery.util.ShopEntry;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.registry.RegistryWrapper;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 import org.ladysnake.cca.api.v3.component.ComponentKey;
 import org.ladysnake.cca.api.v3.component.ComponentRegistry;
@@ -18,11 +18,11 @@ import org.ladysnake.cca.api.v3.component.tick.ServerTickingComponent;
 
 public class PlayerPsychoComponent implements AutoSyncedComponent, ServerTickingComponent, ClientTickingComponent {
     public static final ComponentKey<PlayerPsychoComponent> KEY = ComponentRegistry.getOrCreate(TMM.id("psycho"), PlayerPsychoComponent.class);
-    private final PlayerEntity player;
+    private final Player player;
     public int psychoTicks = 0;
     public int armour = 1;
 
-    public PlayerPsychoComponent(PlayerEntity player) {
+    public PlayerPsychoComponent(Player player) {
         this.player = player;
     }
 
@@ -39,11 +39,11 @@ public class PlayerPsychoComponent implements AutoSyncedComponent, ServerTicking
     public void clientTick() {
         if (this.psychoTicks <= 0) return;
         this.psychoTicks--;
-        if (this.player.getMainHandStack().isOf(TMMItems.BAT)) return;
+        if (this.player.getMainHandItem().is(TMMItems.BAT)) return;
         if (GameFunctions.isPlayerAliveAndSurvival(player)) {
             for (int i = 0; i < 9; i++) {
-                if (!this.player.getInventory().getStack(i).isOf(TMMItems.BAT)) continue;
-                this.player.getInventory().selectedSlot = i;
+                if (!this.player.getInventory().getItem(i).is(TMMItems.BAT)) continue;
+                this.player.getInventory().selected = i;
                 break;
             }
         }
@@ -65,7 +65,7 @@ public class PlayerPsychoComponent implements AutoSyncedComponent, ServerTicking
         if (ShopEntry.insertStackInFreeSlot(this.player, new ItemStack(TMMItems.BAT))) {
             this.setPsychoTicks(GameConstants.getPsychoTimer());
             this.setArmour(GameConstants.getPsychoModeArmour());
-            GameWorldComponent gameWorldComponent = GameWorldComponent.KEY.get(this.player.getWorld());
+            GameWorldComponent gameWorldComponent = GameWorldComponent.KEY.get(this.player.level());
             gameWorldComponent.setPsychosActive(gameWorldComponent.getPsychosActive() + 1);
             return true;
         }
@@ -73,10 +73,10 @@ public class PlayerPsychoComponent implements AutoSyncedComponent, ServerTicking
     }
 
     public void stopPsycho() {
-        GameWorldComponent gameWorldComponent = GameWorldComponent.KEY.get(this.player.getWorld());
+        GameWorldComponent gameWorldComponent = GameWorldComponent.KEY.get(this.player.level());
         gameWorldComponent.setPsychosActive(gameWorldComponent.getPsychosActive() - 1);
         this.psychoTicks = 0;
-        this.player.getInventory().remove(itemStack -> itemStack.isOf(TMMItems.BAT), Integer.MAX_VALUE, this.player.playerScreenHandler.getCraftingInput());
+        this.player.getInventory().clearOrCountMatchingItems(itemStack -> itemStack.is(TMMItems.BAT), Integer.MAX_VALUE, this.player.inventoryMenu.getCraftSlots());
     }
 
     public int getArmour() {
@@ -98,13 +98,13 @@ public class PlayerPsychoComponent implements AutoSyncedComponent, ServerTicking
     }
 
     @Override
-    public void writeToNbt(@NotNull NbtCompound tag, RegistryWrapper.WrapperLookup registryLookup) {
+    public void writeToNbt(@NotNull CompoundTag tag, HolderLookup.Provider registryLookup) {
         tag.putInt("psychoTicks", this.psychoTicks);
         tag.putInt("armour", this.armour);
     }
 
     @Override
-    public void readFromNbt(@NotNull NbtCompound tag, RegistryWrapper.WrapperLookup registryLookup) {
+    public void readFromNbt(@NotNull CompoundTag tag, HolderLookup.Provider registryLookup) {
         this.psychoTicks = tag.contains("psychoTicks") ? tag.getInt("psychoTicks") : 0;
         this.armour = tag.contains("armour") ? tag.getInt("armour") : 1;
     }

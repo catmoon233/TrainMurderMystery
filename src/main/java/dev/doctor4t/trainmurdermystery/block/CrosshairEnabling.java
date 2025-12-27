@@ -1,11 +1,11 @@
 package dev.doctor4t.trainmurdermystery.block;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.world.World;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.BlockHitResult;
 
 public interface CrosshairEnabling {
 
-    boolean shouldShowCrosshair(World world, BlockState state, BlockHitResult hit);
+    boolean shouldShowCrosshair(Level world, BlockState state, BlockHitResult hit);
 
 }

@@ -1,34 +1,34 @@
 package dev.doctor4t.trainmurdermystery.block;
 
 import net.fabricmc.fabric.api.tag.convention.v2.ConventionalBlockTags;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.MushroomBlock;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.world.BlockView;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.block.HugeMushroomBlock;
+import net.minecraft.world.level.block.state.BlockState;
 
-public class CullingBlock extends MushroomBlock {
+public class CullingBlock extends HugeMushroomBlock {
 
-    public CullingBlock(Settings settings) {
+    public CullingBlock(Properties settings) {
         super(settings);
     }
 
     @Override
-    public boolean isSideInvisible(BlockState state, BlockState stateFrom, Direction direction) {
-        if (stateFrom.getBlock() instanceof GlassPanelBlock && stateFrom.get(GlassPanelBlock.FACING) == direction) {
+    public boolean skipRendering(BlockState state, BlockState stateFrom, Direction direction) {
+        if (stateFrom.getBlock() instanceof GlassPanelBlock && stateFrom.getValue(GlassPanelBlock.FACING) == direction) {
             return true;
         }
 
-        return stateFrom.getBlock() instanceof CullingBlock || stateFrom.isIn(ConventionalBlockTags.GLASS_BLOCKS);
+        return stateFrom.getBlock() instanceof CullingBlock || stateFrom.is(ConventionalBlockTags.GLASS_BLOCKS);
     }
 
     @Override
-    public boolean isTransparent(BlockState state, BlockView world, BlockPos pos) {
+    public boolean propagatesSkylightDown(BlockState state, BlockGetter world, BlockPos pos) {
         return false;
     }
 
     @Override
-    public int getOpacity(BlockState state, BlockView world, BlockPos pos) {
+    public int getLightBlock(BlockState state, BlockGetter world, BlockPos pos) {
         return world.getMaxLightLevel();
     }
 }

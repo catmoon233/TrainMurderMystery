@@ -1,19 +1,19 @@
 package dev.doctor4t.trainmurdermystery.block;
 
-import net.minecraft.block.BlockState;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.world.BlockView;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class CullingGlassBlock extends GlassPanelBlock {
 
-    public CullingGlassBlock(Settings settings) {
+    public CullingGlassBlock(Properties settings) {
         super(settings);
     }
 
     @Override
-    public VoxelShape getCullingShape(BlockState state, BlockView world, BlockPos pos) {
-        return switch (state.get(FACING)) {
+    public VoxelShape getOcclusionShape(BlockState state, BlockGetter world, BlockPos pos) {
+        return switch (state.getValue(FACING)) {
             case NORTH -> NORTH_COLLISION_SHAPE;
             case EAST -> EAST_COLLISION_SHAPE;
             case SOUTH -> SOUTH_COLLISION_SHAPE;

@@ -2,15 +2,15 @@ package dev.doctor4t.trainmurdermystery.block_entity;
 
 import dev.doctor4t.trainmurdermystery.block.SprinklerBlock;
 import dev.doctor4t.trainmurdermystery.index.TMMBlockEntities;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.particle.ParticleTypes;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.random.Random;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.core.particles.ParticleTypes;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 
 public class SprinklerBlockEntity extends SyncingBlockEntity {
 
@@ -18,16 +18,16 @@ public class SprinklerBlockEntity extends SyncingBlockEntity {
 
     public SprinklerBlockEntity(BlockPos pos, BlockState state) {
         super(TMMBlockEntities.SPRINKLER, pos, state);
-        this.setPowered(state.get(SprinklerBlock.POWERED));
+        this.setPowered(state.getValue(SprinklerBlock.POWERED));
     }
 
-    public static <T extends BlockEntity> void clientTick(World world, BlockPos pos, BlockState state, T t) {
+    public static <T extends BlockEntity> void clientTick(Level world, BlockPos pos, BlockState state, T t) {
         SprinklerBlockEntity entity = (SprinklerBlockEntity) t;
         if (!entity.isPowered()) {
             return;
         }
-        Direction direction = SprinklerBlock.getDirection(state);
-        Random random = world.getRandom();
+        Direction direction = SprinklerBlock.getConnectedDirection(state);
+        RandomSource random = world.getRandom();
 
         float offsetScale = .2f;
         float randomOffsetScale = .2f;
@@ -38,12 +38,12 @@ public class SprinklerBlockEntity extends SyncingBlockEntity {
 
         for (int i = 0; i < 5; i++) {
             world.addParticle(direction == Direction.DOWN ? ParticleTypes.FALLING_WATER : ParticleTypes.SPLASH,
-                    x - direction.getOffsetX() * offsetScale + ((random.nextFloat() * 2f - 1f) * (direction.getAxis() != Direction.Axis.X ? randomOffsetScale : 0)),
-                    (direction == Direction.DOWN ? .5 : .6) + y - direction.getOffsetY() * offsetScale + ((random.nextFloat() * 2f - 1f) * (direction.getAxis() != Direction.Axis.Y ? randomOffsetScale : 0)),
-                    z - direction.getOffsetZ() * offsetScale + ((random.nextFloat() * 2f - 1f) * (direction.getAxis() != Direction.Axis.Z ? randomOffsetScale : 0)),
-                    direction.getOffsetX() * velScale,
-                    direction.getOffsetY() * velScale * (direction == Direction.UP ? 20f : 0),
-                    direction.getOffsetZ() * velScale);
+                    x - direction.getStepX() * offsetScale + ((random.nextFloat() * 2f - 1f) * (direction.getAxis() != Direction.Axis.X ? randomOffsetScale : 0)),
+                    (direction == Direction.DOWN ? .5 : .6) + y - direction.getStepY() * offsetScale + ((random.nextFloat() * 2f - 1f) * (direction.getAxis() != Direction.Axis.Y ? randomOffsetScale : 0)),
+                    z - direction.getStepZ() * offsetScale + ((random.nextFloat() * 2f - 1f) * (direction.getAxis() != Direction.Axis.Z ? randomOffsetScale : 0)),
+                    direction.getStepX() * velScale,
+                    direction.getStepY() * velScale * (direction == Direction.UP ? 20f : 0),
+                    direction.getStepZ() * velScale);
         }
     }
 
@@ -56,12 +56,12 @@ public class SprinklerBlockEntity extends SyncingBlockEntity {
     }
 
     @Override
-    protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
+    protected void saveAdditional(CompoundTag nbt, HolderLookup.Provider registryLookup) {
         nbt.putBoolean("powered", this.isPowered());
     }
 
     @Override
-    protected void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
+    protected void loadAdditional(CompoundTag nbt, HolderLookup.Provider registryLookup) {
         this.setPowered(nbt.getBoolean("powered"));
     }
 }

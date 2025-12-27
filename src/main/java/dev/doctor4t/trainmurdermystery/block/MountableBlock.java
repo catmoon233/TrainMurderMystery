@@ -2,63 +2,63 @@ package dev.doctor4t.trainmurdermystery.block;
 
 import dev.doctor4t.trainmurdermystery.block.entity.SeatEntity;
 import dev.doctor4t.trainmurdermystery.index.TMMEntities;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.ShapeContext;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.BlockItem;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.world.BlockView;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.Vec3;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 public abstract class MountableBlock extends Block {
 
-    public MountableBlock(Settings settings) {
+    public MountableBlock(Properties settings) {
         super(settings);
     }
 
     @Override
-    public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
-        return super.getOutlineShape(state, world, pos, context);
+    public VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
+        return super.getShape(state, world, pos, context);
     }
 
     @Override
-    public ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
+    public InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player player, BlockHitResult hit) {
         float radius = 1;
-        if (!player.isSneaking()
-                && player.getPos().subtract(pos.toCenterPos()).length() <= 1.5f
-                && !(player.getMainHandStack().getItem() instanceof BlockItem blockItem
+        if (!player.isShiftKeyDown()
+                && player.position().subtract(pos.getCenter()).length() <= 1.5f
+                && !(player.getMainHandItem().getItem() instanceof BlockItem blockItem
                 && blockItem.getBlock() instanceof MountableBlock)
-                && world.getEntitiesByClass(SeatEntity.class, Box.of(pos.toCenterPos(), radius, radius, radius), Entity::isAlive).isEmpty()) {
+                && world.getEntitiesOfClass(SeatEntity.class, AABB.ofSize(pos.getCenter(), radius, radius, radius), Entity::isAlive).isEmpty()) {
 
-            if (world.isClient) {
-                return ActionResult.success(true);
+            if (world.isClientSide) {
+                return InteractionResult.sidedSuccess(true);
             }
 
             SeatEntity seatEntity = TMMEntities.SEAT.create(world);
 
             if (seatEntity == null) {
-                return ActionResult.PASS;
+                return InteractionResult.PASS;
             }
 
-            Vec3d sitPos = this.getSitPos(world, state, pos);
-            Vec3d vec3d = Vec3d.of(pos).add(sitPos);
-            seatEntity.refreshPositionAndAngles(vec3d.x, vec3d.y, vec3d.z, 0, 0);
+            Vec3 sitPos = this.getSitPos(world, state, pos);
+            Vec3 vec3d = Vec3.atLowerCornerOf(pos).add(sitPos);
+            seatEntity.moveTo(vec3d.x, vec3d.y, vec3d.z, 0, 0);
             seatEntity.setSeatPos(pos);
-            world.spawnEntity(seatEntity);
+            world.addFreshEntity(seatEntity);
             player.startRiding(seatEntity);
 
-            return ActionResult.success(false);
+            return InteractionResult.sidedSuccess(false);
         } else {
-            return ActionResult.PASS;
+            return InteractionResult.PASS;
         }
     }
 
-    public abstract Vec3d getSitPos(World world, BlockState state, BlockPos pos);
+    public abstract Vec3 getSitPos(Level world, BlockState state, BlockPos pos);
 }

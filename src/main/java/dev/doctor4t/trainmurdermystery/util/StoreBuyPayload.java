@@ -3,18 +3,18 @@ package dev.doctor4t.trainmurdermystery.util;
 import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.cca.PlayerShopComponent;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
-import net.minecraft.network.packet.CustomPayload;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import org.jetbrains.annotations.NotNull;
 
-public record StoreBuyPayload(int index) implements CustomPayload {
-    public static final Id<StoreBuyPayload> ID = new Id<>(TMM.id("storebuy"));
-    public static final PacketCodec<PacketByteBuf, StoreBuyPayload> CODEC = PacketCodec.tuple(PacketCodecs.INTEGER, StoreBuyPayload::index, StoreBuyPayload::new);
+public record StoreBuyPayload(int index) implements CustomPacketPayload {
+    public static final Type<StoreBuyPayload> ID = new Type<>(TMM.id("storebuy"));
+    public static final StreamCodec<FriendlyByteBuf, StoreBuyPayload> CODEC = StreamCodec.composite(ByteBufCodecs.INT, StoreBuyPayload::index, StoreBuyPayload::new);
 
     @Override
-    public Id<? extends CustomPayload> getId() {
+    public Type<? extends CustomPacketPayload> type() {
         return ID;
     }
 

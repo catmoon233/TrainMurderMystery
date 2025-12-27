@@ -1,17 +1,17 @@
 package dev.doctor4t.trainmurdermystery.block;
 
-import net.minecraft.block.BarrierBlock;
-import net.minecraft.block.BlockState;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.BlockView;
+import net.minecraft.core.BlockPos;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.block.BarrierBlock;
+import net.minecraft.world.level.block.state.BlockState;
 
 public class LightBarrierBlock extends BarrierBlock {
-    public LightBarrierBlock(Settings settings) {
+    public LightBarrierBlock(Properties settings) {
         super(settings);
     }
 
     @Override
-    protected int getOpacity(BlockState state, BlockView world, BlockPos pos) {
+    protected int getLightBlock(BlockState state, BlockGetter world, BlockPos pos) {
         return 15;
     }
 }

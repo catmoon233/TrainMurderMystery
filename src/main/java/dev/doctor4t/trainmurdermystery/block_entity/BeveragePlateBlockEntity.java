@@ -1,23 +1,23 @@
 package dev.doctor4t.trainmurdermystery.block_entity;
 
 import dev.doctor4t.trainmurdermystery.index.TMMBlockEntities;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.network.listener.ClientPlayPacketListener;
-import net.minecraft.network.packet.Packet;
-import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 
 public class BeveragePlateBlockEntity extends BlockEntity {
     private final List<ItemStack> storedItems = new ArrayList<>();
@@ -29,15 +29,15 @@ public class BeveragePlateBlockEntity extends BlockEntity {
     }
 
     private void sync() {
-        if (this.world != null && !this.world.isClient) {
-            this.markDirty();
+        if (this.level != null && !this.level.isClientSide) {
+            this.setChanged();
 
-            this.world.updateListeners(this.pos, this.getCachedState(), this.getCachedState(), Block.NOTIFY_LISTENERS);
+            this.level.sendBlockUpdated(this.worldPosition, this.getBlockState(), this.getBlockState(), Block.UPDATE_CLIENTS);
         }
     }
 
     @SuppressWarnings("unused")
-    public static <T extends BlockEntity> void clientTick(World world, BlockPos pos, BlockState state, T blockEntity) {
+    public static <T extends BlockEntity> void clientTick(Level world, BlockPos pos, BlockState state, T blockEntity) {
     }
 
     public List<ItemStack> getStoredItems() {
@@ -69,12 +69,12 @@ public class BeveragePlateBlockEntity extends BlockEntity {
     }
 
     @Override
-    protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
-        super.writeNbt(nbt, registryLookup);
-        NbtCompound itemsNbt = new NbtCompound();
+    protected void saveAdditional(CompoundTag nbt, HolderLookup.Provider registryLookup) {
+        super.saveAdditional(nbt, registryLookup);
+        CompoundTag itemsNbt = new CompoundTag();
         for (int i = 0; i < this.storedItems.size(); i++) {
             if (!this.storedItems.get(i).isEmpty())
-                itemsNbt.put("Item" + i, this.storedItems.get(i).encode(registryLookup));
+                itemsNbt.put("Item" + i, this.storedItems.get(i).save(registryLookup));
         }
         nbt.put("Items", itemsNbt);
         if (this.poisoner != null) nbt.putString("poisoner", this.poisoner);
@@ -82,13 +82,13 @@ public class BeveragePlateBlockEntity extends BlockEntity {
     }
 
     @Override
-    protected void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
-        super.readNbt(nbt, registryLookup);
+    protected void loadAdditional(CompoundTag nbt, HolderLookup.Provider registryLookup) {
+        super.loadAdditional(nbt, registryLookup);
         this.storedItems.clear();
         if (nbt.contains("Items")) {
-            NbtCompound itemsNbt = nbt.getCompound("Items");
-            for (String key : itemsNbt.getKeys()) {
-                Optional<ItemStack> itemStack = ItemStack.fromNbt(registryLookup, itemsNbt.get(key));
+            CompoundTag itemsNbt = nbt.getCompound("Items");
+            for (String key : itemsNbt.getAllKeys()) {
+                Optional<ItemStack> itemStack = ItemStack.parse(registryLookup, itemsNbt.get(key));
                 itemStack.ifPresent(this.storedItems::add);
             }
         }
@@ -97,13 +97,13 @@ public class BeveragePlateBlockEntity extends BlockEntity {
     }
 
     @Override
-    public NbtCompound toInitialChunkDataNbt(RegistryWrapper.WrapperLookup registryLookup) {
-        return this.createNbt(registryLookup);
+    public CompoundTag getUpdateTag(HolderLookup.Provider registryLookup) {
+        return this.saveWithoutMetadata(registryLookup);
     }
 
     @Override
-    public @Nullable Packet<ClientPlayPacketListener> toUpdatePacket() {
-        return BlockEntityUpdateS2CPacket.create(this);
+    public @Nullable Packet<ClientGamePacketListener> getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
     }
 
     public enum PlateType {

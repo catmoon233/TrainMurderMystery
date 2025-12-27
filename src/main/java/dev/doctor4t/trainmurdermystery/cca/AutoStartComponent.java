@@ -5,10 +5,10 @@ import dev.doctor4t.trainmurdermystery.api.GameMode;
 import dev.doctor4t.trainmurdermystery.api.TMMGameModes;
 import dev.doctor4t.trainmurdermystery.game.GameConstants;
 import dev.doctor4t.trainmurdermystery.game.GameFunctions;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.world.World;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import org.ladysnake.cca.api.v3.component.ComponentKey;
 import org.ladysnake.cca.api.v3.component.ComponentRegistry;
@@ -17,11 +17,11 @@ import org.ladysnake.cca.api.v3.component.tick.CommonTickingComponent;
 
 public class AutoStartComponent implements AutoSyncedComponent, CommonTickingComponent {
     public static final ComponentKey<AutoStartComponent> KEY = ComponentRegistry.getOrCreate(TMM.id("autostart"), AutoStartComponent.class);
-    public final World world;
+    public final Level world;
     public int startTime;
     public int time;
 
-    public AutoStartComponent(World world) {
+    public AutoStartComponent(Level world) {
         this.world = world;
     }
 
@@ -41,7 +41,7 @@ public class AutoStartComponent implements AutoSyncedComponent, CommonTickingCom
         if (this.startTime <= 0 && this.time <= 0) return;
 
         if (GameFunctions.getReadyPlayerCount(world) >= gameWorldComponent.getGameMode().minPlayerCount) {
-            if (this.time-- <= 0 && this.world instanceof ServerWorld serverWorld) {
+            if (this.time-- <= 0 && this.world instanceof ServerLevel serverWorld) {
                 if (gameWorldComponent.getGameStatus() == GameWorldComponent.GameStatus.INACTIVE) {
                     GameMode gameMode = TMMGameModes.MURDER;
                     GameFunctions.startGame(serverWorld, gameMode, GameConstants.getInTicks(gameMode.defaultStartTime, 0));
@@ -54,7 +54,7 @@ public class AutoStartComponent implements AutoSyncedComponent, CommonTickingCom
                 this.sync();
             }
         } else {
-            if (this.world.getTime() % 20 == 0) {
+            if (this.world.getGameTime() % 20 == 0) {
                 this.setTime(this.startTime);
             }
         }
@@ -86,13 +86,13 @@ public class AutoStartComponent implements AutoSyncedComponent, CommonTickingCom
     }
 
     @Override
-    public void writeToNbt(@NotNull NbtCompound tag, RegistryWrapper.WrapperLookup registryLookup) {
+    public void writeToNbt(@NotNull CompoundTag tag, HolderLookup.Provider registryLookup) {
         tag.putInt("startTime", this.startTime);
         tag.putInt("time", this.time);
     }
 
     @Override
-    public void readFromNbt(@NotNull NbtCompound tag, RegistryWrapper.WrapperLookup registryLookup) {
+    public void readFromNbt(@NotNull CompoundTag tag, HolderLookup.Provider registryLookup) {
         this.startTime = tag.getInt("startTime");
         this.time = tag.getInt("time");
     }

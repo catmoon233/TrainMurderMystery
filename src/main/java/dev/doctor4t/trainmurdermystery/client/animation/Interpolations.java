@@ -1,8 +1,8 @@
 package dev.doctor4t.trainmurdermystery.client.animation;
 
 import it.unimi.dsi.fastutil.doubles.Double2DoubleFunction;
-import net.minecraft.client.render.entity.animation.Transformation;
-import net.minecraft.util.math.MathHelper;
+import net.minecraft.client.animation.AnimationChannel;
+import net.minecraft.util.Mth;
 import org.joml.Vector3f;
 
 /**
@@ -11,47 +11,47 @@ import org.joml.Vector3f;
  */
 public class Interpolations {
 
-    public static final Transformation.Interpolation LINEAR = Transformation.Interpolations.LINEAR;
-    public static final Transformation.Interpolation SPLINE = Transformation.Interpolations.CUBIC;
+    public static final AnimationChannel.Interpolation LINEAR = AnimationChannel.Interpolations.LINEAR;
+    public static final AnimationChannel.Interpolation SPLINE = AnimationChannel.Interpolations.CATMULLROM;
     public static final InterpolationCreator STEP = steps -> easing(Interpolations.step((double) steps));
-    public static final Transformation.Interpolation EASE_IN_QUADRATIC = easing(easeIn(Interpolations::quadratic));
-    public static final Transformation.Interpolation EASE_OUT_QUADRATIC = easing(easeOut(Interpolations::quadratic));
-    public static final Transformation.Interpolation EASE_IN_OUT_QUADRATIC = easing(easeInOut(Interpolations::quadratic));
-    public static final Transformation.Interpolation EASE_IN_CUBIC = easing(easeIn(Interpolations::cubic));
-    public static final Transformation.Interpolation EASE_OUT_CUBIC = easing(easeOut(Interpolations::cubic));
-    public static final Transformation.Interpolation EASE_IN_OUT_CUBIC = easing(easeInOut(Interpolations::cubic));
-    public static final Transformation.Interpolation EASE_IN_QUARTIC = easing(easeIn(pow(4)));
-    public static final Transformation.Interpolation EASE_OUT_QUARTIC = easing(easeOut(pow(4)));
-    public static final Transformation.Interpolation EASE_IN_OUT_QUARTIC = easing(easeInOut(pow(4)));
-    public static final Transformation.Interpolation EASE_IN_QUINTIC = easing(easeIn(pow(5)));
-    public static final Transformation.Interpolation EASE_OUT_QUINTIC = easing(easeOut(pow(5)));
-    public static final Transformation.Interpolation EASE_IN_OUT_QUINTIC = easing(easeInOut(pow(5)));
-    public static final Transformation.Interpolation EASE_IN_EXPO = easing(easeIn(Interpolations::exp));
-    public static final Transformation.Interpolation EASE_OUT_EXPO = easing(easeOut(Interpolations::exp));
-    public static final Transformation.Interpolation EASE_IN_OUT_EXPO = easing(easeInOut(Interpolations::exp));
-    public static final Transformation.Interpolation EASE_IN_CIRCLE = easing(easeIn(Interpolations::circle));
-    public static final Transformation.Interpolation EASE_OUT_CIRCLE = easing(easeOut(Interpolations::circle));
-    public static final Transformation.Interpolation EASE_IN_OUT_CIRCLE = easing(easeInOut(Interpolations::circle));
+    public static final AnimationChannel.Interpolation EASE_IN_QUADRATIC = easing(easeIn(Interpolations::quadratic));
+    public static final AnimationChannel.Interpolation EASE_OUT_QUADRATIC = easing(easeOut(Interpolations::quadratic));
+    public static final AnimationChannel.Interpolation EASE_IN_OUT_QUADRATIC = easing(easeInOut(Interpolations::quadratic));
+    public static final AnimationChannel.Interpolation EASE_IN_CUBIC = easing(easeIn(Interpolations::cubic));
+    public static final AnimationChannel.Interpolation EASE_OUT_CUBIC = easing(easeOut(Interpolations::cubic));
+    public static final AnimationChannel.Interpolation EASE_IN_OUT_CUBIC = easing(easeInOut(Interpolations::cubic));
+    public static final AnimationChannel.Interpolation EASE_IN_QUARTIC = easing(easeIn(pow(4)));
+    public static final AnimationChannel.Interpolation EASE_OUT_QUARTIC = easing(easeOut(pow(4)));
+    public static final AnimationChannel.Interpolation EASE_IN_OUT_QUARTIC = easing(easeInOut(pow(4)));
+    public static final AnimationChannel.Interpolation EASE_IN_QUINTIC = easing(easeIn(pow(5)));
+    public static final AnimationChannel.Interpolation EASE_OUT_QUINTIC = easing(easeOut(pow(5)));
+    public static final AnimationChannel.Interpolation EASE_IN_OUT_QUINTIC = easing(easeInOut(pow(5)));
+    public static final AnimationChannel.Interpolation EASE_IN_EXPO = easing(easeIn(Interpolations::exp));
+    public static final AnimationChannel.Interpolation EASE_OUT_EXPO = easing(easeOut(Interpolations::exp));
+    public static final AnimationChannel.Interpolation EASE_IN_OUT_EXPO = easing(easeInOut(Interpolations::exp));
+    public static final AnimationChannel.Interpolation EASE_IN_CIRCLE = easing(easeIn(Interpolations::circle));
+    public static final AnimationChannel.Interpolation EASE_OUT_CIRCLE = easing(easeOut(Interpolations::circle));
+    public static final AnimationChannel.Interpolation EASE_IN_OUT_CIRCLE = easing(easeInOut(Interpolations::circle));
     public static final InterpolationCreator EASE_IN_BACK = overshoot -> easing(easeIn(Interpolations.back((double) overshoot)));
     public static final InterpolationCreator EASE_OUT_BACK = overshoot -> easing(easeOut(Interpolations.back((double) overshoot)));
     public static final InterpolationCreator EASE_IN_OUT_BACK = overshoot -> easing(easeInOut(Interpolations.back((double) overshoot)));
     public static final InterpolationCreator EASE_IN_BOUNCE = bounciness -> easing(easeIn(Interpolations.bounce((double) bounciness)));
     public static final InterpolationCreator EASE_OUT_BOUNCE = bounciness -> easing(easeOut(Interpolations.bounce((double) bounciness)));
     public static final InterpolationCreator EASE_IN_OUT_BOUNCE = bounciness -> easing(easeInOut(Interpolations.bounce((double) bounciness)));
-    public static final Transformation.Interpolation EASE_IN_SINE = easing(easeIn(Interpolations::sine));
-    public static final Transformation.Interpolation EASE_OUT_SINE = easing(easeOut(Interpolations::sine));
-    public static final Transformation.Interpolation EASE_IN_OUT_SINE = easing(easeInOut(Interpolations::sine));
+    public static final AnimationChannel.Interpolation EASE_IN_SINE = easing(easeIn(Interpolations::sine));
+    public static final AnimationChannel.Interpolation EASE_OUT_SINE = easing(easeOut(Interpolations::sine));
+    public static final AnimationChannel.Interpolation EASE_IN_OUT_SINE = easing(easeInOut(Interpolations::sine));
     public static final InterpolationCreator EASE_IN_ELASTIC = bounciness -> easing(easeIn(Interpolations.elastic((double) bounciness)));
     public static final InterpolationCreator EASE_OUT_ELASTIC = bounciness -> easing(easeOut(Interpolations.elastic((double) bounciness)));
     public static final InterpolationCreator EASE_IN_OUT_ELASTIC = bounciness -> easing(easeInOut(Interpolations.elastic((double) bounciness)));
 
-    private static Transformation.Interpolation easing(Double2DoubleFunction easing) {
+    private static AnimationChannel.Interpolation easing(Double2DoubleFunction easing) {
         return (output, delta, keyframes, currentFrame, targetFrame, strength) -> {
             Vector3f vector3f = keyframes[currentFrame].target();
             Vector3f vector3f2 = keyframes[targetFrame].target();
 
             double eased = delta <= 0 ? 0 : delta >= 1 ? 1 : easing.apply((double) delta);
-            output.set(MathHelper.lerp(eased, vector3f.x(), vector3f2.x()), MathHelper.lerp(eased, vector3f.y(), vector3f2.y()), MathHelper.lerp(eased, vector3f.z(), vector3f2.z()));
+            output.set(Mth.lerp(eased, vector3f.x(), vector3f2.x()), Mth.lerp(eased, vector3f.y(), vector3f2.y()), Mth.lerp(eased, vector3f.z(), vector3f2.z()));
             return output;
         };
     }
@@ -264,7 +264,7 @@ public class Interpolations {
     }
 
     public interface InterpolationCreator {
-        Transformation.Interpolation configure(float value);
+        AnimationChannel.Interpolation configure(float value);
     }
 
 }

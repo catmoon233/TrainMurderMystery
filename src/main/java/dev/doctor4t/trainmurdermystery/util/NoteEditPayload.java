@@ -3,18 +3,18 @@ package dev.doctor4t.trainmurdermystery.util;
 import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.cca.PlayerNoteComponent;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
-import net.minecraft.network.packet.CustomPayload;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import org.jetbrains.annotations.NotNull;
 
-public record NoteEditPayload(String line1, String line2, String line3, String line4) implements CustomPayload {
-    public static final Id<NoteEditPayload> ID = new Id<>(TMM.id("note"));
-    public static final PacketCodec<PacketByteBuf, NoteEditPayload> CODEC = PacketCodec.tuple(PacketCodecs.STRING, NoteEditPayload::line1, PacketCodecs.STRING, NoteEditPayload::line2, PacketCodecs.STRING, NoteEditPayload::line3, PacketCodecs.STRING, NoteEditPayload::line4, NoteEditPayload::new);
+public record NoteEditPayload(String line1, String line2, String line3, String line4) implements CustomPacketPayload {
+    public static final Type<NoteEditPayload> ID = new Type<>(TMM.id("note"));
+    public static final StreamCodec<FriendlyByteBuf, NoteEditPayload> CODEC = StreamCodec.composite(ByteBufCodecs.STRING_UTF8, NoteEditPayload::line1, ByteBufCodecs.STRING_UTF8, NoteEditPayload::line2, ByteBufCodecs.STRING_UTF8, NoteEditPayload::line3, ByteBufCodecs.STRING_UTF8, NoteEditPayload::line4, NoteEditPayload::new);
 
     @Override
-    public Id<? extends CustomPayload> getId() {
+    public Type<? extends CustomPacketPayload> type() {
         return ID;
     }
 

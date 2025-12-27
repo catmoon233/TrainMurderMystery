@@ -5,14 +5,13 @@ import com.google.gson.GsonBuilder;
 import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.api.Role;
 import dev.doctor4t.trainmurdermystery.util.ReplayDisplayUtils;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.Identifier;
-
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -62,7 +61,7 @@ public void resetReplay() {
         GameReplay.EventType eventType = mapEventType(dataEvent.getType());
         GameReplay.EventDetails details = switch (dataEvent.getType()) {
             case KILL ->
-                    new GameReplay.PlayerKillDetails(dataEvent.getSourcePlayer(), dataEvent.getTargetPlayer(), Identifier.of(dataEvent.getItemUsed()));
+                    new GameReplay.PlayerKillDetails(dataEvent.getSourcePlayer(), dataEvent.getTargetPlayer(), ResourceLocation.parse(dataEvent.getItemUsed()));
             case POISON ->
                     new GameReplay.PlayerPoisonedDetails(dataEvent.getSourcePlayer(), dataEvent.getTargetPlayer());
             default -> new GameReplay.EventDetails() {
@@ -72,9 +71,9 @@ public void resetReplay() {
         return new GameReplay.ReplayEvent(eventType, dataEvent.getTimestamp(), details);
 }
 
-public void initializeReplay(List<ServerPlayerEntity> players, HashMap<UUID, Role> roles) {
+public void initializeReplay(List<ServerPlayer> players, HashMap<UUID, Role> roles) {
     resetReplay();
-    for (ServerPlayerEntity player : players) {
+    for (ServerPlayer player : players) {
         recordPlayerName(player);
     }
     currentReplayData.setPlayerCount(players.size());
@@ -110,20 +109,20 @@ public void finalizeReplay(GameFunctions.WinStatus winStatus) {
     saveReplay();
 }
 
-public void recordPlayerName(PlayerEntity player) {
-    playerNames.put(player.getUuid(), player.getName().getString());
+public void recordPlayerName(Player player) {
+    playerNames.put(player.getUUID(), player.getName().getString());
 }
 
-public Text getPlayerName(UUID uuid) {
+public Component getPlayerName(UUID uuid) {
     String name = playerNames.get(uuid);
-    return name != null ? Text.literal(name) : Text.literal("未知玩家");
+    return name != null ? Component.literal(name) : Component.literal("未知玩家");
 }
 
 public void addEvent(GameReplayData.EventType type, UUID sourcePlayer, UUID targetPlayer, String itemUsed, String message) {
     currentReplayData.addEvent(new GameReplayData.ReplayEvent(type, sourcePlayer, targetPlayer, itemUsed, message));
 }
 
-public void recordPlayerKill(UUID killerUuid, UUID victimUuid, Identifier deathReason) {
+public void recordPlayerKill(UUID killerUuid, UUID victimUuid, ResourceLocation deathReason) {
     addEvent(GameReplayData.EventType.KILL, killerUuid, victimUuid, deathReason.toString(), null);
 }
 
@@ -160,7 +159,7 @@ public GameReplay getCurrentReplay() {
 }
 
 public void saveReplay() {
-    File replayFile = new File(server.getRunDirectory().toFile(), REPLAY_FILE_NAME);
+    File replayFile = new File(server.getServerDirectory().toFile(), REPLAY_FILE_NAME);
     try (FileWriter writer = new FileWriter(replayFile)) {
         GSON.toJson(currentReplayData, writer);
         TMM.LOGGER.info("Game replay saved to {}", replayFile.getAbsolutePath());
@@ -170,7 +169,7 @@ public void saveReplay() {
 }
 
 public GameReplayData loadReplay() {
-    File replayFile = new File(server.getRunDirectory().toFile(), REPLAY_FILE_NAME);
+    File replayFile = new File(server.getServerDirectory().toFile(), REPLAY_FILE_NAME);
     if (!replayFile.exists()) {
         TMM.LOGGER.warn("No previous game replay found.");
         return null;
@@ -184,24 +183,24 @@ public GameReplayData loadReplay() {
         return null;
     }
 }
-    public void showReplayToPlayer(ServerPlayerEntity player) {
+    public void showReplayToPlayer(ServerPlayer player) {
         GameReplayData replayData = currentReplayData;
         if (replayData == null) {
             replayData = loadReplay();
         }
         if (replayData == null) {
-            player.sendMessage(Text.translatable("tmm.replay.error.no_data").formatted(Formatting.RED));
+            player.sendSystemMessage(Component.translatable("tmm.replay.error.no_data").withStyle(ChatFormatting.RED));
             return;
         }
         // Clear previous messages
         for (int i = 0; i < 50; i++) {
-            player.sendMessage(Text.literal(""));
+            player.sendSystemMessage(Component.literal(""));
         }
         // Send game statistics
-        player.sendMessage(Text.translatable("tmm.replay.header").formatted(Formatting.BOLD, Formatting.GOLD));
-        player.sendMessage(Text.translatable("tmm.replay.player_count", replayData.getPlayerCount()).formatted(Formatting.WHITE));
+        player.sendSystemMessage(Component.translatable("tmm.replay.header").withStyle(ChatFormatting.BOLD, ChatFormatting.GOLD));
+        player.sendSystemMessage(Component.translatable("tmm.replay.player_count", replayData.getPlayerCount()).withStyle(ChatFormatting.WHITE));
         
-        player.sendMessage(Text.literal("---").formatted(Formatting.GRAY));
+        player.sendSystemMessage(Component.literal("---").withStyle(ChatFormatting.GRAY));
 
         Map<UUID, String> playerRoles = replayData.getPlayerRoles();
         if (playerRoles != null && !playerRoles.isEmpty()) {
@@ -214,39 +213,39 @@ public GameReplayData loadReplay() {
                 }
             }
 
-            MutableText aliveText = buildTeamPlayerRoles(this, alivePlayers, playerRoles, "存活玩家：");
-            MutableText deadText = buildTeamPlayerRoles(this, deadPlayers, playerRoles, "死亡玩家：");
+            MutableComponent aliveText = buildTeamPlayerRoles(this, alivePlayers, playerRoles, "存活玩家：");
+            MutableComponent deadText = buildTeamPlayerRoles(this, deadPlayers, playerRoles, "死亡玩家：");
 
             if (aliveText != null) {
-                player.sendMessage(aliveText.formatted(Formatting.GREEN));
+                player.sendSystemMessage(aliveText.withStyle(ChatFormatting.GREEN));
             }
             if (deadText != null) {
-                player.sendMessage(deadText.formatted(Formatting.RED));
+                player.sendSystemMessage(deadText.withStyle(ChatFormatting.RED));
             }
         }
         
-        player.sendMessage(Text.literal("---").formatted(Formatting.GRAY));
+        player.sendSystemMessage(Component.literal("---").withStyle(ChatFormatting.GRAY));
         
         // Send winning information
         if (replayData.getWinningTeam() != null) {
-            player.sendMessage(Text.translatable("tmm.replay.winning_team", Text.literal(replayData.getWinningTeam()).formatted(Formatting.GOLD)).formatted(Formatting.WHITE));
+            player.sendSystemMessage(Component.translatable("tmm.replay.winning_team", Component.literal(replayData.getWinningTeam()).withStyle(ChatFormatting.GOLD)).withStyle(ChatFormatting.WHITE));
         }
         
-        player.sendMessage(Text.literal("---").formatted(Formatting.GRAY));
+        player.sendSystemMessage(Component.literal("---").withStyle(ChatFormatting.GRAY));
         
         // Send timeline
-        player.sendMessage(Text.translatable("tmm.replay.timeline").formatted(Formatting.BOLD, Formatting.WHITE));
+        player.sendSystemMessage(Component.translatable("tmm.replay.timeline").withStyle(ChatFormatting.BOLD, ChatFormatting.WHITE));
         
         long gameStartTime = ReplayDisplayUtils.findGameStartTime(replayData);
         for (GameReplayData.ReplayEvent event : replayData.getTimeline()) {
             long relativeTime = event.getTimestamp() - gameStartTime;
             String timePrefix = ReplayDisplayUtils.formatTime(relativeTime) + " ";
-            Text eventText = event.toText(this, replayData);
-            player.sendMessage(Text.literal(timePrefix).append(eventText));
+            Component eventText = event.toText(this, replayData);
+            player.sendSystemMessage(Component.literal(timePrefix).append(eventText));
         }
         
-        player.sendMessage(Text.literal("---").formatted(Formatting.GRAY));
-        player.sendMessage(Text.translatable("tmm.replay.footer").formatted(Formatting.GRAY));
+        player.sendSystemMessage(Component.literal("---").withStyle(ChatFormatting.GRAY));
+        player.sendSystemMessage(Component.translatable("tmm.replay.footer").withStyle(ChatFormatting.GRAY));
     }
     
     private List<UUID> getDeadPlayers(GameReplayData replayData) {

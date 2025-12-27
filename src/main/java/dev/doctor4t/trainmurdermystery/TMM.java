@@ -20,18 +20,16 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.command.argument.serialize.ConstantArgumentSerializer;
-import net.minecraft.entity.Entity;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.synchronization.SingletonArgumentInfo;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.Heightmap;
-import net.minecraft.world.chunk.WorldChunk;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.Entity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.levelgen.Heightmap;
 import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,8 +45,8 @@ public class TMM implements ModInitializer {
     public static TMMConfig CONFIG = new TMMConfig();
     public static GameReplayManager REPLAY_MANAGER;
 
-    public static @NotNull Identifier id(String name) {
-        return Identifier.of(MOD_ID, name);
+    public static @NotNull ResourceLocation id(String name) {
+        return ResourceLocation.fromNamespaceAndPath(MOD_ID, name);
     }
 
     @Override
@@ -80,8 +78,8 @@ public class TMM implements ModInitializer {
         TMMParticles.initialize();
 
         // Register command argument types
-        ArgumentTypeRegistry.registerArgumentType(id("timeofday"), TimeOfDayArgumentType.class, ConstantArgumentSerializer.of(TimeOfDayArgumentType::timeofday));
-        ArgumentTypeRegistry.registerArgumentType(id("gamemode"), GameModeArgumentType.class, ConstantArgumentSerializer.of(GameModeArgumentType::gameMode));
+        ArgumentTypeRegistry.registerArgumentType(id("timeofday"), TimeOfDayArgumentType.class, SingletonArgumentInfo.contextFree(TimeOfDayArgumentType::timeofday));
+        ArgumentTypeRegistry.registerArgumentType(id("gamemode"), GameModeArgumentType.class, SingletonArgumentInfo.contextFree(GameModeArgumentType::gameMode));
 
         // Register commands
         CommandRegistrationCallback.EVENT.register(((dispatcher, registryAccess, environment) -> {
@@ -105,7 +103,7 @@ public class TMM implements ModInitializer {
 
         // server lock to supporters
         ServerPlayerEvents.JOIN.register(player -> {
-            GameWorldComponent gameWorldComponent = GameWorldComponent.KEY.get(player.getWorld());
+            GameWorldComponent gameWorldComponent = GameWorldComponent.KEY.get(player.level());
             
             // 优化：提前检查是否启用锁定，避免不必要的API调用
             if (!gameWorldComponent.isLockedToSupporters()) {
@@ -115,20 +113,20 @@ public class TMM implements ModInitializer {
                 }
                 if (REPLAY_MANAGER != null) {
                     REPLAY_MANAGER.recordPlayerName(player);
-                    REPLAY_MANAGER.addEvent(GameReplayData.EventType.PLAYER_JOIN, null, player.getUuid(), null, null);
+                    REPLAY_MANAGER.addEvent(GameReplayData.EventType.PLAYER_JOIN, null, player.getUUID(), null, null);
                 }
                 return;
             }
             
             // 服务器已锁定，需要验证支持者身份
-            DataSyncAPI.refreshAllPlayerData(player.getUuid()).thenRunAsync(() -> {
+            DataSyncAPI.refreshAllPlayerData(player.getUUID()).thenRunAsync(() -> {
                 try {
                     // 再次检查锁定状态（可能在异步期间已更改）
-                    if (GameWorldComponent.KEY.get(player.getWorld()).isLockedToSupporters()) {
+                    if (GameWorldComponent.KEY.get(player.level()).isLockedToSupporters()) {
                         // 检查玩家是否为支持者
                         if (!isSupporter(player)) {
                             LOGGER.info("Player {} attempted to join locked server (supporters only)", player.getName().getString());
-                            player.networkHandler.disconnect(Text.translatable("Server is reserved to doctor4t supporters."));
+                            player.connection.disconnect(Component.translatable("Server is reserved to doctor4t supporters."));
                             return;
                         }
                     }
@@ -136,12 +134,12 @@ public class TMM implements ModInitializer {
                     // 支持者或锁定已解除，允许加入
                     if (REPLAY_MANAGER != null) {
                         REPLAY_MANAGER.recordPlayerName(player);
-                        REPLAY_MANAGER.addEvent(GameReplayData.EventType.PLAYER_JOIN, null, player.getUuid(), null, null);
+                        REPLAY_MANAGER.addEvent(GameReplayData.EventType.PLAYER_JOIN, null, player.getUUID(), null, null);
                     }
                 } catch (Exception e) {
                     LOGGER.error("Error checking supporter status for player {}", player.getName().getString(), e);
                 }
-            }, player.getWorld().getServer());
+            }, player.level().getServer());
 
             if (gameWorldComponent.getGameStatus() == GameWorldComponent.GameStatus.ACTIVE) {
                 // gameWorldComponent.addPlayer(player); // Removed as method does not exist
@@ -149,12 +147,12 @@ public class TMM implements ModInitializer {
         });
 
         ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
-            GameWorldComponent gameWorldComponent = GameWorldComponent.KEY.get(handler.player.getWorld());
+            GameWorldComponent gameWorldComponent = GameWorldComponent.KEY.get(handler.player.level());
             if (gameWorldComponent.getGameStatus() == GameWorldComponent.GameStatus.ACTIVE) {
                 // gameWorldComponent.removePlayer(handler.player); // Removed as method does not exist
             }
             if (REPLAY_MANAGER != null) {
-                REPLAY_MANAGER.addEvent(GameReplayData.EventType.PLAYER_LEAVE, null, handler.player.getUuid(), null, null);
+                REPLAY_MANAGER.addEvent(GameReplayData.EventType.PLAYER_LEAVE, null, handler.player.getUUID(), null, null);
             }
         });
 
@@ -178,17 +176,17 @@ public class TMM implements ModInitializer {
     }
 
     public static boolean isSkyVisibleAdjacent(@NotNull Entity player) {
-        BlockPos.Mutable mutable = new BlockPos.Mutable();
-        BlockPos playerPos = BlockPos.ofFloored(player.getEyePos());
+        BlockPos.MutableBlockPos mutable = new BlockPos.MutableBlockPos();
+        BlockPos playerPos = BlockPos.containing(player.getEyePosition());
         for (int x = -1; x <= 1; x += 2) {
             for (int z = -1; z <= 1; z += 2) {
 
                 mutable.set(playerPos.getX() + x, playerPos.getY(), playerPos.getZ() + z);
-                final var chunkPos = player.getChunkPos();
-                final var chunk = player.getWorld().getChunk(chunkPos.x, chunkPos.z);
-                final var i = chunk.getHeightmap(Heightmap.Type.MOTION_BLOCKING).get(mutable.getX()&15, mutable.getZ()&15)-1;
+                final var chunkPos = player.chunkPosition();
+                final var chunk = player.level().getChunk(chunkPos.x, chunkPos.z);
+                final var i = chunk.getOrCreateHeightmapUnprimed(Heightmap.Types.MOTION_BLOCKING).getFirstAvailable(mutable.getX()&15, mutable.getZ()&15)-1;
                 if (i< player.getY()+3) {
-                    return !(player.getWorld().getBlockState(playerPos).getBlock() instanceof DoorPartBlock);
+                    return !(player.level().getBlockState(playerPos).getBlock() instanceof DoorPartBlock);
                 }
             }
         }
@@ -196,29 +194,29 @@ public class TMM implements ModInitializer {
     }
 
     public static boolean isExposedToWind(@NotNull Entity player) {
-        BlockPos.Mutable mutable = new BlockPos.Mutable();
-        BlockPos playerPos = BlockPos.ofFloored(player.getEyePos());
+        BlockPos.MutableBlockPos mutable = new BlockPos.MutableBlockPos();
+        BlockPos playerPos = BlockPos.containing(player.getEyePosition());
         for (int x = 0; x <= 10; x++) {
-            mutable.set(playerPos.getX() - x, player.getEyePos().getY(), playerPos.getZ());
-            if (!player.getWorld().isSkyVisible(mutable)) {
+            mutable.set(playerPos.getX() - x, player.getEyePosition().y(), playerPos.getZ());
+            if (!player.level().canSeeSky(mutable)) {
                 return false;
             }
         }
         return true;
     }
 
-    public static final Identifier COMMAND_ACCESS = id("commandaccess");
+    public static final ResourceLocation COMMAND_ACCESS = id("commandaccess");
 
-    public static int executeSupporterCommand(ServerCommandSource source, Runnable runnable) {
-        ServerPlayerEntity player = source.getPlayer();
-        if (player == null || !player.getClass().equals(ServerPlayerEntity.class)) return 0;
+    public static int executeSupporterCommand(CommandSourceStack source, Runnable runnable) {
+        ServerPlayer player = source.getPlayer();
+        if (player == null || !player.getClass().equals(ServerPlayer.class)) return 0;
         runnable.run();
         return 1;
 
     }
 
-    public static @NotNull Boolean isSupporter(PlayerEntity player) {
-        Optional<Entitlements> entitlements = Entitlements.token().get(player.getUuid());
+    public static @NotNull Boolean isSupporter(Player player) {
+        Optional<Entitlements> entitlements = Entitlements.token().get(player.getUUID());
         return entitlements.map(value -> value.keys().stream().anyMatch(identifier -> identifier.equals(COMMAND_ACCESS))).orElse(false);
     }
 }

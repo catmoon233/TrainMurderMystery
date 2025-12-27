@@ -2,14 +2,14 @@ package dev.doctor4t.trainmurdermystery.mixin;
 
 import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.index.TMMItems;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.attribute.EntityAttribute;
-import net.minecraft.entity.attribute.EntityAttributeInstance;
-import net.minecraft.entity.attribute.EntityAttributeModifier;
-import net.minecraft.entity.attribute.EntityAttributes;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.registry.entry.RegistryEntry;
-import net.minecraft.sound.SoundEvent;
+import net.minecraft.core.Holder;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.ai.attributes.Attribute;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.AttributeModifier;
+import net.minecraft.world.entity.ai.attributes.Attributes;
+import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -21,31 +21,31 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 @Mixin(LivingEntity.class)
 public abstract class LivingEntityMixin extends EntityMixin {
     @Unique
-    private static final EntityAttributeModifier KNIFE_KNOCKBACK_MODIFIER = new EntityAttributeModifier(TMM.id("knife_knockback_modifier"), 1, EntityAttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
+    private static final AttributeModifier KNIFE_KNOCKBACK_MODIFIER = new AttributeModifier(TMM.id("knife_knockback_modifier"), 1, AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
 
     @Shadow
     protected boolean jumping;
 
     @Shadow
-    public abstract void playSound(@Nullable SoundEvent sound);
+    public abstract void makeSound(@Nullable SoundEvent sound);
 
     @Shadow
-    public abstract @Nullable EntityAttributeInstance getAttributeInstance(RegistryEntry<EntityAttribute> attribute);
+    public abstract @Nullable AttributeInstance getAttribute(Holder<Attribute> attribute);
 
     @Inject(method = "tick", at = @At("HEAD"))
     public void tmm$addKnockbackWithKnife(CallbackInfo ci) {
-        if ((Object) this instanceof PlayerEntity player) {
-            EntityAttributeModifier v = new EntityAttributeModifier(TMM.id("knife_knockback_modifier"), .5f, EntityAttributeModifier.Operation.ADD_VALUE);
-            updateAttribute(player.getAttributeInstance(EntityAttributes.GENERIC_ATTACK_KNOCKBACK), v, player.getMainHandStack().isOf(TMMItems.KNIFE));
+        if ((Object) this instanceof Player player) {
+            AttributeModifier v = new AttributeModifier(TMM.id("knife_knockback_modifier"), .5f, AttributeModifier.Operation.ADD_VALUE);
+            updateAttribute(player.getAttribute(Attributes.ATTACK_KNOCKBACK), v, player.getMainHandItem().is(TMMItems.KNIFE));
         }
     }
 
     @Unique
-    private static void updateAttribute(EntityAttributeInstance attribute, EntityAttributeModifier modifier, boolean addOrKeep) {
+    private static void updateAttribute(AttributeInstance attribute, AttributeModifier modifier, boolean addOrKeep) {
         if (attribute != null) {
             boolean alreadyHasModifier = attribute.hasModifier(modifier.id());
             if (addOrKeep && !alreadyHasModifier) {
-                attribute.addPersistentModifier(modifier);
+                attribute.addPermanentModifier(modifier);
             } else if (!addOrKeep && alreadyHasModifier) {
                 attribute.removeModifier(modifier);
             }

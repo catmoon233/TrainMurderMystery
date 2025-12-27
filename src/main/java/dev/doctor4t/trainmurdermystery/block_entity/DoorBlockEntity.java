@@ -4,16 +4,16 @@ import dev.doctor4t.trainmurdermystery.block.DoorPartBlock;
 import dev.doctor4t.trainmurdermystery.block.SmallDoorBlock;
 import dev.doctor4t.trainmurdermystery.game.GameConstants;
 import dev.doctor4t.trainmurdermystery.index.TMMSounds;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.entity.AnimationState;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.state.property.Properties;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.AnimationState;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 
 public abstract class DoorBlockEntity extends SyncingBlockEntity {
 
@@ -30,17 +30,17 @@ public abstract class DoorBlockEntity extends SyncingBlockEntity {
 
     public DoorBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
-        this.open = state.get(Properties.OPEN);
+        this.open = state.getValue(BlockStateProperties.OPEN);
         this.state.start(this.age);
-        this.state.skip(10, 1);
+        this.state.fastForward(10, 1);
     }
 
-    public static <T extends DoorBlockEntity> void clientTick(World world, BlockPos pos, BlockState state, T entity) {
+    public static <T extends DoorBlockEntity> void clientTick(Level world, BlockPos pos, BlockState state, T entity) {
         entity.age++;
     }
 
-    public static <T extends DoorBlockEntity> void serverTick(World world, BlockPos pos, BlockState state, T entity) {
-        if (state.get(DoorPartBlock.OPEN) && !entity.isBlasted()) {
+    public static <T extends DoorBlockEntity> void serverTick(Level world, BlockPos pos, BlockState state, T entity) {
+        if (state.getValue(DoorPartBlock.OPEN) && !entity.isBlasted()) {
             entity.setCloseCountdown(entity.getCloseCountdown() - 1);
             if (entity.getCloseCountdown() <= 0) {
                 SmallDoorBlock.toggleDoor(state, world, (SmallDoorBlockEntity) entity, pos);
@@ -55,7 +55,7 @@ public abstract class DoorBlockEntity extends SyncingBlockEntity {
     }
 
     public void toggle(boolean silent) {
-        if (this.world == null || this.world.getTime() == this.lastUpdate || this.isBlasted()) {
+        if (this.level == null || this.level.getGameTime() == this.lastUpdate || this.isBlasted()) {
             return;
         }
         this.toggleOpen();
@@ -66,19 +66,19 @@ public abstract class DoorBlockEntity extends SyncingBlockEntity {
     }
 
     protected void toggleOpen() {
-        if (this.world != null) {
-            this.lastUpdate = this.world.getTime();
+        if (this.level != null) {
+            this.lastUpdate = this.level.getGameTime();
             this.open = !this.open;
-            this.world.addSyncedBlockEvent(this.pos, this.getCachedState().getBlock(), 1, this.open ? 1 : 0);
+            this.level.blockEvent(this.worldPosition, this.getBlockState().getBlock(), 1, this.open ? 1 : 0);
             this.closeCountdown = this.open ? GameConstants.DOOR_AUTOCLOSE_TIME : 0;
         }
     }
 
     protected void playToggleSound() {
-        if (this.world == null) {
+        if (this.level == null) {
             return;
         }
-        this.world.playSound(null, this.pos, TMMSounds.BLOCK_DOOR_TOGGLE, SoundCategory.BLOCKS, 1f, 1f);
+        this.level.playSound(null, this.worldPosition, TMMSounds.BLOCK_DOOR_TOGGLE, SoundSource.BLOCKS, 1f, 1f);
     }
 
     protected abstract void toggleBlocks();
@@ -92,11 +92,11 @@ public abstract class DoorBlockEntity extends SyncingBlockEntity {
     }
 
     public float getYaw() {
-        return 180 - this.getFacing().asRotation();
+        return 180 - this.getFacing().toYRot();
     }
 
     public Direction getFacing() {
-        return this.getCachedState().get(Properties.HORIZONTAL_FACING);
+        return this.getBlockState().getValue(BlockStateProperties.HORIZONTAL_FACING);
     }
 
     public int getAge() {
@@ -104,18 +104,18 @@ public abstract class DoorBlockEntity extends SyncingBlockEntity {
     }
 
     @Override
-    public boolean onSyncedBlockEvent(int type, int data) {
-        if (this.world != null && type == 1) {
+    public boolean triggerEvent(int type, int data) {
+        if (this.level != null && type == 1) {
             this.state.start(this.age);
             this.open = data != 0;
             return true;
         }
-        return super.onSyncedBlockEvent(type, data);
+        return super.triggerEvent(type, data);
     }
 
     @Override
-    protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
-        super.writeNbt(nbt, registryLookup);
+    protected void saveAdditional(CompoundTag nbt, HolderLookup.Provider registryLookup) {
+        super.saveAdditional(nbt, registryLookup);
         nbt.putBoolean("open", this.isOpen());
         nbt.putBoolean("blasted", this.isBlasted());
         nbt.putInt("closeCountdown", this.getCloseCountdown());
@@ -124,8 +124,8 @@ public abstract class DoorBlockEntity extends SyncingBlockEntity {
     }
 
     @Override
-    protected void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
-        super.readNbt(nbt, registryLookup);
+    protected void loadAdditional(CompoundTag nbt, HolderLookup.Provider registryLookup) {
+        super.loadAdditional(nbt, registryLookup);
         this.setOpen(nbt.getBoolean("open"));
         this.setBlasted(nbt.getBoolean("blasted"));
         this.setCloseCountdown(nbt.getInt("closeCountdown"));

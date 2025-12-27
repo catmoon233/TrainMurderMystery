@@ -1,49 +1,49 @@
 package dev.doctor4t.trainmurdermystery.client.render;
 
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.client.render.RenderPhase;
-import net.minecraft.client.render.VertexFormat;
-import net.minecraft.client.render.VertexFormats;
-import net.minecraft.util.Identifier;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.VertexFormat;
+import net.minecraft.client.renderer.RenderStateShard;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.resources.ResourceLocation;
 
 public interface TMMRenderLayers {
-    static RenderLayer additive(Identifier texture) {
-        return RenderLayer.of(
+    static RenderType additive(ResourceLocation texture) {
+        return RenderType.create(
                 "hand_particle_additive",
-                VertexFormats.POSITION_COLOR_TEXTURE_OVERLAY_LIGHT_NORMAL,
-                VertexFormat.DrawMode.QUADS,
+                DefaultVertexFormat.NEW_ENTITY,
+                VertexFormat.Mode.QUADS,
                 256,
                 true,
                 true,
-                RenderLayer.MultiPhaseParameters.builder()
-                        .program(RenderPhase.ENTITY_TRANSLUCENT_PROGRAM)
-                        .texture(new RenderPhase.Texture(texture, false, false))
-                        .transparency(RenderPhase.ADDITIVE_TRANSPARENCY)
-                        .depthTest(RenderPhase.LEQUAL_DEPTH_TEST)
-                        .cull(RenderPhase.DISABLE_CULLING)
-                        .lightmap(RenderPhase.ENABLE_LIGHTMAP)
-                        .overlay(RenderPhase.ENABLE_OVERLAY_COLOR)
-                        .build(true)
+                RenderType.CompositeState.builder()
+                        .setShaderState(RenderStateShard.RENDERTYPE_ENTITY_TRANSLUCENT_SHADER)
+                        .setTextureState(new RenderStateShard.TextureStateShard(texture, false, false))
+                        .setTransparencyState(RenderStateShard.ADDITIVE_TRANSPARENCY)
+                        .setDepthTestState(RenderStateShard.LEQUAL_DEPTH_TEST)
+                        .setCullState(RenderStateShard.NO_CULL)
+                        .setLightmapState(RenderStateShard.LIGHTMAP)
+                        .setOverlayState(RenderStateShard.OVERLAY)
+                        .createCompositeState(true)
         );
     }
 
-    static RenderLayer additiveFullbright(Identifier texture) {
-        return RenderLayer.of(
+    static RenderType additiveFullbright(ResourceLocation texture) {
+        return RenderType.create(
                 "hand_particle_additive_fullbright",
-                VertexFormats.POSITION_COLOR_TEXTURE_OVERLAY_LIGHT_NORMAL,
-                VertexFormat.DrawMode.QUADS,
+                DefaultVertexFormat.NEW_ENTITY,
+                VertexFormat.Mode.QUADS,
                 256,
                 true,
                 true,
-                RenderLayer.MultiPhaseParameters.builder()
-                        .program(RenderPhase.ENTITY_TRANSLUCENT_PROGRAM)
-                        .texture(new RenderPhase.Texture(texture, false, false))
-                        .transparency(RenderPhase.ADDITIVE_TRANSPARENCY)
-                        .depthTest(RenderPhase.LEQUAL_DEPTH_TEST)
-                        .cull(RenderPhase.DISABLE_CULLING)
-                        .lightmap(RenderPhase.DISABLE_LIGHTMAP)
-                        .overlay(RenderPhase.ENABLE_OVERLAY_COLOR)
-                        .build(true)
+                RenderType.CompositeState.builder()
+                        .setShaderState(RenderStateShard.RENDERTYPE_ENTITY_TRANSLUCENT_SHADER)
+                        .setTextureState(new RenderStateShard.TextureStateShard(texture, false, false))
+                        .setTransparencyState(RenderStateShard.ADDITIVE_TRANSPARENCY)
+                        .setDepthTestState(RenderStateShard.LEQUAL_DEPTH_TEST)
+                        .setCullState(RenderStateShard.NO_CULL)
+                        .setLightmapState(RenderStateShard.NO_LIGHTMAP)
+                        .setOverlayState(RenderStateShard.OVERLAY)
+                        .createCompositeState(true)
         );
     }
 }

@@ -2,11 +2,11 @@ package dev.doctor4t.trainmurdermystery.block_entity;
 
 import dev.doctor4t.trainmurdermystery.block.WheelBlock;
 import dev.doctor4t.trainmurdermystery.index.TMMBlockEntities;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
 
 public class WheelBlockEntity extends BlockEntity {
     public WheelBlockEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
@@ -18,10 +18,10 @@ public class WheelBlockEntity extends BlockEntity {
     }
 
     public float getYaw() {
-        return 180 - this.getFacing().asRotation();
+        return 180 - this.getFacing().toYRot();
     }
 
     public Direction getFacing() {
-        return this.getCachedState().get(WheelBlock.FACING);
+        return this.getBlockState().getValue(WheelBlock.FACING);
     }
 }

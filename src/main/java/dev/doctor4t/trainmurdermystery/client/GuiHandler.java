@@ -8,11 +8,6 @@ import dev.doctor4t.ratatouille.client.lib.render.systems.postprocess.PostProces
 import dev.doctor4t.trainmurdermystery.TMM;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.component.Component;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
 import org.joml.Matrix4f;
 
 

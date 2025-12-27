@@ -3,19 +3,19 @@ package dev.doctor4t.trainmurdermystery.block_entity;
 import dev.doctor4t.trainmurdermystery.client.TMMClient;
 import dev.doctor4t.trainmurdermystery.index.TMMBlockEntities;
 import dev.doctor4t.trainmurdermystery.index.TMMParticles;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.network.listener.ClientPlayPacketListener;
-import net.minecraft.network.packet.Packet;
-import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.UUID;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
 
 public class TrimmedBedBlockEntity extends BlockEntity {
     private boolean hasScorpion = false;
@@ -44,17 +44,17 @@ public class TrimmedBedBlockEntity extends BlockEntity {
     }
 
     private void sync() {
-        if (world != null && !world.isClient) {
-            markDirty();
-            world.updateListeners(pos, getCachedState(), getCachedState(), 3);
+        if (level != null && !level.isClientSide) {
+            setChanged();
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), 3);
         }
     }
 
-    public static <T extends BlockEntity> void clientTick(World world, BlockPos pos, BlockState state, T t) {
+    public static <T extends BlockEntity> void clientTick(Level world, BlockPos pos, BlockState state, T t) {
         TrimmedBedBlockEntity entity = (TrimmedBedBlockEntity) t;
         if (!TMMClient.isKiller()) return;
         if (!entity.hasScorpion()) return;
-        if (world.getRandom().nextBetween(0, 20) < 17) return;
+        if (world.getRandom().nextIntBetweenInclusive(0, 20) < 17) return;
 
         world.addParticle(
                 TMMParticles.POISON,
@@ -66,26 +66,26 @@ public class TrimmedBedBlockEntity extends BlockEntity {
     }
 
     @Override
-    public NbtCompound toInitialChunkDataNbt(RegistryWrapper.WrapperLookup registryLookup) {
-        return createNbt(registryLookup);
+    public CompoundTag getUpdateTag(HolderLookup.Provider registryLookup) {
+        return saveWithoutMetadata(registryLookup);
     }
 
     @Override
-    public @Nullable Packet<ClientPlayPacketListener> toUpdatePacket() {
-        return BlockEntityUpdateS2CPacket.create(this);
+    public @Nullable Packet<ClientGamePacketListener> getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
     }
 
     @Override
-    protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
-        super.writeNbt(nbt, registryLookup);
+    protected void saveAdditional(CompoundTag nbt, HolderLookup.Provider registryLookup) {
+        super.saveAdditional(nbt, registryLookup);
         nbt.putBoolean("hasScorpion", this.hasScorpion);
-        if (this.poisoner != null) nbt.putUuid("poisoner", this.poisoner);
+        if (this.poisoner != null) nbt.putUUID("poisoner", this.poisoner);
     }
 
     @Override
-    protected void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registryLookup) {
-        super.readNbt(nbt, registryLookup);
+    protected void loadAdditional(CompoundTag nbt, HolderLookup.Provider registryLookup) {
+        super.loadAdditional(nbt, registryLookup);
         this.hasScorpion = nbt.getBoolean("hasScorpion");
-        this.poisoner = nbt.containsUuid("poisoner") ? nbt.getUuid("poisoner") : null;
+        this.poisoner = nbt.hasUUID("poisoner") ? nbt.getUUID("poisoner") : null;
     }
 }

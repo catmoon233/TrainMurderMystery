@@ -9,32 +9,31 @@ import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
 import dev.doctor4t.trainmurdermystery.api.GameMode;
 import dev.doctor4t.trainmurdermystery.api.TMMGameModes;
-import net.minecraft.command.CommandSource;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
-
 import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.SharedSuggestionProvider;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 
-public class GameModeArgumentType implements ArgumentType<Identifier> {
+public class GameModeArgumentType implements ArgumentType<ResourceLocation> {
     private static final Collection<String> EXAMPLES = Stream.of(TMMGameModes.MURDER, TMMGameModes.DISCOVERY, TMMGameModes.LOOSE_ENDS)
             .map(key -> key.identifier.toString())
             .collect(Collectors.toList());
     private static final DynamicCommandExceptionType INVALID_GAME_MODE_EXCEPTION = new DynamicCommandExceptionType(
-            id -> Text.stringifiedTranslatable("argument.game_mode.invalid", id)
+            id -> Component.translatableEscape("argument.game_mode.invalid", id)
     );
 
-    public Identifier parse(StringReader stringReader) throws CommandSyntaxException {
-        return Identifier.fromCommandInput(stringReader);
+    public ResourceLocation parse(StringReader stringReader) throws CommandSyntaxException {
+        return ResourceLocation.read(stringReader);
     }
 
     @Override
     public <S> CompletableFuture<Suggestions> listSuggestions(CommandContext<S> context, SuggestionsBuilder builder) {
-        return context.getSource() instanceof CommandSource
-                ? CommandSource.suggestIdentifiers(TMMGameModes.GAME_MODES.keySet().stream().toList(), builder)
+        return context.getSource() instanceof SharedSuggestionProvider
+                ? SharedSuggestionProvider.suggestResource(TMMGameModes.GAME_MODES.keySet().stream().toList(), builder)
                 : Suggestions.empty();
     }
 
@@ -47,8 +46,8 @@ public class GameModeArgumentType implements ArgumentType<Identifier> {
         return new GameModeArgumentType();
     }
 
-    public static GameMode getGameModeArgument(CommandContext<ServerCommandSource> context, String name) throws CommandSyntaxException {
-        Identifier identifier = context.getArgument(name, Identifier.class);
+    public static GameMode getGameModeArgument(CommandContext<CommandSourceStack> context, String name) throws CommandSyntaxException {
+        ResourceLocation identifier = context.getArgument(name, ResourceLocation.class);
         GameMode gameMode = TMMGameModes.GAME_MODES.get(identifier);
         if (gameMode == null) {
             throw INVALID_GAME_MODE_EXCEPTION.create(identifier);

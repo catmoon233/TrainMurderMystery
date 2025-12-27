@@ -3,20 +3,25 @@ package dev.doctor4t.trainmurdermystery.block;
 import com.mojang.serialization.MapCodec;
 import dev.doctor4t.trainmurdermystery.block.property.RailingShape;
 import dev.doctor4t.trainmurdermystery.index.TMMProperties;
-import net.minecraft.block.*;
-import net.minecraft.block.enums.BlockHalf;
-import net.minecraft.block.enums.StairShape;
-import net.minecraft.item.ItemPlacementContext;
-import net.minecraft.state.StateManager;
-import net.minecraft.state.property.BooleanProperty;
-import net.minecraft.state.property.EnumProperty;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.util.shape.VoxelShapes;
-import net.minecraft.world.BlockView;
-import net.minecraft.world.World;
-import net.minecraft.world.WorldAccess;
+
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.HorizontalDirectionalBlock;
+import net.minecraft.world.level.block.StairBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.level.block.state.properties.Half;
+import net.minecraft.world.level.block.state.properties.StairsShape;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.Shapes;
+import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 
 public class DiagonalRailingBlock extends AbstractRailingBlock {
@@ -32,116 +37,116 @@ public class DiagonalRailingBlock extends AbstractRailingBlock {
     protected static final VoxelShape WEST_LEFT_SHAPE = createShape(16, 2, 8, 0, 8, 0, 0);
     protected static final VoxelShape WEST_RIGHT_SHAPE = createShape(16, 2, 8, 0, 0, 0, 8);
 
-    public DiagonalRailingBlock(Settings settings) {
+    public DiagonalRailingBlock(Properties settings) {
         super(settings);
-        this.setDefaultState(super.getDefaultState().with(LEFT, false).with(SHAPE, RailingShape.MIDDLE));
+        this.registerDefaultState(super.defaultBlockState().setValue(LEFT, false).setValue(SHAPE, RailingShape.MIDDLE));
     }
 
     protected static VoxelShape createShape(int height, int sizeX, int sizeZ, int x1, int z1, int x2, int z2) {
-        return VoxelShapes.union(
-                Block.createCuboidShape(x1, 0, z1, x1 + sizeX, height, z1 + sizeZ),
-                Block.createCuboidShape(x2, -8, z2, x2 + sizeX, height - 8, z2 + sizeZ)
+        return Shapes.or(
+                Block.box(x1, 0, z1, x1 + sizeX, height, z1 + sizeZ),
+                Block.box(x2, -8, z2, x2 + sizeX, height - 8, z2 + sizeZ)
         );
     }
 
     @Override
-    protected MapCodec<? extends HorizontalFacingBlock> getCodec() {
+    protected MapCodec<? extends HorizontalDirectionalBlock> codec() {
         return null;
     }
 
     @Nullable
     @Override
-    public BlockState getPlacementState(ItemPlacementContext ctx) {
-        BlockState state = super.getPlacementState(ctx);
+    public BlockState getStateForPlacement(BlockPlaceContext ctx) {
+        BlockState state = super.getStateForPlacement(ctx);
         if (state == null) {
             return null;
         }
-        World world = ctx.getWorld();
-        BlockPos pos = ctx.getBlockPos();
-        Direction facing = state.get(FACING);
-        BlockState stateForStairsBelow = this.getPlacementState(state, world.getBlockState(pos.down()));
+        Level world = ctx.getLevel();
+        BlockPos pos = ctx.getClickedPos();
+        Direction facing = state.getValue(FACING);
+        BlockState stateForStairsBelow = this.getPlacementState(state, world.getBlockState(pos.below()));
         if (stateForStairsBelow != null) {
-            boolean left = stateForStairsBelow.get(LEFT);
-            BlockPos neighborPos = pos.offset(left ? facing.rotateYCounterclockwise() : facing.rotateYClockwise());
+            boolean left = stateForStairsBelow.getValue(LEFT);
+            BlockPos neighborPos = pos.relative(left ? facing.getCounterClockWise() : facing.getClockWise());
             return this.tryConnecting(stateForStairsBelow, world.getBlockState(neighborPos));
         }
-        Direction left = facing.rotateYCounterclockwise();
-        state = state.with(SHAPE, RailingShape.BOTTOM);
-        BlockState stateForStairsLeft = this.getPlacementState(state, world.getBlockState(pos.offset(left)));
+        Direction left = facing.getCounterClockWise();
+        state = state.setValue(SHAPE, RailingShape.BOTTOM);
+        BlockState stateForStairsLeft = this.getPlacementState(state, world.getBlockState(pos.relative(left)));
         if (stateForStairsLeft != null) {
             return stateForStairsLeft;
         }
-        Direction right = facing.rotateYClockwise();
-        return this.getPlacementState(state, world.getBlockState(pos.offset(right)));
+        Direction right = facing.getClockWise();
+        return this.getPlacementState(state, world.getBlockState(pos.relative(right)));
     }
 
     @Nullable
     private BlockState getPlacementState(BlockState state, BlockState stairsState) {
-        Direction facing = state.get(FACING);
-        if (stairsState.getBlock() instanceof StairsBlock) {
-            if (stairsState.get(StairsBlock.HALF) == BlockHalf.TOP) {
+        Direction facing = state.getValue(FACING);
+        if (stairsState.getBlock() instanceof StairBlock) {
+            if (stairsState.getValue(StairBlock.HALF) == Half.TOP) {
                 return null;
             }
 
-            Direction stairsFacing = stairsState.get(StairsBlock.FACING);
-            StairShape stairShape = stairsState.get(StairsBlock.SHAPE);
+            Direction stairsFacing = stairsState.getValue(StairBlock.FACING);
+            StairsShape stairShape = stairsState.getValue(StairBlock.SHAPE);
 
-            if (stairsFacing.rotateYClockwise() == facing) {
-                if (stairShape != StairShape.INNER_RIGHT && stairShape != StairShape.OUTER_LEFT) {
-                    return state.with(LEFT, true);
+            if (stairsFacing.getClockWise() == facing) {
+                if (stairShape != StairsShape.INNER_RIGHT && stairShape != StairsShape.OUTER_LEFT) {
+                    return state.setValue(LEFT, true);
                 }
-            } else if (stairsFacing.rotateYCounterclockwise() == facing) {
-                if (stairShape != StairShape.INNER_LEFT && stairShape != StairShape.OUTER_RIGHT) {
-                    return state.with(LEFT, false);
+            } else if (stairsFacing.getCounterClockWise() == facing) {
+                if (stairShape != StairsShape.INNER_LEFT && stairShape != StairsShape.OUTER_RIGHT) {
+                    return state.setValue(LEFT, false);
                 }
             } else if (stairsFacing == facing) {
-                if (stairShape == StairShape.OUTER_LEFT) {
-                    return state.with(LEFT, true);
-                } else if (stairShape == StairShape.OUTER_RIGHT) {
-                    return state.with(LEFT, false);
+                if (stairShape == StairsShape.OUTER_LEFT) {
+                    return state.setValue(LEFT, true);
+                } else if (stairShape == StairsShape.OUTER_RIGHT) {
+                    return state.setValue(LEFT, false);
                 }
             } else if (stairsFacing.getOpposite() == facing) {
-                if (stairShape == StairShape.INNER_LEFT) {
-                    return state.with(LEFT, false);
-                } else if (stairShape == StairShape.INNER_RIGHT) {
-                    return state.with(LEFT, true);
+                if (stairShape == StairsShape.INNER_LEFT) {
+                    return state.setValue(LEFT, false);
+                } else if (stairShape == StairsShape.INNER_RIGHT) {
+                    return state.setValue(LEFT, true);
                 }
             }
 
         } else if (stairsState.getBlock() instanceof TrimmedStairsBlock) {
-            Direction stairsFacing = stairsState.get(TrimmedStairsBlock.FACING);
-            if (stairsFacing.rotateYClockwise() == facing) {
-                return state.with(LEFT, false);
-            } else if (stairsFacing.rotateYCounterclockwise() == facing) {
-                return state.with(LEFT, true);
+            Direction stairsFacing = stairsState.getValue(TrimmedStairsBlock.FACING);
+            if (stairsFacing.getClockWise() == facing) {
+                return state.setValue(LEFT, false);
+            } else if (stairsFacing.getCounterClockWise() == facing) {
+                return state.setValue(LEFT, true);
             }
         }
         return null;
     }
 
     private BlockState tryConnecting(BlockState state, BlockState neighborState) {
-        if (state.get(SHAPE) != RailingShape.MIDDLE) {
+        if (state.getValue(SHAPE) != RailingShape.MIDDLE) {
             return state;
         }
-        Direction facing = state.get(FACING);
-        boolean left = state.get(LEFT);
-        if (neighborState.getBlock() instanceof RailingBlock && neighborState.get(FACING) == facing) {
-            return state.with(SHAPE, RailingShape.TOP);
-        } else if (neighborState.getBlock() instanceof RailingPostBlock && neighborState.get(FACING) == (left ? facing.rotateYClockwise() : facing)) {
-            return state.with(SHAPE, RailingShape.TOP);
+        Direction facing = state.getValue(FACING);
+        boolean left = state.getValue(LEFT);
+        if (neighborState.getBlock() instanceof RailingBlock && neighborState.getValue(FACING) == facing) {
+            return state.setValue(SHAPE, RailingShape.TOP);
+        } else if (neighborState.getBlock() instanceof RailingPostBlock && neighborState.getValue(FACING) == (left ? facing.getClockWise() : facing)) {
+            return state.setValue(SHAPE, RailingShape.TOP);
         }
         return state;
     }
 
     @Override
-    public BlockState getStateForNeighborUpdate(BlockState state, Direction direction, BlockState neighborState, WorldAccess world, BlockPos pos, BlockPos neighborPos) {
-        BlockState blockState = super.getStateForNeighborUpdate(state, direction, neighborState, world, pos, neighborPos);
+    public BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, LevelAccessor world, BlockPos pos, BlockPos neighborPos) {
+        BlockState blockState = super.updateShape(state, direction, neighborState, world, pos, neighborPos);
         if (blockState == null) {
             return null;
-        } else if (state.get(SHAPE) == RailingShape.MIDDLE) {
-            Direction facing = state.get(FACING);
-            boolean left = state.get(LEFT);
-            if (neighborPos.equals(pos.offset(left ? facing.rotateYCounterclockwise() : facing.rotateYClockwise()))) {
+        } else if (state.getValue(SHAPE) == RailingShape.MIDDLE) {
+            Direction facing = state.getValue(FACING);
+            boolean left = state.getValue(LEFT);
+            if (neighborPos.equals(pos.relative(left ? facing.getCounterClockWise() : facing.getClockWise()))) {
                 return this.tryConnecting(state, neighborState);
             }
         }
@@ -149,23 +154,23 @@ public class DiagonalRailingBlock extends AbstractRailingBlock {
     }
 
     @Override
-    public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
-        if (state.get(SHAPE) == RailingShape.BOTTOM) {
-            return switch (state.get(FACING)) {
+    public VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
+        if (state.getValue(SHAPE) == RailingShape.BOTTOM) {
+            return switch (state.getValue(FACING)) {
                 case NORTH -> RailingBlock.NORTH_SHAPE;
                 case EAST -> RailingBlock.EAST_SHAPE;
                 case SOUTH -> RailingBlock.SOUTH_SHAPE;
                 default -> RailingBlock.WEST_SHAPE;
             };
-        } else if (state.get(LEFT)) {
-            return switch (state.get(FACING)) {
+        } else if (state.getValue(LEFT)) {
+            return switch (state.getValue(FACING)) {
                 case NORTH -> NORTH_LEFT_SHAPE;
                 case EAST -> EAST_LEFT_SHAPE;
                 case SOUTH -> SOUTH_LEFT_SHAPE;
                 default -> WEST_LEFT_SHAPE;
             };
         }
-        return switch (state.get(FACING)) {
+        return switch (state.getValue(FACING)) {
             case NORTH -> NORTH_RIGHT_SHAPE;
             case EAST -> EAST_RIGHT_SHAPE;
             case SOUTH -> SOUTH_RIGHT_SHAPE;
@@ -174,13 +179,13 @@ public class DiagonalRailingBlock extends AbstractRailingBlock {
     }
 
     @Override
-    public VoxelShape getCollisionShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
-        return this.getOutlineShape(state, world, pos, context);
+    public VoxelShape getCollisionShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
+        return this.getShape(state, world, pos, context);
     }
 
     @Override
-    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(LEFT, SHAPE);
-        super.appendProperties(builder);
+        super.createBlockStateDefinition(builder);
     }
 }

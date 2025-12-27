@@ -5,20 +5,20 @@ import dev.doctor4t.trainmurdermystery.block_entity.TrimmedBedBlockEntity;
 import dev.doctor4t.trainmurdermystery.cca.PlayerPoisonComponent;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.block.BedBlock;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.HorizontalFacingBlock;
-import net.minecraft.block.enums.BedPart;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.network.RegistryByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.World;
+import net.minecraft.client.Minecraft;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Mth;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.BedBlock;
+import net.minecraft.world.level.block.HorizontalDirectionalBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BedPart;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.UUID;
@@ -58,14 +58,14 @@ public class PoisonUtils {
         return result;
     }
 
-    public static void bedPoison(ServerPlayerEntity player) {
-        World world = player.getEntityWorld();
-        BlockPos bedPos = player.getBlockPos();
+    public static void bedPoison(ServerPlayer player) {
+        Level world = player.getCommandSenderWorld();
+        BlockPos bedPos = player.blockPosition();
 
         TrimmedBedBlockEntity blockEntity = findHeadInBoxWithObstacles(world, bedPos);
         if (blockEntity == null) return;
 
-        if (!world.isClient) {
+        if (!world.isClientSide) {
             blockEntity.setHasScorpion(false, null);
             int poisonTicks = PlayerPoisonComponent.KEY.get(player).poisonTicks;
 
@@ -73,12 +73,12 @@ public class PoisonUtils {
 
             if (poisonTicks == -1) {
                 PlayerPoisonComponent.KEY.get(player).setPoisonTicks(
-                        world.getRandom().nextBetween(PlayerPoisonComponent.clampTime.getLeft(), PlayerPoisonComponent.clampTime.getRight()),
+                        world.getRandom().nextIntBetweenInclusive(PlayerPoisonComponent.clampTime.getA(), PlayerPoisonComponent.clampTime.getB()),
                         poisoner
                 );
             } else {
                 PlayerPoisonComponent.KEY.get(player).setPoisonTicks(
-                        MathHelper.clamp(poisonTicks - world.getRandom().nextBetween(100, 300), 0, PlayerPoisonComponent.clampTime.getRight()),
+                        Mth.clamp(poisonTicks - world.getRandom().nextIntBetweenInclusive(100, 300), 0, PlayerPoisonComponent.clampTime.getB()),
                         poisoner
                 );
             }
@@ -89,12 +89,12 @@ public class PoisonUtils {
         }
     }
 
-    private static TrimmedBedBlockEntity findHeadInBoxWithObstacles(World world, BlockPos centerPos) {
+    private static TrimmedBedBlockEntity findHeadInBoxWithObstacles(Level world, BlockPos centerPos) {
         int radius = 2;
         for (int dx = -radius; dx <= radius; dx++) {
             for (int dy = -radius; dy <= radius; dy++) {
                 for (int dz = -radius; dz <= radius; dz++) {
-                    BlockPos pos = centerPos.add(dx, dy, dz);
+                    BlockPos pos = centerPos.offset(dx, dy, dz);
                     TrimmedBedBlockEntity entity = resolveHead(world, pos);
                     if (entity != null && entity.hasScorpion()) {
                         if (isLineClear(world, centerPos, pos)) {
@@ -107,7 +107,7 @@ public class PoisonUtils {
         return null;
     }
 
-    private static boolean isLineClear(World world, BlockPos start, BlockPos end) {
+    private static boolean isLineClear(Level world, BlockPos start, BlockPos end) {
         // Use simple 3D Bresenham line algorithm
         int x0 = start.getX(), y0 = start.getY(), z0 = start.getZ();
         int x1 = end.getX(), y1 = end.getY(), z1 = end.getZ();
@@ -177,7 +177,7 @@ public class PoisonUtils {
         return true;
     }
 
-    private static boolean isBlocking(World world, BlockPos pos) {
+    private static boolean isBlocking(Level world, BlockPos pos) {
         BlockState state = world.getBlockState(pos);
         return !(state.getBlock() instanceof BedBlock);
     }
@@ -186,41 +186,41 @@ public class PoisonUtils {
     /**
      * Resolve a bed block (head or foot) into its head entity.
      */
-    private static TrimmedBedBlockEntity resolveHead(World world, BlockPos pos) {
+    private static TrimmedBedBlockEntity resolveHead(Level world, BlockPos pos) {
         if (!(world.getBlockEntity(pos) instanceof TrimmedBedBlockEntity entity)) return null;
 
-        BedPart part = world.getBlockState(pos).get(BedBlock.PART);
-        Direction facing = world.getBlockState(pos).get(HorizontalFacingBlock.FACING);
+        BedPart part = world.getBlockState(pos).getValue(BedBlock.PART);
+        Direction facing = world.getBlockState(pos).getValue(HorizontalDirectionalBlock.FACING);
 
         if (part == BedPart.HEAD) return entity;
 
         if (part == BedPart.FOOT) {
-            BlockPos headPos = pos.offset(facing);
+            BlockPos headPos = pos.relative(facing);
             if (world.getBlockEntity(headPos) instanceof TrimmedBedBlockEntity headEntity &&
-                    world.getBlockState(headPos).get(BedBlock.PART) == BedPart.HEAD) return headEntity;
+                    world.getBlockState(headPos).getValue(BedBlock.PART) == BedPart.HEAD) return headEntity;
         }
 
         return null;
     }
 
 
-    public record PoisonOverlayPayload() implements CustomPayload {
-        public static final Id<PoisonOverlayPayload> ID =
-                new Id<>(TMM.id("poisoned_text"));
+    public record PoisonOverlayPayload() implements CustomPacketPayload {
+        public static final Type<PoisonOverlayPayload> ID =
+                new Type<>(TMM.id("poisoned_text"));
 
-        public static final PacketCodec<RegistryByteBuf, PoisonOverlayPayload> CODEC =
-                PacketCodec.unit(new PoisonOverlayPayload());
+        public static final StreamCodec<RegistryFriendlyByteBuf, PoisonOverlayPayload> CODEC =
+                StreamCodec.unit(new PoisonOverlayPayload());
 
         @Override
-        public Id<? extends CustomPayload> getId() {
+        public Type<? extends CustomPacketPayload> type() {
             return ID;
         }
 
         public static class Receiver implements ClientPlayNetworking.PlayPayloadHandler<PoisonOverlayPayload> {
             @Override
             public void receive(@NotNull PoisonOverlayPayload payload, ClientPlayNetworking.@NotNull Context context) {
-                MinecraftClient client = MinecraftClient.getInstance();
-                client.execute(() -> client.inGameHud.setOverlayMessage(Text.translatable("game.player.stung"), false));
+                Minecraft client = Minecraft.getInstance();
+                client.execute(() -> client.gui.setOverlayMessage(Component.translatable("game.player.stung"), false));
             }
         }
     }

@@ -1,8 +1,8 @@
 package dev.doctor4t.trainmurdermystery.block.property;
 
-import net.minecraft.util.StringIdentifiable;
+import net.minecraft.util.StringRepresentable;
 
-public enum CouchArms implements StringIdentifiable {
+public enum CouchArms implements StringRepresentable {
     LEFT("left"),
     RIGHT("right"),
     SINGLE("single"),
@@ -19,7 +19,7 @@ public enum CouchArms implements StringIdentifiable {
     }
 
     @Override
-    public String asString() {
+    public String getSerializedName() {
         return this.name;
     }
 }

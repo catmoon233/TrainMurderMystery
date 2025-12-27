@@ -2,7 +2,7 @@ package dev.doctor4t.trainmurdermystery.ui.background;
 
 import com.daqem.uilib.client.gui.background.AbstractBackground;
 import com.mojang.blaze3d.systems.RenderSystem;
-import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.GuiGraphics;
 
 /**
  * 磨砂玻璃背景效果 - 带有透明度和景深模糊
@@ -39,7 +39,7 @@ public class FrostedGlassBackground extends AbstractBackground<FrostedGlassBackg
     }
 
     @Override
-    public void render(DrawContext drawContext, int mouseX, int mouseY, float delta) {
+    public void render(GuiGraphics drawContext, int mouseX, int mouseY, float delta) {
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
 

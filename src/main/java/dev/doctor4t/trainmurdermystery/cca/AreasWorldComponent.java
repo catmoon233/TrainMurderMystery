@@ -1,11 +1,7 @@
 package dev.doctor4t.trainmurdermystery.cca;
 
 import dev.doctor4t.trainmurdermystery.TMM;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.core.HolderLookup;
 import org.jetbrains.annotations.NotNull;
 import org.ladysnake.cca.api.v3.component.ComponentKey;
 import org.ladysnake.cca.api.v3.component.ComponentRegistry;
@@ -26,54 +22,58 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.Vec3;
 
 public class AreasWorldComponent implements AutoSyncedComponent {
     public static final ComponentKey<AreasWorldComponent> KEY = ComponentRegistry.getOrCreate(TMM.id("areas"), AreasWorldComponent.class);
-    private final World world;
+    private final Level world;
 
     public static class PosWithOrientation {
-        public final Vec3d pos;
+        public final Vec3 pos;
         public final float yaw;
         public final float pitch;
 
-        PosWithOrientation(Vec3d pos, float yaw, float pitch) {
+        PosWithOrientation(Vec3 pos, float yaw, float pitch) {
             this.pos = pos;
             this.yaw = yaw;
             this.pitch = pitch;
         }
 
         PosWithOrientation(double x, double y, double z, float yaw, float pitch) {
-            this(new Vec3d(x, y, z), yaw, pitch);
+            this(new Vec3(x, y, z), yaw, pitch);
         }
 
     }
-    public static Vec3d getVec3dFromNbt(NbtCompound tag, String name) {
-        return new Vec3d(tag.getDouble(name + "X"), tag.getFloat(name + "Y"), tag.getDouble(name + "Z"));
+    public static Vec3 getVec3dFromNbt(CompoundTag tag, String name) {
+        return new Vec3(tag.getDouble(name + "X"), tag.getFloat(name + "Y"), tag.getDouble(name + "Z"));
     }
 
-    public void writeVec3dToNbt(NbtCompound tag, Vec3d vec3d, String name) {
-        tag.putDouble(name + "X", vec3d.getX());
-        tag.putDouble(name + "Y", vec3d.getY());
-        tag.putDouble(name + "Z", vec3d.getZ());
+    public void writeVec3dToNbt(CompoundTag tag, Vec3 vec3d, String name) {
+        tag.putDouble(name + "X", vec3d.x());
+        tag.putDouble(name + "Y", vec3d.y());
+        tag.putDouble(name + "Z", vec3d.z());
     }
 
-    public static PosWithOrientation getPosWithOrientationFromNbt(NbtCompound tag, String name) {
+    public static PosWithOrientation getPosWithOrientationFromNbt(CompoundTag tag, String name) {
         return new PosWithOrientation(tag.getDouble(name + "X"), tag.getFloat(name + "Y"), tag.getDouble(name + "Z"), tag.getFloat(name + "Yaw"), tag.getFloat(name + "Pitch"));
     }
 
-    public void writePosWithOrientationToNbt(NbtCompound tag, PosWithOrientation posWithOrientation, String name) {
-        tag.putDouble(name + "X", posWithOrientation.pos.getX());
-        tag.putDouble(name + "Y", posWithOrientation.pos.getY());
-        tag.putDouble(name + "Z", posWithOrientation.pos.getZ());
+    public void writePosWithOrientationToNbt(CompoundTag tag, PosWithOrientation posWithOrientation, String name) {
+        tag.putDouble(name + "X", posWithOrientation.pos.x());
+        tag.putDouble(name + "Y", posWithOrientation.pos.y());
+        tag.putDouble(name + "Z", posWithOrientation.pos.z());
         tag.putDouble(name + "Yaw", posWithOrientation.yaw);
         tag.putDouble(name + "Pitch", posWithOrientation.pitch);
     }
 
-    public static Box getBoxFromNbt(NbtCompound tag, String name) {
-        return new Box(tag.getDouble(name + "MinX"), tag.getFloat(name + "MinY"), tag.getDouble(name + "MinZ"), tag.getDouble(name + "MaxX"), tag.getFloat(name + "MaxY"), tag.getDouble(name + "MaxZ"));
+    public static AABB getBoxFromNbt(CompoundTag tag, String name) {
+        return new AABB(tag.getDouble(name + "MinX"), tag.getFloat(name + "MinY"), tag.getDouble(name + "MinZ"), tag.getDouble(name + "MaxX"), tag.getFloat(name + "MaxY"), tag.getDouble(name + "MaxZ"));
     }
 
-    public void writeBoxToNbt(NbtCompound tag, Box box, String name) {
+    public void writeBoxToNbt(CompoundTag tag, AABB box, String name) {
         tag.putDouble(name + "MinX", box.minX);
         tag.putDouble(name + "MinY", box.minY);
         tag.putDouble(name + "MinZ", box.minZ);
@@ -96,18 +96,18 @@ public class AreasWorldComponent implements AutoSyncedComponent {
     PosWithOrientation spawnPos = new PosWithOrientation(-872.5f, 0f, -323f, 90f, 0f);
     PosWithOrientation spectatorSpawnPos = new PosWithOrientation(-68f, 133f, -535.5f, -90f, 15f);
 
-    Box readyArea = new Box(-1017, -1, -363.5f, -813, 3, -357.5f);
-    Vec3d playAreaOffset = new Vec3d(963, 121, -175);
-    Box playArea = new Box(177 ,60 ,-524, -82 ,84, -546);
+    AABB readyArea = new AABB(-1017, -1, -363.5f, -813, 3, -357.5f);
+    Vec3 playAreaOffset = new Vec3(963, 121, -175);
+    AABB playArea = new AABB(177 ,60 ,-524, -82 ,84, -546);
 
-    Box resetTemplateArea = new Box(177 ,60 ,-524, -82 ,84, -546);
-    Box resetPasteArea = new Box(177 ,115 ,-524, -82 ,139, -546); // Default: resetTemplateArea.offset(0, 55, 0)
+    AABB resetTemplateArea = new AABB(177 ,60 ,-524, -82 ,84, -546);
+    AABB resetPasteArea = new AABB(177 ,115 ,-524, -82 ,139, -546); // Default: resetTemplateArea.offset(0, 55, 0)
     
     // Room count
     int roomCount = 7;
     
     // Room positions map
-    Map<Integer, Vec3d> roomPositions = new HashMap<>();
+    Map<Integer, Vec3> roomPositions = new HashMap<>();
     
     public PosWithOrientation getSpawnPos() {
         return spawnPos;
@@ -125,43 +125,43 @@ public class AreasWorldComponent implements AutoSyncedComponent {
         this.spectatorSpawnPos = spectatorSpawnPos;
     }
 
-    public Box getReadyArea() {
+    public AABB getReadyArea() {
         return readyArea;
     }
 
-    public void setReadyArea(Box readyArea) {
+    public void setReadyArea(AABB readyArea) {
         this.readyArea = readyArea;
     }
 
-    public Vec3d getPlayAreaOffset() {
+    public Vec3 getPlayAreaOffset() {
         return playAreaOffset;
     }
 
-    public void setPlayAreaOffset(Vec3d playAreaOffset) {
+    public void setPlayAreaOffset(Vec3 playAreaOffset) {
         this.playAreaOffset = playAreaOffset;
     }
 
-    public Box getPlayArea() {
+    public AABB getPlayArea() {
         return playArea;
     }
 
-    public void setPlayArea(Box playArea) {
+    public void setPlayArea(AABB playArea) {
         this.playArea = playArea;
     }
 
-    public Box getResetTemplateArea() {
+    public AABB getResetTemplateArea() {
         return resetTemplateArea;
     }
 
-    public void setResetTemplateArea(Box resetTemplateArea) {
+    public void setResetTemplateArea(AABB resetTemplateArea) {
         this.resetTemplateArea = resetTemplateArea;
     }
 
-    public Box getResetPasteArea() {
+    public AABB getResetPasteArea() {
         return resetPasteArea;
     }
 
-    public void setResetPasteArea(Box resetPasteArea) {
+    public void setResetPasteArea(AABB resetPasteArea) {
         this.resetPasteArea = resetPasteArea;
     }
     
@@ -173,36 +173,36 @@ public class AreasWorldComponent implements AutoSyncedComponent {
         this.roomCount = roomCount;
     }
     
-    public Map<Integer, Vec3d> getRoomPositions() {
+    public Map<Integer, Vec3> getRoomPositions() {
         return roomPositions;
     }
     
-    public void setRoomPositions(Map<Integer, Vec3d> roomPositions) {
+    public void setRoomPositions(Map<Integer, Vec3> roomPositions) {
         this.roomPositions = roomPositions;
     }
     
-    public Vec3d getRoomPosition(int roomNumber) {
+    public Vec3 getRoomPosition(int roomNumber) {
         return roomPositions.get(roomNumber);
     }
     
-    public void setRoomPosition(int roomNumber, Vec3d position) {
+    public void setRoomPosition(int roomNumber, Vec3 position) {
         this.roomPositions.put(roomNumber, position);
     }
 
-    public AreasWorldComponent(World world) {
+    public AreasWorldComponent(Level world) {
         this.world = world;
         // Initialize default room positions
         initializeDefaultRoomPositions();
     }
     
     private void initializeDefaultRoomPositions() {
-        roomPositions.put(1, new Vec3d(116, 122, -539));
-        roomPositions.put(2, new Vec3d(124, 122, -534));
-        roomPositions.put(3, new Vec3d(131, 122, -534));
-        roomPositions.put(4, new Vec3d(144, 122, -540));
-        roomPositions.put(5, new Vec3d(119, 128, -537));
-        roomPositions.put(6, new Vec3d(132, 128, -536));
-        roomPositions.put(7, new Vec3d(146, 128, -537));
+        roomPositions.put(1, new Vec3(116, 122, -539));
+        roomPositions.put(2, new Vec3(124, 122, -534));
+        roomPositions.put(3, new Vec3(131, 122, -534));
+        roomPositions.put(4, new Vec3(144, 122, -540));
+        roomPositions.put(5, new Vec3(119, 128, -537));
+        roomPositions.put(6, new Vec3(132, 128, -536));
+        roomPositions.put(7, new Vec3(146, 128, -537));
     }
 
     public void sync() {
@@ -210,7 +210,7 @@ public class AreasWorldComponent implements AutoSyncedComponent {
     }
     public void loadFromFile() {
         try {
-            Path areasFilePath = Paths.get(world.getServer().getRunDirectory().toString(), "world", "areas.json");
+            Path areasFilePath = Paths.get(world.getServer().getServerDirectory().toString(), "world", "areas.json");
             File areasFile = areasFilePath.toFile();
 
             if (areasFile.exists()) {
@@ -242,7 +242,7 @@ public class AreasWorldComponent implements AutoSyncedComponent {
 
                 if (jsonObject.has("readyArea")) {
                     JsonObject readyAreaObj = jsonObject.getAsJsonObject("readyArea");
-                    this.readyArea = new Box(
+                    this.readyArea = new AABB(
                             readyAreaObj.get("minX").getAsDouble(),
                             readyAreaObj.get("minY").getAsDouble(),
                             readyAreaObj.get("minZ").getAsDouble(),
@@ -254,7 +254,7 @@ public class AreasWorldComponent implements AutoSyncedComponent {
 
                 if (jsonObject.has("playAreaOffset")) {
                     JsonObject playAreaOffsetObj = jsonObject.getAsJsonObject("playAreaOffset");
-                    this.playAreaOffset = new Vec3d(
+                    this.playAreaOffset = new Vec3(
                             playAreaOffsetObj.get("x").getAsDouble(),
                             playAreaOffsetObj.get("y").getAsDouble(),
                             playAreaOffsetObj.get("z").getAsDouble()
@@ -263,7 +263,7 @@ public class AreasWorldComponent implements AutoSyncedComponent {
 
                 if (jsonObject.has("playArea")) {
                     JsonObject playAreaObj = jsonObject.getAsJsonObject("playArea");
-                    this.playArea = new Box(
+                    this.playArea = new AABB(
                             playAreaObj.get("minX").getAsDouble(),
                             playAreaObj.get("minY").getAsDouble(),
                             playAreaObj.get("minZ").getAsDouble(),
@@ -275,7 +275,7 @@ public class AreasWorldComponent implements AutoSyncedComponent {
 
                 if (jsonObject.has("resetTemplateArea")) {
                     JsonObject resetTemplateAreaObj = jsonObject.getAsJsonObject("resetTemplateArea");
-                    this.resetTemplateArea = new Box(
+                    this.resetTemplateArea = new AABB(
                             resetTemplateAreaObj.get("minX").getAsDouble(),
                             resetTemplateAreaObj.get("minY").getAsDouble(),
                             resetTemplateAreaObj.get("minZ").getAsDouble(),
@@ -288,7 +288,7 @@ public class AreasWorldComponent implements AutoSyncedComponent {
                 // Load resetPasteArea if present, otherwise derive from resetTemplateArea
                 if (jsonObject.has("resetPasteArea")) {
                     JsonObject resetPasteAreaObj = jsonObject.getAsJsonObject("resetPasteArea");
-                    this.resetPasteArea = new Box(
+                    this.resetPasteArea = new AABB(
                             resetPasteAreaObj.get("minX").getAsDouble(),
                             resetPasteAreaObj.get("minY").getAsDouble(),
                             resetPasteAreaObj.get("minZ").getAsDouble(),
@@ -298,7 +298,7 @@ public class AreasWorldComponent implements AutoSyncedComponent {
                     );
                 } else {
                     // Default behavior: offset resetTemplateArea by (0, 55, 0)
-                    this.resetPasteArea = this.resetTemplateArea.offset(0, 55, 0);
+                    this.resetPasteArea = this.resetTemplateArea.move(0, 55, 0);
                 }
                 
                 // Load room count
@@ -314,7 +314,7 @@ public class AreasWorldComponent implements AutoSyncedComponent {
                         try {
                             int roomNumber = Integer.parseInt(key);
                             JsonObject posObj = roomPositionsObj.getAsJsonObject(key);
-                            Vec3d position = new Vec3d(
+                            Vec3 position = new Vec3(
                                     posObj.get("x").getAsDouble(),
                                     posObj.get("y").getAsDouble(),
                                     posObj.get("z").getAsDouble()
@@ -334,7 +334,7 @@ public class AreasWorldComponent implements AutoSyncedComponent {
 
     public void saveToFile() {
         try {
-            Path areasDirPath = Paths.get(world.getServer().getRunDirectory().toString(), "world");
+            Path areasDirPath = Paths.get(world.getServer().getServerDirectory().toString(), "world");
             File areasDir = areasDirPath.toFile();
             if (!areasDir.exists()) {
                 areasDir.mkdirs();
@@ -415,7 +415,7 @@ public class AreasWorldComponent implements AutoSyncedComponent {
             
             // Save room positions
             JsonObject roomPositionsObj = new JsonObject();
-            for (Map.Entry<Integer, Vec3d> entry : this.roomPositions.entrySet()) {
+            for (Map.Entry<Integer, Vec3> entry : this.roomPositions.entrySet()) {
                 JsonObject posObj = new JsonObject();
                 posObj.addProperty("x", entry.getValue().x);
                 posObj.addProperty("y", entry.getValue().y);
@@ -434,7 +434,7 @@ public class AreasWorldComponent implements AutoSyncedComponent {
     }
 
     @Override
-    public void readFromNbt(@NotNull NbtCompound tag, RegistryWrapper.@NotNull WrapperLookup registryLookup) {
+    public void readFromNbt(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registryLookup) {
         this.spawnPos = getPosWithOrientationFromNbt(tag, "spawnPos");
         this.spectatorSpawnPos = getPosWithOrientationFromNbt(tag, "spectatorSpawnPos");
 
@@ -442,12 +442,12 @@ public class AreasWorldComponent implements AutoSyncedComponent {
         this.playAreaOffset = getVec3dFromNbt(tag, "playAreaOffset");
         this.playArea = getBoxFromNbt(tag, "playArea");
 
-        this.resetTemplateArea = new Box(177 ,60 ,-524, -82 ,84, -546);
-        this.resetPasteArea = new Box(177 ,115 ,-524, -82 ,139, -546); // Default: resetTemplateArea.offset(0, 55, 0)
+        this.resetTemplateArea = new AABB(177 ,60 ,-524, -82 ,84, -546);
+        this.resetPasteArea = new AABB(177 ,115 ,-524, -82 ,139, -546); // Default: resetTemplateArea.offset(0, 55, 0)
     }
 
     @Override
-    public void writeToNbt(@NotNull NbtCompound tag, RegistryWrapper.@NotNull WrapperLookup registryLookup) {
+    public void writeToNbt(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registryLookup) {
         writePosWithOrientationToNbt(tag, this.spawnPos, "spawnPos");
         writePosWithOrientationToNbt(tag, this.spectatorSpawnPos, "spectatorSpawnPos");
 

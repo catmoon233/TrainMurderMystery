@@ -10,38 +10,37 @@ import dev.doctor4t.trainmurdermystery.client.gui.RoleAnnouncementTexts;
 import dev.doctor4t.trainmurdermystery.index.TMMItems;
 import dev.doctor4t.trainmurdermystery.util.AnnounceWelcomePayload;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.entity.player.ItemCooldownManager;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemStack;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.Identifier;
-
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemCooldowns;
+import net.minecraft.world.item.ItemStack;
 import java.util.List;
 
 public class LooseEndsGameMode extends GameMode {
-    public LooseEndsGameMode(Identifier identifier) {
+    public LooseEndsGameMode(ResourceLocation identifier) {
         super(identifier, 60, 2);
     }
 
     @Override
-    public void initializeGame(ServerWorld serverWorld, GameWorldComponent gameWorldComponent, List<ServerPlayerEntity> players) {
+    public void initializeGame(ServerLevel serverWorld, GameWorldComponent gameWorldComponent, List<ServerPlayer> players) {
         TrainWorldComponent.KEY.get(serverWorld).setTimeOfDay(TrainWorldComponent.TimeOfDay.SUNDOWN);
 
-        for (ServerPlayerEntity player : players) {
-            player.getInventory().clear();
+        for (ServerPlayer player : players) {
+            player.getInventory().clearContent();
 
             ItemStack derringer = new ItemStack(TMMItems.DERRINGER);
             ItemStack knife = new ItemStack(TMMItems.KNIFE);
 
             int cooldown = GameConstants.getInTicks(1, 0);
-            ItemCooldownManager itemCooldownManager = player.getItemCooldownManager();
-            itemCooldownManager.set(TMMItems.DERRINGER, cooldown);
-            itemCooldownManager.set(TMMItems.KNIFE, cooldown);
+            ItemCooldowns itemCooldownManager = player.getCooldowns();
+            itemCooldownManager.addCooldown(TMMItems.DERRINGER, cooldown);
+            itemCooldownManager.addCooldown(TMMItems.KNIFE, cooldown);
 
-            player.giveItemStack(new ItemStack(TMMItems.CROWBAR));
-            player.giveItemStack(derringer);
-            player.giveItemStack(knife);
+            player.addItem(new ItemStack(TMMItems.CROWBAR));
+            player.addItem(derringer);
+            player.addItem(knife);
 
             gameWorldComponent.addRole(player, TMMRoles.LOOSE_END);
 
@@ -50,7 +49,7 @@ public class LooseEndsGameMode extends GameMode {
     }
 
     @Override
-    public void tickServerGameLoop(ServerWorld serverWorld, GameWorldComponent gameWorldComponent) {
+    public void tickServerGameLoop(ServerLevel serverWorld, GameWorldComponent gameWorldComponent) {
         GameFunctions.WinStatus winStatus = GameFunctions.WinStatus.NONE;
 
         // check if out of time
@@ -59,8 +58,8 @@ public class LooseEndsGameMode extends GameMode {
 
         // check if last person standing in loose end
         int playersLeft = 0;
-        PlayerEntity lastPlayer = null;
-        for (PlayerEntity player : serverWorld.getPlayers()) {
+        Player lastPlayer = null;
+        for (Player player : serverWorld.players()) {
             if (GameFunctions.isPlayerAliveAndSurvival(player)) {
                 playersLeft++;
                 lastPlayer = player;
@@ -72,13 +71,13 @@ public class LooseEndsGameMode extends GameMode {
         }
 
         if (playersLeft == 1) {
-            gameWorldComponent.setLooseEndWinner(lastPlayer.getUuid());
+            gameWorldComponent.setLooseEndWinner(lastPlayer.getUUID());
             winStatus = GameFunctions.WinStatus.LOOSE_END;
         }
 
         // game end on win and display
         if (winStatus != GameFunctions.WinStatus.NONE && gameWorldComponent.getGameStatus() == GameWorldComponent.GameStatus.ACTIVE) {
-            GameRoundEndComponent.KEY.get(serverWorld).setRoundEndData(serverWorld.getPlayers(), winStatus);
+            GameRoundEndComponent.KEY.get(serverWorld).setRoundEndData(serverWorld.players(), winStatus);
 
             GameFunctions.stopGame(serverWorld);
         }

@@ -1,16 +1,16 @@
 package dev.doctor4t.trainmurdermystery.block.entity;
 
 import dev.doctor4t.trainmurdermystery.index.TMMBlockEntities;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.network.listener.ClientPlayPacketListener;
-import net.minecraft.network.packet.Packet;
-import net.minecraft.network.packet.s2c.play.BlockEntityUpdateS2CPacket;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.protocol.Packet;
+import net.minecraft.network.protocol.game.ClientGamePacketListener;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -23,13 +23,13 @@ public class HornBlockEntity extends BlockEntity {
         super(TMMBlockEntities.HORN, pos, state);
     }
 
-    public static void tick(World world, BlockPos pos, BlockState state, @NotNull HornBlockEntity horn) {
+    public static void tick(Level world, BlockPos pos, BlockState state, @NotNull HornBlockEntity horn) {
         horn.prevPull = horn.pull;
         if (horn.pull > 0) {
             horn.pull -= .05f;
             if (horn.pull < 0.01f) {
                 horn.pull = 0;
-                if (world != null) world.updateListeners(pos, state, state, Block.NOTIFY_LISTENERS);
+                if (world != null) world.sendBlockUpdated(pos, state, state, Block.UPDATE_CLIENTS);
             }
         }
         horn.cooldown--;
@@ -38,30 +38,30 @@ public class HornBlockEntity extends BlockEntity {
     public void pull(int pull) {
         if (this.cooldown <= 0) this.cooldown = 600; // 30s
         this.pull = pull;
-        if (this.world != null)
-            this.world.updateListeners(this.pos, this.getCachedState(), this.getCachedState(), Block.NOTIFY_LISTENERS);
-        this.markDirty();
+        if (this.level != null)
+            this.level.sendBlockUpdated(this.worldPosition, this.getBlockState(), this.getBlockState(), Block.UPDATE_CLIENTS);
+        this.setChanged();
     }
 
     @Override
-    protected void writeNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registries) {
+    protected void saveAdditional(CompoundTag nbt, HolderLookup.Provider registries) {
         nbt.putDouble("pull", this.pull);
         nbt.putInt("cooldown", this.cooldown);
     }
 
     @Override
-    protected void readNbt(NbtCompound nbt, RegistryWrapper.WrapperLookup registries) {
+    protected void loadAdditional(CompoundTag nbt, HolderLookup.Provider registries) {
         this.pull = nbt.getDouble("pull");
         this.cooldown = nbt.getInt("cooldown");
     }
 
     @Override
-    public @Nullable Packet<ClientPlayPacketListener> toUpdatePacket() {
-        return BlockEntityUpdateS2CPacket.create(this);
+    public @Nullable Packet<ClientGamePacketListener> getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
     }
 
     @Override
-    public NbtCompound toInitialChunkDataNbt(RegistryWrapper.WrapperLookup registries) {
-        return createNbt(registries);
+    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+        return saveWithoutMetadata(registries);
     }
 }

@@ -1,9 +1,9 @@
 package dev.doctor4t.trainmurdermystery.cca;
 
 import dev.doctor4t.trainmurdermystery.TMM;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.registry.RegistryWrapper;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.NotNull;
 import org.ladysnake.cca.api.v3.component.ComponentKey;
 import org.ladysnake.cca.api.v3.component.ComponentRegistry;
@@ -11,11 +11,11 @@ import org.ladysnake.cca.api.v3.component.sync.AutoSyncedComponent;
 
 public class PlayerNoteComponent implements AutoSyncedComponent {
     public static final ComponentKey<PlayerNoteComponent> KEY = ComponentRegistry.getOrCreate(TMM.id("note"), PlayerNoteComponent.class);
-    public final PlayerEntity player;
+    public final Player player;
     public String[] text = new String[]{"", "", "", ""};
     public boolean written = false;
 
-    public PlayerNoteComponent(PlayerEntity player) {
+    public PlayerNoteComponent(Player player) {
         this.player = player;
     }
 
@@ -36,7 +36,7 @@ public class PlayerNoteComponent implements AutoSyncedComponent {
     }
 
     @Override
-    public void writeToNbt(@NotNull NbtCompound tag, RegistryWrapper.@NotNull WrapperLookup registryLookup) {
+    public void writeToNbt(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registryLookup) {
         tag.putString("line1", this.text[0]);
         tag.putString("line2", this.text[1]);
         tag.putString("line3", this.text[2]);
@@ -45,7 +45,7 @@ public class PlayerNoteComponent implements AutoSyncedComponent {
     }
 
     @Override
-    public void readFromNbt(@NotNull NbtCompound tag, RegistryWrapper.WrapperLookup registryLookup) {
+    public void readFromNbt(@NotNull CompoundTag tag, HolderLookup.Provider registryLookup) {
         this.text[0] = tag.getString("line1");
         this.text[1] = tag.getString("line2");
         this.text[2] = tag.getString("line3");

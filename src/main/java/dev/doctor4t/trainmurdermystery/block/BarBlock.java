@@ -1,63 +1,63 @@
 package dev.doctor4t.trainmurdermystery.block;
 
 import dev.doctor4t.trainmurdermystery.index.TMMProperties;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.PillarBlock;
-import net.minecraft.block.ShapeContext;
-import net.minecraft.item.ItemPlacementContext;
-import net.minecraft.state.StateManager;
-import net.minecraft.state.property.BooleanProperty;
-import net.minecraft.state.property.Properties;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.world.BlockView;
-import net.minecraft.world.World;
-import net.minecraft.world.WorldAccess;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.RotatedPillarBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
-public class BarBlock extends PillarBlock {
+public class BarBlock extends RotatedPillarBlock {
 
     public static final BooleanProperty TOP = TMMProperties.TOP;
-    public static final BooleanProperty BOTTOM = Properties.BOTTOM;
+    public static final BooleanProperty BOTTOM = BlockStateProperties.BOTTOM;
 
-    protected static final VoxelShape X_SHAPE = Block.createCuboidShape(0, 6, 6, 16, 10, 10);
-    protected static final VoxelShape Y_SHAPE = Block.createCuboidShape(6, 0, 6, 10, 16, 10);
-    protected static final VoxelShape Z_SHAPE = Block.createCuboidShape(6, 6, 0, 10, 10, 16);
+    protected static final VoxelShape X_SHAPE = Block.box(0, 6, 6, 16, 10, 10);
+    protected static final VoxelShape Y_SHAPE = Block.box(6, 0, 6, 10, 16, 10);
+    protected static final VoxelShape Z_SHAPE = Block.box(6, 6, 0, 10, 10, 16);
 
-    public BarBlock(Settings settings) {
+    public BarBlock(Properties settings) {
         super(settings);
-        this.setDefaultState(super.getDefaultState()
-                .with(AXIS, Direction.Axis.Y)
-                .with(TOP, true)
-                .with(BOTTOM, true));
+        this.registerDefaultState(super.defaultBlockState()
+                .setValue(AXIS, Direction.Axis.Y)
+                .setValue(TOP, true)
+                .setValue(BOTTOM, true));
     }
 
     @Override
-    public BlockState getStateForNeighborUpdate(BlockState state, Direction direction, BlockState neighborState, WorldAccess world, BlockPos pos, BlockPos neighborPos) {
-        Direction.Axis axis = state.get(AXIS);
+    public BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, LevelAccessor world, BlockPos pos, BlockPos neighborPos) {
+        Direction.Axis axis = state.getValue(AXIS);
         if (direction.getAxis() == axis) {
-            return state.with(
+            return state.setValue(
                     direction == this.getTopDirection(axis) ? TOP : BOTTOM,
                     !this.isConnectedBar(neighborState, axis)
             );
         }
-        return super.getStateForNeighborUpdate(state, direction, neighborState, world, pos, neighborPos);
+        return super.updateShape(state, direction, neighborState, world, pos, neighborPos);
     }
 
     @Override
-    public BlockState getPlacementState(ItemPlacementContext ctx) {
-        World world = ctx.getWorld();
-        BlockPos pos = ctx.getBlockPos();
-        Direction.Axis axis = ctx.getSide().getAxis();
+    public BlockState getStateForPlacement(BlockPlaceContext ctx) {
+        Level world = ctx.getLevel();
+        BlockPos pos = ctx.getClickedPos();
+        Direction.Axis axis = ctx.getClickedFace().getAxis();
         Direction topDirection = this.getTopDirection(axis);
-        return this.getDefaultState().with(AXIS, ctx.getSide().getAxis())
-                .with(TOP, !this.isConnectedBar(world.getBlockState(pos.offset(topDirection)), axis))
-                .with(BOTTOM, !this.isConnectedBar(world.getBlockState(pos.offset(topDirection.getOpposite())), axis));
+        return this.defaultBlockState().setValue(AXIS, ctx.getClickedFace().getAxis())
+                .setValue(TOP, !this.isConnectedBar(world.getBlockState(pos.relative(topDirection)), axis))
+                .setValue(BOTTOM, !this.isConnectedBar(world.getBlockState(pos.relative(topDirection.getOpposite())), axis));
     }
 
     private boolean isConnectedBar(BlockState state, Direction.Axis axis) {
-        return state.isOf(this) && state.get(AXIS) == axis;
+        return state.is(this) && state.getValue(AXIS) == axis;
     }
 
     private Direction getTopDirection(Direction.Axis axis) {
@@ -69,8 +69,8 @@ public class BarBlock extends PillarBlock {
     }
 
     @Override
-    public VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
-        return switch (state.get(AXIS)) {
+    public VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
+        return switch (state.getValue(AXIS)) {
             case X -> X_SHAPE;
             case Y -> Y_SHAPE;
             case Z -> Z_SHAPE;
@@ -78,7 +78,7 @@ public class BarBlock extends PillarBlock {
     }
 
     @Override
-    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(AXIS, TOP, BOTTOM);
     }
 }

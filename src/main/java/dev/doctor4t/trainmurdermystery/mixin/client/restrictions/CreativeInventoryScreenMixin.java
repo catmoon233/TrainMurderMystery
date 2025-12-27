@@ -4,23 +4,23 @@ import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import dev.doctor4t.trainmurdermystery.client.TMMClient;
 import dev.doctor4t.trainmurdermystery.client.gui.screen.ingame.LimitedInventoryScreen;
-import net.minecraft.client.gui.screen.ingame.AbstractInventoryScreen;
-import net.minecraft.client.gui.screen.ingame.CreativeInventoryScreen;
-import net.minecraft.entity.player.PlayerInventory;
-import net.minecraft.screen.PlayerScreenHandler;
-import net.minecraft.text.Text;
+import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
+import net.minecraft.client.gui.screens.inventory.EffectRenderingInventoryScreen;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.inventory.InventoryMenu;
 import org.spongepowered.asm.mixin.Mixin;
 
-@Mixin(CreativeInventoryScreen.class)
-public abstract class CreativeInventoryScreenMixin extends AbstractInventoryScreen<PlayerScreenHandler> {
-    public CreativeInventoryScreenMixin(PlayerScreenHandler screenHandler, PlayerInventory playerInventory, Text text) {
+@Mixin(CreativeModeInventoryScreen.class)
+public abstract class CreativeInventoryScreenMixin extends EffectRenderingInventoryScreen<InventoryMenu> {
+    public CreativeInventoryScreenMixin(InventoryMenu screenHandler, Inventory playerInventory, Component text) {
         super(screenHandler, playerInventory, text);
     }
 
-    @WrapMethod(method = "handledScreenTick")
+    @WrapMethod(method = "containerTick")
     public void tmm$replaceSurvivalInventory(Operation<Void> original) {
         if (TMMClient.isPlayerAliveAndInSurvival()) {
-            this.client.setScreen(new LimitedInventoryScreen(this.client.player));
+            this.minecraft.setScreen(new LimitedInventoryScreen(this.minecraft.player));
         } else {
             original.call();
         }

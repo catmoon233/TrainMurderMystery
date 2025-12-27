@@ -5,13 +5,6 @@ import com.llamalad7.mixinextras.sugar.Local;
 import dev.doctor4t.trainmurdermystery.client.TMMClient;
 import dev.doctor4t.trainmurdermystery.client.render.entity.PlayerBodyEntityRenderer;
 import dev.doctor4t.trainmurdermystery.entity.PlayerBodyEntity;
-import net.minecraft.client.network.PlayerListEntry;
-import net.minecraft.client.render.entity.EntityRenderDispatcher;
-import net.minecraft.client.render.entity.EntityRenderer;
-import net.minecraft.client.render.entity.EntityRendererFactory;
-import net.minecraft.client.util.SkinTextures;
-import net.minecraft.entity.Entity;
-import net.minecraft.resource.ResourceManager;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -20,44 +13,51 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Map;
+import net.minecraft.client.multiplayer.PlayerInfo;
+import net.minecraft.client.renderer.entity.EntityRenderDispatcher;
+import net.minecraft.client.renderer.entity.EntityRenderer;
+import net.minecraft.client.renderer.entity.EntityRendererProvider;
+import net.minecraft.client.resources.PlayerSkin;
+import net.minecraft.server.packs.resources.ResourceManager;
+import net.minecraft.world.entity.Entity;
 
 @SuppressWarnings("unchecked")
 @Mixin(EntityRenderDispatcher.class)
 public class EntityRendererDispatchMixin {
     @Unique
-    private static final Map<SkinTextures.Model, EntityRendererFactory<PlayerBodyEntity>> PLAYER_BODY_RENDERER_FACTORIES = Map.of(
-            SkinTextures.Model.WIDE,
+    private static final Map<PlayerSkin.Model, EntityRendererProvider<PlayerBodyEntity>> PLAYER_BODY_RENDERER_FACTORIES = Map.of(
+            PlayerSkin.Model.WIDE,
             context -> new PlayerBodyEntityRenderer<>(context, false),
-            SkinTextures.Model.SLIM,
+            PlayerSkin.Model.SLIM,
             context -> new PlayerBodyEntityRenderer<>(context, true)
     );
 
     @Unique
-    private Map<SkinTextures.Model, EntityRenderer<? extends PlayerBodyEntity>> bodyModelRenderers = Map.of();
+    private Map<PlayerSkin.Model, EntityRenderer<? extends PlayerBodyEntity>> bodyModelRenderers = Map.of();
 
-    @Inject(method = "reload", at = @At("TAIL"))
-    public void reload(ResourceManager manager, CallbackInfo ci, @Local EntityRendererFactory.Context context) {
+    @Inject(method = "onResourceManagerReload", at = @At("TAIL"))
+    public void reload(ResourceManager manager, CallbackInfo ci, @Local EntityRendererProvider.Context context) {
         this.bodyModelRenderers = reloadPlayerBodyRenderers(context);
     }
 
     @Inject(method = "getRenderer", at = @At("HEAD"), cancellable = true)
     public <T extends Entity> void tmm$addPlayerBodyRenderer(T entity, CallbackInfoReturnable<EntityRenderer<? super T>> cir) {
         if (entity instanceof PlayerBodyEntity body) {
-            PlayerListEntry playerListEntry = TMMClient.PLAYER_ENTRIES_CACHE.get(body.getPlayerUuid());
+            PlayerInfo playerListEntry = TMMClient.PLAYER_ENTRIES_CACHE.get(body.getPlayerUuid());
             if (playerListEntry == null) {
-                cir.setReturnValue((EntityRenderer<? super T>) this.bodyModelRenderers.get(SkinTextures.Model.WIDE));
+                cir.setReturnValue((EntityRenderer<? super T>) this.bodyModelRenderers.get(PlayerSkin.Model.WIDE));
             } else {
-                SkinTextures.Model model = playerListEntry.getSkinTextures().model();
+                PlayerSkin.Model model = playerListEntry.getSkin().model();
                 EntityRenderer<? extends PlayerBodyEntity> entityRenderer = this.bodyModelRenderers.get(model);
-                cir.setReturnValue((EntityRenderer<? super T>) (entityRenderer != null ? entityRenderer : (EntityRenderer) this.bodyModelRenderers.get(SkinTextures.Model.WIDE)));
+                cir.setReturnValue((EntityRenderer<? super T>) (entityRenderer != null ? entityRenderer : (EntityRenderer) this.bodyModelRenderers.get(PlayerSkin.Model.WIDE)));
             }
         }
     }
 
 
     @Unique
-    private static Map<SkinTextures.Model, EntityRenderer<? extends PlayerBodyEntity>> reloadPlayerBodyRenderers(EntityRendererFactory.Context ctx) {
-        ImmutableMap.Builder<SkinTextures.Model, EntityRenderer<? extends PlayerBodyEntity>> builder = ImmutableMap.builder();
+    private static Map<PlayerSkin.Model, EntityRenderer<? extends PlayerBodyEntity>> reloadPlayerBodyRenderers(EntityRendererProvider.Context ctx) {
+        ImmutableMap.Builder<PlayerSkin.Model, EntityRenderer<? extends PlayerBodyEntity>> builder = ImmutableMap.builder();
         PLAYER_BODY_RENDERER_FACTORIES.forEach((model, factory) -> {
             try {
                 builder.put(model, factory.create(ctx));

@@ -3,17 +3,17 @@ package dev.doctor4t.trainmurdermystery.util;
 import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.client.gui.RoundTextRenderer;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.packet.CustomPayload;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import org.jetbrains.annotations.NotNull;
 
-public record AnnounceEndingPayload() implements CustomPayload {
-    public static final Id<AnnounceEndingPayload> ID = new Id<>(TMM.id("announceending"));
-    public static final PacketCodec<PacketByteBuf, AnnounceEndingPayload> CODEC = PacketCodec.unit(new AnnounceEndingPayload());
+public record AnnounceEndingPayload() implements CustomPacketPayload {
+    public static final Type<AnnounceEndingPayload> ID = new Type<>(TMM.id("announceending"));
+    public static final StreamCodec<FriendlyByteBuf, AnnounceEndingPayload> CODEC = StreamCodec.unit(new AnnounceEndingPayload());
 
     @Override
-    public Id<? extends CustomPayload> getId() {
+    public Type<? extends CustomPacketPayload> type() {
         return ID;
     }
 

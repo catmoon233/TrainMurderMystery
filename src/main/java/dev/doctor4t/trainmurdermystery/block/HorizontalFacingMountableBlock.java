@@ -1,47 +1,47 @@
 package dev.doctor4t.trainmurdermystery.block;
 
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.item.ItemPlacementContext;
-import net.minecraft.state.StateManager;
-import net.minecraft.state.property.DirectionProperty;
-import net.minecraft.state.property.Properties;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.World;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 
 public abstract class HorizontalFacingMountableBlock extends MountableBlock {
 
-    public static final DirectionProperty FACING = Properties.HORIZONTAL_FACING;
+    public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
 
-    public HorizontalFacingMountableBlock(Settings settings) {
+    public HorizontalFacingMountableBlock(Properties settings) {
         super(settings);
-        this.setDefaultState(super.getDefaultState().with(FACING, Direction.NORTH));
+        this.registerDefaultState(super.defaultBlockState().setValue(FACING, Direction.NORTH));
     }
 
     @Override
-    public Vec3d getSitPos(World world, BlockState state, BlockPos pos) {
-        Vec3d sitPos = this.getNorthFacingSitPos(world, state, pos);
-        return switch (state.get(FACING)) {
-            case EAST -> new Vec3d(sitPos.z, sitPos.y, 1 - sitPos.x);
-            case SOUTH -> new Vec3d(1 - sitPos.x, sitPos.y, 1 - sitPos.z);
-            case WEST -> new Vec3d(1 - sitPos.z, sitPos.y, sitPos.x);
+    public Vec3 getSitPos(Level world, BlockState state, BlockPos pos) {
+        Vec3 sitPos = this.getNorthFacingSitPos(world, state, pos);
+        return switch (state.getValue(FACING)) {
+            case EAST -> new Vec3(sitPos.z, sitPos.y, 1 - sitPos.x);
+            case SOUTH -> new Vec3(1 - sitPos.x, sitPos.y, 1 - sitPos.z);
+            case WEST -> new Vec3(1 - sitPos.z, sitPos.y, sitPos.x);
             default -> sitPos;
         };
     }
 
-    public abstract Vec3d getNorthFacingSitPos(World world, BlockState state, BlockPos pos);
+    public abstract Vec3 getNorthFacingSitPos(Level world, BlockState state, BlockPos pos);
 
     @Nullable
     @Override
-    public BlockState getPlacementState(ItemPlacementContext ctx) {
-        return this.getDefaultState().with(FACING, ctx.getHorizontalPlayerFacing().getOpposite());
+    public BlockState getStateForPlacement(BlockPlaceContext ctx) {
+        return this.defaultBlockState().setValue(FACING, ctx.getHorizontalDirection().getOpposite());
     }
 
     @Override
-    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(FACING);
     }
 }

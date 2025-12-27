@@ -3,12 +3,6 @@ package dev.doctor4t.trainmurdermystery.cca;
 import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.game.GameConstants;
 import dev.doctor4t.trainmurdermystery.game.GameFunctions;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.Pair;
 import org.jetbrains.annotations.NotNull;
 import org.ladysnake.cca.api.v3.component.ComponentKey;
 import org.ladysnake.cca.api.v3.component.ComponentRegistry;
@@ -17,11 +11,17 @@ import org.ladysnake.cca.api.v3.component.tick.ClientTickingComponent;
 import org.ladysnake.cca.api.v3.component.tick.ServerTickingComponent;
 
 import java.util.UUID;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.util.Tuple;
+import net.minecraft.world.entity.player.Player;
 
 public class PlayerPoisonComponent implements AutoSyncedComponent, ServerTickingComponent, ClientTickingComponent {
     public static final ComponentKey<PlayerPoisonComponent> KEY = ComponentRegistry.getOrCreate(TMM.id("poison"), PlayerPoisonComponent.class);
-    public static final Pair<Integer, Integer> clampTime = new Pair<>(800, 1400);
-    private final PlayerEntity player;
+    public static final Tuple<Integer, Integer> clampTime = new Tuple<>(800, 1400);
+    private final Player player;
     public int poisonTicks = -1;
     private int initialPoisonTicks = 0;
     private int poisonPulseCooldown = 0;
@@ -29,7 +29,7 @@ public class PlayerPoisonComponent implements AutoSyncedComponent, ServerTicking
     public boolean pulsing = false;
     public UUID poisoner;
 
-    public PlayerPoisonComponent(PlayerEntity player) {
+    public PlayerPoisonComponent(Player player) {
         this.player = player;
     }
 
@@ -56,7 +56,7 @@ public class PlayerPoisonComponent implements AutoSyncedComponent, ServerTicking
 
             int minCooldown = 10;
             int maxCooldown = 60;
-            int dynamicCooldown = minCooldown + (int) ((maxCooldown - minCooldown) * ((float) this.poisonTicks / clampTime.getRight()));
+            int dynamicCooldown = minCooldown + (int) ((maxCooldown - minCooldown) * ((float) this.poisonTicks / clampTime.getB()));
 
             if (this.poisonPulseCooldown <= 0) {
                 this.poisonPulseCooldown = dynamicCooldown;
@@ -65,11 +65,11 @@ public class PlayerPoisonComponent implements AutoSyncedComponent, ServerTicking
 
                 float minVolume = 0.5f;
                 float maxVolume = 1f;
-                float volume = minVolume + (maxVolume - minVolume) * (1f - ((float) this.poisonTicks / clampTime.getRight()));
+                float volume = minVolume + (maxVolume - minVolume) * (1f - ((float) this.poisonTicks / clampTime.getB()));
 
-                this.player.playSoundToPlayer(
-                        SoundEvents.ENTITY_WARDEN_HEARTBEAT,
-                        SoundCategory.PLAYERS,
+                this.player.playNotifySound(
+                        SoundEvents.WARDEN_HEARTBEAT,
+                        SoundSource.PLAYERS,
                         volume,
                         1f
                 );
@@ -87,7 +87,7 @@ public class PlayerPoisonComponent implements AutoSyncedComponent, ServerTicking
             this.poisonTicks--;
             if (this.poisonTicks == 0) {
                 this.poisonTicks = -1;
-                GameFunctions.killPlayer(this.player, true, this.poisoner == null ? null : this.player.getWorld().getPlayerByUuid(this.poisoner), GameConstants.DeathReasons.POISON);
+                GameFunctions.killPlayer(this.player, true, this.poisoner == null ? null : this.player.level().getPlayerByUUID(this.poisoner), GameConstants.DeathReasons.POISON);
                 this.poisoner = null;
                 this.sync();
             }
@@ -102,15 +102,15 @@ public class PlayerPoisonComponent implements AutoSyncedComponent, ServerTicking
     }
 
     @Override
-    public void writeToNbt(@NotNull NbtCompound tag, RegistryWrapper.WrapperLookup registryLookup) {
-        if (this.poisoner != null) tag.putUuid("poisoner", this.poisoner);
+    public void writeToNbt(@NotNull CompoundTag tag, HolderLookup.Provider registryLookup) {
+        if (this.poisoner != null) tag.putUUID("poisoner", this.poisoner);
         tag.putInt("poisonTicks", this.poisonTicks);
         tag.putInt("initialPoisonTicks", this.initialPoisonTicks);
     }
 
     @Override
-    public void readFromNbt(@NotNull NbtCompound tag, RegistryWrapper.WrapperLookup registryLookup) {
-        this.poisoner = tag.contains("poisoner") ? tag.getUuid("poisoner") : null;
+    public void readFromNbt(@NotNull CompoundTag tag, HolderLookup.Provider registryLookup) {
+        this.poisoner = tag.contains("poisoner") ? tag.getUUID("poisoner") : null;
         this.poisonTicks = tag.contains("poisonTicks") ? tag.getInt("poisonTicks") : -1;
         this.initialPoisonTicks = tag.contains("initialPoisonTicks") ? tag.getInt("initialPoisonTicks") : 0;
     }

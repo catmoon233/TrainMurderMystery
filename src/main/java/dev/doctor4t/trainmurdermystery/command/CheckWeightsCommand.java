@@ -2,17 +2,17 @@ package dev.doctor4t.trainmurdermystery.command;
 
 import com.mojang.brigadier.CommandDispatcher;
 import dev.doctor4t.trainmurdermystery.cca.ScoreboardRoleSelectorComponent;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
 import org.jetbrains.annotations.NotNull;
 
 public class CheckWeightsCommand {
-    public static void register(@NotNull CommandDispatcher<ServerCommandSource> dispatcher) {
+    public static void register(@NotNull CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(
-                CommandManager.literal("tmm:checkWeights")
-                        .requires(source -> source.hasPermissionLevel(2))
+                Commands.literal("tmm:checkWeights")
+                        .requires(source -> source.hasPermission(2))
                         .executes(context -> {
-                            ScoreboardRoleSelectorComponent.KEY.get(context.getSource().getWorld().getScoreboard()).checkWeights(context.getSource());
+                            ScoreboardRoleSelectorComponent.KEY.get(context.getSource().getLevel().getScoreboard()).checkWeights(context.getSource());
                             return 1;
                         })
         );

@@ -3,36 +3,36 @@ package dev.doctor4t.trainmurdermystery.mixin.client.restrictions;
 import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import dev.doctor4t.trainmurdermystery.client.TMMClient;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.screen.ChatScreen;
-import net.minecraft.client.gui.screen.SleepingChatScreen;
-import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.screens.ChatScreen;
+import net.minecraft.client.gui.screens.InBedChatScreen;
 import org.lwjgl.glfw.GLFW;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 
-@Mixin(SleepingChatScreen.class)
+@Mixin(InBedChatScreen.class)
 public abstract class SleepingChatScreenMixin extends ChatScreen {
     @Shadow
-    private ButtonWidget stopSleepingButton;
+    private Button leaveBedButton;
 
     @Shadow
-    protected abstract void stopSleeping();
+    protected abstract void sendWakeUp();
 
     public SleepingChatScreenMixin(String originalChatText) {
         super(originalChatText);
     }
 
     @WrapMethod(method = "render")
-    public void tmm$disableSleepChat(DrawContext context, int mouseX, int mouseY, float delta, Operation<Void> original) {
+    public void tmm$disableSleepChat(GuiGraphics context, int mouseX, int mouseY, float delta, Operation<Void> original) {
         if (!TMMClient.isPlayerAliveAndInSurvival()) {
             original.call(context, mouseX, mouseY, delta);
         }
     }
 
     @WrapMethod(method = "render")
-    public void tmm$onlyRenderStopSleepingButton(DrawContext context, int mouseX, int mouseY, float delta, Operation<Void> original) {
-        this.stopSleepingButton.render(context, mouseX, mouseY, delta);
+    public void tmm$onlyRenderStopSleepingButton(GuiGraphics context, int mouseX, int mouseY, float delta, Operation<Void> original) {
+        this.leaveBedButton.render(context, mouseX, mouseY, delta);
     }
 
     @WrapMethod(method = "charTyped")
@@ -43,14 +43,14 @@ public abstract class SleepingChatScreenMixin extends ChatScreen {
     @WrapMethod(method = "keyPressed")
     public boolean tmm$disableKeyPressed(int keyCode, int scanCode, int modifiers, Operation<Boolean> original) {
         if (keyCode == GLFW.GLFW_KEY_ESCAPE) {
-            this.stopSleeping();
+            this.sendWakeUp();
         }
 
         return false;
     }
 
-    @WrapMethod(method = "closeChatIfEmpty")
+    @WrapMethod(method = "onPlayerWokeUp")
     public void tmm$alwaysCloseChatOnLeavingBed(Operation<Void> original) {
-        this.client.setScreen(null);
+        this.minecraft.setScreen(null);
     }
 }

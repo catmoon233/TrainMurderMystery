@@ -1,9 +1,5 @@
 package dev.doctor4t.trainmurdermystery.client;
 
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.gl.Framebuffer;
-import net.minecraft.client.gl.PostEffectPass;
-import net.minecraft.client.gl.PostEffectProcessor;
 import org.joml.Matrix4f;
 
 import java.io.IOException;

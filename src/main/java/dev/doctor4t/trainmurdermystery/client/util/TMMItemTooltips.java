@@ -3,12 +3,12 @@ package dev.doctor4t.trainmurdermystery.client.util;
 import dev.doctor4t.ratatouille.util.TextUtils;
 import dev.doctor4t.trainmurdermystery.index.TMMItems;
 import net.fabricmc.fabric.api.client.item.v1.ItemTooltipCallback;
-import net.minecraft.client.MinecraftClient;
-import net.minecraft.entity.player.ItemCooldownManager;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.text.Style;
-import net.minecraft.text.Text;
+import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemCooldowns;
+import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
@@ -46,23 +46,23 @@ public class TMMItemTooltips {
         });
     }
 
-    private static void addTooltipForItem(Item item, @NotNull ItemStack itemStack, List<Text> tooltipList) {
-        if (itemStack.isOf(item)) {
+    private static void addTooltipForItem(Item item, @NotNull ItemStack itemStack, List<Component> tooltipList) {
+        if (itemStack.is(item)) {
             tooltipList.addAll(TextUtils.getTooltipForItem(item, Style.EMPTY.withColor(REGULAR_TOOLTIP_COLOR)));
         }
     }
 
-    private static void addCooldownText(Item item, List<Text> tooltipList, @NotNull ItemStack itemStack) {
-        if (!itemStack.isOf(item)) return;
-        ItemCooldownManager itemCooldownManager = MinecraftClient.getInstance().player.getItemCooldownManager();
-        if (itemCooldownManager.isCoolingDown(item)) {
-            ItemCooldownManager.Entry knifeEntry = itemCooldownManager.entries.get(item);
-            int timeLeft = knifeEntry.endTick - itemCooldownManager.tick;
+    private static void addCooldownText(Item item, List<Component> tooltipList, @NotNull ItemStack itemStack) {
+        if (!itemStack.is(item)) return;
+        ItemCooldowns itemCooldownManager = Minecraft.getInstance().player.getCooldowns();
+        if (itemCooldownManager.isOnCooldown(item)) {
+            ItemCooldowns.CooldownInstance knifeEntry = itemCooldownManager.cooldowns.get(item);
+            int timeLeft = knifeEntry.endTime - itemCooldownManager.tickCount;
             if (timeLeft > 0) {
                 int minutes = (int) Math.floor((double) timeLeft / 1200);
                 int seconds = (timeLeft - (minutes * 1200)) / 20;
                 String countdown = (minutes > 0 ? minutes + "m" : "") + (seconds > 0 ? seconds + "s" : "");
-                tooltipList.add(Text.translatable("tip.cooldown", countdown).withColor(COOLDOWN_COLOR));
+                tooltipList.add(Component.translatable("tip.cooldown", countdown).withColor(COOLDOWN_COLOR));
             }
         }
     }

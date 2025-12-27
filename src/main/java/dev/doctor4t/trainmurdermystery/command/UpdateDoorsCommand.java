@@ -3,29 +3,29 @@ package dev.doctor4t.trainmurdermystery.command;
 import com.mojang.brigadier.CommandDispatcher;
 import dev.doctor4t.trainmurdermystery.block.SmallDoorBlock;
 import dev.doctor4t.trainmurdermystery.block_entity.SmallDoorBlockEntity;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.enums.DoubleBlockHalf;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.text.Text;
-import net.minecraft.util.math.BlockPos;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import org.jetbrains.annotations.NotNull;
 
 public class UpdateDoorsCommand {
-    public static void register(@NotNull CommandDispatcher<ServerCommandSource> dispatcher) {
-        dispatcher.register(CommandManager.literal("tmm:updateDoors").requires(source -> source.hasPermissionLevel(2)).executes(context -> {
-            ServerCommandSource source = context.getSource();
+    public static void register(@NotNull CommandDispatcher<CommandSourceStack> dispatcher) {
+        dispatcher.register(Commands.literal("tmm:updateDoors").requires(source -> source.hasPermission(2)).executes(context -> {
+            CommandSourceStack source = context.getSource();
 
-            BlockPos playerPos = source.getPlayer().getBlockPos();
-            BlockPos.Mutable mutable = new BlockPos.Mutable();
+            BlockPos playerPos = source.getPlayer().blockPosition();
+            BlockPos.MutableBlockPos mutable = new BlockPos.MutableBlockPos();
             for (int x = -250; x <= 250; x++) {
                 for (int y = -10; y <= 10; y++) {
                     for (int z = -250; z <= 250; z++) {
                         mutable.set(playerPos.getX() + x, playerPos.getY() + y, playerPos.getZ() + z);
-                        ServerWorld world = source.getWorld();
+                        ServerLevel world = source.getLevel();
                         BlockState blockState = world.getBlockState(mutable);
-                        if (blockState.getBlock() instanceof SmallDoorBlock && blockState.get(SmallDoorBlock.HALF).equals(DoubleBlockHalf.LOWER)) {
+                        if (blockState.getBlock() instanceof SmallDoorBlock && blockState.getValue(SmallDoorBlock.HALF).equals(DoubleBlockHalf.LOWER)) {
                             if (world.getBlockEntity(mutable) instanceof SmallDoorBlockEntity entity) {
                                 SmallDoorBlock.toggleDoor(blockState, world, entity, mutable);
                             }
@@ -34,9 +34,9 @@ public class UpdateDoorsCommand {
                 }
             }
 
-            source.sendFeedback(
-                () -> Text.translatable("commands.tmm.updatedoors")
-                    .styled(style -> style.withColor(0x00FF00)),
+            source.sendSuccess(
+                () -> Component.translatable("commands.tmm.updatedoors")
+                    .withStyle(style -> style.withColor(0x00FF00)),
                 true
             );
 

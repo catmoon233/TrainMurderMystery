@@ -1,25 +1,25 @@
 package dev.doctor4t.trainmurdermystery.client.render.block_entity;
 
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.math.Axis;
 import dev.doctor4t.trainmurdermystery.block_entity.BeveragePlateBlockEntity;
-import net.minecraft.client.render.VertexConsumerProvider;
-import net.minecraft.client.render.block.entity.BlockEntityRenderer;
-import net.minecraft.client.render.block.entity.BlockEntityRendererFactory;
-import net.minecraft.client.render.item.ItemRenderer;
-import net.minecraft.client.render.model.json.ModelTransformationMode;
-import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.item.ItemStack;
-import net.minecraft.util.math.RotationAxis;
+import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
+import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.client.renderer.entity.ItemRenderer;
+import net.minecraft.world.item.ItemDisplayContext;
+import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 public class PlateBlockEntityRenderer implements BlockEntityRenderer<BeveragePlateBlockEntity> {
     private final ItemRenderer itemRenderer;
 
-    public PlateBlockEntityRenderer(BlockEntityRendererFactory.@NotNull Context ctx) {
+    public PlateBlockEntityRenderer(BlockEntityRendererProvider.@NotNull Context ctx) {
         this.itemRenderer = ctx.getItemRenderer();
     }
 
     @Override
-    public void render(@NotNull BeveragePlateBlockEntity entity, float tickDelta, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay) {
+    public void render(@NotNull BeveragePlateBlockEntity entity, float tickDelta, PoseStack matrices, MultiBufferSource vertexConsumers, int light, int overlay) {
         if (entity.isDrink()) {
             this.renderDrinks(entity, matrices, vertexConsumers, light, overlay);
         } else {
@@ -27,7 +27,7 @@ public class PlateBlockEntityRenderer implements BlockEntityRenderer<BeveragePla
         }
     }
 
-    public void renderFood(@NotNull BeveragePlateBlockEntity entity, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay) {
+    public void renderFood(@NotNull BeveragePlateBlockEntity entity, PoseStack matrices, MultiBufferSource vertexConsumers, int light, int overlay) {
         int itemCount = entity.getStoredItems().size();
         if (itemCount == 0) return;
 
@@ -45,22 +45,22 @@ public class PlateBlockEntityRenderer implements BlockEntityRenderer<BeveragePla
             double x = centerX + radius * Math.cos(angle);
             double z = centerZ + radius * Math.sin(angle);
 
-            matrices.push();
+            matrices.pushPose();
 
             matrices.translate(x, centerY, z);
 
             float rotationDegrees = (float) Math.toDegrees(angle) + 90f;
 
-            matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(rotationDegrees));
-            matrices.multiply(RotationAxis.POSITIVE_X.rotationDegrees(75f));
+            matrices.mulPose(Axis.YP.rotationDegrees(rotationDegrees));
+            matrices.mulPose(Axis.XP.rotationDegrees(75f));
             matrices.scale(0.4f, 0.4f, 0.4f);
 
-            this.itemRenderer.renderItem(stack, ModelTransformationMode.FIXED, light, overlay, matrices, vertexConsumers, entity.getWorld(), 0);
-            matrices.pop();
+            this.itemRenderer.renderStatic(stack, ItemDisplayContext.FIXED, light, overlay, matrices, vertexConsumers, entity.getLevel(), 0);
+            matrices.popPose();
         }
     }
 
-    public void renderDrinks(@NotNull BeveragePlateBlockEntity entity, MatrixStack matrices, VertexConsumerProvider vertexConsumers, int light, int overlay) {
+    public void renderDrinks(@NotNull BeveragePlateBlockEntity entity, PoseStack matrices, MultiBufferSource vertexConsumers, int light, int overlay) {
         int itemCount = entity.getStoredItems().size();
         if (itemCount == 0) return;
 
@@ -78,18 +78,18 @@ public class PlateBlockEntityRenderer implements BlockEntityRenderer<BeveragePla
             double x = centerX + radius * Math.cos(angle);
             double z = centerZ + radius * Math.sin(angle);
 
-            matrices.push();
+            matrices.pushPose();
 
             matrices.translate(x, centerY, z);
 
             float rotationDegrees = (float) Math.toDegrees(angle) + 90f;
 
-            matrices.multiply(RotationAxis.POSITIVE_Y.rotationDegrees(rotationDegrees));
+            matrices.mulPose(Axis.YP.rotationDegrees(rotationDegrees));
             matrices.scale(0.4f, 0.4f, 0.4f);
 
-            this.itemRenderer.renderItem(stack, ModelTransformationMode.FIXED, light, overlay, matrices, vertexConsumers, entity.getWorld(), 0);
+            this.itemRenderer.renderStatic(stack, ItemDisplayContext.FIXED, light, overlay, matrices, vertexConsumers, entity.getLevel(), 0);
 
-            matrices.pop();
+            matrices.popPose();
         }
     }
 }

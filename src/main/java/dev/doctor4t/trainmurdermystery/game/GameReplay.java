@@ -1,10 +1,9 @@
 package dev.doctor4t.trainmurdermystery.game;
 
 import dev.doctor4t.trainmurdermystery.api.Role;
-import net.minecraft.util.Identifier;
-
 import java.util.List;
 import java.util.UUID;
+import net.minecraft.resources.ResourceLocation;
 
 public record GameReplay(int playerCount, GameFunctions.WinStatus winningTeam, List<ReplayPlayerInfo> players,
                          List<ReplayEvent> timelineEvents) {
@@ -28,7 +27,7 @@ public record GameReplay(int playerCount, GameFunctions.WinStatus winningTeam, L
     public interface EventDetails {
     }
 
-    public record PlayerKillDetails(UUID killerUuid, UUID victimUuid, Identifier deathReason) implements EventDetails {
+    public record PlayerKillDetails(UUID killerUuid, UUID victimUuid, ResourceLocation deathReason) implements EventDetails {
     }
 
     public record PlayerPoisonedDetails(UUID poisonerUuid, UUID victimUuid) implements EventDetails {

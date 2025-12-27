@@ -2,34 +2,34 @@ package dev.doctor4t.trainmurdermystery.item;
 
 import dev.doctor4t.trainmurdermystery.entity.PlayerBodyEntity;
 import dev.doctor4t.trainmurdermystery.game.GameConstants;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemStack;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvents;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.Hand;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 
 public class BodyBagItem extends Item {
-    public BodyBagItem(Settings settings) {
+    public BodyBagItem(Properties settings) {
         super(settings);
     }
 
     @Override
-    public ActionResult useOnEntity(ItemStack stack, PlayerEntity user, LivingEntity entity, Hand hand) {
+    public InteractionResult interactLivingEntity(ItemStack stack, Player user, LivingEntity entity, InteractionHand hand) {
         if (entity instanceof PlayerBodyEntity body) {
             body.discard();
-            if (!user.getWorld().isClient) {
-                user.getWorld().playSound(null, body.getX(), body.getY() + .1f, body.getZ(), SoundEvents.ITEM_BUNDLE_INSERT, SoundCategory.PLAYERS, 0.5f, 1f + user.getWorld().random.nextFloat() * .1f - .05f);
+            if (!user.level().isClientSide) {
+                user.level().playSound(null, body.getX(), body.getY() + .1f, body.getZ(), SoundEvents.BUNDLE_INSERT, SoundSource.PLAYERS, 0.5f, 1f + user.level().random.nextFloat() * .1f - .05f);
             }
             if (!user.isCreative()) {
-                user.getStackInHand(hand).decrement(1);
-                user.getItemCooldownManager().set(this, GameConstants.ITEM_COOLDOWNS.get(this));
+                user.getItemInHand(hand).shrink(1);
+                user.getCooldowns().addCooldown(this, GameConstants.ITEM_COOLDOWNS.get(this));
             }
 
-            return ActionResult.SUCCESS;
+            return InteractionResult.SUCCESS;
         }
-        return ActionResult.PASS;
+        return InteractionResult.PASS;
     }
 }

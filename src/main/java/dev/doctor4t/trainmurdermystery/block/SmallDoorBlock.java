@@ -5,130 +5,130 @@ import dev.doctor4t.trainmurdermystery.block_entity.SmallDoorBlockEntity;
 import dev.doctor4t.trainmurdermystery.event.AllowPlayerOpenLockedDoor;
 import dev.doctor4t.trainmurdermystery.index.TMMItems;
 import dev.doctor4t.trainmurdermystery.index.TMMSounds;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.ShapeContext;
-import net.minecraft.block.entity.BlockEntity;
-import net.minecraft.block.entity.BlockEntityTicker;
-import net.minecraft.block.entity.BlockEntityType;
-import net.minecraft.block.enums.DoubleBlockHalf;
-import net.minecraft.component.DataComponentTypes;
-import net.minecraft.component.type.LoreComponent;
-import net.minecraft.entity.LivingEntity;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemPlacementContext;
-import net.minecraft.item.ItemStack;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.state.StateManager;
-import net.minecraft.state.property.EnumProperty;
-import net.minecraft.state.property.Properties;
-import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
-import net.minecraft.util.hit.BlockHitResult;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.world.BlockView;
-import net.minecraft.world.World;
-import net.minecraft.world.WorldAccess;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Vector3f;
 
 import java.util.function.Supplier;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.network.chat.Component;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.LivingEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.ItemLore;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.BlockEntityTicker;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
+import net.minecraft.world.phys.AABB;
+import net.minecraft.world.phys.BlockHitResult;
+import net.minecraft.world.phys.shapes.CollisionContext;
+import net.minecraft.world.phys.shapes.VoxelShape;
 
 public class SmallDoorBlock extends DoorPartBlock {
 
-    public static final EnumProperty<DoubleBlockHalf> HALF = Properties.DOUBLE_BLOCK_HALF;
-    protected static final VoxelShape X_SHAPE = Block.createCuboidShape(7, 0, 0, 9, 16, 16);
-    protected static final VoxelShape Z_SHAPE = Block.createCuboidShape(0, 0, 7, 16, 16, 9);
+    public static final EnumProperty<DoubleBlockHalf> HALF = BlockStateProperties.DOUBLE_BLOCK_HALF;
+    protected static final VoxelShape X_SHAPE = Block.box(7, 0, 0, 9, 16, 16);
+    protected static final VoxelShape Z_SHAPE = Block.box(0, 0, 7, 16, 16, 9);
     private static final VoxelShape[] SHAPES = createShapes();
     private final Supplier<BlockEntityType<SmallDoorBlockEntity>> typeSupplier;
 
-    public SmallDoorBlock(Supplier<BlockEntityType<SmallDoorBlockEntity>> typeSupplier, Settings settings) {
+    public SmallDoorBlock(Supplier<BlockEntityType<SmallDoorBlockEntity>> typeSupplier, Properties settings) {
         super(settings);
-        this.setDefaultState(super.getDefaultState().with(HALF, DoubleBlockHalf.LOWER));
+        this.registerDefaultState(super.defaultBlockState().setValue(HALF, DoubleBlockHalf.LOWER));
         this.typeSupplier = typeSupplier;
     }
 
     private static VoxelShape[] createShapes() {
         VoxelShape[] shapes = new VoxelShape[16];
-        VoxelShape lowerXShape = Block.createCuboidShape(7, 0, 0, 9, 32, 16);
-        VoxelShape lowerZShape = Block.createCuboidShape(0, 0, 7, 16, 32, 9);
-        VoxelShape upperXShape = Block.createCuboidShape(7, -16, 0, 9, 16, 16);
-        VoxelShape upperZShape = Block.createCuboidShape(0, -16, 7, 16, 16, 9);
-        for (Direction direction : Direction.Type.HORIZONTAL) {
-            int id = direction.getHorizontal();
+        VoxelShape lowerXShape = Block.box(7, 0, 0, 9, 32, 16);
+        VoxelShape lowerZShape = Block.box(0, 0, 7, 16, 32, 9);
+        VoxelShape upperXShape = Block.box(7, -16, 0, 9, 16, 16);
+        VoxelShape upperZShape = Block.box(0, -16, 7, 16, 16, 9);
+        for (Direction direction : Direction.Plane.HORIZONTAL) {
+            int id = direction.get2DDataValue();
             boolean xAxis = direction.getAxis() == Direction.Axis.X;
             shapes[id] = xAxis ? lowerXShape : lowerZShape;
             shapes[id + 4] = xAxis ? upperXShape : upperZShape;
-            Vector3f offset = direction.rotateYClockwise().getUnitVector().mul(7);
-            Box box = new Box(7, 0, 7, 9, 32, 9).offset(offset);
-            shapes[id + 8] = Block.createCuboidShape(box.minX, box.minY, box.minZ, box.maxX, box.maxY, box.maxZ);
-            shapes[id + 12] = Block.createCuboidShape(box.minX, box.minY - 16, box.minZ, box.maxX, box.maxY - 16, box.maxZ);
+            Vector3f offset = direction.getClockWise().step().mul(7);
+            AABB box = new AABB(7, 0, 7, 9, 32, 9).move(offset);
+            shapes[id + 8] = Block.box(box.minX, box.minY, box.minZ, box.maxX, box.maxY, box.maxZ);
+            shapes[id + 12] = Block.box(box.minX, box.minY - 16, box.minZ, box.maxX, box.maxY - 16, box.maxZ);
         }
         return shapes;
     }
 
     @Override
-    public void onPlaced(World world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack itemStack) {
-        world.setBlockState(pos.up(), state.with(HALF, DoubleBlockHalf.UPPER));
+    public void setPlacedBy(Level world, BlockPos pos, BlockState state, @Nullable LivingEntity placer, ItemStack itemStack) {
+        world.setBlockAndUpdate(pos.above(), state.setValue(HALF, DoubleBlockHalf.UPPER));
     }
 
     @Override
-    protected BlockState getStateForNeighborUpdate(BlockState state, Direction direction, BlockState neighborState, WorldAccess world, BlockPos pos, BlockPos neighborPos) {
-        DoubleBlockHalf half = state.get(HALF);
-        if (direction == half.getOppositeDirection() &&
-                (!neighborState.isOf(this)
-                        || neighborState.get(FACING) != state.get(FACING)
-                        || neighborState.get(HALF) != half.getOtherHalf())) {
-            return Blocks.AIR.getDefaultState();
+    protected BlockState updateShape(BlockState state, Direction direction, BlockState neighborState, LevelAccessor world, BlockPos pos, BlockPos neighborPos) {
+        DoubleBlockHalf half = state.getValue(HALF);
+        if (direction == half.getDirectionToOther() &&
+                (!neighborState.is(this)
+                        || neighborState.getValue(FACING) != state.getValue(FACING)
+                        || neighborState.getValue(HALF) != half.getOtherHalf())) {
+            return Blocks.AIR.defaultBlockState();
         }
         return state;
     }
 
     @Override
-    public @Nullable BlockState getPlacementState(ItemPlacementContext ctx) {
-        BlockState placementState = super.getPlacementState(ctx);
+    public @Nullable BlockState getStateForPlacement(BlockPlaceContext ctx) {
+        BlockState placementState = super.getStateForPlacement(ctx);
         if (placementState == null) {
             return null;
         }
-        BlockPos pos = ctx.getBlockPos();
-        World world = ctx.getWorld();
-        return pos.getY() < world.getTopY() - 1 && world.getBlockState(pos.up()).canReplace(ctx) ? placementState : null;
+        BlockPos pos = ctx.getClickedPos();
+        Level world = ctx.getLevel();
+        return pos.getY() < world.getMaxBuildHeight() - 1 && world.getBlockState(pos.above()).canBeReplaced(ctx) ? placementState : null;
     }
 
     @Override
-    protected VoxelShape getOutlineShape(BlockState state, BlockView world, BlockPos pos, ShapeContext context) {
-        if (context.equals(ShapeContext.absent())) {
+    protected VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
+        if (context.equals(CollisionContext.empty())) {
             return this.getShape(state);
         }
-        boolean lower = state.get(HALF) == DoubleBlockHalf.LOWER;
-        boolean open = state.get(OPEN);
-        return SHAPES[state.get(FACING).getHorizontal() + (lower ? 0 : 4) + (open ? 8 : 0)];
+        boolean lower = state.getValue(HALF) == DoubleBlockHalf.LOWER;
+        boolean open = state.getValue(OPEN);
+        return SHAPES[state.getValue(FACING).get2DDataValue() + (lower ? 0 : 4) + (open ? 8 : 0)];
     }
 
     @Override
     protected VoxelShape getShape(BlockState state) {
-        return state.get(FACING).getAxis() == Direction.Axis.X ? X_SHAPE : Z_SHAPE;
+        return state.getValue(FACING).getAxis() == Direction.Axis.X ? X_SHAPE : Z_SHAPE;
     }
 
     @Override
-    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
-        super.appendProperties(builder);
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        super.createBlockStateDefinition(builder);
         builder.add(HALF);
     }
 
     @Override
-    public @Nullable BlockEntity createBlockEntity(BlockPos pos, BlockState state) {
-        return state.get(HALF) == DoubleBlockHalf.LOWER ? this.typeSupplier.get().instantiate(pos, state) : null;
+    public @Nullable BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+        return state.getValue(HALF) == DoubleBlockHalf.LOWER ? this.typeSupplier.get().create(pos, state) : null;
     }
 
     @Override
-    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(World world, BlockState state, BlockEntityType<T> type) {
-        return state.get(HALF) == DoubleBlockHalf.LOWER ? super.getTicker(world, state, type) : null;
+    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level world, BlockState state, BlockEntityType<T> type) {
+        return state.getValue(HALF) == DoubleBlockHalf.LOWER ? super.getTicker(world, state, type) : null;
     }
 
     @Override
@@ -137,52 +137,52 @@ public class SmallDoorBlock extends DoorPartBlock {
     }
 
     @Override
-    protected ActionResult onUse(BlockState state, World world, BlockPos pos, PlayerEntity player, BlockHitResult hit) {
-        BlockPos lowerPos = state.get(HALF) == DoubleBlockHalf.LOWER ? pos : pos.down();
+    protected InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player player, BlockHitResult hit) {
+        BlockPos lowerPos = state.getValue(HALF) == DoubleBlockHalf.LOWER ? pos : pos.below();
         if (world.getBlockEntity(lowerPos) instanceof SmallDoorBlockEntity entity) {
             if (entity.isBlasted()) {
-                return ActionResult.PASS;
+                return InteractionResult.PASS;
             }
 
             if (player.isCreative() || AllowPlayerOpenLockedDoor.EVENT.invoker().allowOpen(player)) {
                 return open(state, world, entity, lowerPos);
             } else {
                 boolean requiresKey = !entity.getKeyName().isEmpty();
-                boolean hasLockpick = player.getMainHandStack().isOf(TMMItems.LOCKPICK);
+                boolean hasLockpick = player.getMainHandItem().is(TMMItems.LOCKPICK);
                 boolean jammed = entity.isJammed();
 
                 if (entity.isOpen()) {
                     return open(state, world, entity, lowerPos);
                 } else if (requiresKey && !jammed) {
-                    if (player.getMainHandStack().isOf(TMMItems.CROWBAR)) return ActionResult.FAIL;
-                    if (player.getMainHandStack().isOf(TMMItems.KEY) || hasLockpick) {
-                        LoreComponent lore = player.getMainHandStack().get(DataComponentTypes.LORE);
+                    if (player.getMainHandItem().is(TMMItems.CROWBAR)) return InteractionResult.FAIL;
+                    if (player.getMainHandItem().is(TMMItems.KEY) || hasLockpick) {
+                        ItemLore lore = player.getMainHandItem().get(DataComponents.LORE);
                         boolean isRightKey = lore != null && !lore.lines().isEmpty() && lore.lines().getFirst().getString().equals(entity.getKeyName());
                         if (isRightKey || hasLockpick) {
                             if (isRightKey)
-                                world.playSound(null, lowerPos.getX() + .5f, lowerPos.getY() + 1, lowerPos.getZ() + .5f, TMMSounds.ITEM_KEY_DOOR, SoundCategory.BLOCKS, 1f, 1f);
+                                world.playSound(null, lowerPos.getX() + .5f, lowerPos.getY() + 1, lowerPos.getZ() + .5f, TMMSounds.ITEM_KEY_DOOR, SoundSource.BLOCKS, 1f, 1f);
                             if (hasLockpick)
-                                world.playSound(null, lowerPos.getX() + .5f, lowerPos.getY() + 1, lowerPos.getZ() + .5f, TMMSounds.ITEM_LOCKPICK_DOOR, SoundCategory.BLOCKS, 1f, 1f);
+                                world.playSound(null, lowerPos.getX() + .5f, lowerPos.getY() + 1, lowerPos.getZ() + .5f, TMMSounds.ITEM_LOCKPICK_DOOR, SoundSource.BLOCKS, 1f, 1f);
                             return open(state, world, entity, lowerPos);
                         } else {
-                            if (!world.isClient) {
-                                world.playSound(null, lowerPos.getX() + .5f, lowerPos.getY() + 1, lowerPos.getZ() + .5f, TMMSounds.BLOCK_DOOR_LOCKED, SoundCategory.BLOCKS, 1f, 1f);
-                                player.sendMessage(Text.translatable("tip.door.requires_different_key"), true);
+                            if (!world.isClientSide) {
+                                world.playSound(null, lowerPos.getX() + .5f, lowerPos.getY() + 1, lowerPos.getZ() + .5f, TMMSounds.BLOCK_DOOR_LOCKED, SoundSource.BLOCKS, 1f, 1f);
+                                player.displayClientMessage(Component.translatable("tip.door.requires_different_key"), true);
                             }
-                            return ActionResult.FAIL;
+                            return InteractionResult.FAIL;
                         }
                     }
 
-                    if (!world.isClient) {
-                        world.playSound(null, lowerPos.getX() + .5f, lowerPos.getY() + 1, lowerPos.getZ() + .5f, TMMSounds.BLOCK_DOOR_LOCKED, SoundCategory.BLOCKS, 1f, 1f);
-                        player.sendMessage(Text.translatable("tip.door.requires_key"), true);
+                    if (!world.isClientSide) {
+                        world.playSound(null, lowerPos.getX() + .5f, lowerPos.getY() + 1, lowerPos.getZ() + .5f, TMMSounds.BLOCK_DOOR_LOCKED, SoundSource.BLOCKS, 1f, 1f);
+                        player.displayClientMessage(Component.translatable("tip.door.requires_key"), true);
                     }
-                    return ActionResult.FAIL;
+                    return InteractionResult.FAIL;
                 } else {
                     if (jammed) {
-                        if (!world.isClient) {
-                            world.playSound(null, lowerPos.getX() + .5f, lowerPos.getY() + 1, lowerPos.getZ() + .5f, TMMSounds.BLOCK_DOOR_LOCKED, SoundCategory.BLOCKS, 1f, 1f);
-                            player.sendMessage(Text.translatable("tip.door.jammed"), true);
+                        if (!world.isClientSide) {
+                            world.playSound(null, lowerPos.getX() + .5f, lowerPos.getY() + 1, lowerPos.getZ() + .5f, TMMSounds.BLOCK_DOOR_LOCKED, SoundSource.BLOCKS, 1f, 1f);
+                            player.displayClientMessage(Component.translatable("tip.door.jammed"), true);
                         }
                     } else {
                         // open the door freely
@@ -192,22 +192,22 @@ public class SmallDoorBlock extends DoorPartBlock {
             }
         }
 
-        return ActionResult.PASS;
+        return InteractionResult.PASS;
     }
 
-    static @NotNull ActionResult open(BlockState state, World world, SmallDoorBlockEntity entity, BlockPos lowerPos) {
-        if (world.isClient) return ActionResult.SUCCESS;
+    static @NotNull InteractionResult open(BlockState state, Level world, SmallDoorBlockEntity entity, BlockPos lowerPos) {
+        if (world.isClientSide) return InteractionResult.SUCCESS;
         toggleDoor(state, world, entity, lowerPos);
-        return ActionResult.CONSUME;
+        return InteractionResult.CONSUME;
     }
 
-    public static void toggleDoor(BlockState state, World world, SmallDoorBlockEntity entity, BlockPos lowerPos) {
+    public static void toggleDoor(BlockState state, Level world, SmallDoorBlockEntity entity, BlockPos lowerPos) {
         entity.toggle(false);
-        Direction facing = state.get(FACING);
-        BlockPos neighborPos = lowerPos.offset(facing.rotateYCounterclockwise());
+        Direction facing = state.getValue(FACING);
+        BlockPos neighborPos = lowerPos.relative(facing.getCounterClockWise());
         BlockState neighborState = world.getBlockState(neighborPos);
-        if (neighborState.isOf(state.getBlock())
-                && neighborState.get(FACING).getOpposite() == facing
+        if (neighborState.is(state.getBlock())
+                && neighborState.getValue(FACING).getOpposite() == facing
                 && world.getBlockEntity(neighborPos) instanceof SmallDoorBlockEntity neighborEntity) {
             neighborEntity.toggle(true);
         }

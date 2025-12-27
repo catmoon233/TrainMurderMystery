@@ -8,7 +8,7 @@ import dev.doctor4t.trainmurdermystery.client.particle.PoisonParticle;
 import dev.doctor4t.trainmurdermystery.client.particle.SnowflakeParticle;
 import net.fabricmc.fabric.api.client.particle.v1.ParticleFactoryRegistry;
 import net.fabricmc.fabric.api.particle.v1.FabricParticleTypes;
-import net.minecraft.particle.SimpleParticleType;
+import net.minecraft.core.particles.SimpleParticleType;
 
 public interface TMMParticles {
     ParticleTypeRegistrar registrar = new ParticleTypeRegistrar(TMM.MOD_ID);

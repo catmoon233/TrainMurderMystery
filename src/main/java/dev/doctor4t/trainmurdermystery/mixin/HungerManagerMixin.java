@@ -1,14 +1,14 @@
 package dev.doctor4t.trainmurdermystery.mixin;
 
-import net.minecraft.entity.player.HungerManager;
-import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.food.FoodData;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(HungerManager.class)
+@Mixin(FoodData.class)
 public class HungerManagerMixin {
     @Shadow
     private int foodLevel;
@@ -17,12 +17,12 @@ public class HungerManagerMixin {
     private float saturationLevel;
 
     @Shadow
-    private float exhaustion;
+    private float exhaustionLevel;
 
-    @Inject(method = "update", at = @At("HEAD"))
-    public void tmm$overrideFood(PlayerEntity player, CallbackInfo ci) {
+    @Inject(method = "tick", at = @At("HEAD"))
+    public void tmm$overrideFood(Player player, CallbackInfo ci) {
         this.foodLevel = 20;
         this.saturationLevel = 0;
-        this.exhaustion = 0;
+        this.exhaustionLevel = 0;
     }
 }

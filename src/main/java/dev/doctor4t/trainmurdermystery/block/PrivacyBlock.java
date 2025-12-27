@@ -2,18 +2,17 @@ package dev.doctor4t.trainmurdermystery.block;
 
 import dev.doctor4t.trainmurdermystery.index.TMMProperties;
 import dev.doctor4t.trainmurdermystery.index.TMMSounds;
-import net.minecraft.block.BlockState;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.SpyglassItem;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.state.property.BooleanProperty;
-import net.minecraft.util.Hand;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.world.World;
-
 import java.util.EnumSet;
 import java.util.Set;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.SpyglassItem;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 
 public interface PrivacyBlock {
 
@@ -37,32 +36,32 @@ public interface PrivacyBlock {
     int DELAY = 1;
     int COOLDOWN = 20;
 
-    default void toggle(BlockState state, World world, BlockPos pos) {
-        boolean opaque = !state.get(OPAQUE);
-        if (state.get(INTERACTION_COOLDOWN)) {
-            world.setBlockState(pos, state.with(INTERACTION_COOLDOWN, false));
+    default void toggle(BlockState state, Level world, BlockPos pos) {
+        boolean opaque = !state.getValue(OPAQUE);
+        if (state.getValue(INTERACTION_COOLDOWN)) {
+            world.setBlockAndUpdate(pos, state.setValue(INTERACTION_COOLDOWN, false));
             return;
         } else {
-            world.playSound(null, pos, TMMSounds.BLOCK_PRIVACY_PANEL_TOGGLE, SoundCategory.BLOCKS, 0.1f, opaque ? 1.0f : 1.2f);
+            world.playSound(null, pos, TMMSounds.BLOCK_PRIVACY_PANEL_TOGGLE, SoundSource.BLOCKS, 0.1f, opaque ? 1.0f : 1.2f);
         }
 
-        world.setBlockState(pos, state.with(OPAQUE, opaque).with(INTERACTION_COOLDOWN, true));
-        world.scheduleBlockTick(pos, state.getBlock(), COOLDOWN);
+        world.setBlockAndUpdate(pos, state.setValue(OPAQUE, opaque).setValue(INTERACTION_COOLDOWN, true));
+        world.scheduleTick(pos, state.getBlock(), COOLDOWN);
         Set<Direction> changedDirections = EnumSet.noneOf(Direction.class);
         for (Direction direction : Direction.values()) {
-            BlockPos sidePos = pos.offset(direction);
+            BlockPos sidePos = pos.relative(direction);
             BlockState sideState = world.getBlockState(sidePos);
-            if (this.canToggle(sideState) && sideState.get(OPAQUE) != opaque) {
+            if (this.canToggle(sideState) && sideState.getValue(OPAQUE) != opaque) {
                 changedDirections.add(direction);
-                world.scheduleBlockTick(sidePos, sideState.getBlock(), DELAY);
+                world.scheduleTick(sidePos, sideState.getBlock(), DELAY);
             }
         }
         for (Direction[] diagonal : DIAGONALS) {
             if (diagonalHasAdjacentBlock(diagonal, changedDirections)) continue;
             BlockPos diagonalPos = this.offsetDiagonal(pos, diagonal);
             BlockState diagonalState = world.getBlockState(diagonalPos);
-            if (this.canToggle(diagonalState) && diagonalState.get(OPAQUE) != opaque) {
-                world.scheduleBlockTick(diagonalPos, diagonalState.getBlock(), DELAY);
+            if (this.canToggle(diagonalState) && diagonalState.getValue(OPAQUE) != opaque) {
+                world.scheduleTick(diagonalPos, diagonalState.getBlock(), DELAY);
             }
         }
     }
@@ -72,20 +71,20 @@ public interface PrivacyBlock {
     }
 
     default BlockPos offsetDiagonal(BlockPos pos, Direction[] diagonal) {
-        return pos.offset(diagonal[0]).offset(diagonal[1]);
+        return pos.relative(diagonal[0]).relative(diagonal[1]);
     }
 
-    default boolean canInteract(BlockState state, BlockPos pos, World world, PlayerEntity player, Hand hand) {
-        if (state.get(INTERACTION_COOLDOWN)) return false;
-        if (player.getStackInHand(hand).getItem() instanceof SpyglassItem) return false;
+    default boolean canInteract(BlockState state, BlockPos pos, Level world, Player player, InteractionHand hand) {
+        if (state.getValue(INTERACTION_COOLDOWN)) return false;
+        if (player.getItemInHand(hand).getItem() instanceof SpyglassItem) return false;
         for (Direction direction : Direction.values()) {
-            BlockState sideState = world.getBlockState(pos.offset(direction));
-            if (sideState.contains(INTERACTION_COOLDOWN) && sideState.get(INTERACTION_COOLDOWN)) return false;
+            BlockState sideState = world.getBlockState(pos.relative(direction));
+            if (sideState.hasProperty(INTERACTION_COOLDOWN) && sideState.getValue(INTERACTION_COOLDOWN)) return false;
         }
         for (Direction[] diagonal : DIAGONALS) {
             BlockPos diagonalPos = this.offsetDiagonal(pos, diagonal);
             BlockState diagonalState = world.getBlockState(diagonalPos);
-            if (diagonalState.contains(INTERACTION_COOLDOWN) && diagonalState.get(INTERACTION_COOLDOWN)) return false;
+            if (diagonalState.hasProperty(INTERACTION_COOLDOWN) && diagonalState.getValue(INTERACTION_COOLDOWN)) return false;
         }
         return true;
     }

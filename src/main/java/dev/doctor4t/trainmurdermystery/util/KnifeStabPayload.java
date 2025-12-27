@@ -8,35 +8,35 @@ import dev.doctor4t.trainmurdermystery.game.GameFunctions;
 import dev.doctor4t.trainmurdermystery.index.TMMItems;
 import dev.doctor4t.trainmurdermystery.index.TMMSounds;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.network.PacketByteBuf;
-import net.minecraft.network.codec.PacketCodec;
-import net.minecraft.network.codec.PacketCodecs;
-import net.minecraft.network.packet.CustomPayload;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.util.Hand;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
+import net.minecraft.network.codec.StreamCodec;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.NotNull;
 
-public record KnifeStabPayload(int target) implements CustomPayload {
-    public static final Id<KnifeStabPayload> ID = new Id<>(TMM.id("knifestab"));
-    public static final PacketCodec<PacketByteBuf, KnifeStabPayload> CODEC = PacketCodec.tuple(PacketCodecs.INTEGER, KnifeStabPayload::target, KnifeStabPayload::new);
+public record KnifeStabPayload(int target) implements CustomPacketPayload {
+    public static final Type<KnifeStabPayload> ID = new Type<>(TMM.id("knifestab"));
+    public static final StreamCodec<FriendlyByteBuf, KnifeStabPayload> CODEC = StreamCodec.composite(ByteBufCodecs.INT, KnifeStabPayload::target, KnifeStabPayload::new);
 
     @Override
-    public Id<? extends CustomPayload> getId() {
+    public Type<? extends CustomPacketPayload> type() {
         return ID;
     }
 
     public static class Receiver implements ServerPlayNetworking.PlayPayloadHandler<KnifeStabPayload> {
         @Override
         public void receive(@NotNull KnifeStabPayload payload, ServerPlayNetworking.@NotNull Context context) {
-            ServerPlayerEntity player = context.player();
-            if (!(player.getServerWorld().getEntityById(payload.target()) instanceof PlayerEntity target)) return;
+            ServerPlayer player = context.player();
+            if (!(player.serverLevel().getEntity(payload.target()) instanceof Player target)) return;
             if (target.distanceTo(player) > 3.0) return;
             GameFunctions.killPlayer(target, true, player, GameConstants.DeathReasons.KNIFE);
             target.playSound(TMMSounds.ITEM_KNIFE_STAB, 1.0f, 1.0f);
-            player.swingHand(Hand.MAIN_HAND);
-            if (!player.isCreative() && GameWorldComponent.KEY.get(context.player().getWorld()).getGameMode() != TMMGameModes.LOOSE_ENDS) {
-                player.getItemCooldownManager().set(TMMItems.KNIFE, GameConstants.ITEM_COOLDOWNS.get(TMMItems.KNIFE));
+            player.swing(InteractionHand.MAIN_HAND);
+            if (!player.isCreative() && GameWorldComponent.KEY.get(context.player().level()).getGameMode() != TMMGameModes.LOOSE_ENDS) {
+                player.getCooldowns().addCooldown(TMMItems.KNIFE, GameConstants.ITEM_COOLDOWNS.get(TMMItems.KNIFE));
             }
         }
     }

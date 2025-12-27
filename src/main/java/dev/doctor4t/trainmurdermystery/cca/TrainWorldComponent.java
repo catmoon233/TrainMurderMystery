@@ -1,11 +1,11 @@
 package dev.doctor4t.trainmurdermystery.cca;
 
 import dev.doctor4t.trainmurdermystery.TMM;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.StringIdentifiable;
-import net.minecraft.world.World;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.util.StringRepresentable;
+import net.minecraft.world.level.Level;
 import org.ladysnake.cca.api.v3.component.ComponentKey;
 import org.ladysnake.cca.api.v3.component.ComponentRegistry;
 import org.ladysnake.cca.api.v3.component.sync.AutoSyncedComponent;
@@ -15,7 +15,7 @@ import org.ladysnake.cca.api.v3.component.tick.ServerTickingComponent;
 public class TrainWorldComponent implements AutoSyncedComponent, ServerTickingComponent, ClientTickingComponent {
     public static final ComponentKey<TrainWorldComponent> KEY = ComponentRegistry.getOrCreate(TMM.id("train"), TrainWorldComponent.class);
 
-    private final World world;
+    private final Level world;
     private int speed = 0; // im km/h
     private int time = 0;
     private boolean snow = true;
@@ -23,7 +23,7 @@ public class TrainWorldComponent implements AutoSyncedComponent, ServerTickingCo
     private boolean hud = true;
     private TimeOfDay timeOfDay = TimeOfDay.NIGHT;
 
-    public TrainWorldComponent(World world) {
+    public TrainWorldComponent(Level world) {
         this.world = world;
     }
 
@@ -105,7 +105,7 @@ public class TrainWorldComponent implements AutoSyncedComponent, ServerTickingCo
     }
 
     @Override
-    public void readFromNbt(NbtCompound nbtCompound, RegistryWrapper.WrapperLookup wrapperLookup) {
+    public void readFromNbt(CompoundTag nbtCompound, HolderLookup.Provider wrapperLookup) {
         this.setSpeed(nbtCompound.getInt("Speed"));
         this.setTime(nbtCompound.getInt("Time"));
         this.setSnow(nbtCompound.getBoolean("Snow"));
@@ -115,7 +115,7 @@ public class TrainWorldComponent implements AutoSyncedComponent, ServerTickingCo
     }
 
     @Override
-    public void writeToNbt(NbtCompound nbtCompound, RegistryWrapper.WrapperLookup wrapperLookup) {
+    public void writeToNbt(CompoundTag nbtCompound, HolderLookup.Provider wrapperLookup) {
         nbtCompound.putInt("Speed", speed);
         nbtCompound.putInt("Time", time);
         nbtCompound.putBoolean("Snow", snow);
@@ -141,11 +141,11 @@ public class TrainWorldComponent implements AutoSyncedComponent, ServerTickingCo
     public void serverTick() {
         tickTime();
 
-        ServerWorld serverWorld = (ServerWorld) world;
-        serverWorld.setTimeOfDay(timeOfDay.time);
+        ServerLevel serverWorld = (ServerLevel) world;
+        serverWorld.setDayTime(timeOfDay.time);
         
         // 每秒同步一次（减少网络占用）
-        if (this.needsSync && this.world.getTime() % 20 == 0) {
+        if (this.needsSync && this.world.getGameTime() % 20 == 0) {
             this.sync();
         }
     }
@@ -159,7 +159,7 @@ public class TrainWorldComponent implements AutoSyncedComponent, ServerTickingCo
         this.sync();
     }
 
-    public enum TimeOfDay implements StringIdentifiable {
+    public enum TimeOfDay implements StringRepresentable {
         DAY(6000),
         NIGHT(18000),
         SUNDOWN(12800);
@@ -171,7 +171,7 @@ public class TrainWorldComponent implements AutoSyncedComponent, ServerTickingCo
         }
 
         @Override
-        public String asString() {
+        public String getSerializedName() {
             return this.name();
         }
     }

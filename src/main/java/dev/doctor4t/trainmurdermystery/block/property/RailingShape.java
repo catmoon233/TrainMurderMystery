@@ -1,8 +1,8 @@
 package dev.doctor4t.trainmurdermystery.block.property;
 
-import net.minecraft.util.StringIdentifiable;
+import net.minecraft.util.StringRepresentable;
 
-public enum RailingShape implements StringIdentifiable {
+public enum RailingShape implements StringRepresentable {
     TOP("top"),
     MIDDLE("middle"),
     BOTTOM("bottom");
@@ -14,7 +14,7 @@ public enum RailingShape implements StringIdentifiable {
     }
 
     @Override
-    public String asString() {
+    public String getSerializedName() {
         return this.name;
     }
 

@@ -1,9 +1,9 @@
 package dev.doctor4t.trainmurdermystery.cca;
 
 import dev.doctor4t.trainmurdermystery.TMM;
-import net.minecraft.nbt.NbtCompound;
-import net.minecraft.registry.RegistryWrapper;
-import net.minecraft.world.World;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import org.ladysnake.cca.api.v3.component.ComponentKey;
 import org.ladysnake.cca.api.v3.component.ComponentRegistry;
@@ -12,11 +12,11 @@ import org.ladysnake.cca.api.v3.component.tick.CommonTickingComponent;
 
 public class GameTimeComponent implements AutoSyncedComponent, CommonTickingComponent {
     public static final ComponentKey<GameTimeComponent> KEY = ComponentRegistry.getOrCreate(TMM.id("time"), GameTimeComponent.class);
-    public final World world;
+    public final Level world;
     public int resetTime;
     public int time;
 
-    public GameTimeComponent(World world) {
+    public GameTimeComponent(Level world) {
         this.world = world;
     }
 
@@ -59,13 +59,13 @@ public class GameTimeComponent implements AutoSyncedComponent, CommonTickingComp
     }
 
     @Override
-    public void writeToNbt(@NotNull NbtCompound tag, RegistryWrapper.WrapperLookup registryLookup) {
+    public void writeToNbt(@NotNull CompoundTag tag, HolderLookup.Provider registryLookup) {
         tag.putInt("resetTime", this.resetTime);
         tag.putInt("time", this.time);
     }
 
     @Override
-    public void readFromNbt(@NotNull NbtCompound tag, RegistryWrapper.WrapperLookup registryLookup) {
+    public void readFromNbt(@NotNull CompoundTag tag, HolderLookup.Provider registryLookup) {
         this.resetTime = tag.getInt("resetTime");
         this.time = tag.getInt("time");
     }

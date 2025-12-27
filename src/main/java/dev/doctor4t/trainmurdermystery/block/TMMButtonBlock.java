@@ -3,62 +3,62 @@ package dev.doctor4t.trainmurdermystery.block;
 import dev.doctor4t.trainmurdermystery.block_entity.SmallDoorBlockEntity;
 import dev.doctor4t.trainmurdermystery.index.TMMProperties;
 import dev.doctor4t.trainmurdermystery.index.TMMSounds;
-import net.minecraft.block.Block;
-import net.minecraft.block.BlockSetType;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.ButtonBlock;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.item.ItemPlacementContext;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvent;
-import net.minecraft.state.StateManager;
-import net.minecraft.state.property.BooleanProperty;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.world.BlockView;
-import net.minecraft.world.World;
-import net.minecraft.world.WorldAccess;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.context.BlockPlaceContext;
+import net.minecraft.world.level.BlockGetter;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.LevelAccessor;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.ButtonBlock;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BlockSetType;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import org.jetbrains.annotations.Nullable;
 
 public abstract class TMMButtonBlock extends ButtonBlock {
     public static final BooleanProperty ACTIVE = TMMProperties.ACTIVE;
 
-    public TMMButtonBlock(Settings settings) {
+    public TMMButtonBlock(Properties settings) {
         super(BlockSetType.IRON, 20, settings);
-        this.setDefaultState(super.getDefaultState().with(ACTIVE, true));
+        this.registerDefaultState(super.defaultBlockState().setValue(ACTIVE, true));
     }
 
     @Nullable
     @Override
-    public BlockState getPlacementState(ItemPlacementContext ctx) {
-        BlockState placementState = super.getPlacementState(ctx);
+    public BlockState getStateForPlacement(BlockPlaceContext ctx) {
+        BlockState placementState = super.getStateForPlacement(ctx);
         if (placementState != null) {
-            return placementState.with(ACTIVE, true);
+            return placementState.setValue(ACTIVE, true);
         }
         return null;
     }
 
     @Override
-    protected void appendProperties(StateManager.Builder<Block, BlockState> builder) {
-        super.appendProperties(builder);
+    protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
+        super.createBlockStateDefinition(builder);
         builder.add(ACTIVE);
     }
 
     @Override
-    protected int getWeakRedstonePower(BlockState state, BlockView world, BlockPos pos, Direction direction) {
-        return state.get(POWERED) && state.get(ACTIVE) ? 15 : 0;
+    protected int getSignal(BlockState state, BlockGetter world, BlockPos pos, Direction direction) {
+        return state.getValue(POWERED) && state.getValue(ACTIVE) ? 15 : 0;
     }
 
     @Override
-    protected int getStrongRedstonePower(BlockState state, BlockView world, BlockPos pos, Direction direction) {
-        return state.get(POWERED) && state.get(ACTIVE) && getDirection(state) == direction ? 15 : 0;
+    protected int getDirectSignal(BlockState state, BlockGetter world, BlockPos pos, Direction direction) {
+        return state.getValue(POWERED) && state.getValue(ACTIVE) && getConnectedDirection(state) == direction ? 15 : 0;
     }
 
     @Override
-    public void powerOn(BlockState state, World world, BlockPos pos, @Nullable PlayerEntity player) {
-        if (state.get(ACTIVE)) {
-            if (!world.isClient) {
-                Iterable<BlockPos> iterable = BlockPos.iterateOutwards(pos, 1, 1, 1);
+    public void press(BlockState state, Level world, BlockPos pos, @Nullable Player player) {
+        if (state.getValue(ACTIVE)) {
+            if (!world.isClientSide) {
+                Iterable<BlockPos> iterable = BlockPos.withinManhattan(pos, 1, 1, 1);
                 for (BlockPos blockPos : iterable) {
                     if (blockPos.equals(pos)) {
                         continue;
@@ -69,16 +69,16 @@ public abstract class TMMButtonBlock extends ButtonBlock {
                 }
             }
         } else {
-            world.playSound(player, pos, TMMSounds.BLOCK_BUTTON_TOGGLE_NO_POWER, SoundCategory.BLOCKS, 0.1f, 1f);
+            world.playSound(player, pos, TMMSounds.BLOCK_BUTTON_TOGGLE_NO_POWER, SoundSource.BLOCKS, 0.1f, 1f);
         }
-        super.powerOn(state, world, pos, player);
+        super.press(state, world, pos, player);
     }
 
-    private boolean tryOpenDoors(World world, BlockPos pos) {
+    private boolean tryOpenDoors(Level world, BlockPos pos) {
         if (world.getBlockEntity(pos) instanceof SmallDoorBlockEntity entity) {
             if (entity.isJammed()) {
-                if (!world.isClient)
-                    world.playSound(null, entity.getPos().getX() + .5f, entity.getPos().getY() + 1, entity.getPos().getZ() + .5f, TMMSounds.BLOCK_DOOR_LOCKED, SoundCategory.BLOCKS, 1f, 1f);
+                if (!world.isClientSide)
+                    world.playSound(null, entity.getBlockPos().getX() + .5f, entity.getBlockPos().getY() + 1, entity.getBlockPos().getZ() + .5f, TMMSounds.BLOCK_DOOR_LOCKED, SoundSource.BLOCKS, 1f, 1f);
                 return false;
             }
 
@@ -89,12 +89,12 @@ public abstract class TMMButtonBlock extends ButtonBlock {
     }
 
     @Override
-    protected void playClickSound(@Nullable PlayerEntity player, WorldAccess world, BlockPos pos, boolean powered) {
-        world.playSound(player, pos, this.getClickSound(powered), SoundCategory.BLOCKS, 0.5f, powered ? 1.0f : 1.5f);
+    protected void playSound(@Nullable Player player, LevelAccessor world, BlockPos pos, boolean powered) {
+        world.playSound(player, pos, this.getSound(powered), SoundSource.BLOCKS, 0.5f, powered ? 1.0f : 1.5f);
     }
 
     @Override
-    protected SoundEvent getClickSound(boolean powered) {
+    protected SoundEvent getSound(boolean powered) {
         return TMMSounds.BLOCK_SPACE_BUTTON_TOGGLE;
     }
 }

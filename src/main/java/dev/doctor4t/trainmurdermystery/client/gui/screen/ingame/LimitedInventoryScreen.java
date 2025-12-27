@@ -10,29 +10,29 @@ import dev.doctor4t.trainmurdermystery.game.ShopContent;
 import dev.doctor4t.trainmurdermystery.util.ShopEntry;
 import dev.doctor4t.trainmurdermystery.util.StoreBuyPayload;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.client.font.TextRenderer;
-import net.minecraft.client.gui.DrawContext;
-import net.minecraft.client.gui.Drawable;
-import net.minecraft.client.gui.Element;
-import net.minecraft.client.gui.Selectable;
-import net.minecraft.client.gui.widget.ButtonWidget;
-import net.minecraft.client.network.ClientPlayerEntity;
-import net.minecraft.client.render.RenderLayer;
-import net.minecraft.screen.PlayerScreenHandler;
-import net.minecraft.text.MutableText;
-import net.minecraft.text.Text;
-import net.minecraft.util.Identifier;
+import net.minecraft.client.gui.Font;
+import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.Renderable;
+import net.minecraft.client.gui.components.events.GuiEventListener;
+import net.minecraft.client.gui.narration.NarratableEntry;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.client.renderer.RenderType;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.inventory.InventoryMenu;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-public class LimitedInventoryScreen extends LimitedHandledScreen<PlayerScreenHandler>  {
-    public static final Identifier BACKGROUND_TEXTURE = TMM.id("textures/gui/container/limited_inventory.png");
-    public static final @NotNull Identifier ID = TMM.id("textures/gui/game.png");
-    public final ClientPlayerEntity player;
+public class LimitedInventoryScreen extends LimitedHandledScreen<InventoryMenu>  {
+    public static final ResourceLocation BACKGROUND_TEXTURE = TMM.id("textures/gui/container/limited_inventory.png");
+    public static final @NotNull ResourceLocation ID = TMM.id("textures/gui/game.png");
+    public final LocalPlayer player;
 
-    public LimitedInventoryScreen(@NotNull ClientPlayerEntity player) {
-        super(player.playerScreenHandler, player.getInventory(), Text.empty());
+    public LimitedInventoryScreen(@NotNull LocalPlayer player) {
+        super(player.inventoryMenu, player.getInventory(), Component.empty());
         this.player = player;
     }
 
@@ -53,16 +53,16 @@ public class LimitedInventoryScreen extends LimitedHandledScreen<PlayerScreenHan
             }
         }
         for (int i = 0; i < entries.size(); i++) {
-            this.addDrawableChild(new StoreItemWidget(this, x + apart * i, y, entries.get(i), i));
+            this.addRenderableWidget(new StoreItemWidget(this, x + apart * i, y, entries.get(i), i));
         }
     }
-    public  <T extends Element & Drawable & Selectable> T addDrawableChild(T drawableElement) {
+    public  <T extends GuiEventListener & Renderable & NarratableEntry> T addRenderableWidget(T drawableElement) {
         ((DrawableGet) this).getDrawable().add(drawableElement);
-        return (T)this.addSelectableChild(drawableElement);
+        return (T)this.addWidget(drawableElement);
     }
     public   List<ShopEntry> getShopEntries() {
 
-         var gameWorldComponent = GameWorldComponent.KEY.get(this.player.getWorld());
+         var gameWorldComponent = GameWorldComponent.KEY.get(this.player.level());
         if (gameWorldComponent == null)return List.of();
         if (TMMClient.gameComponent!=null&& TMMClient.isPlayerAliveAndInSurvival()) {
             final var role = gameWorldComponent.getRole(player);
@@ -81,65 +81,65 @@ public class LimitedInventoryScreen extends LimitedHandledScreen<PlayerScreenHan
     }
 
     @Override
-    protected void drawBackground(@NotNull DrawContext context, float delta, int mouseX, int mouseY) {
-        context.drawTexture(BACKGROUND_TEXTURE, this.x, this.y, 0, 0, this.backgroundWidth, this.backgroundHeight);
+    protected void drawBackground(@NotNull GuiGraphics context, float delta, int mouseX, int mouseY) {
+        context.blit(BACKGROUND_TEXTURE, this.x, this.y, 0, 0, this.backgroundWidth, this.backgroundHeight);
 
-        context.getMatrices().push();
-        context.getMatrices().translate(context.getScaledWindowWidth() / 2f, context.getScaledWindowHeight(), 0);
+        context.pose().pushPose();
+        context.pose().translate(context.guiWidth() / 2f, context.guiHeight(), 0);
         float scale = 0.28f;
-        context.getMatrices().scale(scale, scale, 1f);
+        context.pose().scale(scale, scale, 1f);
         int height = 254;
         int width = 497;
-        context.getMatrices().translate(0, -230, 0);
+        context.pose().translate(0, -230, 0);
         int xOffset = 0;
         int yOffset = 0;
-        context.drawTexturedQuad(ID, (int) (xOffset - width / 2f), (int) (xOffset + width / 2f), (int) (yOffset - height / 2f), (int) (yOffset + height / 2f), 0, 0, 1f, 0, 1f, 1f, 1f, 1f, 1f);
-        context.getMatrices().pop();
+        context.innerBlit(ID, (int) (xOffset - width / 2f), (int) (xOffset + width / 2f), (int) (yOffset - height / 2f), (int) (yOffset + height / 2f), 0, 0, 1f, 0, 1f, 1f, 1f, 1f, 1f);
+        context.pose().popPose();
     }
 
     @Override
-    public void render(DrawContext context, int mouseX, int mouseY, float delta) {
+    public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
         super.render(context, mouseX, mouseY, delta);
         this.drawMouseoverTooltip(context, mouseX, mouseY);
-        StoreRenderer.renderHud(this.textRenderer, this.player, context, delta);
+        StoreRenderer.renderHud(this.font, this.player, context, delta);
     }
 
 
 
-    public static class StoreItemWidget extends ButtonWidget {
+    public static class StoreItemWidget extends Button {
         public final LimitedInventoryScreen screen;
         public final ShopEntry entry;
 
         public StoreItemWidget(LimitedInventoryScreen screen, int x, int y, @NotNull ShopEntry entry, int index) {
-            super(x, y, 16, 16, entry.stack().getName(), (a) -> ClientPlayNetworking.send(new StoreBuyPayload(index)), DEFAULT_NARRATION_SUPPLIER);
+            super(x, y, 16, 16, entry.stack().getHoverName(), (a) -> ClientPlayNetworking.send(new StoreBuyPayload(index)), DEFAULT_NARRATION);
             this.screen = screen;
             this.entry = entry;
         }
 
         @Override
-        protected void renderWidget(DrawContext context, int mouseX, int mouseY, float delta) {
+        protected void renderWidget(GuiGraphics context, int mouseX, int mouseY, float delta) {
             super.renderWidget(context, mouseX, mouseY, delta);
-            context.drawGuiTexture(entry.type().getTexture(), this.getX() - 7, this.getY() - 7, 30, 30);
+            context.blitSprite(entry.type().getTexture(), this.getX() - 7, this.getY() - 7, 30, 30);
 //            context.drawGuiTexture(TMM.id("gui/shop_slot"), this.getX() - 7, this.getY() - 7, 30, 30);
-            context.drawItem(this.entry.stack(), this.getX(), this.getY());
+            context.renderItem(this.entry.stack(), this.getX(), this.getY());
             if (this.isHovered()) {
                 this.screen.renderLimitedInventoryTooltip(context, this.entry.stack());
                 drawShopSlotHighlight(context, this.getX(), this.getY(), 0);
             }
-            MutableText price = Text.literal(this.entry.price() + "\uE781");
-            context.drawTooltip(this.screen.textRenderer, price, this.getX() - 4 - this.screen.textRenderer.getWidth(price) / 2, this.getY() - 9);
+            MutableComponent price = Component.literal(this.entry.price() + "\uE781");
+            context.renderTooltip(this.screen.font, price, this.getX() - 4 - this.screen.font.width(price) / 2, this.getY() - 9);
         }
 
-        private void drawShopSlotHighlight(DrawContext context, int x, int y, int z) {
+        private void drawShopSlotHighlight(GuiGraphics context, int x, int y, int z) {
             int color = 0x90FFBF49;
 //            context.fillGradient(RenderLayer.getGuiOverlay(), x, y, x + 16, y + 16, color, color, z);
-            context.fillGradient(RenderLayer.getGuiOverlay(), x, y, x + 16, y + 14, color, color, z);
-            context.fillGradient(RenderLayer.getGuiOverlay(), x, y + 14, x + 15, y + 15, color, color, z);
-            context.fillGradient(RenderLayer.getGuiOverlay(), x, y + 15, x + 14, y + 16, color, color, z);
+            context.fillGradient(RenderType.guiOverlay(), x, y, x + 16, y + 14, color, color, z);
+            context.fillGradient(RenderType.guiOverlay(), x, y + 14, x + 15, y + 15, color, color, z);
+            context.fillGradient(RenderType.guiOverlay(), x, y + 15, x + 14, y + 16, color, color, z);
         }
 
         @Override
-        public void drawMessage(DrawContext context, TextRenderer textRenderer, int color) {
+        public void renderString(GuiGraphics context, Font textRenderer, int color) {
         }
     }
 }

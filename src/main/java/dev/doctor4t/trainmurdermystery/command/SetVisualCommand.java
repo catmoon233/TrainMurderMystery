@@ -6,104 +6,104 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.cca.TrainWorldComponent;
 import dev.doctor4t.trainmurdermystery.command.argument.TimeOfDayArgumentType;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.Text;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.network.chat.Component;
 
 public class SetVisualCommand {
-    public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-        dispatcher.register(CommandManager.literal("tmm:setVisual")
-                .requires(source -> source.hasPermissionLevel(2))
-                .then(CommandManager.literal("snow")
-                        .then(CommandManager.argument("enabled", BoolArgumentType.bool())
+    public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
+        dispatcher.register(Commands.literal("tmm:setVisual")
+                .requires(source -> source.hasPermission(2))
+                .then(Commands.literal("snow")
+                        .then(Commands.argument("enabled", BoolArgumentType.bool())
                                 .executes(context -> executeSnow(context.getSource(), BoolArgumentType.getBool(context, "enabled")))))
-                .then(CommandManager.literal("fog")
-                        .then(CommandManager.argument("enabled", BoolArgumentType.bool())
+                .then(Commands.literal("fog")
+                        .then(Commands.argument("enabled", BoolArgumentType.bool())
                                 .executes(context -> executeFog(context.getSource(), BoolArgumentType.getBool(context, "enabled")))))
-                .then(CommandManager.literal("hud")
-                        .then(CommandManager.argument("enabled", BoolArgumentType.bool())
+                .then(Commands.literal("hud")
+                        .then(Commands.argument("enabled", BoolArgumentType.bool())
                                 .executes(context -> executeHud(context.getSource(), BoolArgumentType.getBool(context, "enabled")))))
-                .then(CommandManager.literal("trainSpeed")
-                        .then(CommandManager.argument("speed", IntegerArgumentType.integer(0))
+                .then(Commands.literal("trainSpeed")
+                        .then(Commands.argument("speed", IntegerArgumentType.integer(0))
                                 .executes(context -> executeSpeed(context.getSource(), IntegerArgumentType.getInteger(context, "speed")))))
-                .then(CommandManager.literal("time")
-                        .then(CommandManager.argument("timeOfDay", TimeOfDayArgumentType.timeofday())
+                .then(Commands.literal("time")
+                        .then(Commands.argument("timeOfDay", TimeOfDayArgumentType.timeofday())
                                 .executes(context -> executeTimeOfDay(context.getSource(), TimeOfDayArgumentType.getTimeofday(context, "timeOfDay")))))
-                .then(CommandManager.literal("reset")
+                .then(Commands.literal("reset")
                         .executes(context -> reset(context.getSource())))
         );
     }
 
-    private static int reset(ServerCommandSource source) {
-        TrainWorldComponent trainWorldComponent = TrainWorldComponent.KEY.get(source.getWorld());
+    private static int reset(CommandSourceStack source) {
+        TrainWorldComponent trainWorldComponent = TrainWorldComponent.KEY.get(source.getLevel());
         trainWorldComponent.reset();
-        source.sendFeedback(
-            () -> Text.translatable("commands.tmm.setvisual.reset")
-                .styled(style -> style.withColor(0x00FF00)),
+        source.sendSuccess(
+            () -> Component.translatable("commands.tmm.setvisual.reset")
+                .withStyle(style -> style.withColor(0x00FF00)),
             true
         );
         return 1;
     }
 
-    private static int executeSnow(ServerCommandSource source, boolean enabled) {
+    private static int executeSnow(CommandSourceStack source, boolean enabled) {
         return TMM.executeSupporterCommand(source,
                 () -> {
-                    TrainWorldComponent.KEY.get(source.getWorld()).setSnow(enabled);
-                    source.sendFeedback(
-                        () -> Text.translatable("commands.tmm.setvisual.snow", enabled)
-                            .styled(style -> style.withColor(0x00FF00)),
+                    TrainWorldComponent.KEY.get(source.getLevel()).setSnow(enabled);
+                    source.sendSuccess(
+                        () -> Component.translatable("commands.tmm.setvisual.snow", enabled)
+                            .withStyle(style -> style.withColor(0x00FF00)),
                         true
                     );
                 }
         );
     }
     
-    private static int executeFog(ServerCommandSource source, boolean enabled) {
+    private static int executeFog(CommandSourceStack source, boolean enabled) {
         return TMM.executeSupporterCommand(source,
                 () -> {
-                    TrainWorldComponent.KEY.get(source.getWorld()).setFog(enabled);
-                    source.sendFeedback(
-                        () -> Text.translatable("commands.tmm.setvisual.fog", enabled)
-                            .styled(style -> style.withColor(0x00FF00)),
+                    TrainWorldComponent.KEY.get(source.getLevel()).setFog(enabled);
+                    source.sendSuccess(
+                        () -> Component.translatable("commands.tmm.setvisual.fog", enabled)
+                            .withStyle(style -> style.withColor(0x00FF00)),
                         true
                     );
                 }
         );
     }
     
-    private static int executeHud(ServerCommandSource source, boolean enabled) {
+    private static int executeHud(CommandSourceStack source, boolean enabled) {
         return TMM.executeSupporterCommand(source,
                 () -> {
-                    TrainWorldComponent.KEY.get(source.getWorld()).setHud(enabled);
-                    source.sendFeedback(
-                        () -> Text.translatable("commands.tmm.setvisual.hud", enabled)
-                            .styled(style -> style.withColor(0x00FF00)),
+                    TrainWorldComponent.KEY.get(source.getLevel()).setHud(enabled);
+                    source.sendSuccess(
+                        () -> Component.translatable("commands.tmm.setvisual.hud", enabled)
+                            .withStyle(style -> style.withColor(0x00FF00)),
                         true
                     );
                 }
         );
     }
     
-    private static int executeSpeed(ServerCommandSource source, int speed) {
+    private static int executeSpeed(CommandSourceStack source, int speed) {
         return TMM.executeSupporterCommand(source,
                 () -> {
-                    TrainWorldComponent.KEY.get(source.getWorld()).setSpeed(speed);
-                    source.sendFeedback(
-                        () -> Text.translatable("commands.tmm.setvisual.trainspeed", speed)
-                            .styled(style -> style.withColor(0x00FF00)),
+                    TrainWorldComponent.KEY.get(source.getLevel()).setSpeed(speed);
+                    source.sendSuccess(
+                        () -> Component.translatable("commands.tmm.setvisual.trainspeed", speed)
+                            .withStyle(style -> style.withColor(0x00FF00)),
                         true
                     );
                 }
         );
     }
     
-    private static int executeTimeOfDay(ServerCommandSource source, TrainWorldComponent.TimeOfDay timeOfDay) {
+    private static int executeTimeOfDay(CommandSourceStack source, TrainWorldComponent.TimeOfDay timeOfDay) {
         return TMM.executeSupporterCommand(source,
                 () -> {
-                    TrainWorldComponent.KEY.get(source.getWorld()).setTimeOfDay(timeOfDay);
-                    source.sendFeedback(
-                        () -> Text.translatable("commands.tmm.setvisual.time", timeOfDay)
-                            .styled(style -> style.withColor(0x00FF00)),
+                    TrainWorldComponent.KEY.get(source.getLevel()).setTimeOfDay(timeOfDay);
+                    source.sendSuccess(
+                        () -> Component.translatable("commands.tmm.setvisual.time", timeOfDay)
+                            .withStyle(style -> style.withColor(0x00FF00)),
                         true
                     );
                 }
