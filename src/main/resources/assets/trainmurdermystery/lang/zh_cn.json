@@ -653,6 +653,7 @@
   "tip.phantom": "按 %s 进入隐身状态！",
   "tip.recaller.place": "按 %s 保存当前位置！",
   "tip.recaller.teleport": "按 %s 传送！",
+  "tmm.replay.event": "\u00a76[游戏事件] \u00a7r ",
   "tip.vulture": "已吃掉 %s/%s 具尸体。",
   "tip.recaller.not_enough_money": "传送需要 100\uE781。",
   "tip.noellesroles.cooldown": "能力将在 %ss 后可用",

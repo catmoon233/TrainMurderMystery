@@ -167,7 +167,7 @@ public abstract class LimitedHandledScreen<T extends AbstractContainerMenu> exte
         ItemCooldowns cooldowns = minecraft.player.getCooldowns();
         ItemCooldowns.CooldownInstance cooldownInstance = cooldowns.cooldowns.get(itemStack.getItem());
         if (cooldownInstance != null) {
-            tooltips.add(Component.translatable("item.trainmurdermystery.limited_inventory.cooldown",(int)(( cooldownInstance.endTime - cooldowns.tickCount) / 20)));
+            tooltips.add(Component.translatable("item.trainmurdermystery.limited_inventory.cooldown",(int)(( cooldownInstance.endTime - cooldowns.tickCount) / 20)).withStyle(ChatFormatting.GRAY));
         }
 
         int nameWidth = this.font.width(itemStack.getHoverName().getString());

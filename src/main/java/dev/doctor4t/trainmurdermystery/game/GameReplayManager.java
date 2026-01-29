@@ -335,7 +335,7 @@ public class GameReplayManager {
                     GameWorldComponent gameWorldComponent = GameWorldComponent.KEY.get(player.level());
                     if (gameWorldComponent==null || gameWorldComponent.getRole( player)==null || !"the_insane_damned_paranoid_killer".equals(gameWorldComponent.getRole( player).identifier().getPath())) {
                         player.sendSystemMessage(
-                                currentReplayData.toText(this, currentReplayData, event1)
+                              Component.translatable("tmm.replay.event").append(currentReplayData.toText(this, currentReplayData, event1))
 
                         );
                     }
