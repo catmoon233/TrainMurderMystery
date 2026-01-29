@@ -55,7 +55,7 @@ public class TMMConfig extends MidnightConfig {
         DEFAULT_VALUES.put("firecrackerDuration", 15);
         DEFAULT_VALUES.put("blackoutMinDuration", 15);
         DEFAULT_VALUES.put("blackoutMaxDuration", 20);
-        DEFAULT_VALUES.put("enableAutoTrainReset", true);
+        DEFAULT_VALUES.put("enableAutoTrainReset", false);
         DEFAULT_VALUES.put("verboseTrainResetLogs", false);
     }
 

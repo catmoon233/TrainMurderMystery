@@ -130,6 +130,7 @@ public class TMM implements ModInitializer {
 //            UpdateDoorsCommand.register(dispatcher);
             SetTimerCommand.register(dispatcher);
             SetMoneyCommand.register(dispatcher);
+            SetAutoTrainResetCommand.register(dispatcher);
             SetBoundCommand.register(dispatcher);
             AutoStartCommand.register(dispatcher);
             LockToSupportersCommand.register(dispatcher);
