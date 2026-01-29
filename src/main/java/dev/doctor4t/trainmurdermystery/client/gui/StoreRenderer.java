@@ -17,7 +17,6 @@ public class StoreRenderer {
     public static float offsetDelta = 0f;
 
     public static void renderHud(Font renderer, @NotNull LocalPlayer player, @NotNull GuiGraphics context, float delta) {
-        if (!GameWorldComponent.KEY.get(player.level()).canUseKillerFeatures(player)) return;
         int balance = PlayerShopComponent.KEY.get(player).balance;
         if (view.getTarget() != balance) {
             offsetDelta = balance > view.getTarget() ? .6f : -.6f;
