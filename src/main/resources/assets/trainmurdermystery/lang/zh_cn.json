@@ -657,6 +657,7 @@
   "tip.recaller.not_enough_money": "传送需要 100\uE781。",
   "tip.noellesroles.cooldown": "能力将在 %ss 后可用",
   "message.noellesroles.engineer.nothing_to_remove": "这个门无道具可拆卸",
+  "item.trainmurdermystery.limited_inventory.cooldown": "\u00a77冷却: %s 秒",
   "info.screen.roleid.discovery_civilian": "游客模式。",
   "info.screen.roleid.civilian": "你没有任何特殊能力，努力在这趟旅程中活下去。",
   "info.screen.roleid.killer": "你是一名普通的杀手。\n拥有最基础的杀手商店。\n你的目标是杀光所有平民。",

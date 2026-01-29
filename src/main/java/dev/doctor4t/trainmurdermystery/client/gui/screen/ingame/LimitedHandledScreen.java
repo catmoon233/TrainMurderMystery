@@ -4,6 +4,7 @@ import com.google.common.collect.Sets;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.datafixers.util.Pair;
 import dev.doctor4t.trainmurdermystery.client.TMMClient;
+import net.minecraft.world.item.ItemCooldowns;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.lwjgl.glfw.GLFW;
@@ -163,6 +164,12 @@ public abstract class LimitedHandledScreen<T extends AbstractContainerMenu> exte
         List<Component> name = new ArrayList<>();
         name.add(tooltips.getFirst());
         tooltips.removeFirst();
+        ItemCooldowns cooldowns = minecraft.player.getCooldowns();
+        ItemCooldowns.CooldownInstance cooldownInstance = cooldowns.cooldowns.get(itemStack.getItem());
+        if (cooldownInstance != null) {
+            tooltips.add(Component.translatable("item.trainmurdermystery.limited_inventory.cooldown",(int)(( cooldownInstance.endTime - cooldowns.tickCount) / 20)));
+        }
+
         int nameWidth = this.font.width(itemStack.getHoverName().getString());
         int tooltipWidth = 0;
         for (Component text : tooltips) {
