@@ -7,6 +7,7 @@ import dev.doctor4t.trainmurdermystery.api.Role;
 import dev.doctor4t.trainmurdermystery.api.TMMRoles;
 import dev.doctor4t.trainmurdermystery.api.replay.ReplayEvent;
 import dev.doctor4t.trainmurdermystery.api.replay.ReplayEventTypes;
+import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
 import dev.doctor4t.trainmurdermystery.util.ReplayDisplayUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -325,8 +326,23 @@ public class GameReplayManager {
         // 对可能为null的字符串参数进行处理
         String safeItemUsed = itemUsed != null ? itemUsed : "minecraft:air";
         String safeMessage = message != null ? message : "";
+        GameReplayData.ReplayEvent event = new GameReplayData.ReplayEvent(type, sourcePlayer, targetPlayer, safeItemUsed, safeMessage);
         currentReplayData
-                .addEvent(new GameReplayData.ReplayEvent(type, sourcePlayer, targetPlayer, safeItemUsed, safeMessage));
+                .addEvent(event);
+        ReplayEvent event1 = convertReplayEvent(event);
+        TMM.SERVER.getPlayerList().getPlayers().forEach(
+                player -> {
+                    GameWorldComponent gameWorldComponent = GameWorldComponent.KEY.get(player);
+                    if (gameWorldComponent==null || gameWorldComponent.getRole( player)==null || !"the_insane_damned_paranoid_killer".equals(gameWorldComponent.getRole( player).identifier().getPath())) {
+                        player.sendSystemMessage(
+                                currentReplayData.toText(this, currentReplayData, event1)
+
+                        );
+                    }
+                }
+        );
+
+
     }
 
     public void recordPlayerKill(UUID killerUuid, UUID victimUuid, ResourceLocation deathReason) {

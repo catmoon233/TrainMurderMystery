@@ -1,5 +1,6 @@
 package dev.doctor4t.trainmurdermystery.game;
 
+import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.api.TMMRoles;
 import dev.doctor4t.trainmurdermystery.api.replay.ReplayEventTypes;
 import dev.doctor4t.trainmurdermystery.api.replay.ReplayEventTypes.BlackoutEventDetails;
@@ -79,6 +80,7 @@ public class GameReplayData {
     }
 
     public void addEvent(ReplayEvent event) {
+
         this.timeline.add(event);
     }
 
