@@ -154,7 +154,7 @@ public class TMMConfig extends MidnightConfig {
     @Entry(category = "game", min = 0, max = 300, isSlider = true)
     public static int blackoutMaxDuration = 30;
     @Entry(category = "game")
-    public static boolean enableAutoTrainReset = true;
+    public static boolean enableAutoTrainReset = false;
     @Entry(category = "game")
     public static boolean verboseTrainResetLogs = true;
     
