@@ -330,18 +330,23 @@ public class GameReplayManager {
         currentReplayData
                 .addEvent(event);
         ReplayEvent event1 = convertReplayEvent(event);
-        TMM.SERVER.getPlayerList().getPlayers().forEach(
-                player -> {
-                    GameWorldComponent gameWorldComponent = GameWorldComponent.KEY.get(player.level());
-                    if (gameWorldComponent==null || gameWorldComponent.getRole( player)==null || !"the_insane_damned_paranoid_killer".equals(gameWorldComponent.getRole( player).identifier().getPath())) {
-                        player.sendSystemMessage(
-                              Component.translatable("tmm.replay.event").append(currentReplayData.toText(this, currentReplayData, event1))
+        try {
 
-                        );
+
+            TMM.SERVER.getPlayerList().getPlayers().forEach(
+                    player -> {
+                        GameWorldComponent gameWorldComponent = GameWorldComponent.KEY.get(player.level());
+                        if (gameWorldComponent == null || gameWorldComponent.getRole(player) == null || !"the_insane_damned_paranoid_killer".equals(gameWorldComponent.getRole(player).identifier().getPath())) {
+                            player.sendSystemMessage(
+                                    Component.translatable("tmm.replay.event").append(currentReplayData.toText(this, currentReplayData, event1))
+
+                            );
+                        }
                     }
-                }
-        );
+            );
+        }catch (Exception ignored){
 
+        }
 
     }
 
