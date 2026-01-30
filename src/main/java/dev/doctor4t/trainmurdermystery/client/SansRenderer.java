@@ -38,11 +38,8 @@ public class SansRenderer {
     private PlayerMoodComponent m_cap;
     private PostProcessor m_post;
     private final Random m_random = new Random();
-    private int m_indicatorOffset;
-    private int m_hintOffsetX;
-    private int m_hintOffsetY;
     private float m_dt;
-    private float m_prevSanity;
+
     private float m_sanityGain;
     private float m_flashTimer;
     private float m_flashSanityGain;
@@ -169,7 +166,7 @@ public class SansRenderer {
         if (m_flashTimer > 0)
             m_flashTimer -= dt;
 
-        m_sanityGain = m_cap.getMood() - m_prevSanity;
+        m_sanityGain = m_cap.getMood() ;
         if (Math.abs(m_sanityGain) >= 0.01f)
             m_flashTimer = 20;
         m_flashSanityGain = m_flashTimer <= 0 ? 0 : m_flashSanityGain + m_sanityGain;
@@ -178,15 +175,6 @@ public class SansRenderer {
         if (m_arrowTimer <= 0)
             m_arrowTimer = 23.99f;
 
-        if (m_cap.getMood() <= .3f) {
-            m_indicatorOffset = m_random.nextInt(3) - 1;
-            m_hintOffsetX = m_random.nextInt(3) - 1;
-            m_hintOffsetY = m_random.nextInt(3) - 1;
-        } else {
-            m_indicatorOffset = 0;
-            m_hintOffsetX = 0;
-            m_hintOffsetY = 0;
-        }
 
         tickHint(dt);
         tickBt(dt);
@@ -195,9 +183,9 @@ public class SansRenderer {
             renderHint(new Gui(m_mc), context.pose(), dt, m_mc.getWindow().getGuiScaledWidth(), m_mc.getWindow().getGuiScaledHeight(), context);
 
         }
-        if (m_cap.getMood() < .36f){
+        if (m_cap != null && m_cap.getMood() < .36f) {
             renderBloodTendrilsOverlay(new Gui(m_mc), context.pose(), dt, m_mc.getWindow().getGuiScaledWidth(), m_mc.getWindow().getGuiScaledHeight());
-    }
+        }
     }
 
     private void tickHint(float dt)

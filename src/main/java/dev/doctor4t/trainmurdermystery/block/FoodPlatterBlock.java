@@ -73,7 +73,9 @@ public class FoodPlatterBlock extends BaseEntityBlock {
     protected InteractionResult useWithoutItem(BlockState state, @NotNull Level world, BlockPos pos, Player player, BlockHitResult hit) {
         if (world.isClientSide) {
             if (TMM.REPLAY_MANAGER != null) {
-                TMM.REPLAY_MANAGER.recordItemUse(player.getUUID(), BuiltInRegistries.ITEM.getKey(TMMItems.POISON_VIAL));
+                if (player.getItemInHand(InteractionHand.MAIN_HAND).getItem().equals(TMMItems.POISON_VIAL)) {
+                    TMM.REPLAY_MANAGER.recordItemUse(player.getUUID(), BuiltInRegistries.ITEM.getKey(TMMItems.POISON_VIAL));
+                }
             }
             return InteractionResult.SUCCESS;
         };

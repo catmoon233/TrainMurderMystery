@@ -34,12 +34,12 @@ public class StaminaRenderer {
 
 	// 添加刀蓄满力的视觉效果相关变量
 	private static boolean knifeFullyCharged = false;
-	private static int flashTimer = 0;
-	private static final int FLASH_DURATION = 15; // 闪光持续时间（ticks）
+	private static long flashStartTime = 0L; // 闪光开始时间（毫秒）
+	private static final long FLASH_DURATION_MS = 250L; // 闪光持续时间（毫秒）
 
 	// 添加屏幕边缘红色效果相关变量
-	private static int screenRedEffectTimer = 0;
-	private static final int SCREEN_RED_EFFECT_DURATION = 20; // 屏幕红色效果持续时间（ticks）
+	private static long screenRedEffectStartTime = 0L; // 屏幕红色效果开始时间（毫秒）
+	private static final long SCREEN_RED_EFFECT_DURATION_MS = 300L; // 屏幕红色效果持续时间（毫秒）
 	private static final float MAX_RED_INTENSITY = 0.5f; // 最大红色强度（0-1）
 
 	// 主手物品冷却相关变量
@@ -110,8 +110,8 @@ public class StaminaRenderer {
 			// 检测刀是否完全蓄力
 			if (itemUseTime >= 10 && !knifeFullyCharged) {
 				knifeFullyCharged = true;
-				flashTimer = FLASH_DURATION; // 开始闪光效果
-				screenRedEffectTimer = SCREEN_RED_EFFECT_DURATION; // 触发屏幕红色效果
+				flashStartTime = System.currentTimeMillis(); // 开始闪光效果
+				screenRedEffectStartTime = System.currentTimeMillis(); // 触发屏幕红色效果
 			} else if (itemUseTime < 10) {
 				knifeFullyCharged = false;
 			}
@@ -143,11 +143,10 @@ public class StaminaRenderer {
 		// 检查是否应该禁用平滑动画（特别是对于武器蓄力）
 		if ((TMMConfig.disableStaminaBarSmoothing && isChargingWeapon) || isChargingWeapon) {
 			// 如果是刀且完全蓄力，则添加特殊效果
-			if (mainHandStack.getItem() == TMMItems.KNIFE && knifeFullyCharged && flashTimer > 0) {
+			if (mainHandStack.getItem() == TMMItems.KNIFE && knifeFullyCharged && isFlashActive()) {
 				// 创建闪烁效果
-				int flashColour = (flashTimer % 4 < 2) ? 0xFFFF0000 : 0xFFFFFFFF; // 红白交替闪烁
+				int flashColour = getFlashColor(); // 红白交替闪烁
 				view.renderWithoutSmoothing(context, flashColour, staminaPercent);
-				flashTimer--; // 减少闪光计时器
 			} else {
 				view.renderWithoutSmoothing(context, colour, staminaPercent);
 			}
@@ -183,7 +182,7 @@ public class StaminaRenderer {
 					// 如果切换到刀，则播放切刀音效
 					if (mainHandStack.getItem() == TMMItems.KNIFE && lastMainHandStack.getItem() != TMMItems.KNIFE) {
 						Minecraft.getInstance().getSoundManager().play(
-								SimpleSoundInstance.forUI(SoundEvents.PLAYER_ATTACK_SWEEP, 0.5f, 2.8f)
+								SimpleSoundInstance.forUI(SoundEvents.IRON_GOLEM_REPAIR, 0.4f, 2.1f)
 						);
 					}
 					playedCooldownSound = false;
@@ -246,12 +245,12 @@ public class StaminaRenderer {
 	 * 渲染屏幕边缘红色效果（刀蓄力完毕时）
 	 */
 	private static void renderScreenRedEffect(@NotNull GuiGraphics context, float delta) {
-		if (screenRedEffectTimer > 0) {
+		if (isScreenRedEffectActive()) {
 			int screenWidth = context.guiWidth();
 			int screenHeight = context.guiHeight();
 
 			// 计算红色效果的强度（随时间递减）
-			float progress = (float) screenRedEffectTimer / SCREEN_RED_EFFECT_DURATION;
+			float progress = getScreenRedEffectProgress();
 			float intensity = MAX_RED_INTENSITY * progress;
 
 			// 设置红色颜色（带透明度）
@@ -297,28 +296,72 @@ public class StaminaRenderer {
 
 			RenderSystem.disableBlend();
 			poseStack.popPose();
-
-			// 减少计时器
-			screenRedEffectTimer--;
 		}
 	}
 
 	public static void tick() {
 		view.update();
-		// 更新闪光计时器
-		if (flashTimer > 0) {
-			flashTimer--;
-		}
-
 		// 如果不在使用刀，重置蓄力状态
 		Minecraft minecraft = Minecraft.getInstance();
 		if (minecraft.player != null) {
 			ItemStack mainHandStack = minecraft.player.getMainHandItem();
 			if (mainHandStack.getItem() != TMMItems.KNIFE) {
 				knifeFullyCharged = false;
-				flashTimer = 0;
+				flashStartTime = 0L;
+				screenRedEffectStartTime = 0L;
 			}
 		}
+	}
+
+	/**
+	 * 检查屏幕红色效果是否仍然活跃
+	 */
+	private static boolean isScreenRedEffectActive() {
+		if (screenRedEffectStartTime == 0L) {
+			return false;
+		}
+		long currentTime = System.currentTimeMillis();
+		return (currentTime - screenRedEffectStartTime) < SCREEN_RED_EFFECT_DURATION_MS;
+	}
+
+	/**
+	 * 获取屏幕红色效果进度（0.0到1.0）
+	 */
+	private static float getScreenRedEffectProgress() {
+		if (!isScreenRedEffectActive()) {
+			return 0.0f;
+		}
+		long currentTime = System.currentTimeMillis();
+		long elapsed = currentTime - screenRedEffectStartTime;
+		float progress = 1.0f - (float) elapsed / SCREEN_RED_EFFECT_DURATION_MS; // 随时间递减
+		return Math.max(0.0f, progress);
+	}
+
+	/**
+	 * 检查闪动效果是否仍然活跃
+	 */
+	private static boolean isFlashActive() {
+		if (flashStartTime == 0L) {
+			return false;
+		}
+		long currentTime = System.currentTimeMillis();
+		return (currentTime - flashStartTime) < FLASH_DURATION_MS;
+	}
+
+	/**
+	 * 获取当前闪动颜色
+	 */
+	private static int getFlashColor() {
+		if (flashStartTime == 0L) {
+			return 0xFFFFFFFF; // 默认白色
+		}
+		long currentTime = System.currentTimeMillis();
+		long elapsed = currentTime - flashStartTime;
+		// 使用更长的周期让闪烁更明显
+		long cycleDuration = 100L; // 100毫秒一个周期
+		long cyclePosition = elapsed % cycleDuration;
+		// 在周期的前半段显示红色，在后半段显示白色
+		return (cyclePosition < cycleDuration / 2) ? 0xFFFF0000 : 0xFFFFFFFF;
 	}
 
 	public static class StaminaBarRenderer {
