@@ -8,7 +8,9 @@ import dev.doctor4t.trainmurdermystery.client.particle.HandParticle;
 import dev.doctor4t.trainmurdermystery.client.render.TMMRenderLayers;
 import dev.doctor4t.trainmurdermystery.game.GameFunctions;
 import dev.doctor4t.trainmurdermystery.util.GunShootPayload;
+import main.walksy.lib.core.config.local.options.type.PixelGridAnimation;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
@@ -21,6 +23,10 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import org.jetbrains.annotations.NotNull;
+import walksy.crosshairaddons.CrosshairAddons;
+
+import java.util.Map;
+import java.util.function.Supplier;
 
 public class RevolverItem extends Item {
     public RevolverItem(Properties settings) {
@@ -50,6 +56,10 @@ public class RevolverItem extends Item {
             if (collision instanceof EntityHitResult entityHitResult) {
                 Entity target = entityHitResult.getEntity();
                 ClientPlayNetworking.send(new GunShootPayload(target.getId()));
+                if (FabricLoader.getInstance().isModLoaded("crosshairaddons")){
+                    final var addonStateManager = CrosshairAddons.getStateManager();
+                    addonStateManager.onArrowHit();
+                }
             } else {
                 ClientPlayNetworking.send(new GunShootPayload(-1));
             }

@@ -35,7 +35,7 @@ public class StaminaRenderer {
 	// 添加刀蓄满力的视觉效果相关变量
 	private static boolean knifeFullyCharged = false;
 	private static int flashTimer = 0;
-	private static final int FLASH_DURATION = 10; // 闪光持续时间（ticks）
+	private static final int FLASH_DURATION = 15; // 闪光持续时间（ticks）
 
 	// 添加屏幕边缘红色效果相关变量
 	private static int screenRedEffectTimer = 0;
@@ -45,6 +45,7 @@ public class StaminaRenderer {
 	// 主手物品冷却相关变量
 	private static float lastCooldown = 0f;
 	private static boolean playedCooldownSound = false;
+	private static ItemStack lastMainHandStack = ItemStack.EMPTY; // 用于跟踪上一次的主手物品
 
 	public interface StaminaProvider {
 		float getCurrentStamina(Player clientPlayerEntity);
@@ -101,7 +102,7 @@ public class StaminaRenderer {
 			isChargingWeapon = true;
 		}
 		if (mainHandStack.getItem() == TMMItems.KNIFE ){
-			maxStamina = 7;
+			maxStamina = 8;
 			final var itemUseTime = player.getTicksUsingItem();
 			staminaPercent = Math.min( (float) itemUseTime / 10,1f);
 			isChargingWeapon = true;
@@ -169,19 +170,33 @@ public class StaminaRenderer {
 			ItemCooldowns cooldowns = player.getCooldowns();
 			float cooldown = cooldowns.getCooldownPercent(mainHandStack.getItem(), delta);
 
-			// 检查冷却是否刚结束
-			if (lastCooldown > 0 && cooldown == 0 && !playedCooldownSound) {
+			// 检查是否是同一个物品且冷却刚刚结束
+			if (lastCooldown > 0 && cooldown == 0 && !playedCooldownSound && ItemStack.isSameItemSameComponents(lastMainHandStack, mainHandStack)) {
 				// 播放冷却结束音效
 				Minecraft.getInstance().getSoundManager().play(
 						SimpleSoundInstance.forUI(SoundEvents.EXPERIENCE_ORB_PICKUP, 0.7f, 1.0f)
 				);
 				playedCooldownSound = true;
-			} else if (cooldown > 0) {
-				playedCooldownSound = false;
+			} else if (cooldown > 0 || !ItemStack.isSameItemSameComponents(lastMainHandStack, mainHandStack)) {
+				// 如果物品已切换，则重置冷却音效标志
+				if (!ItemStack.isSameItemSameComponents(lastMainHandStack, mainHandStack)) {
+					// 如果切换到刀，则播放切刀音效
+					if (mainHandStack.getItem() == TMMItems.KNIFE && lastMainHandStack.getItem() != TMMItems.KNIFE) {
+						Minecraft.getInstance().getSoundManager().play(
+								SimpleSoundInstance.forUI(SoundEvents.PLAYER_ATTACK_SWEEP, 0.5f, 2.8f)
+						);
+					}
+					playedCooldownSound = false;
+				}
+				// 如果物品仍在冷却中，重置音效标志
+				if (cooldown > 0) {
+					playedCooldownSound = false;
+				}
 			}
 
-			// 更新上一次冷却值
+			// 更新上一次冷却值和物品
 			lastCooldown = cooldown;
+			lastMainHandStack = mainHandStack.copy();
 
 			// 如果物品在冷却中，显示冷却百分比
 			if (cooldown > 0) {

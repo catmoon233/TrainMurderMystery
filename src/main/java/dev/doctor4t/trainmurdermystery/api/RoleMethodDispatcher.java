@@ -65,17 +65,7 @@ public class RoleMethodDispatcher {
         }
     }
 
-    /**
-     * 调用玩家角色的 cantPickupItem 方法
-     */
-    // public static boolean callCantPickupItem(Player player, Item item) {
-    // Role role = getCurrentRole(player);
-    // if (role != null) {
-    // return role.cantPickupItem(player).test(item);
-    // }
-    // return false;
-    // }
-    //
+
     /**
      * 调用玩家角色的 onPickupItem 方法
      */

@@ -21,6 +21,7 @@ import dev.doctor4t.trainmurdermystery.item.CocktailItem;
 import dev.doctor4t.trainmurdermystery.util.PlayerStaminaGetter;
 import dev.doctor4t.trainmurdermystery.util.PoisonUtils;
 import dev.doctor4t.trainmurdermystery.util.Scheduler;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
@@ -44,6 +45,7 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+import walksy.crosshairaddons.CrosshairAddons;
 
 import java.util.UUID;
 
@@ -116,6 +118,10 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerSt
 
 		if (getMainHandItem().is(TMMItems.BAT) && target instanceof Player playerTarget && this.getAttackStrengthScale(0.5F) >= 1f) {
 			GameFunctions.killPlayer(playerTarget, true, self, GameConstants.DeathReasons.BAT);
+			if (FabricLoader.getInstance().isModLoaded("crosshairaddons")){
+				final var addonStateManager = CrosshairAddons.getStateManager();
+				addonStateManager.onAttackEntity( playerTarget);
+			}
 			self.getCommandSenderWorld().playSound(self,
 					playerTarget.getX(), playerTarget.getEyeY(), playerTarget.getZ(),
 					TMMSounds.ITEM_BAT_HIT, SoundSource.PLAYERS,
