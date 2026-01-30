@@ -243,7 +243,7 @@ public class GameReplayData {
                     yield Component.translatable("tmm.replay.event.kill", sourceName, itemUsedText, targetName);
                 } else {
                     // 如果没有杀手（例如意外死亡），则使用不同的翻译键
-                    yield Component.translatable("tmm.replay.event.kill_no_killer", itemUsedText, targetName);
+                    yield Component.translatable("tmm.replay.event.kill_no_killer", targetName, itemUsedText);
                 }
             }
             case PLAYER_POISONED -> {
@@ -251,7 +251,7 @@ public class GameReplayData {
                     yield Component.translatable("tmm.replay.event.poison", sourceName, itemUsedText, targetName);
                 } else {
                     // 如果没有下毒者（例如意外中毒），则使用不同的翻译键
-                    yield Component.translatable("tmm.replay.event.poison_no_killer", itemUsedText, targetName);
+                    yield Component.translatable("tmm.replay.event.poison_no_killer", targetName, itemUsedText);
                 }
             }
             case GRENADE_THROWN -> Component.translatable("tmm.replay.event.grenade_thrown", sourceName);
@@ -288,11 +288,13 @@ public class GameReplayData {
                 }
             }
             case DOOR_LOCK -> {
-                // yield Component.translatable("tmm.replay.event.door_lock", sourceName, message);
+                // yield Component.translatable("tmm.replay.event.door_lock", sourceName,
+                // message);
                 yield null;
             }
             case DOOR_UNLOCK -> {
-                // yield Component.translatable("tmm.replay.event.door_unlock", sourceName, message);
+                // yield Component.translatable("tmm.replay.event.door_unlock", sourceName,
+                // message);
                 yield null;
             }
             case TASK_COMPLETE, LOCKPICK_ATTEMPT, DOOR_CLOSE, DOOR_OPEN, STORE_BUY, MOOD_CHANGE,

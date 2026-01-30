@@ -29,7 +29,7 @@ import org.ladysnake.cca.api.v3.component.ComponentKey;
 
 public abstract class Role {
     private ResourceLocation identifier;
-    private boolean canSeeCoin;
+    private boolean canSeeCoin = true;
 
     public Role setColor(int color) {
         this.color = color;
@@ -154,7 +154,6 @@ public abstract class Role {
     public void onFinishQuest(Player player, String quest) {
 
     }
-
 
     public Predicate<Item> cantPickupItem(Player player) {
         return a -> false;

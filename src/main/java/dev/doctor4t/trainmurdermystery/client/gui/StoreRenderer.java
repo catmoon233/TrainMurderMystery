@@ -1,5 +1,6 @@
 package dev.doctor4t.trainmurdermystery.client.gui;
 
+import dev.doctor4t.trainmurdermystery.api.Role;
 import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
 import dev.doctor4t.trainmurdermystery.cca.PlayerShopComponent;
 import org.jetbrains.annotations.NotNull;
@@ -16,21 +17,29 @@ public class StoreRenderer {
     public static MoneyNumberRenderer view = new MoneyNumberRenderer();
     public static float offsetDelta = 0f;
 
-    public static void renderHud(Font renderer, @NotNull LocalPlayer player, @NotNull GuiGraphics context, float delta) {
-        int balance = PlayerShopComponent.KEY.get(player).balance;
-        if (view.getTarget() != balance) {
-            offsetDelta = balance > view.getTarget() ? .6f : -.6f;
-            view.setTarget(balance);
+    public static void renderHud(Font renderer, @NotNull LocalPlayer player, @NotNull GuiGraphics context,
+            float delta) {
+        GameWorldComponent gameWorldComponent = GameWorldComponent.KEY.get(player.level());
+        Role role = gameWorldComponent.getRole(player);
+        if (role == null) {
+            return;
         }
-        float r = offsetDelta > 0 ? 1f - offsetDelta : 1f;
-        float g = offsetDelta < 0 ? 1f + offsetDelta : 1f;
-        float b = 1f - Math.abs(offsetDelta);
-        int colour = Mth.color(r, g, b) | 0xFF000000;
-        context.pose().pushPose();
-        context.pose().translate(context.guiWidth() - 12, 6, 0);
-        view.render(renderer, context, 0, 0, colour, delta);
-        context.pose().popPose();
-        offsetDelta = Mth.lerp(delta / 16, offsetDelta, 0f);
+        if (role.canSeeCoin()) {
+            int balance = PlayerShopComponent.KEY.get(player).balance;
+            if (view.getTarget() != balance) {
+                offsetDelta = balance > view.getTarget() ? .6f : -.6f;
+                view.setTarget(balance);
+            }
+            float r = offsetDelta > 0 ? 1f - offsetDelta : 1f;
+            float g = offsetDelta < 0 ? 1f + offsetDelta : 1f;
+            float b = 1f - Math.abs(offsetDelta);
+            int colour = Mth.color(r, g, b) | 0xFF000000;
+            context.pose().pushPose();
+            context.pose().translate(context.guiWidth() - 12, 6, 0);
+            view.render(renderer, context, 0, 0, colour, delta);
+            context.pose().popPose();
+            offsetDelta = Mth.lerp(delta / 16, offsetDelta, 0f);
+        }
     }
 
     public static void tick() {
@@ -44,7 +53,8 @@ public class StoreRenderer {
         public void setTarget(float target) {
             this.target = target;
             int length = String.valueOf(target).length();
-            while (this.digits.size() < length) this.digits.add(new ScrollingDigit(this.digits.isEmpty()));
+            while (this.digits.size() < length)
+                this.digits.add(new ScrollingDigit(this.digits.isEmpty()));
             for (int i = 0; i < this.digits.size(); i++) {
                 if (i == 0) {
                     this.digits.get(i).setTarget((float) (target / Math.pow(10, i)));
@@ -55,7 +65,8 @@ public class StoreRenderer {
         }
 
         public void update() {
-            for (ScrollingDigit digit : this.digits) digit.update();
+            for (ScrollingDigit digit : this.digits)
+                digit.update();
         }
 
         public void render(Font renderer, @NotNull GuiGraphics context, int x, int y, int colour, float delta) {
@@ -91,13 +102,16 @@ public class StoreRenderer {
         public void update() {
             this.lastValue = this.value;
             this.value = Mth.lerp(0.15f, this.value, this.target);
-            if (Math.abs(this.value - this.target) < 0.01f) this.value = this.target;
+            if (Math.abs(this.value - this.target) < 0.01f)
+                this.value = this.target;
         }
 
         public void render(@NotNull Font renderer, @NotNull GuiGraphics context, int colour, float delta) {
             if (Mth.floor(this.lastValue) != Mth.floor(this.value)) {
                 LocalPlayer player = Minecraft.getInstance().player;
-//                if (player != null)player.getWorld().playSound(player, player.getX(), player.getY(), player.getZ(), TMMSounds.BALANCE_CLICK, SoundCategory.PLAYERS, 0.1f, 1 + this.lastValue - this.value, player.getRandom().nextLong());
+                // if (player != null)player.getWorld().playSound(player, player.getX(),
+                // player.getY(), player.getZ(), TMMSounds.BALANCE_CLICK, SoundCategory.PLAYERS,
+                // 0.1f, 1 + this.lastValue - this.value, player.getRandom().nextLong());
             }
             float value = Mth.lerp(delta, this.lastValue, this.value);
             int digit = Mth.floor(value) % 10;
@@ -107,7 +121,8 @@ public class StoreRenderer {
             context.pose().pushPose();
             context.pose().translate(0, -offset * (renderer.lineHeight + 2), 0);
             float alpha = (1.0f - Math.abs(offset)) * 255.0f;
-            if (value < 1 && !this.force) alpha *= value;
+            if (value < 1 && !this.force)
+                alpha *= value;
             int baseColour = colour | (int) alpha << 24;
             int nextColour = colour | (int) (Math.abs(offset) * 255.0f) << 24;
             if ((baseColour & -67108864) != 0)
