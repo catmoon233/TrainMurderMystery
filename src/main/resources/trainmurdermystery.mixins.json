@@ -18,7 +18,6 @@
     "ItemEntityMixin",
     "ItemStackMixin",
     "LivingEntityMixin",
-    "MoonlightMessageMixin",
     "NetworkReceiveStatisticsMixin",
     "NetworkStatisticsMixin",
     "PlayerDiscord",
