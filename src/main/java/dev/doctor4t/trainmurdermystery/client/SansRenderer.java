@@ -152,7 +152,7 @@ public class SansRenderer {
         Minecraft mc = Minecraft.getInstance();
         m_post.addSinglePassEntry("insanity", pass -> {
             return processPlayer(mc.player, cap -> {
-                if (cap.getMood() < .4f)
+                if (cap.getMood() > .35f)
                     return false;
                 pass.getEffect().safeGetUniform("DesaturateFactor").set(MathHelper.clampNorm(Mth.inverseLerp(cap.getMood(), .4f, .8f)) * .69f);
                 pass.getEffect().safeGetUniform("SpreadFactor").set(MathHelper.clampNorm(Mth.inverseLerp(cap.getMood(), .4f, .8f)) * 1.43f);
@@ -161,7 +161,7 @@ public class SansRenderer {
         });
         m_post.addSinglePassEntry("chromatical", pass -> {
             return processPlayer(mc.player, cap -> {
-                if (cap.getMood() < .4f)
+                if (cap.getMood() > .35f)
                     return false;
                 pass.getEffect().safeGetUniform("Factor").set(MathHelper.clampNorm(Mth.inverseLerp(cap.getMood(), .4f, .8f)) * .1f);
                 pass.getEffect().safeGetUniform("TimeTotal").set(m_post.getTime() / 20.0f);
@@ -170,33 +170,33 @@ public class SansRenderer {
         });
 
         // 添加模糊效果后处理
-        m_post.addSinglePassEntry("blur", pass -> {
-            return processPlayer(mc.player, cap -> {
-                if (m_blurEffectIntensity <= 0.01f)
-                    return false;
-
-                // 计算模糊强度
-                float blurStrength = m_blurEffectIntensity;
-
-                // 应用模糊效果
-                pass.getEffect().safeGetUniform("BlurStrength").set(blurStrength);
-                pass.getEffect().safeGetUniform("Time").set(m_post.getTime() / 20.0f);
-
-                // 如果理智很低，增加模糊强度
-                if (cap.getMood() < 0.3f) {
-                    pass.getEffect().safeGetUniform("BlurStrength").set(blurStrength * 1.5f);
-                }
-
-                return true;
-            });
-        });
+//        m_post.addSinglePassEntry("blur", pass -> {
+//            return processPlayer(mc.player, cap -> {
+//                if (m_blurEffectIntensity <= 0.01f)
+//                    return false;
+//
+//                // 计算模糊强度
+//                float blurStrength = m_blurEffectIntensity;
+//
+//                // 应用模糊效果
+//                pass.getEffect().safeGetUniform("BlurStrength").set(blurStrength);
+//                pass.getEffect().safeGetUniform("Time").set(m_post.getTime() / 20.0f);
+//
+//                // 如果理智很低，增加模糊强度
+//                if (cap.getMood() < 0.3f) {
+//                    pass.getEffect().safeGetUniform("BlurStrength").set(blurStrength * 1.5f);
+//                }
+//
+//                return true;
+//            });
+//        });
     }
 
     private boolean processPlayer(LocalPlayer player, Function<PlayerMoodComponent, Boolean> action) {
         PlayerMoodComponent cap = PlayerMoodComponent.KEY.get(player);
         return player != null &&
                 (!player.isCreative() && !player.isSpectator()) &&
-                cap.getMood() > 0 &&
+                cap.getMood() >= 0 &&
                 action.apply(cap);
     }
 

@@ -1,20 +1,12 @@
 package dev.doctor4t.trainmurdermystery.cca;
 
 import dev.doctor4t.trainmurdermystery.TMM;
-import dev.doctor4t.trainmurdermystery.api.RoleComponent;
-import dev.doctor4t.trainmurdermystery.util.WeaponSkinsSupporterData;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
-import org.jetbrains.annotations.NotNull;
 import org.ladysnake.cca.api.v3.component.ComponentKey;
 import org.ladysnake.cca.api.v3.component.ComponentRegistry;
 import org.ladysnake.cca.api.v3.component.sync.AutoSyncedComponent;
-import org.ladysnake.cca.api.v3.component.tick.ClientTickingComponent;
-import org.ladysnake.cca.api.v3.component.tick.ServerTickingComponent;
-import org.ladysnake.cca.api.v3.entity.RespawnCopyStrategy;
-import org.ladysnake.cca.api.v3.entity.EntityComponentFactoryRegistry;
-import org.ladysnake.cca.api.v3.entity.EntityComponentInitializer;
 import dev.upcraft.datasync.api.DataSyncAPI;
 import dev.upcraft.datasync.api.SyncToken;
 import net.minecraft.resources.ResourceLocation;
@@ -28,7 +20,6 @@ import java.util.UUID;
 public class PlayerSkinsComponent implements AutoSyncedComponent {
     public static final ComponentKey<PlayerSkinsComponent> KEY = ComponentRegistry.getOrCreate(TMM.id("player_skins"), PlayerSkinsComponent.class);
     public static final ResourceLocation WEAPON_SKINS_DATA_ID = TMM.id("weapon_skins");
-    public static final SyncToken<WeaponSkinsSupporterData> WEAPON_SKINS_DATA = DataSyncAPI.register(WeaponSkinsSupporterData.class, WEAPON_SKINS_DATA_ID, WeaponSkinsSupporterData.CODEC);
 
     private final Player player;
     private Map<String, String> equippedSkins; // 存储当前装备的皮肤 {itemName -> skinName}
@@ -40,7 +31,9 @@ public class PlayerSkinsComponent implements AutoSyncedComponent {
         this.unlockedSkins = new HashMap<>();
     }
 
-    /**
+    public void sync() {
+        KEY.sync(this.player);
+    }    /**
      * 获取当前装备的皮肤名称
      */
     public String getEquippedSkin(ItemStack itemStack) {
@@ -170,30 +163,19 @@ public class PlayerSkinsComponent implements AutoSyncedComponent {
      * 同步皮肤数据到客户端
      */
     public void syncSkinsToClient() {
-        // 在实际实现中，这里会发送网络包同步皮肤数据
-        // 暂时留空
+        sync();
     }
 
     /**
      * 从数据同步令牌获取皮肤数据
      */
     public String getSkinFromDataSync(ItemStack itemStack) {
-        UUID owner = player.getUUID();
+
         // 使用物品的注册名而不是显示名称，以确保一致性
-        String itemName = BuiltInRegistries.ITEM.getKey(itemStack.getItem()).getPath().toLowerCase();
+        String itemName = BuiltInRegistries.ITEM.getKey(itemStack.getItem()).toString();
         
-        var optional = WEAPON_SKINS_DATA.get(owner);
-        if (optional.isPresent()) {
-            String serialized = optional.get().serialized();
-            String[] namesAndSkins = serialized.split(";");
-            for (String nameAndSkin : namesAndSkins) {
-                if (nameAndSkin.startsWith(itemName + ":")) {
-                    String[] split = nameAndSkin.split(":", 2); // 限制分割次数，防止皮肤名称中有冒号
-                    if (split.length >= 2) {
-                        return split[1];
-                    }
-                }
-            }
+        if (KEY.get( player).equippedSkins.containsKey(itemName)){
+            return KEY.get(player).equippedSkins.get(itemName);
         }
 
         return "default";
@@ -204,27 +186,9 @@ public class PlayerSkinsComponent implements AutoSyncedComponent {
      */
     public void setSkinInDataSync(ItemStack itemStack, String skinName) {
         // 只在客户端上传数据
-        if (player.level().isClientSide()) {
-            StringBuilder serializedBuilder = new StringBuilder();
-            var optional = WEAPON_SKINS_DATA.get(player.getUUID());
-            String itemName = BuiltInRegistries.ITEM.getKey(itemStack.getItem()).getPath().toLowerCase();
+            KEY.get( player).equippedSkins.put(BuiltInRegistries.ITEM.getKey(itemStack.getItem()).toString(), skinName);
+            sync();
 
-            String[] namesAndSkins = new String[]{};
-            if (optional.isPresent()) {
-                namesAndSkins = optional.get().serialized().split(";");
-            }
-
-            for (String nameAndSkin : namesAndSkins) {
-                if (!nameAndSkin.startsWith(itemName + ":")) {
-                    serializedBuilder.append(nameAndSkin).append(";");
-                }
-            }
-
-            serializedBuilder.append(itemName).append(":").append(skinName);
-            String string = serializedBuilder.toString();
-            WeaponSkinsSupporterData newData = new WeaponSkinsSupporterData(string);
-            WEAPON_SKINS_DATA.setData(newData); // 上传到服务器
-        }
     }
 
     /**
@@ -234,6 +198,7 @@ public class PlayerSkinsComponent implements AutoSyncedComponent {
         // 将物品类型名称标准化为小写，去除空格等
         return itemTypeName.toLowerCase().trim().replaceAll("[^a-z0-9_:]", "");
     }
+
 
     @Override
     public void readFromNbt(CompoundTag compoundTag, HolderLookup.Provider provider) {

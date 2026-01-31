@@ -11,6 +11,7 @@ import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
@@ -77,17 +78,17 @@ public class SkinManagementScreen extends Screen {
     private void initTitleArea(int screenWidth, int titleHeight) {
         int titleWidth = 300;
         int titleX = (screenWidth - titleWidth) / 2;
-        int titleY = 10;
+        int startY = 10;
 
         // 标题面板
         addRenderableWidget(new SimplePanel(
-                titleX, titleY, titleWidth, titleHeight,
+                titleX, startY, titleWidth, titleHeight,
                 PANEL_COLOR, 0xFF555555
         ));
 
         // 标题文字
         addRenderableWidget(new CenteredText(
-                titleX + titleWidth / 2, titleY + titleHeight / 2,
+                titleX + titleWidth / 2, startY + titleHeight / 2,
                 this.title, 0xFFFFFFFF
         ));
     }
@@ -155,10 +156,13 @@ public class SkinManagementScreen extends Screen {
                 listWidth,
                 listHeight,
                 listTop,
-                listTop + listHeight,
-                60, // 每个条目的高度
-                itemStack,
-                skinsComponent
+                getItemTypeName(itemStack),
+                skinsComponent,
+                skinName -> {
+                    // 当选择皮肤时更新玩家的皮肤设置
+                    skinsComponent.setEquippedSkinForItemType(getItemTypeName(itemStack), skinName);
+                    skinsComponent.setSkinInDataSync(itemStack, skinName);
+                }
         );
 
         addRenderableWidget(skinList);
@@ -208,6 +212,12 @@ public class SkinManagementScreen extends Screen {
         String name = item.getDescription().getString();
         if (name.length() <= 12) return name;
         return name.substring(0, 10) + "...";
+    }
+
+    private String getItemTypeName(ItemStack itemStack) {
+        Item item = itemStack.getItem();
+        String itemId = BuiltInRegistries.ITEM.getKey(item).getPath();
+        return itemId.toLowerCase();
     }
 
     private List<Item> getSkinnableItemTypes() {

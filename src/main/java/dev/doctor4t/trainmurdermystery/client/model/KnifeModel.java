@@ -5,6 +5,7 @@ package dev.doctor4t.trainmurdermystery.client.model;
 import dev.doctor4t.trainmurdermystery.cca.PlayerSkinsComponent;
 import dev.doctor4t.trainmurdermystery.index.TMMCosmetics;
 import dev.doctor4t.trainmurdermystery.item.KnifeItem;
+import dev.doctor4t.trainmurdermystery.util.SkinManager;
 import net.fabricmc.fabric.api.renderer.v1.model.FabricBakedModel;
 import net.fabricmc.fabric.api.renderer.v1.render.RenderContext;
 
@@ -92,8 +93,7 @@ public class KnifeModel implements UnbakedModel, FabricBakedModel, BakedModel {
     private String getSkinFromPlayerComponent(ItemStack stack) {
         Player player = Minecraft.getInstance().player;
         if (player != null) {
-            PlayerSkinsComponent skinsComponent = PlayerSkinsComponent.KEY.get(player);
-            return skinsComponent.getSkinFromDataSync(stack);
+            return SkinManager.getEquippedSkin(player, stack);
         }
         // 如果无法获取玩家或组件，则回退到原始方法
         return TMMCosmetics.getSkin(stack);

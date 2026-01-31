@@ -13,10 +13,13 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.commands.arguments.item.ItemArgument;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.entity.player.Player;
 
 import java.util.Collection;
+
+import static dev.doctor4t.trainmurdermystery.TMM.LOGGER;
 
 public class ManageSkinsCommand {
 
@@ -51,13 +54,13 @@ public class ManageSkinsCommand {
 
 
             Collection<? extends Player> players = EntityArgument.getPlayers(context, "targets");
-            String item = StringArgumentType.getString(context, "item");
-            String skin = StringArgumentType.getString(context, "skin");
+            var item = ItemArgument.getItem(context, "item");
+            String skin = SkinArgumentType.getString(context, "skin");
 
             int successes = 0;
             for (Player player : players) {
                 // 解锁指定物品类型的皮肤
-                SkinManager.unlockSkinForItemType(player, item, skin);
+                SkinManager.unlockSkinForItemType(player, BuiltInRegistries.ITEM.getKey(item.getItem()).toString(), skin);
                 context.getSource().sendSuccess(() -> Component.literal("Gave skin '" + skin + "' for item type '" + item + "' to " + player.getName().getString()), true);
                 successes++;
             }
@@ -66,20 +69,21 @@ public class ManageSkinsCommand {
         }catch (
                 Exception ig
         ){
+            LOGGER.error("Error occurred while executing manageskins command", ig);
             return 0;
         }
     }
 
     private static int takeSkin(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         Collection<? extends Player> players = EntityArgument.getPlayers(context, "targets");
-        String item = StringArgumentType.getString(context, "item");
-        String skin = StringArgumentType.getString(context, "skin");
+        var item = ItemArgument.getItem(context, "item");
+        String skin = SkinArgumentType.getString(context, "skin");
 
         int successes = 0;
         for (Player player : players) {
             // 锁定（移除）指定物品类型的皮肤
             PlayerSkinsComponent skinsComponent = PlayerSkinsComponent.KEY.get(player);
-            skinsComponent.lockSkinForItemType(item, skin);
+            skinsComponent.lockSkinForItemType(BuiltInRegistries.ITEM.getKey(item.getItem()).toString(), skin);
             context.getSource().sendSuccess(() -> Component.literal("Removed skin '" + skin + "' for item type '" + item + "' from " + player.getName().getString()), true);
             successes++;
         }
@@ -89,13 +93,13 @@ public class ManageSkinsCommand {
 
     private static int setEquippedSkin(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
         Collection<? extends Player> players = EntityArgument.getPlayers(context, "targets");
-        String item = StringArgumentType.getString(context, "item");
-        String skin = StringArgumentType.getString(context, "skin");
+        var item = ItemArgument.getItem(context, "item");
+        var skin = SkinArgumentType.getString(context, "skin");
 
         int successes = 0;
         for (Player player : players) {
             // 设置指定物品类型的装备皮肤
-            SkinManager.setEquippedSkinForItemType(player, item, skin);
+            SkinManager.setEquippedSkinForItemType(player, BuiltInRegistries.ITEM.getKey(item.getItem()).toString(), skin);
             context.getSource().sendSuccess(() -> Component.literal("Set equipped skin to '" + skin + "' for item type '" + item + "' for " + player.getName().getString()), true);
             successes++;
         }

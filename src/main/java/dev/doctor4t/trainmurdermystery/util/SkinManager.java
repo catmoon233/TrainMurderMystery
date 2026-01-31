@@ -21,6 +21,7 @@ public class SkinManager {
     public static String getEquippedSkin(Player player, ItemStack itemStack) {
         PlayerSkinsComponent skinsComponent = PlayerSkinsComponent.KEY.get(player);
         return skinsComponent.getSkinFromDataSync(itemStack);
+
     }
     
     /**
@@ -34,6 +35,7 @@ public class SkinManager {
         PlayerSkinsComponent skinsComponent = PlayerSkinsComponent.KEY.get(player);
         skinsComponent.setEquippedSkin(itemStack, skinName);
         skinsComponent.setSkinInDataSync(itemStack, skinName);
+        skinsComponent.syncSkinsToClient();
     }
     
     /**
@@ -47,6 +49,7 @@ public class SkinManager {
     public static boolean isSkinUnlocked(Player player, ItemStack itemStack, String skinName) {
         PlayerSkinsComponent skinsComponent = PlayerSkinsComponent.KEY.get(player);
         return skinsComponent.isSkinUnlocked(itemStack, skinName);
+
     }
     
     /**
@@ -59,6 +62,7 @@ public class SkinManager {
     public static void unlockSkin(Player player, ItemStack itemStack, String skinName) {
         PlayerSkinsComponent skinsComponent = PlayerSkinsComponent.KEY.get(player);
         skinsComponent.unlockSkin(itemStack, skinName);
+        skinsComponent.syncSkinsToClient();
     }
     
     /**
@@ -71,6 +75,7 @@ public class SkinManager {
     public static void lockSkin(Player player, ItemStack itemStack, String skinName) {
         PlayerSkinsComponent skinsComponent = PlayerSkinsComponent.KEY.get(player);
         skinsComponent.lockSkin(itemStack, skinName);
+        skinsComponent.syncSkinsToClient();
     }
     
     /**
@@ -83,6 +88,7 @@ public class SkinManager {
     public static void unlockSkinForItemType(Player player, String itemTypeName, String skinName) {
         PlayerSkinsComponent skinsComponent = PlayerSkinsComponent.KEY.get(player);
         skinsComponent.unlockSkinForItemType(itemTypeName, skinName);
+        skinsComponent.syncSkinsToClient();
     }
     
     /**
@@ -95,6 +101,8 @@ public class SkinManager {
     public static void setEquippedSkinForItemType(Player player, String itemTypeName, String skinName) {
         PlayerSkinsComponent skinsComponent = PlayerSkinsComponent.KEY.get(player);
         skinsComponent.setEquippedSkinForItemType(itemTypeName, skinName);
+        skinsComponent.syncSkinsToClient();
+
     }
     
     /**

@@ -215,7 +215,7 @@ public class PlayerMoodComponent implements RoleComponent, ServerTickingComponen
         if (role != null && role.getMoodType() == Role.MoodType.REAL) {
             float clampedMood = Math.clamp(mood, 0, 1);
             // 只有当情绪变化超过0.05时才同步（减少网络占用）
-            if (Math.abs(this.mood - clampedMood) > 0.05f || this.mood <=0) {
+            if (Math.abs(this.mood - clampedMood) > 0.01f ) {
                 this.mood = clampedMood;
                 this.sync();
             } else {
