@@ -16,6 +16,7 @@ import dev.doctor4t.trainmurdermystery.client.gui.StoreRenderer;
 import dev.doctor4t.trainmurdermystery.client.gui.TimeRenderer;
 import dev.doctor4t.trainmurdermystery.client.gui.screen.MapSelectorScreen;
 import dev.doctor4t.trainmurdermystery.client.gui.screen.PlayerStatsScreen;
+import dev.doctor4t.trainmurdermystery.client.gui.screen.SkinManagementScreen;
 import dev.doctor4t.trainmurdermystery.client.gui.screen.WaypointHUD;
 import dev.doctor4t.trainmurdermystery.client.model.TMMModelLayers;
 import dev.doctor4t.trainmurdermystery.client.render.block_entity.PlateBlockEntityRenderer;
@@ -27,6 +28,7 @@ import dev.doctor4t.trainmurdermystery.client.render.entity.NoteEntityRenderer;
 import dev.doctor4t.trainmurdermystery.client.util.TMMItemTooltips;
 import dev.doctor4t.trainmurdermystery.client.gui.SecurityCameraHUD;
 import dev.doctor4t.trainmurdermystery.command.ShowStatsCommand;
+import dev.doctor4t.trainmurdermystery.command.SkinsCommand;
 import dev.doctor4t.trainmurdermystery.entity.FirecrackerEntity;
 import dev.doctor4t.trainmurdermystery.client.AFKRenderer;
 import dev.doctor4t.trainmurdermystery.entity.NoteEntity;
@@ -93,6 +95,7 @@ public class TMMClient implements ClientModInitializer {
 
     public static KeyMapping instinctKeybind;
     public static KeyMapping statsKeybind; // 新增统计面板热键
+    public static KeyMapping skinsKeybind; // 新增皮肤管理热键
     public static boolean isInstinctToggleEnabled = false; // 新增变量用于跟踪切换状态
     public static boolean prevInstinctKeyDown = false; // 用于检测按键按下事件
     public static float prevInstinctLightLevel = -.04f;
@@ -358,6 +361,12 @@ public class TMMClient implements ClientModInitializer {
                 context.client().setScreen(new MapSelectorScreen());
             });
         });
+        ClientPlayNetworking.registerGlobalReceiver(OpenSkinScreenPaylod.ID, (payload, context) -> {
+
+            context.client().execute(() -> {
+                context.client().setScreen(new SkinManagementScreen());
+            });
+        });
         ClientPlayNetworking.registerGlobalReceiver(CloseUiPayload.ID, (payload, context) -> {
 
             context.client().execute(() -> {
@@ -381,6 +390,13 @@ public class TMMClient implements ClientModInitializer {
                 "category." + TMM.MOD_ID + ".keybinds"
         ));
         
+        // Register skins keybind
+        skinsKeybind = KeyBindingHelper.registerKeyBinding(new KeyMapping(
+                "key." + TMM.MOD_ID + ".skins",
+                InputConstants.Type.KEYSYM,
+                GLFW.GLFW_KEY_N, // 默认热键 'N'
+                "category." + TMM.MOD_ID + ".keybinds"
+        ));
         // Initialize Command UI system
         TMMCommandUI.init();
         KeyPressHandler.register();
@@ -410,6 +426,14 @@ public class TMMClient implements ClientModInitializer {
                     client.setScreen(null);
                 } else {
                     client.setScreen(new PlayerStatsScreen(client.player.getUUID()));
+                }
+            }
+            
+            if (skinsKeybind.consumeClick()) {
+                if (client.screen instanceof SkinManagementScreen) {
+                    client.setScreen(null);
+                } else {
+                    client.setScreen(new SkinManagementScreen());
                 }
             }
         });

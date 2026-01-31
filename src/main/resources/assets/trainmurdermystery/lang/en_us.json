@@ -738,5 +738,21 @@
   "commands.tmm.switchmap.list.header": "Available maps list:",
   "commands.tmm.switchmap.random.success": "Random map loaded",
   "commands.tmm.switchmap.random.error.no_maps": "No maps available",
-  "commands.tmm.switchmap.current_map_info": "Current map info:"
+  "commands.tmm.switchmap.current_map_info": "Current map info:",
+  "screen.trainmurdermystery.skins.title": "Skin Management",
+  "screen.trainmurdermystery.skins.default_skin": "Default",
+  "screen.trainmurdermystery.skins.current_skin": "Current",
+  "screen.trainmurdermystery.skins.equip_skin": "Equip",
+  "screen.trainmurdermystery.skins.back_button": "Back",
+  "screen.trainmurdermystery.skins.no_skinnable_items": "No skinnable items in inventory",
+  "key.trainmurdermystery.skins": "Open Skins Menu",
+  "screen.trainmurdermystery.skins.empty_state": "No skins to display",
+  "screen.trainmurdermystery.skins.empty_hint": "Collect skinnable items to get started",
+  "screen.trainmurdermystery.skins.refresh": "Refresh",
+  "screen.trainmurdermystery.skins.refresh_tooltip": "Refresh the skin list",
+  "screen.trainmurdermystery.skins.back": "Back",
+  "screen.trainmurdermystery.skins.instructions": "Click on a skin to equip it",
+  "screen.trainmurdermystery.skins.stats": "Skins: %d/%d",
+  "screen.trainmurdermystery.skins.equipped_short": "Equipped",
+  "screen.trainmurdermystery.skins.equip_short": "Equip"
 }

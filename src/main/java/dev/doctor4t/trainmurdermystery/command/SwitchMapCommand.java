@@ -5,6 +5,7 @@ import com.mojang.brigadier.arguments.StringArgumentType;
 import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.cca.AreasWorldComponent;
 import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
+import dev.doctor4t.trainmurdermystery.command.argument.MapLoadArgumentType;
 import dev.doctor4t.trainmurdermystery.game.MapManager;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -23,12 +24,12 @@ public class SwitchMapCommand {
                 Commands.literal("tmm:switchmap")
                         .requires(source -> source.hasPermission(2))
                         .then(Commands.literal("load")
-                                .then(Commands.argument("mapName", StringArgumentType.string())
+                                .then(Commands.argument("mapName", MapLoadArgumentType.string())
                                         .executes(context -> executeLoad(context.getSource(), StringArgumentType.getString(context, "mapName")))
                                 )
                         )
                         .then(Commands.literal("save")
-                                .then(Commands.argument("mapName", StringArgumentType.string())
+                                .then(Commands.argument("mapName", MapLoadArgumentType.string())
                                         .executes(context -> executeSave(context.getSource(), StringArgumentType.getString(context, "mapName")))
                                 )
                         )

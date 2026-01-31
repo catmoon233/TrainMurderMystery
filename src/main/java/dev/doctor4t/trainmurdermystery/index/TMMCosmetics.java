@@ -2,6 +2,7 @@ package dev.doctor4t.trainmurdermystery.index;
 
 
 import dev.doctor4t.trainmurdermystery.TMM;
+import dev.doctor4t.trainmurdermystery.cca.PlayerSkinsComponent;
 import dev.doctor4t.trainmurdermystery.util.WeaponSkinsSupporterData;
 import dev.upcraft.datasync.api.DataSyncAPI;
 import dev.upcraft.datasync.api.SyncToken;
@@ -16,13 +17,16 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface TMMCosmetics {
-    ResourceLocation WEAPON_SKINS_DATA_ID = TMM.id("weapon_skins");
-    SyncToken<WeaponSkinsSupporterData> WEAPON_SKINS_DATA = DataSyncAPI.register(WeaponSkinsSupporterData.class, WEAPON_SKINS_DATA_ID, WeaponSkinsSupporterData.CODEC);
+    // 不再重复注册，而是使用PlayerSkinsComponent中已注册的实例
+    static SyncToken<WeaponSkinsSupporterData> getWeaponSkinsData() {
+        return PlayerSkinsComponent.WEAPON_SKINS_DATA;
+    }
 
     static String getSkin(ItemStack itemStack) {
+        // 获取物品的owner NBT数据，如果没有则使用默认UUID
         UUID owner = UUID.fromString(itemStack.getOrDefault(TMMDataComponentTypes.OWNER, "98eaa37f-7712-4809-b709-504d3be0b6ef")); // random uuid
-        String itemName = itemStack.getItem().getDescription().getString().toLowerCase(Locale.ROOT);
-        Optional<WeaponSkinsSupporterData> optional = WEAPON_SKINS_DATA.get(owner);
+        String itemName = itemStack.getDescriptionId().toLowerCase(Locale.ROOT);
+        Optional<WeaponSkinsSupporterData> optional = getWeaponSkinsData().get(owner);
         if (optional.isPresent()) {
             String serialized = optional.get().serialized();
             String[] namesAndSkins = serialized.split(";");
@@ -38,11 +42,11 @@ public interface TMMCosmetics {
     }
 
     static void setSkin(Player player, ItemStack itemStack, String skinName) {
-        // only upload data on the client, servers can't datasync
+        // 只有上传数据在客户端，服务器不能datasync
         if (player.level().isClientSide()) {
             StringBuilder serializedBuilder = new StringBuilder();
-            Optional<WeaponSkinsSupporterData> optional = WEAPON_SKINS_DATA.get(player.getUUID());
-            String itemName = itemStack.getItem().getDescription().getString().toLowerCase(Locale.ROOT);
+            Optional<WeaponSkinsSupporterData> optional = getWeaponSkinsData().get(player.getUUID());
+            String itemName = itemStack.getDescriptionId().toLowerCase(Locale.ROOT);
 
             String[] namesAndSkins = new String[]{};
             if (optional.isPresent()) {
@@ -58,7 +62,7 @@ public interface TMMCosmetics {
             serializedBuilder.append(itemName).append(":").append(skinName);
             String string = serializedBuilder.toString();
             WeaponSkinsSupporterData newData = new WeaponSkinsSupporterData(string);
-            WEAPON_SKINS_DATA.setData(newData); // upload to server
+            getWeaponSkinsData().setData(newData); // 上传到服务器
         }
     }
 }

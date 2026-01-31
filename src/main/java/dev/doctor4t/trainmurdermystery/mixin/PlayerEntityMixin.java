@@ -78,11 +78,20 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerSt
 	public float tmm$overrideMovementSpeed(float original) {
 		final var player = (Player) (Object) this;
 		if (GameFunctions.isPlayerAliveAndSurvival(player)) {
-			if (player.hasEffect(MobEffects.MOVEMENT_SPEED)){
-				final var effect = player.getEffect(MobEffects.MOVEMENT_SPEED);
-				return this.isSprinting() ? 0.1f * (1 + effect.getAmplifier() * 0.2f) : 0.07f * (1 + effect.getAmplifier() * 0.2f);
+
+			float speedModifier = 1.0f;
+			
+			if (player.hasEffect(MobEffects.MOVEMENT_SPEED)) {
+				final var speedEffect = player.getEffect(MobEffects.MOVEMENT_SPEED);
+				speedModifier *= (1 + speedEffect.getAmplifier() * 0.2f);
 			}
-			return this.isSprinting() ? 0.1f : 0.07f;
+			
+			if (player.hasEffect(MobEffects.MOVEMENT_SLOWDOWN)) {
+				final var slowEffect = player.getEffect(MobEffects.MOVEMENT_SLOWDOWN);
+				speedModifier *= (1 - slowEffect.getAmplifier() * 0.2f);
+			}
+			
+			return this.isSprinting() ? 0.1f * speedModifier : 0.07f * speedModifier;
 		} else {
 			return original;
 		}

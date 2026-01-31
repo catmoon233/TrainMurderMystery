@@ -1,7 +1,9 @@
 package dev.doctor4t.trainmurdermystery.block;
 
 import dev.doctor4t.trainmurdermystery.block.entity.SeatEntity;
+import dev.doctor4t.trainmurdermystery.index.TMMBlocks;
 import dev.doctor4t.trainmurdermystery.index.TMMEntities;
+import dev.doctor4t.trainmurdermystery.index.TMMItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
@@ -46,26 +48,35 @@ public abstract class MountableBlock extends Block {
                 return InteractionResult.sidedSuccess(true);
             }
 
-            player.stopRiding();
-            SeatEntity seatEntity = TMMEntities.SEAT.create(world);
+            if (!player.getCooldowns().isOnCooldown(TMMBlocks.ACACIA_BRANCH.asItem())) {
+                player.getCooldowns().addCooldown(TMMBlocks.ACACIA_BRANCH.asItem(), 10);
 
-            if (seatEntity == null) {
-                return InteractionResult.PASS;
+                if (player.getVehicle()!= null){
+                    player.stopRiding();
+                    player.setPos(lastPos.get(player.getUUID()));
+                }
+
+                SeatEntity seatEntity = TMMEntities.SEAT.create(world);
+
+                if (seatEntity == null) {
+                    return InteractionResult.PASS;
+                }
+                lastPos.put(player.getUUID(), player.position());
+                Vec3 sitPos = this.getSitPos(world, state, pos);
+                Vec3 vec3d = Vec3.atLowerCornerOf(pos).add(sitPos);
+
+                seatEntity.moveTo(vec3d.x, vec3d.y, vec3d.z, 0, 0);
+                seatEntity.setSeatPos(pos);
+
+                world.addFreshEntity(seatEntity);
+                player.startRiding(seatEntity);
+
+                return InteractionResult.sidedSuccess(false);
             }
-            lastPos.put(player.getUUID(), player.position());
-            Vec3 sitPos = this.getSitPos(world, state, pos);
-            Vec3 vec3d = Vec3.atLowerCornerOf(pos).add(sitPos);
-
-            seatEntity.moveTo(vec3d.x, vec3d.y, vec3d.z, 0, 0);
-            seatEntity.setSeatPos(pos);
-
-            world.addFreshEntity(seatEntity);
-            player.startRiding(seatEntity);
-
-            return InteractionResult.sidedSuccess(false);
         } else {
             return InteractionResult.PASS;
         }
+        return InteractionResult.PASS;
     }
 
     public abstract Vec3 getSitPos(Level world, BlockState state, BlockPos pos);

@@ -11,6 +11,8 @@ import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
 import dev.doctor4t.trainmurdermystery.client.model.KnifeModelLoadingPlugin;
 import dev.doctor4t.trainmurdermystery.command.*;
 import dev.doctor4t.trainmurdermystery.command.argument.GameModeArgumentType;
+import dev.doctor4t.trainmurdermystery.command.argument.MapLoadArgumentType;
+import dev.doctor4t.trainmurdermystery.command.argument.SkinArgumentType;
 import dev.doctor4t.trainmurdermystery.command.argument.TimeOfDayArgumentType;
 import dev.doctor4t.trainmurdermystery.event.AFKEventHandler;
 import dev.doctor4t.trainmurdermystery.event.EntityInteractionHandler;
@@ -121,6 +123,8 @@ public class TMM implements ModInitializer {
         // Register command argument types
         ArgumentTypeRegistry.registerArgumentType(id("timeofday"), TimeOfDayArgumentType.class, SingletonArgumentInfo.contextFree(TimeOfDayArgumentType::timeofday));
         ArgumentTypeRegistry.registerArgumentType(id("gamemode"), GameModeArgumentType.class, SingletonArgumentInfo.contextFree(GameModeArgumentType::gameMode));
+        ArgumentTypeRegistry.registerArgumentType(id("skin"), SkinArgumentType.class, SingletonArgumentInfo.contextFree(SkinArgumentType::string));
+        ArgumentTypeRegistry.registerArgumentType(id("map_load"), MapLoadArgumentType.class, SingletonArgumentInfo.contextFree(MapLoadArgumentType::string ));
 
         // Register commands
         CommandRegistrationCallback.EVENT.register(((dispatcher, registryAccess, environment) -> {
@@ -153,6 +157,8 @@ public class TMM implements ModInitializer {
             ShowSelectedMapUICommand.register(dispatcher);
             NetworkStatsCommand.register(dispatcher);
             ReloadMapConfigCommand.register(dispatcher);
+            SkinsCommand.register(dispatcher);
+            ManageSkinsCommand.register(dispatcher,registryAccess);
         }));
         
 
@@ -219,6 +225,7 @@ public class TMM implements ModInitializer {
         PayloadTypeRegistry.playS2C().register(ShowStatsPayload.ID, ShowStatsPayload.CODEC);
         PayloadTypeRegistry.playS2C().register(ShowSelectedMapUIPayload.ID, ShowSelectedMapUIPayload.CODEC);
         PayloadTypeRegistry.playS2C().register(CloseUiPayload.ID, CloseUiPayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(OpenSkinScreenPaylod.ID, OpenSkinScreenPaylod.CODEC);
         PayloadTypeRegistry.playS2C().register(dev.doctor4t.trainmurdermystery.network.packet.SyncWaypointsPacket.ID, dev.doctor4t.trainmurdermystery.network.packet.SyncWaypointsPacket.CODEC);
         PayloadTypeRegistry.playS2C().register(dev.doctor4t.trainmurdermystery.network.packet.SyncWaypointVisibilityPacket.ID, dev.doctor4t.trainmurdermystery.network.packet.SyncWaypointVisibilityPacket.CODEC);
         PayloadTypeRegistry.playS2C().register(dev.doctor4t.trainmurdermystery.network.packet.SyncSpecificWaypointVisibilityPacket.ID, dev.doctor4t.trainmurdermystery.network.packet.SyncSpecificWaypointVisibilityPacket.CODEC);

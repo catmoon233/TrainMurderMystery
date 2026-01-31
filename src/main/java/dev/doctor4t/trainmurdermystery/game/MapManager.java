@@ -6,6 +6,7 @@ import com.google.gson.JsonParser;
 import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.cca.AreasWorldComponent;
 import dev.doctor4t.trainmurdermystery.data.MapConfig;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.level.storage.LevelResource;
 import net.minecraft.world.phys.Vec3;
@@ -348,7 +349,7 @@ public class MapManager {
                     AtomicBoolean isAvailable = new AtomicBoolean(false);
                     first.ifPresent(
                     a-> {
-                        isAvailable.set(first.get().maxCount < serverWorld.players().size());
+                        isAvailable.set(first.get().maxCount >= serverWorld.players().size());
                     }
                     );
                     return isAvailable.get();
@@ -377,6 +378,29 @@ public class MapManager {
 
         try {
             Path mapsDirPath = Paths.get(serverWorld.getServer().getServerDirectory().toString(), "world", "maps");
+            File mapsDir = mapsDirPath.toFile();
+
+            if (mapsDir.exists() && mapsDir.isDirectory()) {
+                File[] files = mapsDir.listFiles((dir, name) -> name.toLowerCase().endsWith(".json"));
+                if (files != null) {
+                    for (File file : files) {
+                        String fileName = file.getName();
+                        String mapName = fileName.substring(0, fileName.length() - 5); // 移除.json后缀
+                        maps.add(mapName);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            TMM.LOGGER.error("Failed to list available maps", e);
+        }
+
+        return maps;
+    }
+    public static List<String> getAvailableMaps() {
+        List<String> maps = new ArrayList<>();
+
+        try {
+            Path mapsDirPath = Paths.get(FabricLoader.getInstance().getGameDir().toString(), "world", "maps");
             File mapsDir = mapsDirPath.toFile();
 
             if (mapsDir.exists() && mapsDir.isDirectory()) {

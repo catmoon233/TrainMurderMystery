@@ -2,11 +2,13 @@ package dev.doctor4t.trainmurdermystery.client.model;
 
 
 
+import dev.doctor4t.trainmurdermystery.cca.PlayerSkinsComponent;
 import dev.doctor4t.trainmurdermystery.index.TMMCosmetics;
 import dev.doctor4t.trainmurdermystery.item.KnifeItem;
 import net.fabricmc.fabric.api.renderer.v1.model.FabricBakedModel;
 import net.fabricmc.fabric.api.renderer.v1.render.RenderContext;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.block.model.BakedQuad;
 import net.minecraft.client.renderer.block.model.ItemOverrides;
 import net.minecraft.client.renderer.block.model.ItemTransforms;
@@ -19,6 +21,7 @@ import net.minecraft.client.resources.model.UnbakedModel;
 import net.minecraft.core.Direction;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.RandomSource;
+import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemDisplayContext;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
@@ -75,9 +78,25 @@ public class KnifeModel implements UnbakedModel, FabricBakedModel, BakedModel {
     public void emitItemQuads(ItemStack stack, Supplier<RandomSource> randomSupplier, RenderContext context) {
         var mode = context.itemTransformationMode();
         var variant = mode.firstPerson() || IN_HAND.contains(mode) ? KnifeModelLoadingPlugin.Variant.IN_HAND : KnifeModelLoadingPlugin.Variant.DEFAULT;
-        var skin = KnifeItem.Skin.fromString(TMMCosmetics.getSkin(stack));
+        
+        // 从玩家的CCA组件获取皮肤，而不是仅依赖TMMCosmetics
+        String skinName = getSkinFromPlayerComponent(stack);
+        var skin = KnifeItem.Skin.fromString(skinName);
 
         bakedModels[skin.ordinal()][variant.ordinal()].emitItemQuads(stack, randomSupplier, context);
+    }
+
+    /**
+     * 从玩家的CCA组件获取皮肤名称
+     */
+    private String getSkinFromPlayerComponent(ItemStack stack) {
+        Player player = Minecraft.getInstance().player;
+        if (player != null) {
+            PlayerSkinsComponent skinsComponent = PlayerSkinsComponent.KEY.get(player);
+            return skinsComponent.getSkinFromDataSync(stack);
+        }
+        // 如果无法获取玩家或组件，则回退到原始方法
+        return TMMCosmetics.getSkin(stack);
     }
 
     @Override

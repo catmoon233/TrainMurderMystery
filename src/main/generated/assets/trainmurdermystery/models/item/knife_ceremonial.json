@@ -1,0 +1,6 @@
+{
+  "parent": "trainmurdermystery:item/template_knife",
+  "textures": {
+    "layer0": "trainmurdermystery:item/knife_ceremonial"
+  }
+}

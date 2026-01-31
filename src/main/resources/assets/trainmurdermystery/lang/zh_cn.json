@@ -1,4 +1,5 @@
 {
+  "tip.skin": "皮肤: ",
   "gui.tmm.map_selector.title": "选择地图",
   "gui.tmm.map_selector.subtitle": "按下 %s 开始投票地图",
   "gui.tmm.map_selector.random": "随机",
@@ -736,7 +737,23 @@
   "commands.tmm.switchmap.error.save_failed": "地图保存失败: %s",
   "commands.tmm.switchmap.list.none": "没有可用的地图",
   "commands.tmm.switchmap.list.header": "可用地图列表:",
-  "commands.tmm.switchmap.random.success": "已随机加载地图",
-  "commands.tmm.switchmap.random.error.no_maps": "没有可用的地图",
-  "commands.tmm.switchmap.current_map_info": "当前地图信息:"
+  "commands.tmm.switchmap.random.success": "随机加载地图",
+  "commands.tmm.switchmap.random.error.no_maps": "无可用地图",
+  "commands.tmm.switchmap.current_map_info": "当前地图信息：",
+  "screen.trainmurdermystery.skins.title": "皮肤管理",
+  "screen.trainmurdermystery.skins.default_skin": "默认",
+  "screen.trainmurdermystery.skins.current_skin": "当前",
+  "screen.trainmurdermystery.skins.equip_skin": "装备",
+  "screen.trainmurdermystery.skins.back_button": "返回",
+  "screen.trainmurdermystery.skins.no_skinnable_items": "背包中无可换肤的物品",
+  "key.trainmurdermystery.skins": "打开皮肤菜单",
+  "screen.trainmurdermystery.skins.empty_state": "暂无皮肤可显示",
+  "screen.trainmurdermystery.skins.empty_hint": "收集可换肤物品以开始使用",
+  "screen.trainmurdermystery.skins.refresh": "刷新",
+  "screen.trainmurdermystery.skins.refresh_tooltip": "刷新皮肤列表",
+  "screen.trainmurdermystery.skins.back": "返回",
+  "screen.trainmurdermystery.skins.instructions": "点击皮肤进行装备",
+  "screen.trainmurdermystery.skins.stats": "皮肤: %d/%d",
+  "screen.trainmurdermystery.skins.equipped_short": "已装备",
+  "screen.trainmurdermystery.skins.equip_short": "装备"
 }
