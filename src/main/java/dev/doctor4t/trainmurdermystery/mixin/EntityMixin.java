@@ -22,12 +22,15 @@ public class EntityMixin {
         if (gameWorldComponent.isRunning()) {
             Entity self = (Entity) (Object) this;
 
+            if (TMM.canCollideEntity.stream().anyMatch(p -> p.test( self) || p.test( other))){
+                return true;
+            }
 
             if (self instanceof Player && other instanceof Player) {
 //                final var role = gameWorldComponent.getRole((Player) self);
 //                final var role1 = gameWorldComponent.getRole((Player) other);
                 if (TMM.canCollide.stream().anyMatch(p -> p.test((Player) self) || p.test((Player) other))){
-                    return original.call(other);
+                    return false   ;
                 }
                 return true;
             }

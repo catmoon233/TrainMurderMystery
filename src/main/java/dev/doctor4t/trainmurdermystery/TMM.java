@@ -66,6 +66,7 @@ public class TMM implements ModInitializer {
     public static List<Predicate<Role>> canUseOtherPerson = new ArrayList<>();
     public static List<Predicate<Role>> canUseChatHud= new ArrayList<>();
     public static List<Predicate<Player>> canCollide= new ArrayList<>();
+    public static List<Predicate<Entity>> canCollideEntity= new ArrayList<>();
 
     public static @NotNull ResourceLocation id(String name) {
         return ResourceLocation.fromNamespaceAndPath(MOD_ID, name);
