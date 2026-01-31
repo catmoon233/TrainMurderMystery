@@ -24,29 +24,29 @@ public class ServerHandshakePacketListenerImplMixin {
 	@Shadow @Final
 	private Connection connection;
 
-//	@Inject(method = "handleIntention", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerHandshakePacketListenerImpl;beginLogin(Lnet/minecraft/network/protocol/handshake/ClientIntentionPacket;Z)V", shift = At.Shift.AFTER, ordinal = 0), cancellable = true)
-//	private void tryDisconnectPlayersIfModlistNotMatches(ClientIntentionPacket clientIntentionPacket, CallbackInfo ci) {
-//		MutableComponent reason = null;
-//		IPacketWithMOD_IDs packetWithMOD_IDs = (IPacketWithMOD_IDs)(Object)clientIntentionPacket;
-//		if(packetWithMOD_IDs.getMOD_IDs() != null) {
-//			List<Pair<String, MismatchType>> mismatches = MWServerConfig.test(packetWithMOD_IDs.getMOD_IDs());
-//			if(!mismatches.isEmpty()) {
-//				reason = Component.translatable("multiplayer.disconnect.mod_whitelist.modlist_mismatch");
-//				for (Pair<String, MismatchType> mod: mismatches) {
-//					switch (mod.getRight()) {
-//						case UNINSTALLED_BUT_SHOULD_INSTALL -> reason.append(Component.translatable("multiplayer.disconnect.mod_whitelist.misc.to_install", mod.getLeft()));
-//						case INSTALLED_BUT_SHOULD_NOT_INSTALL -> reason.append(Component.translatable("multiplayer.disconnect.mod_whitelist.misc.to_uninstall", mod.getLeft()));
-//					}
-//				}
-//			}
-//		} else {
-//			reason = Component.translatable("multiplayer.disconnect.mod_whitelist.packet_corruption");
-//		}
-//
-//		if(reason != null) {
-//			this.connection.send(new ClientboundLoginDisconnectPacket(reason));
-//			this.connection.disconnect(reason);
-//			ci.cancel();
-//		}
-//	}
+	@Inject(method = "handleIntention", at = @At(value = "INVOKE", target = "Lnet/minecraft/server/network/ServerHandshakePacketListenerImpl;beginLogin(Lnet/minecraft/network/protocol/handshake/ClientIntentionPacket;Z)V", shift = At.Shift.AFTER, ordinal = 0), cancellable = true)
+	private void tryDisconnectPlayersIfModlistNotMatches(ClientIntentionPacket clientIntentionPacket, CallbackInfo ci) {
+		MutableComponent reason = null;
+		IPacketWithMOD_IDs packetWithMOD_IDs = (IPacketWithMOD_IDs)(Object)clientIntentionPacket;
+		if(packetWithMOD_IDs.getMOD_IDs() != null) {
+			List<Pair<String, MismatchType>> mismatches = MWServerConfig.test(packetWithMOD_IDs.getMOD_IDs());
+			if(!mismatches.isEmpty()) {
+				reason = Component.translatable("multiplayer.disconnect.mod_whitelist.modlist_mismatch");
+				for (Pair<String, MismatchType> mod: mismatches) {
+					switch (mod.getRight()) {
+						case UNINSTALLED_BUT_SHOULD_INSTALL -> reason.append(Component.translatable("multiplayer.disconnect.mod_whitelist.misc.to_install", mod.getLeft()));
+						case INSTALLED_BUT_SHOULD_NOT_INSTALL -> reason.append(Component.translatable("multiplayer.disconnect.mod_whitelist.misc.to_uninstall", mod.getLeft()));
+					}
+				}
+			}
+		} else {
+			reason = Component.translatable("multiplayer.disconnect.mod_whitelist.packet_corruption");
+		}
+
+		if(reason != null) {
+			this.connection.send(new ClientboundLoginDisconnectPacket(reason));
+			this.connection.disconnect(reason);
+			ci.cancel();
+		}
+	}
 }

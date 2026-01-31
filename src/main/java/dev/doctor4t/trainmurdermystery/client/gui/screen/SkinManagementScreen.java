@@ -216,8 +216,8 @@ public class SkinManagementScreen extends Screen {
 
     private String getItemTypeName(ItemStack itemStack) {
         Item item = itemStack.getItem();
-        String itemId = BuiltInRegistries.ITEM.getKey(item).getPath();
-        return itemId.toLowerCase();
+        return BuiltInRegistries.ITEM.getKey(item).toString();
+
     }
 
     private List<Item> getSkinnableItemTypes() {

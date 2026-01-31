@@ -5,6 +5,8 @@ import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.TMMConfig;
 import dev.doctor4t.trainmurdermystery.api.GameMode;
 import dev.doctor4t.trainmurdermystery.api.Role;
+import dev.doctor4t.trainmurdermystery.block.SmallDoorBlock;
+import dev.doctor4t.trainmurdermystery.block_entity.SmallDoorBlockEntity;
 import dev.doctor4t.trainmurdermystery.cca.*;
 import dev.doctor4t.trainmurdermystery.compat.TrainVoicePlugin;
 import dev.doctor4t.trainmurdermystery.entity.FirecrackerEntity;
@@ -49,6 +51,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.pattern.BlockInWorld;
+import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.portal.DimensionTransition;
 import net.minecraft.world.phys.AABB;
@@ -654,7 +657,7 @@ public class GameFunctions {
     // returns whether another reset should be attempted
     public static boolean tryResetTrain(ServerLevel serverWorld) {
 
-        if (!TMMConfig.enableAutoTrainReset) {
+        if (TMMConfig.enableAutoTrainReset) {
             if (serverWorld.getServer().overworld().equals(serverWorld)) {
                 AreasWorldComponent areas = AreasWorldComponent.KEY.get(serverWorld);
                 if (TMMConfig.verboseTrainResetLogs) {
@@ -883,18 +886,19 @@ public class GameFunctions {
                             BlockState blockState = cachedBlockPosition.getState();
 
                             // Check if the block is one of our door blocks
-                            if (isTmmDoorBlock(blockState.getBlock())) {
-                                BlockEntity blockEntity = serverWorld.getBlockEntity(blockPos6);
-                                if (blockEntity != null) {
-                                    BlockEntityInfo blockEntityInfo = new BlockEntityInfo(
-                                            blockEntity.saveCustomOnly(serverWorld.registryAccess()),
-                                            blockEntity.components());
-                                    list2.add(new BlockInfo(blockPos7, blockState, blockEntityInfo));
-                                    deque.addLast(blockPos6); // Add to end to process last
-                                } else {
-                                    // Add door block without entity if somehow it doesn't have one
-                                    list2.add(new BlockInfo(blockPos7, blockState, null));
-                                    deque.addLast(blockPos6);
+                            if (blockState.getBlock() instanceof SmallDoorBlock && blockState.getValue(SmallDoorBlock.HALF).equals(DoubleBlockHalf.LOWER)) {
+                                if (serverWorld.getBlockEntity(blockPos6) instanceof SmallDoorBlockEntity entity) {
+                                    if (entity != null) {
+                                        BlockEntityInfo blockEntityInfo = new BlockEntityInfo(
+                                                entity.saveCustomOnly(serverWorld.registryAccess()),
+                                                entity.components());
+                                        list2.add(new BlockInfo(blockPos7, blockState, blockEntityInfo));
+                                        deque.addLast(blockPos6); // Add to end to process last
+                                    } else {
+                                        // Add door block without entity if somehow it doesn't have one
+                                        list2.add(new BlockInfo(blockPos7, blockState, null));
+                                        deque.addLast(blockPos6);
+                                    }
                                 }
                             }
                         }
