@@ -1,14 +1,19 @@
 package dev.doctor4t.trainmurdermystery.item;
 
+import dev.doctor4t.ratatouille.util.TextUtils;
 import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.api.Role;
 import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
 import dev.doctor4t.trainmurdermystery.game.GameFunctions;
+import dev.doctor4t.trainmurdermystery.index.TMMCosmetics;
+import dev.doctor4t.trainmurdermystery.index.TMMDataComponentTypes;
 import dev.doctor4t.trainmurdermystery.index.TMMSounds;
 import dev.doctor4t.trainmurdermystery.util.KnifeStabPayload;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.chat.Component;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.Entity;
@@ -17,19 +22,26 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.entity.projectile.ProjectileUtil;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.UseAnim;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import walksy.crosshairaddons.CrosshairAddons;
 
-public class KnifeItem extends Item {
+import java.util.List;
+import java.util.Locale;
+import java.util.Random;
+
+
+public class KnifeItem extends Item implements ItemWithSkin {
     public KnifeItem(Properties settings) {
         super(settings);
     }
 
-
+    public static final ResourceLocation ITEM_ID = TMM.id("knife");
     @Override
     public InteractionResultHolder<ItemStack> use(Level world, @NotNull Player user, InteractionHand hand) {
         ItemStack itemStack = user.getItemInHand(hand);
@@ -37,6 +49,64 @@ public class KnifeItem extends Item {
         user.playSound(TMMSounds.ITEM_KNIFE_PREPARE, 1.0f, 1.0f);
         return InteractionResultHolder.consume(itemStack);
     }
+    public enum Skin {
+        DEFAULT(Colors.LIGHT_GRAY, "Kitchen Knife"),
+        CEREMONIAL(0xFFD98C28, "Ceremonial Dagger"),
+        PICK(0xFF8D4A51, "Ice Pick");
+
+        public final int color;
+        public final @Nullable String tooltipName;
+        public final Random random;
+
+        Skin(int color, @Nullable String tooltipName) {
+            this.color = color;
+            this.tooltipName = tooltipName;
+            this.random = new Random();
+        }
+
+        public String getName() {
+            return this.name().toLowerCase(Locale.ROOT);
+        }
+
+        public int getColor() {
+            return this.color;
+        }
+
+        public static Skin fromString(String name) {
+            for (Skin skin : Skin.values()) if (skin.getName().equalsIgnoreCase(name)) return skin;
+            return DEFAULT;
+        }
+
+        public static Skin getNext(Skin skin) {
+            Skin[] values = Skin.values();
+            return values[(skin.ordinal() + 1) % values.length];
+        }
+    }
+
+    @Override
+    public void inventoryTick(ItemStack itemStack, Level level, Entity entity, int i, boolean bl) {
+        super.inventoryTick(itemStack, level, entity, i, bl);
+        if (entity instanceof Player player) {
+            if (itemStack.get(TMMDataComponentTypes.OWNER) == null) {
+                Skin currentSkin = Skin.fromString(TMMCosmetics.getSkin(itemStack));
+                TMMCosmetics.setSkin(player, itemStack, Skin.getNext(currentSkin).getName());
+            }
+        }
+    }
+
+    @Override
+    public void appendHoverText(ItemStack itemStack, TooltipContext tooltipContext, List<Component> list, TooltipFlag tooltipFlag) {
+        Skin skin = Skin.fromString(TMMCosmetics.getSkin(itemStack));
+
+        if (skin != null) {
+            list.add(Component.translatable("tip.skin").withStyle(style -> style.withColor(Colors.GRAY))
+                    .append(Component.literal(TextUtils.formatValueString(skin.tooltipName)).withStyle(style -> style.withColor(skin.getColor())))
+                    .append(Component.translatable("tip.change_skin").withStyle   (style -> style.withColor(Colors.GRAY))));
+        }
+
+        super.appendHoverText(itemStack, tooltipContext, list, tooltipFlag);
+    }
+
 
     @Override
     public void releaseUsing(ItemStack stack, Level world, LivingEntity user, int remainingUseTicks) {

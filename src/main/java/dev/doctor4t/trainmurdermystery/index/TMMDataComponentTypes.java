@@ -13,6 +13,7 @@ import net.minecraft.network.codec.ByteBufCodecs;
 public interface TMMDataComponentTypes {
     DataComponentType<String> POISONER = register("poisoner", stringBuilder -> stringBuilder.persistent(Codec.STRING).networkSynchronized(ByteBufCodecs.STRING_UTF8));
     DataComponentType<Boolean> USED = register("used", stringBuilder -> stringBuilder.persistent(Codec.BOOL).networkSynchronized(ByteBufCodecs.BOOL));
+    DataComponentType<String> OWNER = register("owner", stringBuilder -> stringBuilder.codec(Codec.STRING).packetCodec(Codec.STRING));
 
     private static <T> DataComponentType<T> register(String name, @NotNull UnaryOperator<DataComponentType.Builder<T>> builderOperator) {
         return Registry.register(BuiltInRegistries.DATA_COMPONENT_TYPE, TMM.id(name), builderOperator.apply(DataComponentType.builder()).build());

@@ -28,6 +28,7 @@
     "ServerPlayerEntityMixin",
     "ServerPlayNetworkHandlerMixin",
     "TalkChatMixin",
+    "client.ItemSkinMixin",
     "client.LivingEntityRendererMixin",
     "whitelist.ClientIntentionPacketMixin",
     "whitelist.ServerHandshakePacketListenerImplMixin"
