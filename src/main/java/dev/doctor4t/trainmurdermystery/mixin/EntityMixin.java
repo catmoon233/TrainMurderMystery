@@ -24,9 +24,9 @@ public class EntityMixin {
 
 
             if (self instanceof Player && other instanceof Player) {
-                final var role = gameWorldComponent.getRole((Player) self);
-                final var role1 = gameWorldComponent.getRole((Player) other);
-                if (TMM.canCollide.stream().anyMatch(p -> p.test(role) || p.test(role1))){
+//                final var role = gameWorldComponent.getRole((Player) self);
+//                final var role1 = gameWorldComponent.getRole((Player) other);
+                if (TMM.canCollide.stream().anyMatch(p -> p.test((Player) self) || p.test((Player) other))){
                     return original.call(other);
                 }
                 return true;
