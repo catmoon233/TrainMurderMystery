@@ -138,14 +138,32 @@ public class RoundTextRenderer {
                 for (GameRoundEndComponent.RoundEndData entry : roundEnd.players)
                     if (entry.role().getId().getPath().equals(RoleAnnouncementTexts.VIGILANTE.getId().getPath()))
                         vigilanteTotal += 1;
+                int neutralTotal = 0;
+                for (GameRoundEndComponent.RoundEndData entry : roundEnd.players) {
+                    if (entry.role() == null)
+                        continue;
+                    final var first = RoleAnnouncementTexts.ROLE_ANNOUNCEMENT_TEXTS.entrySet().stream()
+                            .filter(role -> role.getValue().getId().getPath()
+                                    .equals(entry.role().getId().getPath()))
+                            .findFirst();
+                    if (first.isPresent()) {
+                        final var role1 = TMMRoles.ROLES.get(first.get().getKey());
+                        if (role1 != null && !role1.isInnocent() && !role1.canUseKiller() && !role1.isVigilanteTeam()) {
+                            neutralTotal++;
+                        }
+                    }
+                }
+                context.drawString(renderer, Component.translatable("announcement.title.neutral"),
+                        -renderer.width(Component.translatable("announcement.title.neutral")) / 2 - 90, 14, 0xFFFFFF);
                 context.drawString(renderer, RoleAnnouncementTexts.CIVILIAN.titleText,
-                        -renderer.width(RoleAnnouncementTexts.CIVILIAN.titleText) / 2 - 60, 14, 0xFFFFFF);
+                        -renderer.width(RoleAnnouncementTexts.CIVILIAN.titleText) / 2 - 30, 14, 0xFFFFFF);
                 context.drawString(renderer, RoleAnnouncementTexts.VIGILANTE.titleText,
                         -renderer.width(RoleAnnouncementTexts.VIGILANTE.titleText) / 2 + 50, 14, 0xFFFFFF);
                 context.drawString(renderer, RoleAnnouncementTexts.KILLER.titleText,
                         -renderer.width(RoleAnnouncementTexts.KILLER.titleText) / 2 + 50,
                         14 + 16 + 32 * ((vigilanteTotal) / 2), 0xFFFFFF);
                 int civilians = 0;
+                int neutrals = 0;
                 int vigilantes = 0;
                 int killers = 0;
                 for (GameRoundEndComponent.RoundEndData entry : roundEnd.players) {
@@ -156,7 +174,7 @@ public class RoundTextRenderer {
                         continue;
                     if (Objects.equals(entry.role().getId().getPath(),
                             RoleAnnouncementTexts.CIVILIAN.getId().getPath())) {
-                        context.pose().translate(-60 + (civilians % 4) * 12, 14 + (civilians / 4) * 16, 0);
+                        context.pose().translate(-30 + (civilians % 4) * 12, 14 + (civilians / 4) * 16, 0);
                         civilians++;
                     } else {
                         final var first = RoleAnnouncementTexts.ROLE_ANNOUNCEMENT_TEXTS.entrySet().stream()
@@ -166,7 +184,10 @@ public class RoundTextRenderer {
                         if (first.isPresent()) {
                             final var role1 = TMMRoles.ROLES.get(first.get().getKey());
                             if (role1 != null) {
-                                if (role1.isInnocent()) {
+                                if (!role1.isInnocent() && !role1.canUseKiller() && !role1.isVigilanteTeam()) {
+                                    context.pose().translate(-90 + (neutrals % 4) * 12, 14 + (neutrals / 4) * 16, 0);
+                                    neutrals++;
+                                } else if (role1.isInnocent() || role1.isVigilanteTeam()) {
                                     context.pose().translate(7 + (vigilantes % 2) * 12, 14 + (vigilantes / 2) * 16, 0);
                                     vigilantes++;
                                 } else if (role1.canUseKiller()) {

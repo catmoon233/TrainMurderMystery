@@ -60,6 +60,7 @@
   "announcement.title.civilian": "Civilian",
   "announcement.title.killer": "Killer",
   "announcement.title.loose_end": "Loose End",
+  "announcement.title.neutral": "Neutral",
   "announcement.title.vigilante": "Vigilante",
   "announcement.welcome": "Welcome aboard %s",
   "announcement.win.civilian": "Passengers Win!",
