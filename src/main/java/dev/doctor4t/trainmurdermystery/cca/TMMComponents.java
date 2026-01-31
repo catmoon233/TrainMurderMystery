@@ -32,6 +32,7 @@ public class TMMComponents implements WorldComponentInitializer, EntityComponent
         registry.beginRegistration(Player.class, AbilityPlayerComponent.KEY).respawnStrategy(RespawnCopyStrategy.NEVER_COPY).end(AbilityPlayerComponent::new);
         registry.beginRegistration(Player.class, PlayerMoodComponent.KEY).respawnStrategy(RespawnCopyStrategy.NEVER_COPY).end(PlayerMoodComponent::new);
         registry.beginRegistration(Player.class, PlayerShopComponent.KEY).respawnStrategy(RespawnCopyStrategy.NEVER_COPY).end(PlayerShopComponent::new);
+        registry.beginRegistration(Player.class, DynamicCoinComponent.KEY).respawnStrategy(RespawnCopyStrategy.ALWAYS_COPY).end(DynamicCoinComponent::new);
         registry.beginRegistration(Player.class, PlayerPoisonComponent.KEY).respawnStrategy(RespawnCopyStrategy.NEVER_COPY).end(PlayerPoisonComponent::new);
         registry.beginRegistration(Player.class, PlayerPsychoComponent.KEY).respawnStrategy(RespawnCopyStrategy.NEVER_COPY).end(PlayerPsychoComponent::new);
         registry.beginRegistration(Player.class, PlayerNoteComponent.KEY).respawnStrategy(RespawnCopyStrategy.NEVER_COPY).end(PlayerNoteComponent::new);

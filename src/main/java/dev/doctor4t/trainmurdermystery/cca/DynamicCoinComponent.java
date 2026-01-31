@@ -1,21 +1,45 @@
 package dev.doctor4t.trainmurdermystery.cca;
 
+import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.api.RoleComponent;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
+import org.ladysnake.cca.api.v3.component.ComponentKey;
+import org.ladysnake.cca.api.v3.component.ComponentRegistry;
 import org.ladysnake.cca.api.v3.component.tick.ClientTickingComponent;
 import org.ladysnake.cca.api.v3.component.tick.ServerTickingComponent;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class DynamicCoinComponent implements RoleComponent, ServerTickingComponent, ClientTickingComponent {
+    public static final ComponentKey<DynamicCoinComponent> KEY = ComponentRegistry.getOrCreate(TMM.id("dynamic_shop"), DynamicCoinComponent.class);
+    private final Player player;
+    private Map<ResourceLocation,Integer> coins;
+
+    public DynamicCoinComponent(Player player) {
+        this.player = player;
+        coins = new HashMap<>() ;
+    }
+
     @Override
     public Player getPlayer() {
-        return null;
+        return player;
+
+    }
+
+    @Override
+    public boolean shouldSyncWith(ServerPlayer player) {
+        return this.player == player;
+
     }
 
     @Override
     public void reset() {
-
+        coins = new HashMap<>() ;
     }
 
     @Override
@@ -30,11 +54,23 @@ public class DynamicCoinComponent implements RoleComponent, ServerTickingCompone
 
     @Override
     public void readFromNbt(CompoundTag compoundTag, HolderLookup.Provider provider) {
-
+        coins.clear();
+        CompoundTag coinsTag = compoundTag.getCompound("coins");
+        for (String key : coinsTag.getAllKeys()) {
+            ResourceLocation resourceLocation = ResourceLocation.tryParse(key);
+            if (resourceLocation != null) {
+                int value = coinsTag.getInt(key);
+                coins.put(resourceLocation, value);
+            }
+        }
     }
 
     @Override
     public void writeToNbt(CompoundTag compoundTag, HolderLookup.Provider provider) {
-
+        CompoundTag coinsTag = new CompoundTag();
+        for (Map.Entry<ResourceLocation, Integer> entry : coins.entrySet()) {
+            coinsTag.putInt(entry.getKey().toString(), entry.getValue());
+        }
+        compoundTag.put("coins", coinsTag);
     }
 }
