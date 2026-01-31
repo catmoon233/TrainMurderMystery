@@ -58,6 +58,7 @@ fabricApi {
 	configureDataGeneration() {
 		modId = "trainmurdermystery"
 		client = true
+
 	}
 }
 
