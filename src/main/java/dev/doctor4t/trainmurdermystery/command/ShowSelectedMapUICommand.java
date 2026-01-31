@@ -3,6 +3,8 @@ package dev.doctor4t.trainmurdermystery.command;
 import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
+
+import dev.doctor4t.trainmurdermystery.data.MapConfig;
 import dev.doctor4t.trainmurdermystery.network.ShowSelectedMapUIPayload;
 import dev.doctor4t.trainmurdermystery.network.ShowStatsPayload;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -23,12 +25,12 @@ public class ShowSelectedMapUICommand {
                         .requires(source -> source.hasPermission(2))
                         .executes(context -> execute(context.getSource(), null)) // 不指定玩家，默认自己
                         .then(Commands.argument("player", GameProfileArgument.gameProfile())
-                                .executes(context -> execute(context.getSource(), GameProfileArgument.getGameProfiles(context, "player")))
-                        )
-        );
+                                .executes(context -> execute(context.getSource(),
+                                        GameProfileArgument.getGameProfiles(context, "player")))));
     }
 
-    private static int execute(CommandSourceStack source, Collection<GameProfile> profiles) throws CommandSyntaxException {
+    private static int execute(CommandSourceStack source, Collection<GameProfile> profiles)
+            throws CommandSyntaxException {
         ServerPlayer sender = source.getPlayerOrException();
 
         if (profiles == null || profiles.isEmpty()) {
@@ -42,9 +44,11 @@ public class ShowSelectedMapUICommand {
                 ServerPlayer targetPlayer = source.getServer().getPlayerList().getPlayer(targetUuid);
                 if (targetPlayer != null) {
                     openStatsScreen(sender, targetUuid);
-                    source.sendSuccess(() -> Component.translatable("commands.tmm.showstats.other", profile.getName()), false);
+                    source.sendSuccess(() -> Component.translatable("commands.tmm.showstats.other", profile.getName()),
+                            false);
                 } else {
-                    source.sendFailure(Component.translatable("commands.tmm.showstats.player_not_found", profile.getName()));
+                    source.sendFailure(
+                            Component.translatable("commands.tmm.showstats.player_not_found", profile.getName()));
                 }
             }
         }
@@ -52,6 +56,6 @@ public class ShowSelectedMapUICommand {
     }
 
     private static void openStatsScreen(ServerPlayer player, UUID targetPlayerUuid) {
-        ServerPlayNetworking.send(player, new ShowSelectedMapUIPayload());
+        ServerPlayNetworking.send(player, new ShowSelectedMapUIPayload(MapConfig.getInstance()));
     }
 }

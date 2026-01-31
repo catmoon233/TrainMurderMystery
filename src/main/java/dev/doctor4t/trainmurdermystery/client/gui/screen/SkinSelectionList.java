@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
+
 public class SkinSelectionList extends ObjectSelectionList<SkinSelectionList.SkinEntry> {
     private static final int ENTRY_HEIGHT = 70; // 每个条目的固定高度
     private static final int ENTRY_PADDING = 4;

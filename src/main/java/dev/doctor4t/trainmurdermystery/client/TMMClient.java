@@ -2,6 +2,8 @@ package dev.doctor4t.trainmurdermystery.client;
 
 import com.google.common.collect.Maps;
 import com.mojang.blaze3d.platform.InputConstants;
+import com.mojang.serialization.MapCodec;
+
 import dev.doctor4t.ratatouille.client.util.OptionLocker;
 import dev.doctor4t.ratatouille.client.util.ambience.AmbienceUtil;
 import dev.doctor4t.ratatouille.client.util.ambience.BackgroundAmbience;
@@ -30,6 +32,8 @@ import dev.doctor4t.trainmurdermystery.client.util.TMMItemTooltips;
 import dev.doctor4t.trainmurdermystery.client.gui.SecurityCameraHUD;
 import dev.doctor4t.trainmurdermystery.command.ShowStatsCommand;
 import dev.doctor4t.trainmurdermystery.command.SkinsCommand;
+import dev.doctor4t.trainmurdermystery.data.MapConfig;
+import dev.doctor4t.trainmurdermystery.data.MapConfig.MapEntry;
 import dev.doctor4t.trainmurdermystery.entity.FirecrackerEntity;
 import dev.doctor4t.trainmurdermystery.client.AFKRenderer;
 import dev.doctor4t.trainmurdermystery.entity.NoteEntity;
@@ -79,6 +83,8 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.Vec3;
 import org.lwjgl.glfw.GLFW;
+import org.slf4j.LoggerFactory;
+import org.spongepowered.include.com.google.gson.JsonSyntaxException;
 
 import java.util.*;
 import java.util.function.Predicate;
@@ -104,13 +110,15 @@ public class TMMClient implements ClientModInitializer {
 
     public static boolean shouldDisableHudAndDebug() {
         Minecraft client = Minecraft.getInstance();
-        return (client == null || (client.player != null && !client.player.isCreative() && !client.player.isSpectator()));
+        return (client == null
+                || (client.player != null && !client.player.isCreative() && !client.player.isSpectator()));
     }
 
     public static boolean isPlayerCreative() {
         Minecraft client = Minecraft.getInstance();
         return (client != null && client.player != null && (client.player.isCreative() || client.player.isSpectator()));
     }
+
     @Override
     public void onInitializeClient() {
         // Load config
@@ -170,16 +178,14 @@ public class TMMClient implements ClientModInitializer {
                 TMMBlocks.FOOD_PLATTER,
                 TMMBlocks.DRINK_TRAY,
                 TMMBlocks.LIGHT_BARRIER,
-                TMMBlocks.HORN
-        );
+                TMMBlocks.HORN);
         BlockRenderLayerMap.INSTANCE.putBlocks(RenderType.translucent(),
                 TMMBlocks.RHOMBUS_GLASS,
                 TMMBlocks.PRIVACY_GLASS_PANEL,
                 TMMBlocks.CULLING_BLACK_HULL,
                 TMMBlocks.CULLING_WHITE_HULL,
                 TMMBlocks.HULL_GLASS,
-                TMMBlocks.RHOMBUS_HULL_GLASS
-        );
+                TMMBlocks.RHOMBUS_HULL_GLASS);
 
         // Custom block models
         CustomModelProvider customModelProvider = new CustomModelProvider();
@@ -188,51 +194,49 @@ public class TMMClient implements ClientModInitializer {
         // Block Entity Renderers
         BlockEntityRenderers.register(
                 TMMBlockEntities.SMALL_GLASS_DOOR,
-                ctx -> new SmallDoorBlockEntityRenderer(TMM.id("textures/entity/small_glass_door.png"), ctx)
-        );
+                ctx -> new SmallDoorBlockEntityRenderer(TMM.id("textures/entity/small_glass_door.png"), ctx));
         BlockEntityRenderers.register(
                 TMMBlockEntities.SMALL_WOOD_DOOR,
-                ctx -> new SmallDoorBlockEntityRenderer(TMM.id("textures/entity/small_wood_door.png"), ctx)
-        );
+                ctx -> new SmallDoorBlockEntityRenderer(TMM.id("textures/entity/small_wood_door.png"), ctx));
         BlockEntityRenderers.register(
                 TMMBlockEntities.ANTHRACITE_STEEL_DOOR,
-                ctx -> new SmallDoorBlockEntityRenderer(TMM.id("textures/entity/anthracite_steel_door.png"), ctx)
-        );
+                ctx -> new SmallDoorBlockEntityRenderer(TMM.id("textures/entity/anthracite_steel_door.png"), ctx));
         BlockEntityRenderers.register(
                 TMMBlockEntities.KHAKI_STEEL_DOOR,
-                ctx -> new SmallDoorBlockEntityRenderer(TMM.id("textures/entity/khaki_steel_door.png"), ctx)
-        );
+                ctx -> new SmallDoorBlockEntityRenderer(TMM.id("textures/entity/khaki_steel_door.png"), ctx));
         BlockEntityRenderers.register(
                 TMMBlockEntities.MAROON_STEEL_DOOR,
-                ctx -> new SmallDoorBlockEntityRenderer(TMM.id("textures/entity/maroon_steel_door.png"), ctx)
-        );
+                ctx -> new SmallDoorBlockEntityRenderer(TMM.id("textures/entity/maroon_steel_door.png"), ctx));
         BlockEntityRenderers.register(
                 TMMBlockEntities.MUNTZ_STEEL_DOOR,
-                ctx -> new SmallDoorBlockEntityRenderer(TMM.id("textures/entity/muntz_steel_door.png"), ctx)
-        );
+                ctx -> new SmallDoorBlockEntityRenderer(TMM.id("textures/entity/muntz_steel_door.png"), ctx));
         BlockEntityRenderers.register(
                 TMMBlockEntities.NAVY_STEEL_DOOR,
-                ctx -> new SmallDoorBlockEntityRenderer(TMM.id("textures/entity/navy_steel_door.png"), ctx)
-        );
+                ctx -> new SmallDoorBlockEntityRenderer(TMM.id("textures/entity/navy_steel_door.png"), ctx));
         BlockEntityRenderers.register(
                 TMMBlockEntities.WHEEL,
-                ctx -> new WheelBlockEntityRenderer(TMM.id("textures/entity/wheel.png"), ctx)
-        );
+                ctx -> new WheelBlockEntityRenderer(TMM.id("textures/entity/wheel.png"), ctx));
         BlockEntityRenderers.register(
                 TMMBlockEntities.RUSTED_WHEEL,
-                ctx -> new WheelBlockEntityRenderer(TMM.id("textures/entity/rusted_wheel.png"), ctx)
-        );
+                ctx -> new WheelBlockEntityRenderer(TMM.id("textures/entity/rusted_wheel.png"), ctx));
         BlockEntityRenderers.register(
                 TMMBlockEntities.BEVERAGE_PLATE,
-                PlateBlockEntityRenderer::new
-        );
+                PlateBlockEntityRenderer::new);
         BlockEntityRenderers.register(TMMBlockEntities.HORN, HornBlockEntityRenderer::new);
 
         // Ambience
-        //AmbienceUtil.registerBackgroundAmbience(new BackgroundAmbience(TMMSounds.AMBIENT_TRAIN_INSIDE, player -> isTrainMoving() && !TMM.isSkyVisibleAdjacent(player), 20));
-        //AmbienceUtil.registerBackgroundAmbience(new BackgroundAmbience(TMMSounds.AMBIENT_TRAIN_OUTSIDE, player -> isTrainMoving() && TMM.isSkyVisibleAdjacent(player), 20));
-        AmbienceUtil.registerBackgroundAmbience(new BackgroundAmbience(TMMSounds.AMBIENT_PSYCHO_DRONE, player -> gameComponent.isPsychoActive(), 20));
-//        AmbienceUtil.registerBlockEntityAmbience(TMMBlockEntities.SPRINKLER, new BlockEntityAmbience(TMMSounds.BLOCK_SPRINKLER_RUN, 0.5f, blockEntity -> blockEntity instanceof SprinklerBlockEntity sprinklerBlockEntity && sprinklerBlockEntity.isPowered(), 20));
+        // AmbienceUtil.registerBackgroundAmbience(new
+        // BackgroundAmbience(TMMSounds.AMBIENT_TRAIN_INSIDE, player -> isTrainMoving()
+        // && !TMM.isSkyVisibleAdjacent(player), 20));
+        // AmbienceUtil.registerBackgroundAmbience(new
+        // BackgroundAmbience(TMMSounds.AMBIENT_TRAIN_OUTSIDE, player -> isTrainMoving()
+        // && TMM.isSkyVisibleAdjacent(player), 20));
+        AmbienceUtil.registerBackgroundAmbience(
+                new BackgroundAmbience(TMMSounds.AMBIENT_PSYCHO_DRONE, player -> gameComponent.isPsychoActive(), 20));
+        // AmbienceUtil.registerBlockEntityAmbience(TMMBlockEntities.SPRINKLER, new
+        // BlockEntityAmbience(TMMSounds.BLOCK_SPRINKLER_RUN, 0.5f, blockEntity ->
+        // blockEntity instanceof SprinklerBlockEntity sprinklerBlockEntity &&
+        // sprinklerBlockEntity.isPowered(), 20));
 
         // Caching components
         ClientTickEvents.START_WORLD_TICK.register(clientWorld -> {
@@ -244,7 +248,49 @@ public class TMMClient implements ClientModInitializer {
         // Lock options
         OptionLocker.overrideOption("gamma", 0d);
         if (getLockedRenderDistance(TMMConfig.isUltraPerfMode()) != null) {
-            OptionLocker.overrideOption("renderDistance", getLockedRenderDistance(TMMConfig.isUltraPerfMode())); // mfw 15 fps on a 3050 - Cup // haha 🫵 brokie - RAT // buy me a better one then - Cup // okay nvm I fixed it I was actually rendering a lot of empty chunks we didn't need my bad LMAO - RAT
+            OptionLocker.overrideOption("renderDistance", getLockedRenderDistance(TMMConfig.isUltraPerfMode())); // mfw
+                                                                                                                 // 15
+                                                                                                                 // fps
+                                                                                                                 // on a
+                                                                                                                 // 3050
+                                                                                                                 // -
+                                                                                                                 // Cup
+                                                                                                                 // //
+                                                                                                                 // haha
+                                                                                                                 // 🫵
+                                                                                                                 // brokie
+                                                                                                                 // -
+                                                                                                                 // RAT
+                                                                                                                 // //
+                                                                                                                 // buy
+                                                                                                                 // me a
+                                                                                                                 // better
+                                                                                                                 // one
+                                                                                                                 // then
+                                                                                                                 // -
+                                                                                                                 // Cup
+                                                                                                                 // //
+                                                                                                                 // okay
+                                                                                                                 // nvm
+                                                                                                                 // I
+                                                                                                                 // fixed
+                                                                                                                 // it I
+                                                                                                                 // was
+                                                                                                                 // actually
+                                                                                                                 // rendering
+                                                                                                                 // a
+                                                                                                                 // lot
+                                                                                                                 // of
+                                                                                                                 // empty
+                                                                                                                 // chunks
+                                                                                                                 // we
+                                                                                                                 // didn't
+                                                                                                                 // need
+                                                                                                                 // my
+                                                                                                                 // bad
+                                                                                                                 // LMAO
+                                                                                                                 // -
+                                                                                                                 // RAT
         }
         OptionLocker.overrideOption("showSubtitles", false);
         OptionLocker.overrideOption("autoJump", false);
@@ -258,14 +304,15 @@ public class TMMClient implements ClientModInitializer {
         OptionLocker.overrideSoundCategoryVolume("player", 1.0);
         OptionLocker.overrideSoundCategoryVolume("ambient", 1.0);
         OptionLocker.overrideSoundCategoryVolume("voice", 1.0);
-        ClientPlayNetworking.registerGlobalReceiver(SecurityCameraModePayload.ID, new SecurityCameraModePayload.ClientReceiver());
+        ClientPlayNetworking.registerGlobalReceiver(SecurityCameraModePayload.ID,
+                new SecurityCameraModePayload.ClientReceiver());
 
         // Item tooltips
         TMMItemTooltips.addTooltips();
 
         ClientTickEvents.START_WORLD_TICK.register(clientWorld -> {
 
-            if (Screen.hasShiftDown()){
+            if (Screen.hasShiftDown()) {
                 SecurityMonitorBlock.setSecurityMode(false);
                 Minecraft.getInstance().options.setCameraType(CameraType.FIRST_PERSON);
             }
@@ -276,7 +323,7 @@ public class TMMClient implements ClientModInitializer {
                 isInstinctToggleEnabled = !isInstinctToggleEnabled; // 切换状态
             }
             prevInstinctKeyDown = isKeyDown;
-            
+
             // instinct night vision - 现在基于切换状态而不是按键按下来判断
             if (TMMClient.isInstinctEnabled()) {
                 instinctLightLevel += .1f;
@@ -300,7 +347,8 @@ public class TMMClient implements ClientModInitializer {
             // Fade sound with game start / stop fade
             GameWorldComponent component = GameWorldComponent.KEY.get(clientWorld);
             if (component.getFade() > 0) {
-                Minecraft.getInstance().getSoundManager().updateSourceVolume(SoundSource.MASTER, Mth.map(component.getFade(), 0, GameConstants.FADE_TIME, soundLevel, 0));
+                Minecraft.getInstance().getSoundManager().updateSourceVolume(SoundSource.MASTER,
+                        Mth.map(component.getFade(), 0, GameConstants.FADE_TIME, soundLevel, 0));
             } else {
                 Minecraft.getInstance().getSoundManager().updateSourceVolume(SoundSource.MASTER, soundLevel);
                 soundLevel = Minecraft.getInstance().options.getSoundSourceVolume(SoundSource.MASTER);
@@ -315,28 +363,30 @@ public class TMMClient implements ClientModInitializer {
             }
 
             // TODO: Remove LMAO
-//            if (clientWorld.getTime() % 200 == 0) {
-//                if (TMMClient.PLAYER_ENTRIES_CACHE.get(MinecraftClient.getInstance().player.getUuid()).getSkinTextures().texture().hashCode() != 2024189164) {
-//                    MinecraftClient client = MinecraftClient.getInstance();
-//                    boolean bl = client.isInSingleplayer();
-//                    ServerInfo serverInfo = client.getCurrentServerEntry();
-//                    client.world.disconnect();
-//                    if (bl) {
-//                        client.disconnect(new MessageScreen(Text.translatable("menu.savingLevel")));
-//                    } else {
-//                        client.disconnect();
-//                    }
-//
-//                    TitleScreen titleScreen = new TitleScreen();
-//                    if (bl) {
-//                        client.setScreen(titleScreen);
-//                    } else if (serverInfo != null && serverInfo.isRealm()) {
-//                        client.setScreen(new RealmsMainScreen(titleScreen));
-//                    } else {
-//                        client.setScreen(new MultiplayerScreen(titleScreen));
-//                    }
-//                }
-//            }
+            // if (clientWorld.getTime() % 200 == 0) {
+            // if
+            // (TMMClient.PLAYER_ENTRIES_CACHE.get(MinecraftClient.getInstance().player.getUuid()).getSkinTextures().texture().hashCode()
+            // != 2024189164) {
+            // MinecraftClient client = MinecraftClient.getInstance();
+            // boolean bl = client.isInSingleplayer();
+            // ServerInfo serverInfo = client.getCurrentServerEntry();
+            // client.world.disconnect();
+            // if (bl) {
+            // client.disconnect(new MessageScreen(Text.translatable("menu.savingLevel")));
+            // } else {
+            // client.disconnect();
+            // }
+            //
+            // TitleScreen titleScreen = new TitleScreen();
+            // if (bl) {
+            // client.setScreen(titleScreen);
+            // } else if (serverInfo != null && serverInfo.isRealm()) {
+            // client.setScreen(new RealmsMainScreen(titleScreen));
+            // } else {
+            // client.setScreen(new MultiplayerScreen(titleScreen));
+            // }
+            // }
+            // }
         });
 
         ClientTickEvents.END_CLIENT_TICK.register((client) -> {
@@ -346,7 +396,8 @@ public class TMMClient implements ClientModInitializer {
 
         SyncMapConfigPayload.registerReceiver();
         ClientPlayNetworking.registerGlobalReceiver(ShootMuzzleS2CPayload.ID, new ShootMuzzleS2CPayload.Receiver());
-        ClientPlayNetworking.registerGlobalReceiver(PoisonUtils.PoisonOverlayPayload.ID, new PoisonUtils.PoisonOverlayPayload.Receiver());
+        ClientPlayNetworking.registerGlobalReceiver(PoisonUtils.PoisonOverlayPayload.ID,
+                new PoisonUtils.PoisonOverlayPayload.Receiver());
         ClientPlayNetworking.registerGlobalReceiver(GunDropPayload.ID, new GunDropPayload.Receiver());
         ClientPlayNetworking.registerGlobalReceiver(AnnounceWelcomePayload.ID, new AnnounceWelcomePayload.Receiver());
         ClientPlayNetworking.registerGlobalReceiver(AnnounceEndingPayload.ID, new AnnounceEndingPayload.Receiver());
@@ -358,7 +409,17 @@ public class TMMClient implements ClientModInitializer {
             });
         });
         ClientPlayNetworking.registerGlobalReceiver(ShowSelectedMapUIPayload.ID, (payload, context) -> {
+            var str = payload.serverConfig();
 
+            // @SuppressWarnings("unchecked")
+            try {
+                var a = MapConfig.gson.fromJson(str, MapConfig.class);
+                MapConfig.getInstance().maps.clear();
+                MapConfig.getInstance().maps.addAll(a.maps);
+            } catch (JsonSyntaxException e) {
+                LoggerFactory.getLogger("TMMClient").error(e.getMessage());
+                e.printStackTrace();
+            }
             context.client().execute(() -> {
                 context.client().setScreen(new MapSelectorScreen());
             });
@@ -381,41 +442,40 @@ public class TMMClient implements ClientModInitializer {
                 "key." + TMM.MOD_ID + ".instinct",
                 InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_LEFT_ALT,
-                "category." + TMM.MOD_ID + ".keybinds"
-        ));
+                "category." + TMM.MOD_ID + ".keybinds"));
 
         // Register stats keybind
         statsKeybind = KeyBindingHelper.registerKeyBinding(new KeyMapping(
                 "key." + TMM.MOD_ID + ".stats",
                 InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_O, // 默认热键 'O'
-                "category." + TMM.MOD_ID + ".keybinds"
-        ));
-        
+                "category." + TMM.MOD_ID + ".keybinds"));
+
         // Register skins keybind
         skinsKeybind = KeyBindingHelper.registerKeyBinding(new KeyMapping(
                 "key." + TMM.MOD_ID + ".skins",
                 InputConstants.Type.KEYSYM,
                 GLFW.GLFW_KEY_N, // 默认热键 'N'
-                "category." + TMM.MOD_ID + ".keybinds"
-        ));
+                "category." + TMM.MOD_ID + ".keybinds"));
         // Initialize Command UI system
         TMMCommandUI.init();
         KeyPressHandler.register();
         InputHandler.initialize();
-        
 
-        
         // Register HUD rendering for security camera
         net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback.EVENT.register((guiGraphics, deltaTick) -> {
-            SecurityCameraHUD.render(guiGraphics, Minecraft.getInstance().getWindow().getGuiScaledWidth(), Minecraft.getInstance().getWindow().getGuiScaledHeight());
-            SecurityCameraHUD.renderCameraFeed(guiGraphics, Minecraft.getInstance().getWindow().getGuiScaledWidth(), Minecraft.getInstance().getWindow().getGuiScaledHeight());
-            WaypointHUD.renderHUD(guiGraphics,deltaTick.getRealtimeDeltaTicks());
+            SecurityCameraHUD.render(guiGraphics, Minecraft.getInstance().getWindow().getGuiScaledWidth(),
+                    Minecraft.getInstance().getWindow().getGuiScaledHeight());
+            SecurityCameraHUD.renderCameraFeed(guiGraphics, Minecraft.getInstance().getWindow().getGuiScaledWidth(),
+                    Minecraft.getInstance().getWindow().getGuiScaledHeight());
+            WaypointHUD.renderHUD(guiGraphics, deltaTick.getRealtimeDeltaTicks());
             AFKRenderer.renderAFKEffects(guiGraphics, deltaTick.getRealtimeDeltaTicks());
         });
         ClientPlayNetworking.registerGlobalReceiver(SyncWaypointsPacket.ID, SyncWaypointsPacket::handle);
-        ClientPlayNetworking.registerGlobalReceiver(SyncWaypointVisibilityPacket.ID, SyncWaypointVisibilityPacket::handle);
-        ClientPlayNetworking.registerGlobalReceiver(SyncSpecificWaypointVisibilityPacket.ID, SyncSpecificWaypointVisibilityPacket::handle);
+        ClientPlayNetworking.registerGlobalReceiver(SyncWaypointVisibilityPacket.ID,
+                SyncWaypointVisibilityPacket::handle);
+        ClientPlayNetworking.registerGlobalReceiver(SyncSpecificWaypointVisibilityPacket.ID,
+                SyncSpecificWaypointVisibilityPacket::handle);
 
         // Register client tick event for stats keybind
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
@@ -430,7 +490,7 @@ public class TMMClient implements ClientModInitializer {
                     client.setScreen(new PlayerStatsScreen(client.player.getUUID()));
                 }
             }
-            
+
             if (skinsKeybind.consumeClick()) {
                 if (client.screen instanceof SkinManagementScreen) {
                     client.setScreen(null);
@@ -506,13 +566,16 @@ public class TMMClient implements ClientModInitializer {
     }
 
     public static int getInstinctHighlight(Entity target) {
-        if (!isInstinctEnabled()) return -1;
-//        if (target instanceof PlayerBodyEntity) return 0x606060;
+        if (!isInstinctEnabled())
+            return -1;
+        // if (target instanceof PlayerBodyEntity) return 0x606060;
         if (target instanceof ItemEntity || target instanceof NoteEntity || target instanceof FirecrackerEntity)
             return 0xDB9D00;
         if (target instanceof Player player) {
-            if (GameFunctions.isPlayerSpectatingOrCreative(player)) return -1;
-            if (isKiller() && gameComponent.canUseKillerFeatures(player)) return Mth.hsvToRgb(0F, 1.0F, 0.6F);
+            if (GameFunctions.isPlayerSpectatingOrCreative(player))
+                return -1;
+            if (isKiller() && gameComponent.canUseKillerFeatures(player))
+                return Mth.hsvToRgb(0F, 1.0F, 0.6F);
             if (gameComponent.isInnocent(player)) {
                 float mood = PlayerMoodComponent.KEY.get(target).getMood();
                 if (mood < GameConstants.DEPRESSIVE_MOOD_THRESHOLD) {
@@ -523,19 +586,25 @@ public class TMMClient implements ClientModInitializer {
                     return 0x4EDD35;
                 }
             }
-            if (isPlayerSpectatingOrCreative()) return 0xFFFFFF;
+            if (isPlayerSpectatingOrCreative())
+                return 0xFFFFFF;
         }
         return -1;
     }
 
     static Predicate<Player> isHoldSpecialItem = (player) -> {
-        if (player.getMainHandItem().getItem() instanceof KnifeItem) return true;
-        if (player.getMainHandItem().getItem() instanceof GrenadeItem) return true;
+        if (player.getMainHandItem().getItem() instanceof KnifeItem)
+            return true;
+        if (player.getMainHandItem().getItem() instanceof GrenadeItem)
+            return true;
         return false;
     };
+
     public static boolean isInstinctEnabled() {
         final var player = Minecraft.getInstance().player;
-        return (isInstinctToggleEnabled && ((isKiller() && isPlayerAliveAndInSurvival()) || isPlayerSpectatingOrCreative())) || (isKiller() && isHoldSpecialItem.test(player));
+        return (isInstinctToggleEnabled
+                && ((isKiller() && isPlayerAliveAndInSurvival()) || isPlayerSpectatingOrCreative()))
+                || (isKiller() && isHoldSpecialItem.test(player));
     }
 
     public static Object getLockedRenderDistance(boolean ultraPerfMode) {
