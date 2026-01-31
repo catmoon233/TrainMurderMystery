@@ -12,6 +12,7 @@ import dev.doctor4t.trainmurdermystery.entity.NoteEntity;
 import dev.doctor4t.trainmurdermystery.entity.PlayerBodyEntity;
 import dev.doctor4t.trainmurdermystery.event.AllowPlayerDeath;
 import dev.doctor4t.trainmurdermystery.event.ShouldDropOnDeath;
+import dev.doctor4t.trainmurdermystery.index.TMMBlocks;
 import dev.doctor4t.trainmurdermystery.index.TMMEntities;
 import dev.doctor4t.trainmurdermystery.index.TMMItems;
 import dev.doctor4t.trainmurdermystery.index.TMMSounds;
@@ -654,13 +655,171 @@ public class GameFunctions {
     public static boolean tryResetTrain(ServerLevel serverWorld) {
 
         if (!TMMConfig.enableAutoTrainReset) {
-            return false;
+            if (serverWorld.getServer().overworld().equals(serverWorld)) {
+                AreasWorldComponent areas = AreasWorldComponent.KEY.get(serverWorld);
+                if (TMMConfig.verboseTrainResetLogs) {
+                    TMM.LOGGER.info("Resetting train" + areas.toString());
+                }
+                BlockPos backupMinPos = BlockPos.containing(areas.getResetTemplateArea().getMinPosition());
+                BlockPos backupMaxPos = BlockPos.containing(areas.getResetTemplateArea().getMaxPosition());
+                BoundingBox backupTrainBox = BoundingBox.fromCorners(backupMinPos, backupMaxPos);
+                BlockPos trainMinPos = BlockPos.containing(areas.getResetPasteArea().getMinPosition());
+                BlockPos trainMaxPos = trainMinPos.offset(backupTrainBox.getLength());
+                BoundingBox trainBox = BoundingBox.fromCorners(trainMinPos, trainMaxPos);
+
+                // Mode mode = Mode.FORCE;
+
+                if (!serverWorld.hasChunksAt(backupMinPos, backupMaxPos)
+                        || !serverWorld.hasChunksAt(trainMinPos, trainMaxPos)) {
+
+                    int backupChunkMinX = backupMinPos.getX() >> 4;
+                    int backupChunkMinZ = backupMinPos.getZ() >> 4;
+                    int backupChunkMaxX = backupMaxPos.getX() >> 4;
+                    int backupChunkMaxZ = backupMaxPos.getZ() >> 4;
+                    int trainChunkMinX = trainMinPos.getX() >> 4;
+                    int trainChunkMinZ = trainMinPos.getZ() >> 4;
+                    int trainChunkMaxX = trainMaxPos.getX() >> 4;
+                    int trainChunkMaxZ = trainMaxPos.getZ() >> 4;
+
+                    if (TMMConfig.verboseTrainResetLogs) {
+                        TMM.LOGGER.info(
+                                "Train reset: Loading chunks - Template: ({}, {}) to ({}, {}), Paste: ({}, {}) to ({}, {})",
+                                backupChunkMinX, backupChunkMinZ, backupChunkMaxX, backupChunkMaxZ,
+                                trainChunkMinX, trainChunkMinZ, trainChunkMaxX, trainChunkMaxZ);
+                    }
+
+                    // Force load the required chunks
+                    for (int x = backupChunkMinX; x <= backupChunkMaxX; x++) {
+                        for (int z = backupChunkMinZ; z <= backupChunkMaxZ; z++) {
+                            serverWorld.getChunk(x, z);
+                        }
+                    }
+                    for (int x = trainChunkMinX; x <= trainChunkMaxX; x++) {
+                        for (int z = trainChunkMinZ; z <= trainChunkMaxZ; z++) {
+                            serverWorld.getChunk(x, z);
+                        }
+                    }
+
+                    if (TMMConfig.verboseTrainResetLogs) {
+                        TMM.LOGGER.info("Train reset: Chunks loaded, attempting reset.");
+                    }
+                    // Continue with the reset after loading chunks
+                }
+
+                if (serverWorld.hasChunksAt(backupMinPos, backupMaxPos)
+                        && serverWorld.hasChunksAt(trainMinPos, trainMaxPos)) {
+                    List<BlockInfo> list = Lists.newArrayList();
+                    List<BlockInfo> list2 = Lists.newArrayList();
+                    List<BlockInfo> list3 = Lists.newArrayList();
+                    Deque<BlockPos> deque = Lists.newLinkedList();
+                    BlockPos blockPos5 = new BlockPos(
+                            trainBox.minX() - backupTrainBox.minX(), trainBox.minY() - backupTrainBox.minY(),
+                            trainBox.minZ() - backupTrainBox.minZ());
+
+                    for (int k = backupTrainBox.minZ(); k <= backupTrainBox.maxZ(); k++) {
+                        for (int l = backupTrainBox.minY(); l <= backupTrainBox.maxY(); l++) {
+                            for (int m = backupTrainBox.minX(); m <= backupTrainBox.maxX(); m++) {
+                                BlockPos blockPos6 = new BlockPos(m, l, k);
+                                BlockPos blockPos7 = blockPos6.offset(blockPos5);
+                                BlockInWorld cachedBlockPosition = new BlockInWorld(serverWorld, blockPos6, false);
+                                BlockState blockState = cachedBlockPosition.getState();
+
+                                BlockEntity blockEntity = serverWorld.getBlockEntity(blockPos6);
+                                if (blockEntity != null) {
+                                    BlockEntityInfo blockEntityInfo = new BlockEntityInfo(
+                                            blockEntity.saveCustomOnly(serverWorld.registryAccess()),
+                                            blockEntity.components());
+                                    list2.add(new BlockInfo(blockPos7, blockState, blockEntityInfo));
+                                    deque.addLast(blockPos6);
+                                } else if (!blockState.isSolidRender(serverWorld, blockPos6)
+                                        && !blockState.isCollisionShapeFullBlock(serverWorld, blockPos6)) {
+                                    list3.add(new BlockInfo(blockPos7, blockState, null));
+                                    deque.addFirst(blockPos6);
+                                } else {
+                                    list.add(new BlockInfo(blockPos7, blockState, null));
+                                    deque.addLast(blockPos6);
+                                }
+                            }
+                        }
+                    }
+
+                    List<BlockInfo> list4 = Lists.newArrayList();
+                    list4.addAll(list);
+                    list4.addAll(list2);
+                    list4.addAll(list3);
+                    List<BlockInfo> list5 = Lists.reverse(list4);
+
+                    for (BlockInfo blockInfo : list5) {
+                        BlockEntity blockEntity3 = serverWorld.getBlockEntity(blockInfo.pos);
+                        Clearable.tryClear(blockEntity3);
+                        serverWorld.setBlock(blockInfo.pos, Blocks.BARRIER.defaultBlockState(), Block.UPDATE_CLIENTS);
+                    }
+
+                    int mx = 0;
+
+                    for (BlockInfo blockInfo2 : list4) {
+                        if (serverWorld.setBlock(blockInfo2.pos, blockInfo2.state, Block.UPDATE_CLIENTS)) {
+                            mx++;
+                        }
+                    }
+
+                    for (BlockInfo blockInfo2x : list2) {
+                        BlockEntity blockEntity4 = serverWorld.getBlockEntity(blockInfo2x.pos);
+                        if (blockInfo2x.blockEntityInfo != null && blockEntity4 != null) {
+                            blockEntity4.loadCustomOnly(blockInfo2x.blockEntityInfo.nbt, serverWorld.registryAccess());
+                            blockEntity4.setComponents(blockInfo2x.blockEntityInfo.components);
+                            blockEntity4.setChanged();
+                        }
+
+                        serverWorld.setBlock(blockInfo2x.pos, blockInfo2x.state, Block.UPDATE_CLIENTS);
+                    }
+
+                    for (BlockInfo blockInfo2x : list5) {
+                        serverWorld.blockUpdated(blockInfo2x.pos, blockInfo2x.state.getBlock());
+                    }
+
+                    serverWorld.getBlockTicks().copyAreaFrom(serverWorld.getBlockTicks(), backupTrainBox, blockPos5);
+                    if (mx == 0) {
+                        if (TMMConfig.verboseTrainResetLogs) {
+                            TMM.LOGGER.info("Train reset failed: No blocks copied. Queueing another attempt.");
+                        }
+                        return true;
+                    }
+                } else {
+                    if (TMMConfig.verboseTrainResetLogs) {
+                        TMM.LOGGER.info("Train reset failed: Clone positions not loaded. Queueing another attempt.");
+                    }
+                    return true;
+                }
+
+                // discard all player bodies and items
+                for (PlayerBodyEntity body : serverWorld.getEntities(TMMEntities.PLAYER_BODY, playerBodyEntity -> true)) {
+                    body.discard();
+                }
+                for (ItemEntity item : serverWorld.getEntities(EntityType.ITEM, playerBodyEntity -> true)) {
+                    item.discard();
+                }
+                for (FirecrackerEntity entity : serverWorld.getEntities(TMMEntities.FIRECRACKER, entity -> true))
+                    entity.discard();
+                for (NoteEntity entity : serverWorld.getEntities(TMMEntities.NOTE, entity -> true))
+                    entity.discard();
+
+                TMM.LOGGER.info("Train reset successful.");
+                return false;
+            }
+        }else {
+            return tryResetTrainOnlyDoors(serverWorld);
         }
 
+
+        return false;
+    }
+
+    public static boolean tryResetTrainOnlyDoors(ServerLevel serverWorld) {
         if (serverWorld.getServer().overworld().equals(serverWorld)) {
             AreasWorldComponent areas = AreasWorldComponent.KEY.get(serverWorld);
             if (TMMConfig.verboseTrainResetLogs) {
-                TMM.LOGGER.info("Resetting train" + areas.toString());
+                TMM.LOGGER.info("Resetting train doors only" + areas.toString());
             }
             BlockPos backupMinPos = BlockPos.containing(areas.getResetTemplateArea().getMinPosition());
             BlockPos backupMaxPos = BlockPos.containing(areas.getResetTemplateArea().getMaxPosition());
@@ -668,8 +827,6 @@ public class GameFunctions {
             BlockPos trainMinPos = BlockPos.containing(areas.getResetPasteArea().getMinPosition());
             BlockPos trainMaxPos = trainMinPos.offset(backupTrainBox.getLength());
             BoundingBox trainBox = BoundingBox.fromCorners(trainMinPos, trainMaxPos);
-
-            // Mode mode = Mode.FORCE;
 
             if (!serverWorld.hasChunksAt(backupMinPos, backupMaxPos)
                     || !serverWorld.hasChunksAt(trainMinPos, trainMaxPos)) {
@@ -685,7 +842,7 @@ public class GameFunctions {
 
                 if (TMMConfig.verboseTrainResetLogs) {
                     TMM.LOGGER.info(
-                            "Train reset: Loading chunks - Template: ({}, {}) to ({}, {}), Paste: ({}, {}) to ({}, {})",
+                            "Train door reset: Loading chunks - Template: ({}, {}) to ({}, {}), Paste: ({}, {}) to ({}, {})",
                             backupChunkMinX, backupChunkMinZ, backupChunkMaxX, backupChunkMaxZ,
                             trainChunkMinX, trainChunkMinZ, trainChunkMaxX, trainChunkMaxZ);
                 }
@@ -703,21 +860,20 @@ public class GameFunctions {
                 }
 
                 if (TMMConfig.verboseTrainResetLogs) {
-                    TMM.LOGGER.info("Train reset: Chunks loaded, attempting reset.");
+                    TMM.LOGGER.info("Train door reset: Chunks loaded, attempting reset.");
                 }
                 // Continue with the reset after loading chunks
             }
 
             if (serverWorld.hasChunksAt(backupMinPos, backupMaxPos)
                     && serverWorld.hasChunksAt(trainMinPos, trainMaxPos)) {
-                List<BlockInfo> list = Lists.newArrayList();
-                List<BlockInfo> list2 = Lists.newArrayList();
-                List<BlockInfo> list3 = Lists.newArrayList();
+                List<BlockInfo> list2 = Lists.newArrayList(); // Only store block entities (doors have block entities)
                 Deque<BlockPos> deque = Lists.newLinkedList();
                 BlockPos blockPos5 = new BlockPos(
                         trainBox.minX() - backupTrainBox.minX(), trainBox.minY() - backupTrainBox.minY(),
                         trainBox.minZ() - backupTrainBox.minZ());
 
+                // Only clone door blocks and their entities
                 for (int k = backupTrainBox.minZ(); k <= backupTrainBox.maxZ(); k++) {
                     for (int l = backupTrainBox.minY(); l <= backupTrainBox.maxY(); l++) {
                         for (int m = backupTrainBox.minX(); m <= backupTrainBox.maxX(); m++) {
@@ -726,31 +882,30 @@ public class GameFunctions {
                             BlockInWorld cachedBlockPosition = new BlockInWorld(serverWorld, blockPos6, false);
                             BlockState blockState = cachedBlockPosition.getState();
 
-                            BlockEntity blockEntity = serverWorld.getBlockEntity(blockPos6);
-                            if (blockEntity != null) {
-                                BlockEntityInfo blockEntityInfo = new BlockEntityInfo(
-                                        blockEntity.saveCustomOnly(serverWorld.registryAccess()),
-                                        blockEntity.components());
-                                list2.add(new BlockInfo(blockPos7, blockState, blockEntityInfo));
-                                deque.addLast(blockPos6);
-                            } else if (!blockState.isSolidRender(serverWorld, blockPos6)
-                                    && !blockState.isCollisionShapeFullBlock(serverWorld, blockPos6)) {
-                                list3.add(new BlockInfo(blockPos7, blockState, null));
-                                deque.addFirst(blockPos6);
-                            } else {
-                                list.add(new BlockInfo(blockPos7, blockState, null));
-                                deque.addLast(blockPos6);
+                            // Check if the block is one of our door blocks
+                            if (isTmmDoorBlock(blockState.getBlock())) {
+                                BlockEntity blockEntity = serverWorld.getBlockEntity(blockPos6);
+                                if (blockEntity != null) {
+                                    BlockEntityInfo blockEntityInfo = new BlockEntityInfo(
+                                            blockEntity.saveCustomOnly(serverWorld.registryAccess()),
+                                            blockEntity.components());
+                                    list2.add(new BlockInfo(blockPos7, blockState, blockEntityInfo));
+                                    deque.addLast(blockPos6); // Add to end to process last
+                                } else {
+                                    // Add door block without entity if somehow it doesn't have one
+                                    list2.add(new BlockInfo(blockPos7, blockState, null));
+                                    deque.addLast(blockPos6);
+                                }
                             }
                         }
                     }
                 }
 
                 List<BlockInfo> list4 = Lists.newArrayList();
-                list4.addAll(list);
-                list4.addAll(list2);
-                list4.addAll(list3);
+                list4.addAll(list2); // Only doors
                 List<BlockInfo> list5 = Lists.reverse(list4);
 
+                // Clear only the door locations with barrier blocks
                 for (BlockInfo blockInfo : list5) {
                     BlockEntity blockEntity3 = serverWorld.getBlockEntity(blockInfo.pos);
                     Clearable.tryClear(blockEntity3);
@@ -759,12 +914,14 @@ public class GameFunctions {
 
                 int mx = 0;
 
+                // Place the doors back
                 for (BlockInfo blockInfo2 : list4) {
                     if (serverWorld.setBlock(blockInfo2.pos, blockInfo2.state, Block.UPDATE_CLIENTS)) {
                         mx++;
                     }
                 }
 
+                // Restore block entities for doors
                 for (BlockInfo blockInfo2x : list2) {
                     BlockEntity blockEntity4 = serverWorld.getBlockEntity(blockInfo2x.pos);
                     if (blockInfo2x.blockEntityInfo != null && blockEntity4 != null) {
@@ -776,25 +933,25 @@ public class GameFunctions {
                     serverWorld.setBlock(blockInfo2x.pos, blockInfo2x.state, Block.UPDATE_CLIENTS);
                 }
 
+                // Update the blocks after setting them
                 for (BlockInfo blockInfo2x : list5) {
                     serverWorld.blockUpdated(blockInfo2x.pos, blockInfo2x.state.getBlock());
                 }
 
-                serverWorld.getBlockTicks().copyAreaFrom(serverWorld.getBlockTicks(), backupTrainBox, blockPos5);
                 if (mx == 0) {
                     if (TMMConfig.verboseTrainResetLogs) {
-                        TMM.LOGGER.info("Train reset failed: No blocks copied. Queueing another attempt.");
+                        TMM.LOGGER.info("Train door reset failed: No door blocks copied. Queueing another attempt.");
                     }
                     return true;
                 }
             } else {
                 if (TMMConfig.verboseTrainResetLogs) {
-                    TMM.LOGGER.info("Train reset failed: Clone positions not loaded. Queueing another attempt.");
+                    TMM.LOGGER.info("Train door reset failed: Clone positions not loaded. Queueing another attempt.");
                 }
                 return true;
             }
 
-            // discard all player bodies and items
+            // Discard all player bodies and items (keep this part as it cleans up game artifacts)
             for (PlayerBodyEntity body : serverWorld.getEntities(TMMEntities.PLAYER_BODY, playerBodyEntity -> true)) {
                 body.discard();
             }
@@ -806,10 +963,25 @@ public class GameFunctions {
             for (NoteEntity entity : serverWorld.getEntities(TMMEntities.NOTE, entity -> true))
                 entity.discard();
 
-            TMM.LOGGER.info("Train reset successful.");
+            TMM.LOGGER.info("Train door reset successful.");
             return false;
         }
         return false;
+    }
+
+    /**
+     * Checks if a block is one of TMM's door blocks
+     */
+    private static boolean isTmmDoorBlock(Block block) {
+        return block == TMMBlocks.SMALL_GLASS_DOOR 
+            || block == TMMBlocks.SMALL_WOOD_DOOR
+            || block == TMMBlocks.ANTHRACITE_STEEL_DOOR
+            || block == TMMBlocks.KHAKI_STEEL_DOOR
+            || block == TMMBlocks.MAROON_STEEL_DOOR
+            || block == TMMBlocks.MUNTZ_STEEL_DOOR
+            || block == TMMBlocks.NAVY_STEEL_DOOR
+            || block == TMMBlocks.METAL_SHEET_DOOR
+            || block == TMMBlocks.COCKPIT_DOOR;
     }
 
     public static int getReadyPlayerCount(Level world) {

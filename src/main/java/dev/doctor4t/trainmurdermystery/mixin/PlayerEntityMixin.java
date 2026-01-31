@@ -10,6 +10,8 @@ import dev.doctor4t.trainmurdermystery.cca.PlayerAFKComponent;
 import dev.doctor4t.trainmurdermystery.cca.PlayerMoodComponent;
 import dev.doctor4t.trainmurdermystery.cca.PlayerPoisonComponent;
 import dev.doctor4t.trainmurdermystery.client.StaminaRenderer;
+
+import dev.doctor4t.trainmurdermystery.compat.CrosshairaddonsCompat;
 import dev.doctor4t.trainmurdermystery.event.AllowPlayerPunching;
 import dev.doctor4t.trainmurdermystery.event.IsPlayerPunchable;
 import dev.doctor4t.trainmurdermystery.game.GameConstants;
@@ -127,10 +129,7 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerSt
 
 		if (getMainHandItem().is(TMMItems.BAT) && target instanceof Player playerTarget && this.getAttackStrengthScale(0.5F) >= 1f) {
 			GameFunctions.killPlayer(playerTarget, true, self, GameConstants.DeathReasons.BAT);
-			if (FabricLoader.getInstance().isModLoaded("crosshairaddons")){
-				final var addonStateManager = CrosshairAddons.getStateManager();
-				addonStateManager.onAttackEntity( playerTarget);
-			}
+			CrosshairaddonsCompat.onAttack(target);
 			self.getCommandSenderWorld().playSound(self,
 					playerTarget.getX(), playerTarget.getEyeY(), playerTarget.getZ(),
 					TMMSounds.ITEM_BAT_HIT, SoundSource.PLAYERS,

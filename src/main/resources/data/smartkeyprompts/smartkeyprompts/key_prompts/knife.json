@@ -1,0 +1,24 @@
+{
+  "modid": "trainmurdermystery_knife",
+  "vars": {
+    "modLoaded": "isModLoaded('trainmurdermystery')",
+    "mainHandItem": "mainHandItem()",
+    "keyUse": "getKeyByDesc('key.use')",
+    "screenOpen": "isScreenOpen()",
+    "isCameraPlayer": "isCameraPlayer()",
+    "holdingKnife": "mainHandItem() == 'trainmurdermystery:knife'"
+  },
+  "entries": [
+    {
+      "when": {
+        "modLoaded": "true",
+        "holdingKnife": "true",
+        "screenOpen": "false",
+        "isCameraPlayer": "true"
+      },
+      "then": [
+        "custom('trainmurdermystery_knife', keyUse, 'key.trainmurdermystery.assassinate')"
+      ]
+    }
+  ]
+}

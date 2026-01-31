@@ -18,6 +18,7 @@ import dev.doctor4t.trainmurdermystery.client.gui.screen.MapSelectorScreen;
 import dev.doctor4t.trainmurdermystery.client.gui.screen.PlayerStatsScreen;
 import dev.doctor4t.trainmurdermystery.client.gui.screen.SkinManagementScreen;
 import dev.doctor4t.trainmurdermystery.client.gui.screen.WaypointHUD;
+import dev.doctor4t.trainmurdermystery.client.model.KnifeModelLoadingPlugin;
 import dev.doctor4t.trainmurdermystery.client.model.TMMModelLayers;
 import dev.doctor4t.trainmurdermystery.client.render.block_entity.PlateBlockEntityRenderer;
 import dev.doctor4t.trainmurdermystery.client.render.block_entity.SmallDoorBlockEntityRenderer;
@@ -118,7 +119,8 @@ public class TMMClient implements ClientModInitializer {
         // Initialize ScreenParticle
         handParticleManager = new HandParticleManager();
         particleMap = new HashMap<>();
-
+        // Custom Baked Models
+        ModelLoadingPlugin.register(new KnifeModelLoadingPlugin());
         // Register particle factories
         TMMParticles.registerFactories();
 

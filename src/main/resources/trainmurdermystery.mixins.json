@@ -37,6 +37,8 @@
     "defaultRequire": 1
   },
   "client": [
+    "KnifeTooltipMixin",
+
     "CameraPositionMixin",
     "KeyboardHandlerMixin",
     "LayeredDrawMixin",

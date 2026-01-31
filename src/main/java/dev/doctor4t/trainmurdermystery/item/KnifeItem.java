@@ -5,6 +5,7 @@ import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.api.Role;
 import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
 import dev.doctor4t.trainmurdermystery.cca.PlayerSkinsComponent;
+import dev.doctor4t.trainmurdermystery.compat.CrosshairaddonsCompat;
 import dev.doctor4t.trainmurdermystery.game.GameFunctions;
 import dev.doctor4t.trainmurdermystery.index.TMMCosmetics;
 import dev.doctor4t.trainmurdermystery.index.TMMDataComponentTypes;
@@ -33,7 +34,6 @@ import net.minecraft.world.phys.EntityHitResult;
 import net.minecraft.world.phys.HitResult;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import walksy.crosshairaddons.CrosshairAddons;
 
 import java.util.List;
 import java.util.Locale;
@@ -53,25 +53,7 @@ public class KnifeItem extends Item implements ItemWithSkin {
         user.playSound(TMMSounds.ITEM_KNIFE_PREPARE, 1.0f, 1.0f);
         return InteractionResultHolder.consume(itemStack);
     }
-//    @Override
-//    public boolean overrideOtherStackedOnMe(ItemStack stack, ItemStack otherStack, Slot slot, ClickAction clickType, Player player, SlotAccess cursorStackReference) {
-//        if (clickType == ClickAction.SECONDARY && otherStack.isEmpty())  {
-//            // 使用玩家的CCA组件来获取和设置皮肤，而不是直接使用TMMCosmetics
-//            PlayerSkinsComponent skinsComponent = PlayerSkinsComponent.KEY.get(player);
-//            String currentSkin = skinsComponent.getSkinFromDataSync(stack);
-//            Skin currentSkinEnum = Skin.fromString(currentSkin);
-//            String nextSkinName = Skin.getNext(currentSkinEnum).getName();
-//
-//            // 更新玩家的皮肤组件
-//            skinsComponent.setEquippedSkinForItemType("knife", nextSkinName);
-//            // 同时更新物品的皮肤数据组件
-//            TMMCosmetics.setSkin(player, stack, nextSkinName);
-//            // 更新数据同步
-//            skinsComponent.setSkinInDataSync(stack, nextSkinName);
-//
-//            return true;
-//        } else return false;
-//    }
+
     public enum Skin {
         DEFAULT(Colors.LIGHT_GRAY, "Kitchen Knife"),
         CEREMONIAL(0xFFD98C28, "Ceremonial Dagger"),
@@ -117,33 +99,7 @@ public class KnifeItem extends Item implements ItemWithSkin {
         }
     }
 
-    @Override
-    public void appendHoverText(ItemStack itemStack, TooltipContext tooltipContext, List<Component> list, TooltipFlag tooltipFlag) {
-        // 从玩家的CCA组件获取皮肤名称
-        Player player = null;
-        if (tooltipContext instanceof net.minecraft.world.entity.player.Player) {
-            player = (Player) tooltipContext;
-        } else {
-            player = net.minecraft.client.Minecraft.getInstance().player;
-        }
-        
-        String skinName = "default";
-        if (player != null) {
-            PlayerSkinsComponent skinsComponent = PlayerSkinsComponent.KEY.get(player);
-            skinName = skinsComponent.getSkinFromDataSync(itemStack);
-        } else {
-            // 回退到原来的实现
-            skinName = TMMCosmetics.getSkin(itemStack);
-        }
-        Skin skin = Skin.fromString(skinName);
 
-        if (skin != null) {
-            list.add(Component.translatable("tip.skin").withStyle(style -> style.withColor(Colors.GRAY))
-                    .append(Component.literal(TextUtils.formatValueString(skin.tooltipName)).withStyle(style -> style.withColor(skin.getColor()))));
-        }
-
-        super.appendHoverText(itemStack, tooltipContext, list, tooltipFlag);
-    }
 
 
     @Override
@@ -167,12 +123,7 @@ public class KnifeItem extends Item implements ItemWithSkin {
                 TMM.REPLAY_MANAGER.recordItemUse(user.getUUID(), BuiltInRegistries.ITEM.getKey(this));
             }
             ClientPlayNetworking.send(new KnifeStabPayload(target.getId()));
-            if (FabricLoader.getInstance().isModLoaded("crosshairaddons")){
-                final var addonStateManager = CrosshairAddons.getStateManager();
-                if (target instanceof LivingEntity livingEntity) {
-                    addonStateManager.onAttackEntity(livingEntity);
-                }
-            }
+            CrosshairaddonsCompat.onAttack( target);
         }
     }
 

@@ -24,7 +24,7 @@ import dev.doctor4t.trainmurdermystery.network.*;
 import dev.doctor4t.trainmurdermystery.util.*;
 import dev.upcraft.datasync.api.util.Entitlements;
 import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;
+
 import net.fabricmc.fabric.api.command.v2.ArgumentTypeRegistry;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
@@ -81,8 +81,7 @@ public class TMM implements ModInitializer {
         // Initialize waypoints
         dev.doctor4t.trainmurdermystery.util.WaypointInitUtil.initialize();
 
-        // Custom Baked Models
-        ModelLoadingPlugin.register(new KnifeModelLoadingPlugin());
+
 
         // Initialize Replay API serializers
         ReplayApiInitializer.init();

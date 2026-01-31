@@ -757,5 +757,9 @@
   "screen.trainmurdermystery.skins.instructions": "点击皮肤进行装备",
   "screen.trainmurdermystery.skins.stats": "皮肤: %d/%d",
   "screen.trainmurdermystery.skins.equipped_short": "已装备",
-  "screen.trainmurdermystery.skins.equip_short": "装备"
+  "screen.trainmurdermystery.skins.equip_short": "装备",
+  "key.trainmurdermystery.assassinate": "刺杀",
+  "key.trainmurdermystery.shot": "射击",
+  "key.trainmurdermystery.bat": "满蓄力时杀害"
+
 }
