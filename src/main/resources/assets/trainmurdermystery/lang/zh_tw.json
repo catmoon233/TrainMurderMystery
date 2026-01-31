@@ -1,4 +1,5 @@
 {
+  "tip.skin": "皮膚: ",
   "gui.tmm.map_selector.title": "選擇地圖",
   "gui.tmm.map_selector.subtitle": "按下 %s 開始投票地圖",
   "gui.tmm.map_selector.random": "隨機",
@@ -738,5 +739,21 @@
   "commands.tmm.switchmap.list.header": "可用地圖列表:",
   "commands.tmm.switchmap.random.success": "已隨機加載地圖",
   "commands.tmm.switchmap.random.error.no_maps": "沒有可用的地圖",
-  "commands.tmm.switchmap.current_map_info": "當前地圖信息:"
+  "commands.tmm.switchmap.current_map_info": "當前地圖信息:",
+  "screen.trainmurdermystery.skins.title": "皮膚管理",
+  "screen.trainmurdermystery.skins.default_skin": "預設",
+  "screen.trainmurdermystery.skins.current_skin": "當前",
+  "screen.trainmurdermystery.skins.equip_skin": "裝備",
+  "screen.trainmurdermystery.skins.back_button": "返回",
+  "screen.trainmurdermystery.skins.no_skinnable_items": "背包中無可換膚的物品",
+  "key.trainmurdermystery.skins": "打開皮膚菜單",
+  "screen.trainmurdermystery.skins.empty_state": "暫無皮膚可顯示",
+  "screen.trainmurdermystery.skins.empty_hint": "收集可換膚物品以開始使用",
+  "screen.trainmurdermystery.skins.refresh": "刷新",
+  "screen.trainmurdermystery.skins.refresh_tooltip": "刷新皮膚列表",
+  "screen.trainmurdermystery.skins.back": "返回",
+  "screen.trainmurdermystery.skins.instructions": "點擊皮膚進行裝備",
+  "screen.trainmurdermystery.skins.stats": "皮膚: %d/%d",
+  "screen.trainmurdermystery.skins.equipped_short": "已裝備",
+  "screen.trainmurdermystery.skins.equip_short": "裝備"
 }

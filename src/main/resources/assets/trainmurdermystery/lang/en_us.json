@@ -1,4 +1,5 @@
 {
+  "tip.skin": "Skin: ",
   "gui.tmm.map_selector.title": "Select Map",
   "gui.tmm.map_selector.subtitle": "Press %s to start map voting",
   "gui.tmm.map_selector.random": "Random",
