@@ -36,7 +36,7 @@ public class MapManager {
             AreasWorldComponent areas = AreasWorldComponent.KEY.get(serverWorld);
 
             // 创建地图目录
-            Path mapsDirPath = Paths.get(serverWorld.getServer().getWorldPath(LevelResource.ROOT).toString(), "world", "maps");
+            Path mapsDirPath = Paths.get(serverWorld.getServer().getWorldPath(LevelResource.ROOT).toString(), "train_maps");
             File mapsDir = mapsDirPath.toFile();
             if (!mapsDir.exists()) {
                 mapsDir.mkdirs();
@@ -153,7 +153,7 @@ public class MapManager {
     public static boolean loadMap(ServerLevel serverWorld, String mapName) {
         try {
             // 构建地图配置文件路径
-            Path mapConfigPath = Paths.get(serverWorld.getServer().getServerDirectory().toString(), "world", "maps", mapName + ".json");
+            Path mapConfigPath = Paths.get(serverWorld.getServer().getServerDirectory().toString(), "train_maps", mapName + ".json");
             File mapConfigFile = mapConfigPath.toFile();
 
             // 检查地图配置文件是否存在
@@ -377,7 +377,7 @@ public class MapManager {
         List<String> maps = new ArrayList<>();
 
         try {
-            Path mapsDirPath = Paths.get(serverWorld.getServer().getServerDirectory().toString(), "world", "maps");
+            Path mapsDirPath = Paths.get(serverWorld.getServer().getServerDirectory().toString(), "train_maps");
             File mapsDir = mapsDirPath.toFile();
 
             if (mapsDir.exists() && mapsDir.isDirectory()) {
@@ -400,7 +400,7 @@ public class MapManager {
         List<String> maps = new ArrayList<>();
 
         try {
-            Path mapsDirPath = Paths.get(FabricLoader.getInstance().getGameDir().toString(), "world", "maps");
+            Path mapsDirPath = Paths.get(FabricLoader.getInstance().getGameDir().toString(), "train_maps");
             File mapsDir = mapsDirPath.toFile();
 
             if (mapsDir.exists() && mapsDir.isDirectory()) {

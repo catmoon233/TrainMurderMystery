@@ -59,12 +59,12 @@ public record SyncMapConfigPayload(List<MapConfig.MapEntry> maps) implements Cus
     }
 
     public static void sendToPlayer(ServerPlayer player) {
-        SyncMapConfigPayload payload = new SyncMapConfigPayload(ServerMapConfig.getInstance().getMaps());
+        SyncMapConfigPayload payload = new SyncMapConfigPayload(ServerMapConfig.getInstance(player.getServer()).getMaps());
         ServerPlayNetworking.send(player, payload);
     }
 
     public static void sendToAllPlayers() {
-        SyncMapConfigPayload payload = new SyncMapConfigPayload(ServerMapConfig.getInstance().getMaps());
+        SyncMapConfigPayload payload = new SyncMapConfigPayload(ServerMapConfig.getInstance(TMM.SERVER).getMaps());
         PlayerLookup.all(TMM.SERVER).forEach(player -> ServerPlayNetworking.send(player, payload));
     }
 
