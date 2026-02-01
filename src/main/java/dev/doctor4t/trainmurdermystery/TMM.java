@@ -237,6 +237,7 @@ public class TMM implements ModInitializer {
         PayloadTypeRegistry.playS2C().register(SecurityCameraModePayload.ID, SecurityCameraModePayload.CODEC);
         PayloadTypeRegistry.playS2C().register(ShowStatsPayload.ID, ShowStatsPayload.CODEC);
         PayloadTypeRegistry.playS2C().register(ShowSelectedMapUIPayload.ID, ShowSelectedMapUIPayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(MapVotingResultsPayload.TYPE, MapVotingResultsPayload.CODEC);
         PayloadTypeRegistry.playS2C().register(CloseUiPayload.ID, CloseUiPayload.CODEC);
         PayloadTypeRegistry.playS2C().register(OpenSkinScreenPaylod.ID, OpenSkinScreenPaylod.CODEC);
         PayloadTypeRegistry.playS2C().register(dev.doctor4t.trainmurdermystery.network.packet.SyncWaypointsPacket.ID,

@@ -44,9 +44,9 @@ public class RoundTextRenderer {
     public static Map<UUID, Role> lastRole = new HashMap<>();
 
     @SuppressWarnings("IntegerDivisionInFloatingPointContext")
-    public static void renderHud(Font renderer, LocalPlayer player, @NotNull GuiGraphics context) {
+    public static void renderHud(Font renderer, LocalPlayer player, @NotNull GuiGraphics context, float partialTicks) {
         boolean isLooseEnds = GameWorldComponent.KEY.get(player.level()).getGameMode() == TMMGameModes.LOOSE_ENDS;
-
+        MapDetailsRenderer.renderHud(renderer, player, context, partialTicks);
         if (welcomeTime > 0) {
             context.pose().pushPose();
             context.pose().translate(context.guiWidth() / 2f, context.guiHeight() / 2f + 3.5, 0);

@@ -3,6 +3,7 @@ package dev.doctor4t.trainmurdermystery.cca;
 import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
 import dev.doctor4t.trainmurdermystery.game.GameFunctions;
+import dev.doctor4t.trainmurdermystery.network.MapVotingResultsPayload;
 import dev.doctor4t.trainmurdermystery.voting.MapVotingManager;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -11,6 +12,7 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.Level;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import org.jetbrains.annotations.NotNull;
 import org.ladysnake.cca.api.v3.component.ComponentKey;
 import org.ladysnake.cca.api.v3.component.ComponentRegistry;
@@ -214,6 +216,12 @@ public class MapVotingComponent implements AutoSyncedComponent, CommonTickingCom
                 
             // 开始游戏
 //            GameFunctions.startGame(server.overworld(), gameComponent.getGameMode());
+        }
+
+        // 发送投票结果给所有玩家
+        MapVotingResultsPayload payload = new MapVotingResultsPayload(winningMap);
+        for (var player : server.getPlayerList().getPlayers()) {
+            ServerPlayNetworking.send(player, payload);
         }
         
         this.shouldSync = true;
