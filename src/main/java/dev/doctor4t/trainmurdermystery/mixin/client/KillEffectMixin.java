@@ -18,7 +18,7 @@ public class KillEffectMixin {
     private static void killPlayer(Player victim, boolean spawnBody, Player killer, ResourceLocation deathReason, CallbackInfo ci) {
         if (killer!=null) {
             if (killer.getUUID().equals(Minecraft.getInstance().player.getUUID())) {
-                StaminaRenderer.triggerScreenEdgeEffect(Color.WHITE.getRGB(), 750, 1f);
+                StaminaRenderer.triggerScreenEdgeEffect(Color.WHITE.getRGB(), 750, 0.6f);
             }
         }
     }

@@ -18,7 +18,7 @@ public class MapDetailsRenderer {
     public static String mapDescription = "";
     public static String mapAuthor = "";
     private static long displayStartTime = 0L;
-    private static final long DISPLAY_DURATION = 7000L; // 7秒显示时间
+    private static final long DISPLAY_DURATION = 12000L; // 7秒显示时间
     private static final long FADE_DURATION = 1000L; // 1秒淡入淡出时间
 
     // 文字颜色 - 电影风格黑白
