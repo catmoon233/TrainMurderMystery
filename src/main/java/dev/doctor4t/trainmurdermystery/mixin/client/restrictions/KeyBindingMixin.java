@@ -1,9 +1,11 @@
 package dev.doctor4t.trainmurdermystery.mixin.client.restrictions;
 
 import com.llamalad7.mixinextras.injector.ModifyReturnValue;
+import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.client.TMMClient;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.core.registries.BuiltInRegistries;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
@@ -16,15 +18,21 @@ public abstract class KeyBindingMixin {
 
     @Unique
     private boolean shouldSuppressKey() {
-        if (!TMMClient.isPlayerCreative() && this.same(Minecraft.getInstance().options.keyDrop) ){
+        final var instance = Minecraft.getInstance();
+        if (!TMMClient.isPlayerCreative() && this.same(instance.options.keyDrop) ){
+            if (TMM.canDropItem.contains(BuiltInRegistries.ITEM.getKey(instance.player.getMainHandItem().getItem()).toString())){
+                if (instance.screen == null){
+                    return false;
+                }
+            }
             return true;
         }
         if (TMMClient.gameComponent != null && TMMClient.gameComponent.isRunning() && TMMClient.isPlayerAliveAndInSurvival()) {
-            return this.same(Minecraft.getInstance().options.keySwapOffhand) ||
-                    this.same(Minecraft.getInstance().options.keyJump) ||
-                    this.same(Minecraft.getInstance().options.keyTogglePerspective) ||
+            return this.same(instance.options.keySwapOffhand) ||
+                    this.same(instance.options.keyJump) ||
+                    this.same(instance.options.keyTogglePerspective) ||
 
-                    this.same(Minecraft.getInstance().options.keyAdvancements);
+                    this.same(instance.options.keyAdvancements);
         }
         return false;
     }

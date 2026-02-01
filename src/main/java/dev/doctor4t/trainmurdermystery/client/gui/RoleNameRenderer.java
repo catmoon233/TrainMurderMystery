@@ -64,7 +64,7 @@ public class RoleNameRenderer {
                 if (component.canUseKillerFeatures(player)) playerRole = TrainRole.KILLER;
                 if (targetRole2 !=null){
                     if (!targetRole2.isInnocent() && playerRole.equals(TrainRole.KILLER)) {
-                        if (!targetRole2.getIdentifier().getNamespace().equals("stupid_express") && !targetRole2.getIdentifier().getPath().equals("recorder")) {
+                        if (!targetRole2.getIdentifier().getNamespace().equals("stupid_express") && !targetRole2.getIdentifier().getPath().equals("recorder") && !targetRole2.getIdentifier().getPath().equals("gambler")) {
                             context.pose().translate(0, 20 + renderer.lineHeight, 0);
                             MutableComponent roleText1 = Component.translatable("announcement.role." + targetRole2.identifier().getPath());
                             int roleWidth1 = renderer.width(roleText1);

@@ -18,21 +18,21 @@ import java.util.List;
 @Mixin(SodiumTransformer.class)
 public class SodiumTransformerMixin {
 
-//    @Inject(method = "transform", at = @At("TAIL"), remap = false)
-//    private static void tmm$addVertexOffset(ASTParser t, TranslationUnit tree, Root root, SodiumParameters parameters, CallbackInfo ci) {
-//        if (parameters.type.glShaderType == ShaderType.VERTEX) {
-//            List<String> declarations = List.of(
-//                    "struct Offset { vec4 pos; };",
-//                    "layout(std140) uniform ubo_SectionOffsets { Offset Offsets[256]; };"
-//            );
-//            tree.parseAndInjectNodes(t, ASTInjectionPoint.BEFORE_FUNCTIONS, declarations.stream());
-//
-//            CompoundStatement vertInit = tree.getOneFunctionDefinitionBody("_vert_init");
-//            if (vertInit != null) {
-//                vertInit.getStatements().add(
-//                        t.parseStatement(root, "_vert_position = _vert_position + Offsets[_draw_id].pos.xyz;")
-//                );
-//            }
-//        }
-//    }
+    @Inject(method = "transform", at = @At("TAIL"), remap = false)
+    private static void tmm$addVertexOffset(ASTParser t, TranslationUnit tree, Root root, SodiumParameters parameters, CallbackInfo ci) {
+        if (parameters.type.glShaderType == ShaderType.VERTEX) {
+            List<String> declarations = List.of(
+                    "struct Offset { vec4 pos; };",
+                    "layout(std140) uniform ubo_SectionOffsets { Offset Offsets[256]; };"
+            );
+            tree.parseAndInjectNodes(t, ASTInjectionPoint.BEFORE_FUNCTIONS, declarations.stream());
+
+            CompoundStatement vertInit = tree.getOneFunctionDefinitionBody("_vert_init");
+            if (vertInit != null) {
+                vertInit.getStatements().add(
+                        t.parseStatement(root, "_vert_position = _vert_position + Offsets[_draw_id].pos.xyz;")
+                );
+            }
+        }
+    }
 }
