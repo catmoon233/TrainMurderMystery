@@ -14,6 +14,7 @@ import dev.doctor4t.trainmurdermystery.command.argument.GameModeArgumentType;
 import dev.doctor4t.trainmurdermystery.command.argument.MapLoadArgumentType;
 import dev.doctor4t.trainmurdermystery.command.argument.SkinArgumentType;
 import dev.doctor4t.trainmurdermystery.command.argument.TimeOfDayArgumentType;
+import dev.doctor4t.trainmurdermystery.data.ServerMapConfig;
 import dev.doctor4t.trainmurdermystery.event.AFKEventHandler;
 import dev.doctor4t.trainmurdermystery.event.EntityInteractionHandler;
 import dev.doctor4t.trainmurdermystery.event.PlayerInteractionHandler;
@@ -47,12 +48,10 @@ import org.jetbrains.annotations.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Predicate;
-
 
 public class TMM implements ModInitializer {
     public static final String MOD_ID = "trainmurdermystery";
@@ -64,14 +63,13 @@ public class TMM implements ModInitializer {
     public static final Networking NETWORKING = new Networking();
 
     public static List<Predicate<Role>> canUseOtherPerson = new ArrayList<>();
-    public static List<Predicate<Role>> canUseChatHud= new ArrayList<>();
-    public static List<Predicate<Player>> canCollide= new ArrayList<>();
-    public static List<Predicate<Entity>> canCollideEntity= new ArrayList<>();
+    public static List<Predicate<Role>> canUseChatHud = new ArrayList<>();
+    public static List<Predicate<Player>> canCollide = new ArrayList<>();
+    public static List<Predicate<Entity>> canCollideEntity = new ArrayList<>();
     public static List<String> canDropItem = List.of(
             "exposure:album",
             "exposure:photograph",
-            "noellesroles:mint_candies"
-    );
+            "noellesroles:mint_candies");
 
     public static @NotNull ResourceLocation id(String name) {
         return ResourceLocation.fromNamespaceAndPath(MOD_ID, name);
@@ -88,8 +86,6 @@ public class TMM implements ModInitializer {
         // Initialize waypoints
         dev.doctor4t.trainmurdermystery.util.WaypointInitUtil.initialize();
 
-
-
         // Initialize Replay API serializers
         ReplayApiInitializer.init();
 
@@ -101,13 +97,13 @@ public class TMM implements ModInitializer {
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
             SERVER = server;
             GAME = new MurderGameMode(TMM.id("murder"));
-            
+            ServerMapConfig.getInstance(server);
             // 注册服务器tick事件以处理投票计时
             ServerTickEvents.START_SERVER_TICK.register(serv -> {
                 dev.doctor4t.trainmurdermystery.voting.MapVotingManager.getInstance().tick();
             });
             REPLAY_MANAGER = new GameReplayManager(server);
-            
+
             // 当服务器启动时，发送地图配置到所有在线玩家
             SyncMapConfigPayload.sendToAllPlayers();
         });
@@ -119,7 +115,6 @@ public class TMM implements ModInitializer {
         TMMBlocks.initialize();
         TMMItems.initialize();
         TMMBlockEntities.initialize();
-            
 
         TMMParticles.initialize();
 
@@ -127,10 +122,14 @@ public class TMM implements ModInitializer {
         NetworkStatistics.getInstance().initialize();
 
         // Register command argument types
-        ArgumentTypeRegistry.registerArgumentType(id("timeofday"), TimeOfDayArgumentType.class, SingletonArgumentInfo.contextFree(TimeOfDayArgumentType::timeofday));
-        ArgumentTypeRegistry.registerArgumentType(id("gamemode"), GameModeArgumentType.class, SingletonArgumentInfo.contextFree(GameModeArgumentType::gameMode));
-        ArgumentTypeRegistry.registerArgumentType(id("skin"), SkinArgumentType.class, SingletonArgumentInfo.contextFree(SkinArgumentType::string));
-        ArgumentTypeRegistry.registerArgumentType(id("map_load"), MapLoadArgumentType.class, SingletonArgumentInfo.contextFree(MapLoadArgumentType::string ));
+        ArgumentTypeRegistry.registerArgumentType(id("timeofday"), TimeOfDayArgumentType.class,
+                SingletonArgumentInfo.contextFree(TimeOfDayArgumentType::timeofday));
+        ArgumentTypeRegistry.registerArgumentType(id("gamemode"), GameModeArgumentType.class,
+                SingletonArgumentInfo.contextFree(GameModeArgumentType::gameMode));
+        ArgumentTypeRegistry.registerArgumentType(id("skin"), SkinArgumentType.class,
+                SingletonArgumentInfo.contextFree(SkinArgumentType::string));
+        ArgumentTypeRegistry.registerArgumentType(id("map_load"), MapLoadArgumentType.class,
+                SingletonArgumentInfo.contextFree(MapLoadArgumentType::string));
 
         // Register commands
         CommandRegistrationCallback.EVENT.register(((dispatcher, registryAccess, environment) -> {
@@ -142,7 +141,7 @@ public class TMM implements ModInitializer {
             ResetWeightsCommand.register(dispatcher);
             SetVisualCommand.register(dispatcher);
             ForceRoleCommand.register(dispatcher);
-//            UpdateDoorsCommand.register(dispatcher);
+            // UpdateDoorsCommand.register(dispatcher);
             SetTimerCommand.register(dispatcher);
             SetMoneyCommand.register(dispatcher);
             SetAutoTrainResetCommand.register(dispatcher);
@@ -164,56 +163,63 @@ public class TMM implements ModInitializer {
             NetworkStatsCommand.register(dispatcher);
             ReloadMapConfigCommand.register(dispatcher);
             SkinsCommand.register(dispatcher);
-            ManageSkinsCommand.register(dispatcher,registryAccess);
+            ManageSkinsCommand.register(dispatcher, registryAccess);
         }));
-        
 
-//        // server lock to supporters
-//        ServerPlayerEvents.JOIN.register(player -> {
-//            GameWorldComponent gameWorldComponent = GameWorldComponent.KEY.get(player.level());
-//
-//            // 优化：提前检查是否启用锁定，避免不必要的API调用
-//            if (!gameWorldComponent.isLockedToSupporters()) {
-//                if (REPLAY_MANAGER != null) {
-//                    REPLAY_MANAGER.recordPlayerName(player);
-//                    REPLAY_MANAGER.addEvent(GameReplayData.EventType.PLAYER_JOIN, null, player.getUUID(), null, null);
-//                }
-//                return;
-//            }
-//
-//            // 服务器已锁定，需要验证支持者身份
-//            DataSyncAPI.refreshAllPlayerData(player.getUUID()).thenRunAsync(() -> {
-//                try {
-//                    // 再次检查锁定状态（可能在异步期间已更改）
-//                    if (GameWorldComponent.KEY.get(player.level()).isLockedToSupporters()) {
-//                        // 检查玩家是否为支持者
-//                        if (!isSupporter(player)) {
-//                            LOGGER.info("Player {} attempted to join locked server (supporters only)", player.getName().getString());
-//                            player.connection.disconnect(Component.translatable("Server is reserved to doctor4t supporters."));
-//                            return;
-//                        }
-//                    }
-//
-//                    // 支持者或锁定已解除，允许加入
-//                    if (REPLAY_MANAGER != null) {
-//                        REPLAY_MANAGER.recordPlayerName(player);
-//                        REPLAY_MANAGER.addEvent(GameReplayData.EventType.PLAYER_JOIN, null, player.getUUID(), null, null);
-//                    }
-//                } catch (Exception e) {
-//                    LOGGER.error("Error checking supporter status for player {}", player.getName().getString(), e);
-//                }
-//            }, player.level().getServer());
-//
-//            // gameWorldComponent.addPlayer(player); // Removed as method does not exist
-//        });
+        // // server lock to supporters
+        // ServerPlayerEvents.JOIN.register(player -> {
+        // GameWorldComponent gameWorldComponent =
+        // GameWorldComponent.KEY.get(player.level());
+        //
+        // // 优化：提前检查是否启用锁定，避免不必要的API调用
+        // if (!gameWorldComponent.isLockedToSupporters()) {
+        // if (REPLAY_MANAGER != null) {
+        // REPLAY_MANAGER.recordPlayerName(player);
+        // REPLAY_MANAGER.addEvent(GameReplayData.EventType.PLAYER_JOIN, null,
+        // player.getUUID(), null, null);
+        // }
+        // return;
+        // }
+        //
+        // // 服务器已锁定，需要验证支持者身份
+        // DataSyncAPI.refreshAllPlayerData(player.getUUID()).thenRunAsync(() -> {
+        // try {
+        // // 再次检查锁定状态（可能在异步期间已更改）
+        // if (GameWorldComponent.KEY.get(player.level()).isLockedToSupporters()) {
+        // // 检查玩家是否为支持者
+        // if (!isSupporter(player)) {
+        // LOGGER.info("Player {} attempted to join locked server (supporters only)",
+        // player.getName().getString());
+        // player.connection.disconnect(Component.translatable("Server is reserved to
+        // doctor4t supporters."));
+        // return;
+        // }
+        // }
+        //
+        // // 支持者或锁定已解除，允许加入
+        // if (REPLAY_MANAGER != null) {
+        // REPLAY_MANAGER.recordPlayerName(player);
+        // REPLAY_MANAGER.addEvent(GameReplayData.EventType.PLAYER_JOIN, null,
+        // player.getUUID(), null, null);
+        // }
+        // } catch (Exception e) {
+        // LOGGER.error("Error checking supporter status for player {}",
+        // player.getName().getString(), e);
+        // }
+        // }, player.level().getServer());
+        //
+        // // gameWorldComponent.addPlayer(player); // Removed as method does not exist
+        // });
 
         ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
             GameWorldComponent gameWorldComponent = GameWorldComponent.KEY.get(handler.player.level());
             if (gameWorldComponent.getGameStatus() == GameWorldComponent.GameStatus.ACTIVE) {
-                // gameWorldComponent.removePlayer(handler.player); // Removed as method does not exist
+                // gameWorldComponent.removePlayer(handler.player); // Removed as method does
+                // not exist
             }
             if (REPLAY_MANAGER != null) {
-                REPLAY_MANAGER.addEvent(GameReplayData.EventType.PLAYER_LEAVE, null, handler.player.getUUID(), null, null);
+                REPLAY_MANAGER.addEvent(GameReplayData.EventType.PLAYER_LEAVE, null, handler.player.getUUID(), null,
+                        null);
             }
         });
 
@@ -221,7 +227,8 @@ public class TMM implements ModInitializer {
         PayloadTypeRegistry.playS2C().register(SyncMapConfigPayload.ID, SyncMapConfigPayload.CODEC);
 
         PayloadTypeRegistry.playS2C().register(ShootMuzzleS2CPayload.ID, ShootMuzzleS2CPayload.CODEC);
-        PayloadTypeRegistry.playS2C().register(PoisonUtils.PoisonOverlayPayload.ID, PoisonUtils.PoisonOverlayPayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(PoisonUtils.PoisonOverlayPayload.ID,
+                PoisonUtils.PoisonOverlayPayload.CODEC);
         PayloadTypeRegistry.playS2C().register(GunDropPayload.ID, GunDropPayload.CODEC);
         PayloadTypeRegistry.playS2C().register(TaskCompletePayload.ID, TaskCompletePayload.CODEC);
         PayloadTypeRegistry.playS2C().register(AnnounceWelcomePayload.ID, AnnounceWelcomePayload.CODEC);
@@ -233,9 +240,14 @@ public class TMM implements ModInitializer {
         PayloadTypeRegistry.playS2C().register(MapVotingResultsPayload.TYPE, MapVotingResultsPayload.CODEC);
         PayloadTypeRegistry.playS2C().register(CloseUiPayload.ID, CloseUiPayload.CODEC);
         PayloadTypeRegistry.playS2C().register(OpenSkinScreenPaylod.ID, OpenSkinScreenPaylod.CODEC);
-        PayloadTypeRegistry.playS2C().register(dev.doctor4t.trainmurdermystery.network.packet.SyncWaypointsPacket.ID, dev.doctor4t.trainmurdermystery.network.packet.SyncWaypointsPacket.CODEC);
-        PayloadTypeRegistry.playS2C().register(dev.doctor4t.trainmurdermystery.network.packet.SyncWaypointVisibilityPacket.ID, dev.doctor4t.trainmurdermystery.network.packet.SyncWaypointVisibilityPacket.CODEC);
-        PayloadTypeRegistry.playS2C().register(dev.doctor4t.trainmurdermystery.network.packet.SyncSpecificWaypointVisibilityPacket.ID, dev.doctor4t.trainmurdermystery.network.packet.SyncSpecificWaypointVisibilityPacket.CODEC);
+        PayloadTypeRegistry.playS2C().register(dev.doctor4t.trainmurdermystery.network.packet.SyncWaypointsPacket.ID,
+                dev.doctor4t.trainmurdermystery.network.packet.SyncWaypointsPacket.CODEC);
+        PayloadTypeRegistry.playS2C().register(
+                dev.doctor4t.trainmurdermystery.network.packet.SyncWaypointVisibilityPacket.ID,
+                dev.doctor4t.trainmurdermystery.network.packet.SyncWaypointVisibilityPacket.CODEC);
+        PayloadTypeRegistry.playS2C().register(
+                dev.doctor4t.trainmurdermystery.network.packet.SyncSpecificWaypointVisibilityPacket.ID,
+                dev.doctor4t.trainmurdermystery.network.packet.SyncSpecificWaypointVisibilityPacket.CODEC);
         PayloadTypeRegistry.playC2S().register(KnifeStabPayload.ID, KnifeStabPayload.CODEC);
 
         // 新加的，出问题直接删下面这一行
@@ -244,24 +256,23 @@ public class TMM implements ModInitializer {
         PayloadTypeRegistry.playC2S().register(GunShootPayload.ID, GunShootPayload.CODEC);
         PayloadTypeRegistry.playC2S().register(StoreBuyPayload.ID, StoreBuyPayload.CODEC);
         PayloadTypeRegistry.playC2S().register(NoteEditPayload.ID, NoteEditPayload.CODEC);
-        PayloadTypeRegistry.playC2S().register(dev.doctor4t.trainmurdermystery.network.VoteForMapPayload.ID, dev.doctor4t.trainmurdermystery.network.VoteForMapPayload.CODEC);
+        PayloadTypeRegistry.playC2S().register(dev.doctor4t.trainmurdermystery.network.VoteForMapPayload.ID,
+                dev.doctor4t.trainmurdermystery.network.VoteForMapPayload.CODEC);
         ServerPlayNetworking.registerGlobalReceiver(KnifeStabPayload.ID, new KnifeStabPayload.Receiver());
         ServerPlayNetworking.registerGlobalReceiver(GunShootPayload.ID, new GunShootPayload.Receiver());
         ServerPlayNetworking.registerGlobalReceiver(StoreBuyPayload.ID, new StoreBuyPayload.Receiver());
         ServerPlayNetworking.registerGlobalReceiver(NoteEditPayload.ID, new NoteEditPayload.Receiver());
-        ServerPlayNetworking.registerGlobalReceiver(dev.doctor4t.trainmurdermystery.network.VoteForMapPayload.ID, (payload, context) -> {
-            dev.doctor4t.trainmurdermystery.network.VoteForMapPayload.Handler.handle(payload, context.player());
-        });
+        ServerPlayNetworking.registerGlobalReceiver(dev.doctor4t.trainmurdermystery.network.VoteForMapPayload.ID,
+                (payload, context) -> {
+                    dev.doctor4t.trainmurdermystery.network.VoteForMapPayload.Handler.handle(payload, context.player());
+                });
 
-
-        
         ServerPlayerEvents.COPY_FROM.register((oldPlayer, newPlayer, alive) -> {
             SyncMapConfigPayload.sendToPlayer(newPlayer);
         });
 
         Scheduler.init();
     }
-
 
     public static boolean isSkyVisibleAdjacent(@NotNull Entity player) {
         BlockPos.MutableBlockPos mutable = new BlockPos.MutableBlockPos();
@@ -272,8 +283,9 @@ public class TMM implements ModInitializer {
                 mutable.set(playerPos.getX() + x, playerPos.getY(), playerPos.getZ() + z);
                 final var chunkPos = player.chunkPosition();
                 final var chunk = player.level().getChunk(chunkPos.x, chunkPos.z);
-                final var i = chunk.getOrCreateHeightmapUnprimed(Heightmap.Types.MOTION_BLOCKING).getFirstAvailable(mutable.getX()&15, mutable.getZ()&15)-1;
-                if (i< player.getY()+3) {
+                final var i = chunk.getOrCreateHeightmapUnprimed(Heightmap.Types.MOTION_BLOCKING)
+                        .getFirstAvailable(mutable.getX() & 15, mutable.getZ() & 15) - 1;
+                if (i < player.getY() + 3) {
                     return !(player.level().getBlockState(playerPos).getBlock() instanceof DoorPartBlock);
                 }
             }
@@ -297,7 +309,8 @@ public class TMM implements ModInitializer {
 
     public static int executeSupporterCommand(CommandSourceStack source, Runnable runnable) {
         ServerPlayer player = source.getPlayer();
-        if (player == null || !player.getClass().equals(ServerPlayer.class)) return 0;
+        if (player == null || !player.getClass().equals(ServerPlayer.class))
+            return 0;
         runnable.run();
         return 1;
 
@@ -305,7 +318,9 @@ public class TMM implements ModInitializer {
 
     public static @NotNull Boolean isSupporter(Player player) {
         Optional<Entitlements> entitlements = Entitlements.token().get(player.getUUID());
-        return entitlements.map(value -> value.keys().stream().anyMatch(identifier -> identifier.equals(COMMAND_ACCESS))).orElse(false);
+        return entitlements
+                .map(value -> value.keys().stream().anyMatch(identifier -> identifier.equals(COMMAND_ACCESS)))
+                .orElse(false);
     }
 
     public static boolean isPlayerInGame(Player player) {

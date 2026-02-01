@@ -36,7 +36,7 @@ public class SkinsCommand {
         if (profiles == null || profiles.isEmpty()) {
             // 未指定玩家，打开自己的皮肤管理界面
             openSkinScreen(sender);
-            source.sendSuccess(() -> Component.translatable("commands.tmm.showstats.self"), false);
+            source.sendSuccess(() -> Component.translatable("commands.tmm.showskin.self"), false);
         } else {
             // 指定玩家，打开指定玩家的皮肤管理界面
             for (GameProfile profile : profiles) {
@@ -44,7 +44,7 @@ public class SkinsCommand {
                 ServerPlayer targetPlayer = source.getServer().getPlayerList().getPlayer(targetUuid);
                 if (targetPlayer != null) {
                     openSkinScreen(targetPlayer);
-                    source.sendSuccess(() -> Component.translatable("commands.tmm.showstats.other", profile.getName()), false);
+                    source.sendSuccess(() -> Component.translatable("commands.tmm.showskin.other", profile.getName()), false);
                 } else {
                     source.sendFailure(Component.translatable("commands.tmm.showstats.player_not_found", profile.getName()));
                 }

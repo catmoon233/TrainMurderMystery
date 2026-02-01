@@ -36,7 +36,7 @@ public class ShowSelectedMapUICommand {
         if (profiles == null || profiles.isEmpty()) {
             // 未指定玩家，打开选择地图的页面
             openStatsScreen(sender, sender.getUUID());
-            source.sendSuccess(() -> Component.translatable("commands.tmm.showstats.self"), false);
+            source.sendSuccess(() -> Component.translatable("commands.tmm.showvote.self"), false);
         } else {
             // 指定玩家，打开指定玩家的选择地图的页面
             for (GameProfile profile : profiles) {
@@ -44,7 +44,7 @@ public class ShowSelectedMapUICommand {
                 ServerPlayer targetPlayer = source.getServer().getPlayerList().getPlayer(targetUuid);
                 if (targetPlayer != null) {
                     openStatsScreen(sender, targetUuid);
-                    source.sendSuccess(() -> Component.translatable("commands.tmm.showstats.other", profile.getName()),
+                    source.sendSuccess(() -> Component.translatable("commands.tmm.showvote.other", profile.getName()),
                             false);
                 } else {
                     source.sendFailure(
