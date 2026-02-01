@@ -178,27 +178,27 @@ public class RoundTextRenderer {
                             .filter(role -> role.getValue().getId().getPath()
                                     .equals(entry.role().getId().getPath()))
                             .findFirst();
-                    final Role role1;
+                    final Role role2;
                     if (first.isPresent()) {
-                        role1 = TMMRoles.ROLES.get(first.get().getKey());
+                        role2 = TMMRoles.ROLES.get(first.get().getKey());
                     } else {
-                        role1 = null;
+                        role2 = null;
                     }
                     if (Objects.equals(entry.role().getId().getPath(),
                             RoleAnnouncementTexts.CIVILIAN.getId().getPath())
-                            && (role1 == null || (role1 != null && !role1.isNeutrals()))) {
+                            && (role2 == null || (role2 != null && !role2.isNeutrals()))) {
                         context.pose().translate(-36 + (civilians % 5) * 12, 14 + (civilians / 5) * 16, 0);
                         civilians++;
                     } else {
                         if (first.isPresent()) {
-                            if (role1 != null) {
-                                if (role1.isNeutrals()) {
+                            if (role2 != null) {
+                                if (role2.isNeutrals()) {
                                     context.pose().translate(-63 + (neutrals % 2) * 12, 14 + (neutrals / 2) * 16, 0);
                                     neutrals++;
-                                } else if (role1.isInnocent() || role1.isVigilanteTeam()) {
+                                } else if (role2.isInnocent() || role2.isVigilanteTeam()) {
                                     context.pose().translate(27 + (vigilantes % 2) * 12, 14 + (vigilantes / 2) * 16, 0);
                                     vigilantes++;
-                                } else if (role1.canUseKiller()) {
+                                } else if (role2.canUseKiller()) {
                                     context.pose().translate(10, 8 + ((vigilanteTotal) / 2) * 16, 0);
                                     context.pose().translate(17 + (killers % 2) * 12, 14 + (killers / 2) * 16, 0);
                                     killers++;
