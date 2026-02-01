@@ -186,7 +186,7 @@ public class RoundTextRenderer {
                     }
                     if (Objects.equals(entry.role().getId().getPath(),
                             RoleAnnouncementTexts.CIVILIAN.getId().getPath())
-                            && (role2 == null || (role2 != null && !role2.isNeutrals()))) {
+                            && (role2 == null || (role2 != null && !role2.isNeutrals() && !role2.isVigilanteTeam()))) {
                         context.pose().translate(-36 + (civilians % 5) * 12, 14 + (civilians / 5) * 16, 0);
                         civilians++;
                     } else {
