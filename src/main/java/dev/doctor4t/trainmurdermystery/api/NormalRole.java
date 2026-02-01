@@ -16,5 +16,6 @@ public class NormalRole extends NoramlRole {
     public NormalRole(ResourceLocation identifier, int color, boolean isInnocent, boolean canUseKiller,
             MoodType moodType, int maxSprintTime, boolean canSeeTime) {
         super(identifier, color, isInnocent, canUseKiller, moodType, maxSprintTime, canSeeTime);
+        this.setNeutrals(isInnocent == false && canUseKiller == false);
     }
 }
