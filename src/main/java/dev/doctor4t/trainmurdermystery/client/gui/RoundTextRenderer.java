@@ -174,17 +174,23 @@ public class RoundTextRenderer {
 
                     if (entry.role() == null)
                         continue;
+                    final var first = RoleAnnouncementTexts.ROLE_ANNOUNCEMENT_TEXTS.entrySet().stream()
+                            .filter(role -> role.getValue().getId().getPath()
+                                    .equals(entry.role().getId().getPath()))
+                            .findFirst();
+                    final Role role1;
+                    if (first.isPresent()) {
+                        role1 = TMMRoles.ROLES.get(first.get().getKey());
+                    } else {
+                        role1 = null;
+                    }
                     if (Objects.equals(entry.role().getId().getPath(),
-                            RoleAnnouncementTexts.CIVILIAN.getId().getPath())) {
+                            RoleAnnouncementTexts.CIVILIAN.getId().getPath())
+                            && (role1 == null || (role1 != null && !role1.isNeutrals()))) {
                         context.pose().translate(-36 + (civilians % 5) * 12, 14 + (civilians / 5) * 16, 0);
                         civilians++;
                     } else {
-                        final var first = RoleAnnouncementTexts.ROLE_ANNOUNCEMENT_TEXTS.entrySet().stream()
-                                .filter(role -> role.getValue().getId().getPath()
-                                        .equals(entry.role().getId().getPath()))
-                                .findFirst();
                         if (first.isPresent()) {
-                            final var role1 = TMMRoles.ROLES.get(first.get().getKey());
                             if (role1 != null) {
                                 if (role1.isNeutrals()) {
                                     context.pose().translate(-63 + (neutrals % 2) * 12, 14 + (neutrals / 2) * 16, 0);
