@@ -1,7 +1,20 @@
 {
   "variants": {
-    "": {
-      "model": "trainmurdermystery:block/camera"
+    "facing=north": {
+      "model": "trainmurdermystery:block/camera",
+      "y": 180
+    },
+    "facing=east": {
+      "model": "trainmurdermystery:block/camera",
+      "y": 270
+    },
+    "facing=south": {
+      "model": "trainmurdermystery:block/camera",
+      "y": 0
+    },
+    "facing=west": {
+      "model": "trainmurdermystery:block/camera",
+      "y": 90
     }
   }
 }

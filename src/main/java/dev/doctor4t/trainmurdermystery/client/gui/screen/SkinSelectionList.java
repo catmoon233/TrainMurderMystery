@@ -51,9 +51,11 @@ public class SkinSelectionList extends ObjectSelectionList<SkinSelectionList.Ski
     };
 
     public SkinSelectionList(SkinManagementScreen parentScreen, Minecraft mc,
-                             int width, int height, int y, String itemTypeName,
+                             int x, int width, int height, int y, String itemTypeName,
                              PlayerSkinsComponent skinsComponent, Consumer<String> onSkinSelected) {
         super(mc, width, height, y, 35);
+        // 设置列表的 X 位置
+        this.setX(x);
 
         this.parentScreen = parentScreen;
         this.itemTypeName = itemTypeName;

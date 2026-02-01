@@ -153,6 +153,7 @@ public class SkinManagementScreen extends Screen {
         skinList = new SkinSelectionList(
                 this,
                 Minecraft.getInstance(),
+                listX,
                 listWidth,
                 listHeight,
                 listTop,
