@@ -186,7 +186,7 @@ public class RoundTextRenderer {
                         if (first.isPresent()) {
                             final var role1 = TMMRoles.ROLES.get(first.get().getKey());
                             if (role1 != null) {
-                                if (!role1.isInnocent() && !role1.canUseKiller() && !role1.isVigilanteTeam()) {
+                                if (role1.isNeutrals()) {
                                     context.pose().translate(-63 + (neutrals % 2) * 12, 14 + (neutrals / 2) * 16, 0);
                                     neutrals++;
                                 } else if (role1.isInnocent() || role1.isVigilanteTeam()) {

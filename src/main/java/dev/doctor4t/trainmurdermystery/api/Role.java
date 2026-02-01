@@ -80,11 +80,21 @@ public abstract class Role {
         return this;
     }
 
+    private boolean isNeutrals = false;
     private boolean autoReset = true;
     private boolean ableToPickUpRevolver;
 
+    public boolean isNeutrals() {
+        return this.isNeutrals;
+    }
+
     public boolean isVigilanteTeam() {
         return isVigilanteTeam;
+    }
+
+    public Role setNeutrals(boolean neutrals) {
+        this.isNeutrals = neutrals;
+        return this;
     }
 
     public Role setVigilanteTeam(boolean vigilanteTeam) {
