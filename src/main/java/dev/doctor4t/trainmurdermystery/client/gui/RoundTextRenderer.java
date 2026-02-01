@@ -138,17 +138,14 @@ public class RoundTextRenderer {
             } else {
                 int vigilanteTotal = 1;
                 for (GameRoundEndComponent.RoundEndData entry : roundEnd.players) {
-                    final var first = RoleAnnouncementTexts.ROLE_ANNOUNCEMENT_TEXTS.entrySet().stream()
-                            .filter(role -> role.getValue().getId().getPath()
-                                    .equals(entry.role().getId().getPath()))
-                            .findFirst();
+                    final var role1 = lastRole.get(entry.player().getId());
                     if (entry.role().getId().getPath().equals(RoleAnnouncementTexts.VIGILANTE.getId().getPath()))
                         vigilanteTotal += 1;
-                    else if (first.isPresent()) {
-                        final var role1 = TMMRoles.ROLES.get(first.get().getKey());
-                        if (role1.isVigilanteTeam()) {
-                            vigilanteTotal += 1;
-                        }
+                    else {
+                        if (role1 != null)
+                            if (role1.isVigilanteTeam()) {
+                                vigilanteTotal += 1;
+                            }
                     }
                 }
 
@@ -174,42 +171,30 @@ public class RoundTextRenderer {
 
                     if (entry.role() == null)
                         continue;
-                    final var first = RoleAnnouncementTexts.ROLE_ANNOUNCEMENT_TEXTS.entrySet().stream()
-                            .filter(role -> role.getValue().getId().getPath()
-                                    .equals(entry.role().getId().getPath()))
-                            .findFirst();
-                    final Role role2;
-                    if (first.isPresent()) {
-                        role2 = TMMRoles.ROLES.get(first.get().getKey());
-                    } else {
-                        role2 = null;
-                    }
-                    if (Objects.equals(entry.role().getId().getPath(),
-                            RoleAnnouncementTexts.CIVILIAN.getId().getPath())
-                            && (role2 == null || (role2 != null && !role2.isNeutrals() && !role2.isVigilanteTeam()))) {
+
+                    final var role1 = lastRole.get(entry.player().getId());
+                    final Role role2 = role1;
+
+                    if (role1 == null || role1 != null && role1.isInnocent() && !role1.canUseKiller()
+                            && ((role2 != null && !role2.isNeutrals() && !role2.isVigilanteTeam()))) {
                         context.pose().translate(-36 + (civilians % 5) * 12, 14 + (civilians / 5) * 16, 0);
                         civilians++;
                     } else {
-                        if (first.isPresent()) {
-                            if (role2 != null) {
-                                if (role2.isNeutrals()) {
-                                    context.pose().translate(-63 + (neutrals % 2) * 12, 14 + (neutrals / 2) * 16, 0);
-                                    neutrals++;
-                                } else if (role2.isInnocent() || role2.isVigilanteTeam()) {
-                                    context.pose().translate(27 + (vigilantes % 2) * 12, 14 + (vigilantes / 2) * 16, 0);
-                                    vigilantes++;
-                                } else if (role2.canUseKiller()) {
-                                    context.pose().translate(10, 8 + ((vigilanteTotal) / 2) * 16, 0);
-                                    context.pose().translate(17 + (killers % 2) * 12, 14 + (killers / 2) * 16, 0);
-                                    killers++;
-                                }
+                        if (role2 != null) {
+                            if (role2.isNeutrals()) {
+                                context.pose().translate(-63 + (neutrals % 2) * 12, 14 + (neutrals / 2) * 16, 0);
+                                neutrals++;
+                            } else if (role2.isInnocent() || role2.isVigilanteTeam()) {
+                                context.pose().translate(27 + (vigilantes % 2) * 12, 14 + (vigilantes / 2) * 16, 0);
+                                vigilantes++;
+                            } else if (role2.canUseKiller()) {
+                                context.pose().translate(10, 8 + ((vigilanteTotal) / 2) * 16, 0);
+                                context.pose().translate(17 + (killers % 2) * 12, 14 + (killers / 2) * 16, 0);
+                                killers++;
                             }
+
                         }
                     }
-                    final var role1 = lastRole.get(entry.player().getId());
-                    // final var first =
-                    // TMM.REPLAY_MANAGER.getCurrentReplay().players().stream().filter(replayPlayerInfo
-                    // -> replayPlayerInfo.uuid().equals(entry.player().getId())).findFirst();
                     if (role1 != null) {
                         context.pose().pushPose();
                         context.pose().scale(0.32f, 0.32f, 1f);
@@ -273,6 +258,7 @@ public class RoundTextRenderer {
                 context.pose().popPose();
             }
         }
+
     }
 
     public static void tick() {
