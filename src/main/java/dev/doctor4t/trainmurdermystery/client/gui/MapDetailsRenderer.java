@@ -6,7 +6,6 @@ import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.locale.Language;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.util.FormattedCharSequence;
 import org.jetbrains.annotations.NotNull;
@@ -19,18 +18,31 @@ public class MapDetailsRenderer {
     public static String mapDescription = "";
     public static String mapAuthor = "";
     private static long displayStartTime = 0L;
-    private static final long DISPLAY_DURATION = 7000L; // 8秒显示时间
+    private static final long DISPLAY_DURATION = 7000L; // 7秒显示时间
     private static final long FADE_DURATION = 1000L; // 1秒淡入淡出时间
 
-    // 背景参数
-    private static final int BACKGROUND_HEIGHT = 100;
-    private static final int BACKGROUND_COLOR = 0x80000000; // 半透明黑色背景
-    private static final int ACCENT_COLOR = 0xFF4A90E2; // 强调色（蓝色）
-    private static final int BORDER_COLOR = 0xFF555555; // 边框颜色
+    // 文字颜色 - 电影风格黑白
+    private static final int TITLE_COLOR = 0xFFFFFFFF; // 纯白标题
+    private static final int AUTHOR_COLOR = 0xFFCCCCCC; // 浅灰作者
+    private static final int DESC_COLOR = 0xFFAAAAAA; // 中灰描述
 
-    // 动画参数
-    private static float slideOffset = 0f;
-    private static final float SLIDE_DISTANCE = 50f; // 滑动距离
+    // 字体大小
+    private static final float TITLE_SCALE = 2.0f; // 标题放大100%
+    private static final float AUTHOR_SCALE = 1.2f; // 作者放大20%
+    private static final float DESC_SCALE = 0.9f; // 描述缩小10%
+
+    // 布局位置 - 左上角
+    private static final int LEFT_MARGIN = 30;
+    private static final int TOP_MARGIN = 30;
+    private static final int LINE_SPACING = 5;
+
+    // 全屏效果参数
+    private static final float VIGNETTE_INTENSITY = 0.4f; // 暗角强度
+    private static final int VIGNETTE_COLOR = 0x80000000; // 黑色暗角
+
+    // 动画效果
+    private static float titleOffsetX = 0f; // 标题偏移动画
+    private static float titlePulse = 0f; // 标题脉动动画
 
     public static void renderHud(Font font, @NotNull LocalPlayer player, GuiGraphics context, float delta) {
         if (mapId.isEmpty() || System.currentTimeMillis() - displayStartTime > DISPLAY_DURATION) {
@@ -43,53 +55,28 @@ public class MapDetailsRenderer {
         // 计算透明度和动画进度
         long elapsed = System.currentTimeMillis() - displayStartTime;
         float alpha = 1.0f;
-        float slideProgress = 1.0f;
 
+        // 计算淡入淡出透明度
         if (elapsed < FADE_DURATION) {
-            // 淡入 + 滑动进入
-            alpha = (float) elapsed / FADE_DURATION;
-            slideProgress = alpha;
-            slideOffset = SLIDE_DISTANCE * (1 - alpha);
+            alpha = (float) elapsed / FADE_DURATION; // 淡入
         } else if (elapsed > DISPLAY_DURATION - FADE_DURATION) {
-            // 淡出
-            alpha = (float) (DISPLAY_DURATION - elapsed) / FADE_DURATION;
-            slideOffset = 0f;
-        } else {
-            // 完全显示
-            alpha = 1.0f;
-            slideOffset = 0f;
+            alpha = (float) (DISPLAY_DURATION - elapsed) / FADE_DURATION; // 淡出
         }
 
         int alphaInt = (int) (alpha * 255);
         if (alphaInt <= 0) return;
 
+        // 更新动画
+        updateAnimations(delta, elapsed);
+
         // 保存当前矩阵状态
         context.pose().pushPose();
 
-        // 应用滑动动画
-        context.pose().translate(0, slideOffset, 0);
-
-        // 渲染背景面板（圆角设计）
-        int panelWidth = screenWidth / 2; // 半宽面板
-        int panelX = 10; // 左边距
-        int panelY = 10; // 顶边距
-        int panelHeight = BACKGROUND_HEIGHT;
-
-        // 绘制背景（半透明黑色，带边框）
-        drawRoundedPanel(context, panelX, panelY, panelWidth, panelHeight,
-                alphaInt << 24 | 0x000000, BORDER_COLOR, 8);
-
-        // 绘制装饰性左侧条
-        int accentBarWidth = 6;
-        int accentBarHeight = panelHeight - 10;
-        context.fill(panelX + 5, panelY + 5,
-                panelX + 5 + accentBarWidth,
-                panelY + 5 + accentBarHeight,
-                (alphaInt << 24) | ACCENT_COLOR);
+        // 渲染全屏电影效果
+        renderFullscreenEffects(context, screenWidth, screenHeight, alphaInt);
 
         // 获取地图信息
         AtomicReference<String> mapNameKey = new AtomicReference<>("map." + mapId + ".name");
-        AtomicReference<String> mapAuthorKey = new AtomicReference<>("map." + mapId + ".author");
         AtomicReference<String> mapDescKey = new AtomicReference<>("map." + mapId + ".desc");
 
         MapConfig.getInstance().getMaps().stream()
@@ -97,292 +84,241 @@ public class MapDetailsRenderer {
                 .findFirst()
                 .ifPresent(map -> {
                     mapNameKey.set(map.displayName);
-                    // 假设地图配置中有作者字段，如果没有则使用默认
-                    mapAuthorKey.set("allinYOKYO canyuesama haiman wifi_left guanzheqwq biantwin");
                     mapDescKey.set(map.description);
                 });
 
-        // 渲染地图名称（放大标题）
         String mapName = Language.getInstance().getOrDefault(mapNameKey.get());
         if (mapName.equals(mapNameKey.get())) {
             mapName = mapId;
         }
 
-        // 使用大号字体渲染地图名称（带阴影效果）
-        int mapNameX = panelX + 20;
-        int mapNameY = panelY + 15;
-
-        // 标题阴影
-        context.drawString(font, mapName, mapNameX + 2, mapNameY + 2, 0x80000000, false);
-
-        // 主标题（大字体，通过缩放实现）
-        context.pose().pushPose();
-        float titleScale = 1.3f; // 标题放大30%
-        context.pose().translate(mapNameX, mapNameY, 0);
-        context.pose().scale(titleScale, titleScale, 1.0f);
-
-        // 标题渐变颜色（顶部亮，底部暗）
-        int titleColorTop = (alphaInt << 24) | 0xFFFFFF; // 白色
-        int titleColorBottom = (alphaInt << 24) | 0xAAAAAA; // 浅灰色
-
-        // 简单渐变效果
-        context.drawString(font, mapName, 0, 0, titleColorTop, false);
-        context.pose().popPose();
-
-        // 渲染作者信息（在地图名称下方）
-        Component author = Component.translatable(mapAuthorKey.get());
-//        if (!author.equals(mapAuthorKey.get()) || !author.equals("Unknown Author")) {
-            int authorX = mapNameX;
-            int authorY = mapNameY + (int)(font.lineHeight * titleScale) + 5;
-
-            // 作者图标（可选的emoji或符号）
-            String authorPrefix = "👤 "; // 或者使用 "✍️ " 或 "📝 "
-
-            // 作者文本（斜体，灰色）
-            MutableComponent authorText = Component.literal(authorPrefix + author)
-                    .withStyle(Style.EMPTY.withItalic(true).withColor(0xFFAAAAAA));
-
-            // 绘制作者
-            context.drawString(font, authorText, authorX, authorY, (alphaInt << 24) | 0xAAAAAA, false);
-//        }
-
-        // 渲染地图描述（作者下方，小字体）
         String mapDesc = Language.getInstance().getOrDefault(mapDescKey.get());
-        if (!mapDesc.equals(mapDescKey.get())) {
-            // 描述区域
-            int descX = mapNameX;
-            int descY = panelY + 60; // 在作者下方，给描述留出空间
 
-            // 描述的最大宽度
-            int maxDescWidth = panelWidth - 30;
-
-            // 分割长描述成多行
-            List<FormattedCharSequence> lines = font.split(Component.literal(mapDesc), maxDescWidth);
-
-            // 使用小号字体渲染描述
-            int lineSpacing = 8; // 较小的行间距
-            int linesToShow = Math.min(3, lines.size()); // 最多显示3行
-
-            for (int i = 0; i < linesToShow; i++) {
-                if (descY >= panelY + panelHeight - 10) break; // 避免超出面板
-
-                FormattedCharSequence line = lines.get(i);
-
-                // 如果是最后一行且有多行，添加省略号
-                if (i == linesToShow - 1 && lines.size() > linesToShow) {
-                    String text = line.toString();
-                    if (text.length() > 0) {
-                        text = text.substring(0, Math.max(0, text.length() - 3)) + "...";
-                        line = FormattedCharSequence.forward(text, Style.EMPTY);
-                    }
-                }
-
-                // 绘制描述行（小字体，灰色）
-                context.drawString(font, line, descX, descY,
-                        (alphaInt << 24) | 0xCCCCCC, false);
-                descY += lineSpacing;
-            }
-
-            // 如果描述超过3行，显示提示
-            if (lines.size() > 3) {
-                Component moreHint = Component.literal("...")
-                        .withStyle(Style.EMPTY.withItalic(true).withColor(0xFF888888));
-                context.drawString(font, moreHint, descX + font.width("...") + 5,
-                        descY - lineSpacing, (alphaInt << 24) | 0x888888, false);
-            }
-        }
-
-        // 渲染地图ID标签（小字，右上角）
-        String mapIdDisplay = "ID: " + mapId;
-        int mapIdWidth = font.width(mapIdDisplay);
-        int mapIdX = panelX + panelWidth - mapIdWidth - 10;
-        int mapIdY = panelY + 10;
-
-        context.drawString(font, mapIdDisplay, mapIdX, mapIdY,
-                (alphaInt << 24) | 0x888888, false);
-
-        // 渲染进度条（显示剩余时间）
-        int progressBarWidth = panelWidth - 40;
-        int progressBarX = panelX + 20;
-        int progressBarY = panelY + panelHeight - 15;
-        int progressBarHeight = 3;
-
-        // 进度条背景
-        context.fill(progressBarX, progressBarY,
-                progressBarX + progressBarWidth,
-                progressBarY + progressBarHeight,
-                (alphaInt << 24) | 0x444444);
-
-        // 进度条前景（根据剩余时间变化）
-        float timeProgress = 1.0f - (float) elapsed / DISPLAY_DURATION;
-        int progressWidth = (int) (progressBarWidth * timeProgress);
-
-        // 进度条颜色渐变（从绿到黄到红）
-        int progressColor = getProgressColor(timeProgress);
-        context.fill(progressBarX, progressBarY,
-                progressBarX + progressWidth,
-                progressBarY + progressBarHeight,
-                (alphaInt << 24) | progressColor);
+        // 渲染左上角地图信息
+        renderTopLeftContent(context, font, mapName, mapDesc, alphaInt);
 
         // 恢复矩阵状态
         context.pose().popPose();
     }
 
     /**
-     * 绘制圆角面板
+     * 更新动画效果
      */
-    private static void drawRoundedPanel(GuiGraphics context, int x, int y, int width, int height,
-                                         int color, int borderColor, int radius) {
-        // 主背景
-        context.fill(x + radius, y, x + width - radius, y + height, color);
-        context.fill(x, y + radius, x + width, y + height - radius, color);
+    private static void updateAnimations(float delta, long elapsed) {
+        // 标题轻微偏移动画（模拟胶片抖动）
+        titleOffsetX = (float) Math.sin(elapsed * 0.001f) * 0.5f;
 
-        // 圆角区域（简化实现）
-        fillCircleQuadrant(context, x + radius, y + radius, radius, 0, color); // 左上
-        fillCircleQuadrant(context, x + width - radius, y + radius, radius, 1, color); // 右上
-        fillCircleQuadrant(context, x + radius, y + height - radius, radius, 2, color); // 左下
-        fillCircleQuadrant(context, x + width - radius, y + height - radius, radius, 3, color); // 右下
-
-        // 边框（简化实现）
-        // 上边框
-        context.fill(x + radius, y, x + width - radius, y + 1, borderColor);
-        // 下边框
-        context.fill(x + radius, y + height - 1, x + width - radius, y + height, borderColor);
-        // 左边框
-        context.fill(x, y + radius, x + 1, y + height - radius, borderColor);
-        // 右边框
-        context.fill(x + width - 1, y + radius, x + width, y + height - radius, borderColor);
-
-        // 圆角边框（简化）
-        drawCircleQuadrantBorder(context, x + radius, y + radius, radius, 0, borderColor); // 左上
-        drawCircleQuadrantBorder(context, x + width - radius, y + radius, radius, 1, borderColor); // 右上
-        drawCircleQuadrantBorder(context, x + radius, y + height - radius, radius, 2, borderColor); // 左下
-        drawCircleQuadrantBorder(context, x + width - radius, y + height - radius, radius, 3, borderColor); // 右下
+        // 标题脉动动画
+        titlePulse = (float) Math.sin(elapsed * 0.002f) * 0.05f + 1.0f;
     }
 
     /**
-     * 填充四分之一圆（简化实现）
+     * 渲染全屏电影效果
      */
-    private static void fillCircleQuadrant(GuiGraphics context, int centerX, int centerY,
-                                           int radius, int quadrant, int color) {
-        // 简化实现：绘制一个小的正方形区域作为圆角
-        int x = centerX - radius;
-        int y = centerY - radius;
+    private static void renderFullscreenEffects(GuiGraphics context, int screenWidth, int screenHeight, int alpha) {
+        // 渲染暗角效果（模拟电影镜头）
+        renderVignette(context, screenWidth, screenHeight, alpha);
 
-        switch (quadrant) {
-            case 0: // 左上
-                for (int i = 0; i < radius; i++) {
-                    for (int j = 0; j < radius; j++) {
-                        if (i + j < radius) {
-                            context.fill(x + i, y + j, x + i + 1, y + j + 1, color);
-                        }
-                    }
-                }
-                break;
-            case 1: // 右上
-                for (int i = 0; i < radius; i++) {
-                    for (int j = 0; j < radius; j++) {
-                        if (i + j < radius) {
-                            context.fill(centerX + i, y + j, centerX + i + 1, y + j + 1, color);
-                        }
-                    }
-                }
-                break;
-            case 2: // 左下
-                for (int i = 0; i < radius; i++) {
-                    for (int j = 0; j < radius; j++) {
-                        if (i + j < radius) {
-                            context.fill(x + i, centerY + j, x + i + 1, centerY + j + 1, color);
-                        }
-                    }
-                }
-                break;
-            case 3: // 右下
-                for (int i = 0; i < radius; i++) {
-                    for (int j = 0; j < radius; j++) {
-                        if (i + j < radius) {
-                            context.fill(centerX + i, centerY + j, centerX + i + 1, centerY + j + 1, color);
-                        }
-                    }
-                }
-                break;
+        // 渲染胶片颗粒效果（可选，增强电影感）
+        renderFilmGrain(context, screenWidth, screenHeight, alpha);
+
+        // 渲染扫描线效果（模拟CRT显示器）
+        renderScanlines(context, screenWidth, screenHeight, alpha);
+    }
+
+    /**
+     * 渲染暗角效果
+     */
+    private static void renderVignette(GuiGraphics context, int screenWidth, int screenHeight, int alpha) {
+        // 计算暗角颜色和透明度
+        int vignetteAlpha = (int)(VIGNETTE_INTENSITY * alpha);
+        int vignetteColor = (vignetteAlpha << 24) | 0x000000;
+
+        // 简单实现：在屏幕四角添加黑色渐变
+        int cornerSize = Math.min(screenWidth, screenHeight) / 3;
+
+        // 左上角暗角
+        for (int i = 0; i < cornerSize; i++) {
+            int cornerAlpha = (int)(vignetteAlpha * (1.0f - (float)i / cornerSize));
+            int cornerColor = (cornerAlpha << 24) | 0x000000;
+            context.fill(0, i, i + 1, i + 1, cornerColor);
+        }
+
+        // 右上角暗角
+        for (int i = 0; i < cornerSize; i++) {
+            int cornerAlpha = (int)(vignetteAlpha * (1.0f - (float)i / cornerSize));
+            int cornerColor = (cornerAlpha << 24) | 0x000000;
+            context.fill(screenWidth - i - 1, i, screenWidth, i + 1, cornerColor);
         }
     }
 
     /**
-     * 绘制四分之一圆的边框
+     * 渲染胶片颗粒效果
      */
-    private static void drawCircleQuadrantBorder(GuiGraphics context, int centerX, int centerY,
-                                                 int radius, int quadrant, int color) {
-        // 简化实现：绘制圆角的边框像素
-        for (int i = 0; i < radius; i++) {
-            int j = radius - i - 1;
+    private static void renderFilmGrain(GuiGraphics context, int screenWidth, int screenHeight, int alpha) {
+        // 随机颗粒效果（简化实现）
+        long time = System.currentTimeMillis();
+        int grainAlpha = (int)(alpha * 0.1f); // 非常淡的颗粒
 
-            switch (quadrant) {
-                case 0: // 左上
-                    context.fill(centerX - i - 1, centerY - j - 1, centerX - i, centerY - j, color);
-                    context.fill(centerX - j - 1, centerY - i - 1, centerX - j, centerY - i, color);
-                    break;
-                case 1: // 右上
-                    context.fill(centerX + i, centerY - j - 1, centerX + i + 1, centerY - j, color);
-                    context.fill(centerX + j, centerY - i - 1, centerX + j + 1, centerY - i, color);
-                    break;
-                case 2: // 左下
-                    context.fill(centerX - i - 1, centerY + j, centerX - i, centerY + j + 1, color);
-                    context.fill(centerX - j - 1, centerY + i, centerX - j, centerY + i + 1, color);
-                    break;
-                case 3: // 右下
-                    context.fill(centerX + i, centerY + j, centerX + i + 1, centerY + j + 1, color);
-                    context.fill(centerX + j, centerY + i, centerX + j + 1, centerY + i + 1, color);
-                    break;
+        for (int i = 0; i < 50; i++) {
+            float x = (float) ((time * 0.5 + i * 100) % screenWidth);
+            float y = (float) ((Math.sin(time * 0.001 + i) * 100 + i * 20) % screenHeight);
+            int grainColor = (grainAlpha << 24) | 0xFFFFFF;
+            context.fill((int)x, (int)y, (int)x + 1, (int)y + 1, grainColor);
+        }
+    }
+
+    /**
+     * 渲染扫描线效果
+     */
+    private static void renderScanlines(GuiGraphics context, int screenWidth, int screenHeight, int alpha) {
+        // 每隔2像素绘制一条细线
+        int lineAlpha = (int)(alpha * 0.05f); // 非常淡的扫描线
+
+        for (int y = 0; y < screenHeight; y += 2) {
+            context.fill(0, y, screenWidth, y + 1, (lineAlpha << 24) | 0x000000);
+        }
+    }
+
+    /**
+     * 渲染左上角内容
+     */
+    private static void renderTopLeftContent(GuiGraphics context, Font font,
+                                             String mapName, String mapDesc, int alpha) {
+        int currentY = TOP_MARGIN;
+
+        // 1. 渲染地图标题（大字体，带动画效果）
+        renderTitle(context, font, mapName, currentY, alpha);
+        currentY += (int)(font.lineHeight * TITLE_SCALE) + LINE_SPACING;
+
+        // 2. 渲染作者信息
+        renderAuthor(context, font, currentY, alpha);
+        currentY += (int)(font.lineHeight * AUTHOR_SCALE) + LINE_SPACING;
+
+        // 3. 渲染地图描述
+        if (!mapDesc.isEmpty() && !mapDesc.equals("map." + mapId + ".desc")) {
+            renderDescription(context, font, mapDesc, currentY, alpha);
+        }
+
+        // 4. 渲染地图ID（最小号）
+        renderMapId(context, font, alpha);
+    }
+
+    /**
+     * 渲染地图标题
+     */
+    private static void renderTitle(GuiGraphics context, Font font, String title, int y, int alpha) {
+        context.pose().pushPose();
+
+        // 应用位置和动画效果
+        int titleX = LEFT_MARGIN + (int)titleOffsetX;
+        context.pose().translate(titleX, y, 0);
+
+        // 应用脉动缩放
+        float finalScale = TITLE_SCALE * titlePulse;
+        context.pose().scale(finalScale, finalScale, 1.0f);
+
+        // 标题阴影（轻微偏移）
+        int shadowColor = (alpha << 24) | 0x000000;
+        context.drawString(font, title, 1, 1, shadowColor, false);
+
+        // 标题主体（纯白）
+        int titleColor = (alpha << 24) | TITLE_COLOR;
+        context.drawString(font, title, 0, 0, titleColor, false);
+
+        context.pose().popPose();
+    }
+
+    /**
+     * 渲染作者信息
+     */
+    private static void renderAuthor(GuiGraphics context, Font font, int y, int alpha) {
+        context.pose().pushPose();
+
+        int authorX = LEFT_MARGIN;
+        context.pose().translate(authorX, y, 0);
+        context.pose().scale(AUTHOR_SCALE, AUTHOR_SCALE, 1.0f);
+
+        String author = "allinYOKYO canyuesama haiman wifi_left guanzheqwq biantwin";
+
+        // 作者阴影
+        int shadowColor = (alpha << 24) | 0x000000;
+        context.drawString(font, author, 1, 1, shadowColor, false);
+
+        // 作者主体（浅灰）
+        int authorColor = (alpha << 24) | AUTHOR_COLOR;
+        context.drawString(font, author, 0, 0, authorColor, false);
+
+        context.pose().popPose();
+    }
+
+    /**
+     * 渲染地图描述
+     */
+    private static void renderDescription(GuiGraphics context, Font font, String description, int y, int alpha) {
+        // 计算描述的最大宽度（屏幕宽度减去左边距）
+        int maxDescWidth = context.guiWidth() - LEFT_MARGIN - 20;
+
+        // 分割描述为多行
+        List<FormattedCharSequence> lines = font.split(Component.literal(description), maxDescWidth);
+
+        // 限制显示行数（最多2行）
+        int linesToShow = Math.min(2, lines.size());
+
+        context.pose().pushPose();
+        int descX = LEFT_MARGIN;
+        context.pose().translate(descX, y, 0);
+        context.pose().scale(DESC_SCALE, DESC_SCALE, 1.0f);
+
+        // 渲染每一行描述
+        for (int i = 0; i < linesToShow; i++) {
+            FormattedCharSequence line = lines.get(i);
+
+            // 如果是最后一行且有多行，添加省略号
+            if (i == linesToShow - 1 && lines.size() > linesToShow) {
+                String text = line.toString();
+                if (text.length() > 3) {
+                    text = text.substring(0, text.length() - 3) + "...";
+                    line = FormattedCharSequence.forward(text, Style.EMPTY);
+                }
             }
+
+            // 行阴影
+            int shadowColor = (alpha << 24) | 0x000000;
+            context.drawString(font, line, 1, 1 + i * (font.lineHeight + LINE_SPACING), shadowColor, false);
+
+            // 行主体（中灰色）
+            int lineColor = (alpha << 24) | DESC_COLOR;
+            context.drawString(font, line, 0, 0 + i * (font.lineHeight + LINE_SPACING), lineColor, false);
         }
+
+        context.pose().popPose();
     }
 
     /**
-     * 根据进度获取颜色（从绿到黄到红）
+     * 渲染地图ID
      */
-    private static int getProgressColor(float progress) {
-        if (progress > 0.66f) {
-            // 绿色 -> 青色
-            float t = (progress - 0.66f) / 0.34f;
-            return interpolateColor(0xFF00FF00, 0xFF00FFFF, t);
-        } else if (progress > 0.33f) {
-            // 黄色 -> 绿色
-            float t = (progress - 0.33f) / 0.33f;
-            return interpolateColor(0xFFFFFF00, 0xFF00FF00, t);
-        } else {
-            // 红色 -> 黄色
-            float t = progress / 0.33f;
-            return interpolateColor(0xFFFF0000, 0xFFFFFF00, t);
-        }
-    }
+    private static void renderMapId(GuiGraphics context, Font font, int alpha) {
+        int screenWidth = context.guiWidth();
+        int screenHeight = context.guiHeight();
 
-    /**
-     * 插值颜色
-     */
-    private static int interpolateColor(int color1, int color2, float t) {
-        int r1 = (color1 >> 16) & 0xFF;
-        int g1 = (color1 >> 8) & 0xFF;
-        int b1 = color1 & 0xFF;
+        // 地图ID显示在右下角（小字）
+        String mapIdDisplay = "MAP: " + mapId;
+        int mapIdWidth = font.width(mapIdDisplay);
+        int mapIdX = screenWidth - mapIdWidth - 20;
+        int mapIdY = screenHeight - 30;
 
-        int r2 = (color2 >> 16) & 0xFF;
-        int g2 = (color2 >> 8) & 0xFF;
-        int b2 = color2 & 0xFF;
+        // ID阴影
+        int shadowColor = (alpha << 24) | 0x000000;
+        context.drawString(font, mapIdDisplay, mapIdX + 1, mapIdY + 1, shadowColor, false);
 
-        int r = (int)(r1 + (r2 - r1) * t);
-        int g = (int)(g1 + (g2 - g1) * t);
-        int b = (int)(b1 + (b2 - b1) * t);
-
-        return (r << 16) | (g << 8) | b;
+        // ID主体（浅灰色）
+        int idColor = (alpha << 24) | 0x888888;
+        context.drawString(font, mapIdDisplay, mapIdX, mapIdY, idColor, false);
     }
 
     /**
      * 设置要显示的地图详情
-     *
-     * @param mapId 地图ID
-     * @param mapDescription 地图描述
-     * @param mapAuthor 地图作者（可选）
      */
     public static void setMapDetails(String mapId, String mapDescription, String mapAuthor) {
         MapDetailsRenderer.mapId = mapId;
@@ -391,7 +327,8 @@ public class MapDetailsRenderer {
         displayStartTime = System.currentTimeMillis();
 
         // 重置动画
-        slideOffset = SLIDE_DISTANCE;
+        titleOffsetX = 0f;
+        titlePulse = 1.0f;
     }
 
     /**
@@ -412,27 +349,21 @@ public class MapDetailsRenderer {
 
     /**
      * 触发显示当前地图详情
-     * 此方法会自动获取当前游戏中的地图信息并显示
-     * @param mapId 地图ID
      */
     public static void triggerMapDetails(String mapId) {
-        // 尝试从地图配置中获取地图详细信息
         AtomicReference<String> displayName = new AtomicReference<>(mapId);
         AtomicReference<String> description = new AtomicReference<>("");
         AtomicReference<String> author = new AtomicReference<>("");
-        displayStartTime = 0;
-        // 查找地图配置
+
         MapConfig.getInstance().getMaps().stream()
                 .filter(map -> map.id.equals(mapId))
                 .findFirst()
                 .ifPresent(map -> {
                     displayName.set(map.displayName);
                     description.set(map.description);
-                    // 使用默认作者列表
                     author.set("allinYOKYO canyuesama haiman wifi_left guanzheqwq biantwin");
                 });
 
-        // 设置地图详情并触发显示
         setMapDetails(mapId, description.get(), author.get());
     }
 }
