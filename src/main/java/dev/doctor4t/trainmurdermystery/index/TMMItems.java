@@ -83,6 +83,7 @@ public @SuppressWarnings("unchecked") interface TMMItems {
                                 .title(Component.translatable("itemGroup.trainmurdermystery.equipment"))
                                 .icon(() -> new ItemStack(KEY))
                                 .build());
-                INIT_ITEMS.LETTER = LETTER;
+                if (INIT_ITEMS.LETTER == null)
+                        INIT_ITEMS.LETTER = LETTER;
         }
 }
