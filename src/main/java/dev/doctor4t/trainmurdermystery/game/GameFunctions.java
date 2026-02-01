@@ -320,7 +320,7 @@ public class GameFunctions {
             roomToPlayer.put(serverPlayerEntity.getUUID(), finalRoomNumber);
 
             // give letter
-            ItemStack letter = new ItemStack(TMMItems.LETTER);
+            ItemStack letter = new ItemStack(TMMItems.INIT_ITEMS.LETTER);
 
             letter.set(DataComponents.ITEM_NAME, Component.translatable(letter.getDescriptionId()));
             int letterColor = 0xC5AE8B;
