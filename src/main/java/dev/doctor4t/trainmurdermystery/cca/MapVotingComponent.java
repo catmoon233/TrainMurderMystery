@@ -217,9 +217,9 @@ public class MapVotingComponent implements AutoSyncedComponent, CommonTickingCom
             // 开始游戏
 //            GameFunctions.startGame(server.overworld(), gameComponent.getGameMode());
         }
-        
+
         // 发送投票结果给所有玩家
-        MapVotingResultsPayload payload = new MapVotingResultsPayload(winningMap, votes, "voting_finished");
+        MapVotingResultsPayload payload = new MapVotingResultsPayload(winningMap);
         for (var player : server.getPlayerList().getPlayers()) {
             ServerPlayNetworking.send(player, payload);
         }

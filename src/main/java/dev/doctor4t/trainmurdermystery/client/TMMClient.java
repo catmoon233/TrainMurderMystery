@@ -13,9 +13,7 @@ import dev.doctor4t.trainmurdermystery.block.SecurityMonitorBlock;
 import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
 import dev.doctor4t.trainmurdermystery.cca.PlayerMoodComponent;
 import dev.doctor4t.trainmurdermystery.cca.TrainWorldComponent;
-import dev.doctor4t.trainmurdermystery.client.gui.RoundTextRenderer;
-import dev.doctor4t.trainmurdermystery.client.gui.StoreRenderer;
-import dev.doctor4t.trainmurdermystery.client.gui.TimeRenderer;
+import dev.doctor4t.trainmurdermystery.client.gui.*;
 import dev.doctor4t.trainmurdermystery.client.gui.screen.MapSelectorScreen;
 import dev.doctor4t.trainmurdermystery.client.gui.screen.PlayerStatsScreen;
 import dev.doctor4t.trainmurdermystery.client.gui.screen.SkinManagementScreen;
@@ -29,7 +27,6 @@ import dev.doctor4t.trainmurdermystery.client.render.entity.FirecrackerEntityRen
 import dev.doctor4t.trainmurdermystery.client.render.entity.HornBlockEntityRenderer;
 import dev.doctor4t.trainmurdermystery.client.render.entity.NoteEntityRenderer;
 import dev.doctor4t.trainmurdermystery.client.util.TMMItemTooltips;
-import dev.doctor4t.trainmurdermystery.client.gui.SecurityCameraHUD;
 import dev.doctor4t.trainmurdermystery.command.ShowStatsCommand;
 import dev.doctor4t.trainmurdermystery.command.SkinsCommand;
 import dev.doctor4t.trainmurdermystery.data.MapConfig;
@@ -62,6 +59,7 @@ import net.minecraft.client.CameraType;
 import net.minecraft.client.CloudStatus;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.PlayerInfo;
@@ -74,6 +72,7 @@ import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.client.resources.model.UnbakedModel;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
@@ -341,9 +340,6 @@ public class TMMClient implements ClientModInitializer {
             }
             if (!prevGameRunning && gameComponent.isRunning()) {
                 Minecraft.getInstance().player.getInventory().selected = 8;
-                
-                // 游戏开始时清除地图详情显示
-                MapDetailsRenderer.clearMapDetails();
             }
             prevGameRunning = gameComponent.isRunning();
 
@@ -426,6 +422,11 @@ public class TMMClient implements ClientModInitializer {
             context.client().execute(() -> {
                 context.client().setScreen(new MapSelectorScreen());
             });
+        });
+        ClientPlayNetworking.registerGlobalReceiver(MapVotingResultsPayload.TYPE, (payload, context) -> {
+            MapDetailsRenderer.triggerMapDetails(
+                    payload.result
+            );
         });
         ClientPlayNetworking.registerGlobalReceiver(OpenSkinScreenPaylod.ID, (payload, context) -> {
 
