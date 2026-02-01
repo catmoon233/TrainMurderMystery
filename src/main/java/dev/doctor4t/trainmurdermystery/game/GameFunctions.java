@@ -321,34 +321,38 @@ public class GameFunctions {
 
             // give letter
             ItemStack letter = new ItemStack(TMMItems.INIT_ITEMS.LETTER);
+            if (TMMItems.INIT_ITEMS.LETTER_UpdateItemFunc != null) {
+                TMMItems.INIT_ITEMS.LETTER_UpdateItemFunc.accept(serverPlayerEntity);
+            } else {
+                letter.set(DataComponents.ITEM_NAME, Component.translatable(letter.getDescriptionId()));
+                int letterColor = 0xC5AE8B;
+                String tipString = "tip.letter.";
+                letter.update(DataComponents.LORE, ItemLore.EMPTY, component -> {
+                    List<Component> text = new ArrayList<>();
+                    UnaryOperator<Style> stylizer = style -> style.withItalic(false).withColor(letterColor);
 
-            letter.set(DataComponents.ITEM_NAME, Component.translatable(letter.getDescriptionId()));
-            int letterColor = 0xC5AE8B;
-            String tipString = "tip.letter.";
-            letter.update(DataComponents.LORE, ItemLore.EMPTY, component -> {
-                List<Component> text = new ArrayList<>();
-                UnaryOperator<Style> stylizer = style -> style.withItalic(false).withColor(letterColor);
+                    Component displayName = serverPlayerEntity.getDisplayName();
+                    String string = displayName != null ? displayName.getString()
+                            : serverPlayerEntity.getName().getString();
+                    if (string.charAt(string.length() - 1) == '\uE780') { // remove ratty supporter icon
+                        string = string.substring(0, string.length() - 1);
+                    }
 
-                Component displayName = serverPlayerEntity.getDisplayName();
-                String string = displayName != null ? displayName.getString()
-                        : serverPlayerEntity.getName().getString();
-                if (string.charAt(string.length() - 1) == '\uE780') { // remove ratty supporter icon
-                    string = string.substring(0, string.length() - 1);
-                }
+                    text.add(Component.translatable(tipString + "name", string)
+                            .withStyle(style -> style.withItalic(false).withColor(0xFFFFFF)));
+                    text.add(Component.translatable(tipString + "room").withStyle(stylizer));
+                    text.add(Component.translatable(tipString + "tooltip1",
+                            Component.translatable(tipString + "room." + switch (finalRoomNumber) {
+                                case 1 -> "grand_suite";
+                                case 2, 3 -> "cabin_suite";
+                                default -> "twin_cabin";
+                            }).getString()).withStyle(stylizer));
+                    text.add(Component.translatable(tipString + "tooltip2").withStyle(stylizer));
 
-                text.add(Component.translatable(tipString + "name", string)
-                        .withStyle(style -> style.withItalic(false).withColor(0xFFFFFF)));
-                text.add(Component.translatable(tipString + "room").withStyle(stylizer));
-                text.add(Component.translatable(tipString + "tooltip1",
-                        Component.translatable(tipString + "room." + switch (finalRoomNumber) {
-                            case 1 -> "grand_suite";
-                            case 2, 3 -> "cabin_suite";
-                            default -> "twin_cabin";
-                        }).getString()).withStyle(stylizer));
-                text.add(Component.translatable(tipString + "tooltip2").withStyle(stylizer));
+                    return new ItemLore(text);
+                });
+            }
 
-                return new ItemLore(text);
-            });
             serverPlayerEntity.addItem(letter);
         }
         for (ServerPlayer player : players) {
@@ -796,7 +800,8 @@ public class GameFunctions {
                 }
 
                 // discard all player bodies and items
-                for (PlayerBodyEntity body : serverWorld.getEntities(TMMEntities.PLAYER_BODY, playerBodyEntity -> true)) {
+                for (PlayerBodyEntity body : serverWorld.getEntities(TMMEntities.PLAYER_BODY,
+                        playerBodyEntity -> true)) {
                     body.discard();
                 }
                 for (ItemEntity item : serverWorld.getEntities(EntityType.ITEM, playerBodyEntity -> true)) {
@@ -810,10 +815,9 @@ public class GameFunctions {
                 TMM.LOGGER.info("Train reset successful.");
                 return false;
             }
-        }else {
+        } else {
             return tryResetTrainOnlyDoors(serverWorld);
         }
-
 
         return false;
     }
@@ -886,7 +890,8 @@ public class GameFunctions {
                             BlockState blockState = cachedBlockPosition.getState();
 
                             // Check if the block is one of our door blocks
-                            if (blockState.getBlock() instanceof SmallDoorBlock && blockState.getValue(SmallDoorBlock.HALF).equals(DoubleBlockHalf.LOWER)) {
+                            if (blockState.getBlock() instanceof SmallDoorBlock
+                                    && blockState.getValue(SmallDoorBlock.HALF).equals(DoubleBlockHalf.LOWER)) {
                                 if (serverWorld.getBlockEntity(blockPos6) instanceof SmallDoorBlockEntity entity) {
                                     if (entity != null) {
                                         BlockEntityInfo blockEntityInfo = new BlockEntityInfo(
@@ -955,7 +960,8 @@ public class GameFunctions {
                 return true;
             }
 
-            // Discard all player bodies and items (keep this part as it cleans up game artifacts)
+            // Discard all player bodies and items (keep this part as it cleans up game
+            // artifacts)
             for (PlayerBodyEntity body : serverWorld.getEntities(TMMEntities.PLAYER_BODY, playerBodyEntity -> true)) {
                 body.discard();
             }
@@ -977,15 +983,15 @@ public class GameFunctions {
      * Checks if a block is one of TMM's door blocks
      */
     private static boolean isTmmDoorBlock(Block block) {
-        return block == TMMBlocks.SMALL_GLASS_DOOR 
-            || block == TMMBlocks.SMALL_WOOD_DOOR
-            || block == TMMBlocks.ANTHRACITE_STEEL_DOOR
-            || block == TMMBlocks.KHAKI_STEEL_DOOR
-            || block == TMMBlocks.MAROON_STEEL_DOOR
-            || block == TMMBlocks.MUNTZ_STEEL_DOOR
-            || block == TMMBlocks.NAVY_STEEL_DOOR
-            || block == TMMBlocks.METAL_SHEET_DOOR
-            || block == TMMBlocks.COCKPIT_DOOR;
+        return block == TMMBlocks.SMALL_GLASS_DOOR
+                || block == TMMBlocks.SMALL_WOOD_DOOR
+                || block == TMMBlocks.ANTHRACITE_STEEL_DOOR
+                || block == TMMBlocks.KHAKI_STEEL_DOOR
+                || block == TMMBlocks.MAROON_STEEL_DOOR
+                || block == TMMBlocks.MUNTZ_STEEL_DOOR
+                || block == TMMBlocks.NAVY_STEEL_DOOR
+                || block == TMMBlocks.METAL_SHEET_DOOR
+                || block == TMMBlocks.COCKPIT_DOOR;
     }
 
     public static int getReadyPlayerCount(Level world) {
