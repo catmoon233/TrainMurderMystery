@@ -13,8 +13,10 @@ import dev.doctor4t.trainmurdermystery.game.GameFunctions;
 import dev.doctor4t.trainmurdermystery.index.TMMSounds;
 import org.jetbrains.annotations.NotNull;
 
+import java.awt.Color;
 import java.util.*;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.Font;
@@ -135,32 +137,32 @@ public class RoundTextRenderer {
                 context.pose().popPose();
             } else {
                 int vigilanteTotal = 1;
-                for (GameRoundEndComponent.RoundEndData entry : roundEnd.players)
-                    if (entry.role().getId().getPath().equals(RoleAnnouncementTexts.VIGILANTE.getId().getPath()))
-                        vigilanteTotal += 1;
-                int neutralTotal = 0;
                 for (GameRoundEndComponent.RoundEndData entry : roundEnd.players) {
-                    if (entry.role() == null)
-                        continue;
                     final var first = RoleAnnouncementTexts.ROLE_ANNOUNCEMENT_TEXTS.entrySet().stream()
                             .filter(role -> role.getValue().getId().getPath()
                                     .equals(entry.role().getId().getPath()))
                             .findFirst();
-                    if (first.isPresent()) {
+                    if (entry.role().getId().getPath().equals(RoleAnnouncementTexts.VIGILANTE.getId().getPath()))
+                        vigilanteTotal += 1;
+                    else if (first.isPresent()) {
                         final var role1 = TMMRoles.ROLES.get(first.get().getKey());
-                        if (role1 != null && !role1.isInnocent() && !role1.canUseKiller() && !role1.isVigilanteTeam()) {
-                            neutralTotal++;
+                        if (role1.isVigilanteTeam()) {
+                            vigilanteTotal += 1;
                         }
                     }
                 }
+
                 context.drawString(renderer, Component.translatable("announcement.title.neutral"),
-                        -renderer.width(Component.translatable("announcement.title.neutral")) / 2 - 90, 14, 0xFFFFFF);
+                        -renderer.width(
+                                Component.translatable("announcement.title.neutral"))
+                                / 2 - 90,
+                        14, Color.YELLOW.getRGB());
                 context.drawString(renderer, RoleAnnouncementTexts.CIVILIAN.titleText,
-                        -renderer.width(RoleAnnouncementTexts.CIVILIAN.titleText) / 2 - 30, 14, 0xFFFFFF);
+                        -renderer.width(RoleAnnouncementTexts.CIVILIAN.titleText) / 2, 14, 0xFFFFFF);
                 context.drawString(renderer, RoleAnnouncementTexts.VIGILANTE.titleText,
-                        -renderer.width(RoleAnnouncementTexts.VIGILANTE.titleText) / 2 + 50, 14, 0xFFFFFF);
+                        -renderer.width(RoleAnnouncementTexts.VIGILANTE.titleText) / 2 + 90, 14, 0xFFFFFF);
                 context.drawString(renderer, RoleAnnouncementTexts.KILLER.titleText,
-                        -renderer.width(RoleAnnouncementTexts.KILLER.titleText) / 2 + 50,
+                        -renderer.width(RoleAnnouncementTexts.KILLER.titleText) / 2 + 90,
                         14 + 16 + 32 * ((vigilanteTotal) / 2), 0xFFFFFF);
                 int civilians = 0;
                 int neutrals = 0;
@@ -174,7 +176,7 @@ public class RoundTextRenderer {
                         continue;
                     if (Objects.equals(entry.role().getId().getPath(),
                             RoleAnnouncementTexts.CIVILIAN.getId().getPath())) {
-                        context.pose().translate(-30 + (civilians % 4) * 12, 14 + (civilians / 4) * 16, 0);
+                        context.pose().translate(-36 + (civilians % 5) * 12, 14 + (civilians / 5) * 16, 0);
                         civilians++;
                     } else {
                         final var first = RoleAnnouncementTexts.ROLE_ANNOUNCEMENT_TEXTS.entrySet().stream()
@@ -185,14 +187,14 @@ public class RoundTextRenderer {
                             final var role1 = TMMRoles.ROLES.get(first.get().getKey());
                             if (role1 != null) {
                                 if (!role1.isInnocent() && !role1.canUseKiller() && !role1.isVigilanteTeam()) {
-                                    context.pose().translate(-90 + (neutrals % 4) * 12, 14 + (neutrals / 4) * 16, 0);
+                                    context.pose().translate(-63 + (neutrals % 2) * 12, 14 + (neutrals / 2) * 16, 0);
                                     neutrals++;
                                 } else if (role1.isInnocent() || role1.isVigilanteTeam()) {
-                                    context.pose().translate(7 + (vigilantes % 2) * 12, 14 + (vigilantes / 2) * 16, 0);
+                                    context.pose().translate(27 + (vigilantes % 2) * 12, 14 + (vigilantes / 2) * 16, 0);
                                     vigilantes++;
                                 } else if (role1.canUseKiller()) {
-                                    context.pose().translate(0, 8 + ((vigilanteTotal) / 2) * 16, 0);
-                                    context.pose().translate(7 + (killers % 2) * 12, 14 + (killers / 2) * 16, 0);
+                                    context.pose().translate(10, 8 + ((vigilanteTotal) / 2) * 16, 0);
+                                    context.pose().translate(17 + (killers % 2) * 12, 14 + (killers / 2) * 16, 0);
                                     killers++;
                                 }
                             }
