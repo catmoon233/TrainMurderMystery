@@ -322,7 +322,7 @@ public class GameFunctions {
             // give letter
             ItemStack letter = new ItemStack(TMMItems.INIT_ITEMS.LETTER);
             if (TMMItems.INIT_ITEMS.LETTER_UpdateItemFunc != null) {
-                TMMItems.INIT_ITEMS.LETTER_UpdateItemFunc.accept(serverPlayerEntity);
+                TMMItems.INIT_ITEMS.LETTER_UpdateItemFunc.accept(letter, serverPlayerEntity);
             } else {
                 letter.set(DataComponents.ITEM_NAME, Component.translatable(letter.getDescriptionId()));
                 int letterColor = 0xC5AE8B;
