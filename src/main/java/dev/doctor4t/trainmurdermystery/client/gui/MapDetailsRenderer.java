@@ -15,9 +15,9 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class MapDetailsRenderer {
-    private static String mapId = "";
-    private static String mapDescription = "";
-    private static String mapAuthor = "";
+    public static String mapId = "";
+    public static String mapDescription = "";
+    public static String mapAuthor = "";
     private static long displayStartTime = 0L;
     private static final long DISPLAY_DURATION = 7000L; // 8秒显示时间
     private static final long FADE_DURATION = 1000L; // 1秒淡入淡出时间
