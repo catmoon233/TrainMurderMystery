@@ -1,13 +1,17 @@
 package dev.doctor4t.trainmurdermystery.block_entity;
 
 import dev.doctor4t.trainmurdermystery.TMM;
+import dev.doctor4t.trainmurdermystery.block.CameraBlock;
 import dev.doctor4t.trainmurdermystery.index.TMMBlockEntities;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.block.state.properties.DirectionProperty;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,6 +33,20 @@ public class SecurityMonitorBlockEntity extends BlockEntity {
 
     public List<BlockPos> getCameraPositions() {
         return new ArrayList<>(cameraPositions);
+    }
+
+    /**
+     * 获取指定位置的摄像头方向
+     * @param level 当前世界
+     * @param pos 摄像头位置
+     * @return 摄像头的方向，如果不存在则返回null
+     */
+    public Direction getCameraDirectionAt(Level level, BlockPos pos) {
+        BlockState cameraState = level.getBlockState(pos);
+        if (cameraState.getBlock() instanceof CameraBlock) {
+            return cameraState.getValue(CameraBlock.FACING);
+        }
+        return null;
     }
 
     public boolean removeCameraPosition(BlockPos pos) {

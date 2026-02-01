@@ -37,16 +37,17 @@
     "defaultRequire": 1
   },
   "client": [
-    "KnifeTooltipMixin",
-
+    "client.KillEffectMixin",
     "CameraPositionMixin",
     "KeyboardHandlerMixin",
+    "KnifeTooltipMixin",
     "LayeredDrawMixin",
     "LocalPlayerMixin",
     "MixinGameRenderer",
     "MouseHandlerMixin",
     "ScreenDrawableGetMixin",
     "client.AbstractClientPlayerEntityMixin",
+    "client.CapeCancleMixin",
     "client.EntityRendererDispatchMixin",
     "client.GameRendererMixin",
     "client.MinecraftClientMixin",

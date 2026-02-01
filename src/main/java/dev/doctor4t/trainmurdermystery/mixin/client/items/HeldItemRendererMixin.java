@@ -5,11 +5,13 @@ import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.vertex.PoseStack;
 import dev.doctor4t.trainmurdermystery.client.TMMClient;
 import dev.doctor4t.trainmurdermystery.index.tag.TMMItemTags;
+import dev.doctor4t.trainmurdermystery.item.RevolverItem;
 import dev.doctor4t.trainmurdermystery.util.MatrixParticleManager;
 import dev.doctor4t.trainmurdermystery.util.MatrixUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.ItemInHandRenderer;
 import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.entity.ItemRenderer;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemDisplayContext;
@@ -31,6 +33,8 @@ public class HeldItemRendererMixin {
     @Final
     private Minecraft minecraft;
 
+    @Shadow @Final private ItemRenderer itemRenderer;
+
     @Inject(method = "renderItem(Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemDisplayContext;ZLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V",
             at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/ItemRenderer;renderStatic(Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemDisplayContext;ZLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;Lnet/minecraft/world/level/Level;III)V",
                     shift = At.Shift.AFTER))
@@ -39,7 +43,7 @@ public class HeldItemRendererMixin {
             TMMClient.handParticleManager.render(matrices, vertexConsumers, light);
         }
 
-        if (entity instanceof Player playerEntity && stack.is(TMMItemTags.GUNS)) {
+        if (entity instanceof Player playerEntity &&( stack.is(TMMItemTags.GUNS) ||( this.mainHandItem.getItem() instanceof RevolverItem)) ) {
             if (playerEntity.getUUID() != Minecraft.getInstance().player.getUUID()) {
                 MatrixParticleManager.setMuzzlePosForPlayer(playerEntity, MatrixUtils.matrixToVec(matrices));
             } else if (!renderMode.firstPerson()) {
@@ -57,7 +61,7 @@ public class HeldItemRendererMixin {
     )
     private boolean tmm$ignoreNbtUpdateForRevolver(boolean original, @Local(ordinal = 0) ItemStack newItemStack) {
         if (!original) {
-            if (this.mainHandItem.is(TMMItemTags.GUNS) && newItemStack.is(TMMItemTags.GUNS)) {
+            if (this.mainHandItem.is(TMMItemTags.GUNS) && newItemStack.is(TMMItemTags.GUNS) ||( this.mainHandItem.getItem() instanceof RevolverItem)) {
                 return true;
             }
         }

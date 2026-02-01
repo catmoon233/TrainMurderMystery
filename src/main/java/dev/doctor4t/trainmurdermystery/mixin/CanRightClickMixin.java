@@ -1,17 +1,13 @@
 package dev.doctor4t.trainmurdermystery.mixin;
 
 import dev.doctor4t.trainmurdermystery.TMM;
-import dev.doctor4t.trainmurdermystery.client.TMMClient;
 import dev.doctor4t.trainmurdermystery.game.GameFunctions;
 import dev.upcraft.datasync.api.ext.DataSyncPlayerExt;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.LivingEntity;
-import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -76,22 +72,16 @@ public abstract class CanRightClickMixin extends LivingEntity implements DataSyn
     protected CanRightClickMixin(EntityType<? extends LivingEntity> entityType, Level world) {
         super(entityType, world);
     }
-    private static List<String> canDropItem = List.of(
-            "exposure:album",
-            "exposure:photograph",
-            "noellesroles:mint_candies"
-    );
-    @Inject(method = "canInteractWithBlock", at = @At("TAIL"), cancellable = true)
+
+@Inject(method = "canInteractWithBlock", at = @At("TAIL"), cancellable = true)
     public void canInteractWithBlockAt(BlockPos pos, double additionalRange,
                                        CallbackInfoReturnable<Boolean> cir) {
 
-        // 如果原方法返回false，直接返回
         if (!cir.getReturnValue()) return;
 
-        // 检查玩家是否存活且为生存模式
         final var player = (Player) (Object) this;
         final var mainHandItem = player.getMainHandItem();
-        if (canDropItem.contains(BuiltInRegistries.ITEM.getKey(mainHandItem.getItem()).toString())){
+        if (TMM.canDropItem.contains(BuiltInRegistries.ITEM.getKey(mainHandItem.getItem()).toString())){
             if (player.isShiftKeyDown()){
                 final var drop = player.drop(mainHandItem.copy(),true);
                 player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
@@ -109,7 +99,6 @@ public abstract class CanRightClickMixin extends LivingEntity implements DataSyn
         BlockState state = level().getBlockState(pos);
         Block block = state.getBlock();
 
-        // 使用谓词判断是否应该阻止交互
         if (shouldPreventInteraction(block)) {
             cir.setReturnValue(false);
         }

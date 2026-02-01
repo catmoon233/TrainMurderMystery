@@ -18,22 +18,22 @@ public abstract class DefaultShaderInterfaceMixin implements SodiumShaderInterfa
     @Unique
     private GlUniformBlock uniformOffsets;
 
-//    @Inject(method = "<init>", at = @At("RETURN"))
-//    private void tmm$addUniform(ShaderBindingContext context, ChunkShaderOptions options,
-//                                CallbackInfo ci) {
-//        if (IrisHelper.isIrisShaderPackInUse()) {
-//            return;
-//        }
-//
-//        uniformOffsets = context.bindUniformBlock("ubo_SectionOffsets", 1);
-//    }
-//
-//    @Override
-//    public void tmm$set(GlMutableBuffer buffer) {
-//        if (uniformOffsets == null) {
-//            return;
-//        }
-//
-//        uniformOffsets.bindBuffer(buffer);
-//    }
+    @Inject(method = "<init>", at = @At("RETURN"))
+    private void tmm$addUniform(ShaderBindingContext context, ChunkShaderOptions options,
+                                CallbackInfo ci) {
+        if (IrisHelper.isIrisShaderPackInUse()) {
+            return;
+        }
+
+        uniformOffsets = context.bindUniformBlock("ubo_SectionOffsets", 1);
+    }
+
+    @Override
+    public void tmm$set(GlMutableBuffer buffer) {
+        if (uniformOffsets == null) {
+            return;
+        }
+
+        uniformOffsets.bindBuffer(buffer);
+    }
 }

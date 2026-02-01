@@ -41,8 +41,13 @@ public class StaminaRenderer {
 	private static long screenRedEffectStartTime = 0L; // 屏幕红色效果开始时间（毫秒）
 	private static final long SCREEN_RED_EFFECT_DURATION_MS = 300L; // 屏幕红色效果持续时间（毫秒）
 	private static final float MAX_RED_INTENSITY = 0.5f; // 最大红色强度（0-1）
-
-	// 主手物品冷却相关变量
+	
+	// 新增：通用屏幕边缘效果相关变量
+	private static long generalScreenEffectStartTime = 0L; // 通用屏幕效果开始时间（毫秒）
+	private static long GENERAL_SCREEN_EFFECT_DURATION_MS = 300L; // 通用屏幕效果持续时间（毫秒）
+	private static int generalScreenEffectColor = 0xFF0000; // 通用屏幕效果颜色，默认为红色
+	private static float generalScreenEffectIntensity = 0.5f; // 通用屏幕效果强度
+	
 	private static float lastCooldown = 0f;
 	private static boolean playedCooldownSound = false;
 	private static ItemStack lastMainHandStack = ItemStack.EMPTY; // 用于跟踪上一次的主手物品
@@ -246,57 +251,141 @@ public class StaminaRenderer {
 	 */
 	private static void renderScreenRedEffect(@NotNull GuiGraphics context, float delta) {
 		if (isScreenRedEffectActive()) {
-			int screenWidth = context.guiWidth();
-			int screenHeight = context.guiHeight();
-
-			// 计算红色效果的强度（随时间递减）
-			float progress = getScreenRedEffectProgress();
-			float intensity = MAX_RED_INTENSITY * progress;
-
-			// 设置红色颜色（带透明度）
-			int redColor = (int)(intensity * 255) << 24 | 0xFF0000; // ARGB格式
-
-			// 保存当前的混合状态
-			PoseStack poseStack = context.pose();
-			poseStack.pushPose();
-			RenderSystem.enableBlend();
-			RenderSystem.defaultBlendFunc();
-
-			// 渲染四个边缘的红色渐变
-			int edgeWidth = (int)(screenWidth * 0.1f); // 边缘宽度为屏幕宽度的10%
-			int edgeHeight = (int)(screenHeight * 0.1f); // 边缘高度为屏幕高度的10%
-
-			// 顶部边缘（从上到下的渐变）
-			for (int i = 0; i < edgeHeight; i++) {
-				float alpha = (1f - (float)i / edgeHeight) * intensity;
-				int color = (int)(alpha * 255) << 24 | 0xFF0000;
-				context.fill(0, i, screenWidth, i + 1, color);
-			}
-
-			// 底部边缘（从下到上的渐变）
-			for (int i = 0; i < edgeHeight; i++) {
-				float alpha = (1f - (float)i / edgeHeight) * intensity;
-				int color = (int)(alpha * 255) << 24 | 0xFF0000;
-				context.fill(0, screenHeight - i - 1, screenWidth, screenHeight - i, color);
-			}
-
-			// 左侧边缘（从左到右的渐变）
-			for (int i = 0; i < edgeWidth; i++) {
-				float alpha = (1f - (float)i / edgeWidth) * intensity;
-				int color = (int)(alpha * 255) << 24 | 0xFF0000;
-				context.fill(i, edgeHeight, i + 1, screenHeight - edgeHeight, color);
-			}
-
-			// 右侧边缘（从右到左的渐变）
-			for (int i = 0; i < edgeWidth; i++) {
-				float alpha = (1f - (float)i / edgeWidth) * intensity;
-				int color = (int)(alpha * 255) << 24 | 0xFF0000;
-				context.fill(screenWidth - i - 1, edgeHeight, screenWidth - i, screenHeight - edgeHeight, color);
-			}
-
-			RenderSystem.disableBlend();
-			poseStack.popPose();
+			renderScreenEdgeEffect(context, screenRedEffectStartTime, SCREEN_RED_EFFECT_DURATION_MS, 0xFF0000, MAX_RED_INTENSITY);
 		}
+		
+		// 同时渲染通用屏幕边缘效果
+		if (isGeneralScreenEffectActive()) {
+			renderScreenEdgeEffect(context, generalScreenEffectStartTime, GENERAL_SCREEN_EFFECT_DURATION_MS, generalScreenEffectColor, generalScreenEffectIntensity);
+		}
+	}
+	
+	/**
+	 * 通用的屏幕边缘效果渲染方法
+	 */
+	private static void renderScreenEdgeEffect(@NotNull GuiGraphics context, long effectStartTime, long effectDurationMs, int color, float maxIntensity) {
+		int screenWidth = context.guiWidth();
+		int screenHeight = context.guiHeight();
+
+		// 计算效果的强度（随时间递减）
+		long currentTime = System.currentTimeMillis();
+		long elapsed = currentTime - effectStartTime;
+		float progress = 1.0f - (float) elapsed / effectDurationMs; // 随时间递减
+		progress = Math.max(0.0f, progress);
+		float intensity = maxIntensity * progress;
+
+		// 分离RGB颜色组件
+		int red = (color >> 16) & 0xFF;
+		int green = (color >> 8) & 0xFF;
+		int blue = color & 0xFF;
+
+		// 设置颜色（带透明度）
+		int effectColor = (int)(intensity * 255) << 24 | (red << 16) | (green << 8) | blue;
+
+		// 保存当前的混合状态
+		PoseStack poseStack = context.pose();
+		poseStack.pushPose();
+		RenderSystem.enableBlend();
+		RenderSystem.defaultBlendFunc();
+
+		// 渲染四个边缘的渐变效果
+		int edgeWidth = (int)(screenWidth * 0.1f); // 边缘宽度为屏幕宽度的10%
+		int edgeHeight = (int)(screenHeight * 0.1f); // 边缘高度为屏幕高度的10%
+
+		// 顶部边缘（从上到下的渐变）
+		for (int i = 0; i < edgeHeight; i++) {
+			float alpha = (1f - (float)i / edgeHeight) * intensity;
+			int currentColor = (int)(alpha * 255) << 24 | (red << 16) | (green << 8) | blue;
+			context.fill(0, i, screenWidth, i + 1, currentColor);
+		}
+
+		// 底部边缘（从下到上的渐变）
+		for (int i = 0; i < edgeHeight; i++) {
+			float alpha = (1f - (float)i / edgeHeight) * intensity;
+			int currentColor = (int)(alpha * 255) << 24 | (red << 16) | (green << 8) | blue;
+			context.fill(0, screenHeight - i - 1, screenWidth, screenHeight - i, currentColor);
+		}
+
+		// 左侧边缘（从左到右的渐变）
+		for (int i = 0; i < edgeWidth; i++) {
+			float alpha = (1f - (float)i / edgeWidth) * intensity;
+			int currentColor = (int)(alpha * 255) << 24 | (red << 16) | (green << 8) | blue;
+			context.fill(i, edgeHeight, i + 1, screenHeight - edgeHeight, currentColor);
+		}
+
+		// 右侧边缘（从右到左的渐变）
+		for (int i = 0; i < edgeWidth; i++) {
+			float alpha = (1f - (float)i / edgeWidth) * intensity;
+			int currentColor = (int)(alpha * 255) << 24 | (red << 16) | (green << 8) | blue;
+			context.fill(screenWidth - i - 1, edgeHeight, screenWidth - i, screenHeight - edgeHeight, currentColor);
+		}
+
+		RenderSystem.disableBlend();
+		poseStack.popPose();
+	}
+
+	/**
+	 * 检查屏幕红色效果是否仍然活跃
+	 */
+	private static boolean isScreenRedEffectActive() {
+		if (screenRedEffectStartTime == 0L) {
+			return false;
+		}
+		long currentTime = System.currentTimeMillis();
+		return (currentTime - screenRedEffectStartTime) < SCREEN_RED_EFFECT_DURATION_MS;
+	}
+	
+	/**
+	 * 检查通用屏幕效果是否仍然活跃
+	 */
+	private static boolean isGeneralScreenEffectActive() {
+		if (generalScreenEffectStartTime == 0L) {
+			return false;
+		}
+		long currentTime = System.currentTimeMillis();
+		return (currentTime - generalScreenEffectStartTime) < GENERAL_SCREEN_EFFECT_DURATION_MS;
+	}
+	
+	/**
+	 * 启动通用屏幕边缘效果
+	 * 
+	 * @param color 颜色值，例如 0xFF0000 为红色
+	 * @param durationMs 效果持续时间（毫秒）
+	 * @param intensity 最大强度（0.0-1.0）
+	 */
+	public static void triggerScreenEdgeEffect(int color, long durationMs, float intensity) {
+		generalScreenEffectStartTime = System.currentTimeMillis();
+		generalScreenEffectColor = color;
+		generalScreenEffectIntensity = intensity;
+		GENERAL_SCREEN_EFFECT_DURATION_MS = (int) durationMs; // 注意：这里会修改常量，需要重构
+	}
+	
+	/**
+	 * 启动通用屏幕边缘效果（使用默认参数）
+	 * 
+	 * @param color 颜色值，例如 0xFF0000 为红色
+	 */
+	public static void triggerScreenEdgeEffect(int color) {
+		triggerScreenEdgeEffect(color, 300L, 0.5f);
+	}
+	
+	/**
+	 * 启动通用屏幕边缘效果（使用默认红色和持续时间）
+	 * 
+	 * @param intensity 最大强度（0.0-1.0）
+	 */
+	public static void triggerScreenEdgeEffect(float intensity) {
+		triggerScreenEdgeEffect(0xFF0000, 300L, intensity);
+	}
+	
+	/**
+	 * 启动通用屏幕边缘效果（使用指定颜色和持续时间）
+	 * 
+	 * @param color 颜色值，例如 0xFF0000 为红色
+	 * @param durationMs 效果持续时间（毫秒）
+	 */
+	public static void triggerScreenEdgeEffect(int color, long durationMs) {
+		triggerScreenEdgeEffect(color, durationMs, 0.5f);
 	}
 
 	public static void tick() {
@@ -311,30 +400,6 @@ public class StaminaRenderer {
 				screenRedEffectStartTime = 0L;
 			}
 		}
-	}
-
-	/**
-	 * 检查屏幕红色效果是否仍然活跃
-	 */
-	private static boolean isScreenRedEffectActive() {
-		if (screenRedEffectStartTime == 0L) {
-			return false;
-		}
-		long currentTime = System.currentTimeMillis();
-		return (currentTime - screenRedEffectStartTime) < SCREEN_RED_EFFECT_DURATION_MS;
-	}
-
-	/**
-	 * 获取屏幕红色效果进度（0.0到1.0）
-	 */
-	private static float getScreenRedEffectProgress() {
-		if (!isScreenRedEffectActive()) {
-			return 0.0f;
-		}
-		long currentTime = System.currentTimeMillis();
-		long elapsed = currentTime - screenRedEffectStartTime;
-		float progress = 1.0f - (float) elapsed / SCREEN_RED_EFFECT_DURATION_MS; // 随时间递减
-		return Math.max(0.0f, progress);
 	}
 
 	/**

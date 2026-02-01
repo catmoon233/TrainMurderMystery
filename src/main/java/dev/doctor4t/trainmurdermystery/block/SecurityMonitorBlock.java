@@ -1,6 +1,7 @@
 package dev.doctor4t.trainmurdermystery.block;
 
 import com.mojang.serialization.MapCodec;
+import dev.doctor4t.trainmurdermystery.block_entity.CameraBlockEntity;
 import dev.doctor4t.trainmurdermystery.block_entity.SecurityMonitorBlockEntity;
 import dev.doctor4t.trainmurdermystery.network.PacketTracker;
 import dev.doctor4t.trainmurdermystery.network.SecurityCameraModePayload;
@@ -153,22 +154,53 @@ public class SecurityMonitorBlock extends BaseEntityBlock {
         LocalPlayer player = Minecraft.getInstance().player;
         boolean isCreativeMode = player != null && player.isCreative();
         
-        if (isCreativeMode) {
-            // 在创造模式下，使用玩家当前调整的视角
-            targetYRot = currentYaw + yawIncrease;
-            targetXRot = Mth.clamp(currentPitch + pitchIncrease, -90, 90);
+        // 获取摄像头的朝向 - 通过Minecraft实例获取世界
+        Level actualLevel = player != null ? player.level() : null;
+        if (actualLevel != null && cameraPos != null) {
+            BlockState cameraState = actualLevel.getBlockState(cameraPos);
+            if (cameraState.getBlock() instanceof CameraBlock) {
+                Direction cameraFacing = cameraState.getValue(CameraBlock.FACING);
+                
+                // 根据摄像头方向计算基础旋转角度
+                float baseYaw = getBaseYawFromDirection(cameraFacing);
+                
+                if (isCreativeMode) {
+                    // 在创造模式下，使用玩家当前调整的视角
+                    targetYRot = baseYaw + currentYaw + yawIncrease;
+                    targetXRot = Mth.clamp(currentPitch + pitchIncrease, -90, 90);
+                } else {
+                    // 在非创造模式下，基于摄像头方向进行视角调整
+                    targetYRot = baseYaw + currentYaw + yawIncrease;
+                    targetXRot = Mth.clamp(currentPitch + pitchIncrease, -90, 90);
+                }
+            } else {
+                // 如果不是摄像头，则使用默认行为
+                if (isCreativeMode) {
+                    // 在创造模式下，使用玩家当前调整的视角
+                    targetYRot = currentYaw + yawIncrease;
+                    targetXRot = Mth.clamp(currentPitch + pitchIncrease, -90, 90);
+                } else {
+                    // 在非创造模式下，固定视角
+                    targetYRot = camera.getYRot() + yawIncrease;
+                    targetXRot = Mth.clamp(camera.getXRot() + pitchIncrease -180, -180, 180);
+                }
+            }
         } else {
-            // 在非创造模式下，固定视角
-            targetYRot = camera.getYRot() + yawIncrease;
-            targetXRot = Mth.clamp(camera.getXRot() + pitchIncrease, -90, 90);
+            // 如果无法获取世界或摄像头位置，则使用默认行为
+            if (isCreativeMode) {
+                targetYRot = currentYaw + yawIncrease;
+                targetXRot = Mth.clamp(currentPitch + pitchIncrease, -90, 90);
+            } else {
+                targetYRot = camera.getYRot() + yawIncrease;
+                targetXRot = Mth.clamp(camera.getXRot() + pitchIncrease -180, -180, 180);
+            }
         }
+        
         camera.setRotation(targetYRot, targetXRot);
         // lerp camera
         Vec3 targetCameraPos = cameraPos.getCenter().add(0.5, -1.2, 0.5);
 
-
         camera.setPosition(targetCameraPos);
-
 
         lastCameraYaw = camera.getYRot();
         lastCameraPitch = camera.getXRot();
@@ -178,8 +210,27 @@ public class SecurityMonitorBlock extends BaseEntityBlock {
 
         float followSpeed = 1;
 
-
         return true;
+    }
+    
+    /**
+     * 根据方向获取基础偏航角
+     * @param direction 摄像头方向
+     * @return 对应的基础偏航角
+     */
+    private static float getBaseYawFromDirection(Direction direction) {
+        switch (direction) {
+            case NORTH: // -Z方向
+                return 180.0f;
+            case SOUTH: // +Z方向
+                return 0.0f;
+            case WEST:  // -X方向
+                return 90.0f;
+            case EAST:  // +X方向
+                return -90.0f;
+            default:
+                return 0.0f;
+        }
     }
 
     @Override
@@ -259,8 +310,18 @@ public class SecurityMonitorBlock extends BaseEntityBlock {
         // 重置视角为新摄像头的初始视角
         currentYaw = 0.0f;
         currentPitch = 0.0f;
-
-        player.displayClientMessage(Component.literal("切换到摄像头 " + (nextIndex + 1) + ": X=" + currentCameraPos.getX() + ", Y=" + currentCameraPos.getY() + ", Z=" + currentCameraPos.getZ()).withStyle(ChatFormatting.AQUA), true);
+        
+        // 获取摄像头的朝向信息
+        if (player.level() != null && player.level().getBlockEntity(currentCameraPos) instanceof CameraBlockEntity cameraBlockEntity) {
+            Direction cameraFacing = cameraBlockEntity.getFacing();
+            player.displayClientMessage(Component.literal("切换到摄像头 " + (nextIndex + 1) + 
+                    ": X=" + currentCameraPos.getX() + ", Y=" + currentCameraPos.getY() + 
+                    ", Z=" + currentCameraPos.getZ() + ", 方向=" + cameraFacing.getName()).withStyle(ChatFormatting.AQUA), true);
+        } else {
+            player.displayClientMessage(Component.literal("切换到摄像头 " + (nextIndex + 1) + 
+                    ": X=" + currentCameraPos.getX() + ", Y=" + currentCameraPos.getY() + 
+                    ", Z=" + currentCameraPos.getZ()).withStyle(ChatFormatting.AQUA), true);
+        }
     }
 
     private static void enterSecurityMode(net.minecraft.server.level.ServerPlayer player) {
