@@ -2,8 +2,7 @@ package dev.doctor4t.trainmurdermystery.command;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
-import dev.doctor4t.trainmurdermystery.TMM;
-import dev.doctor4t.trainmurdermystery.data.MapConfig;
+import dev.doctor4t.trainmurdermystery.data.ServerMapConfig;
 import dev.doctor4t.trainmurdermystery.network.ShowSelectedMapUIPayload;
 import dev.doctor4t.trainmurdermystery.voting.MapVotingManager;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -34,7 +33,7 @@ public class MapVoteCommand {
         source.getServer().getPlayerList().getPlayers().forEach(
                 serverPlayer -> {
                     ServerPlayNetworking.send(serverPlayer,
-                            new ShowSelectedMapUIPayload(MapConfig.getInstance()));
+                            new ShowSelectedMapUIPayload(ServerMapConfig.getInstance(serverPlayer.getServer())));
                 });
         source.sendSuccess(() -> Component.translatable("command.tmm.votemap.success"), false);
 

@@ -4,9 +4,8 @@ import com.mojang.authlib.GameProfile;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 
-import dev.doctor4t.trainmurdermystery.data.MapConfig;
+import dev.doctor4t.trainmurdermystery.data.ServerMapConfig;
 import dev.doctor4t.trainmurdermystery.network.ShowSelectedMapUIPayload;
-import dev.doctor4t.trainmurdermystery.network.ShowStatsPayload;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -56,6 +55,6 @@ public class ShowSelectedMapUICommand {
     }
 
     private static void openStatsScreen(ServerPlayer player, UUID targetPlayerUuid) {
-        ServerPlayNetworking.send(player, new ShowSelectedMapUIPayload(MapConfig.getInstance()));
+        ServerPlayNetworking.send(player, new ShowSelectedMapUIPayload(ServerMapConfig.getInstance(player.getServer())));
     }
 }

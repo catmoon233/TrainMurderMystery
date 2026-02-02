@@ -5,6 +5,7 @@ import java.util.List;
 import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.data.MapConfig;
 import dev.doctor4t.trainmurdermystery.data.MapConfig.MapEntry;
+import dev.doctor4t.trainmurdermystery.data.ServerMapConfig;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
@@ -16,6 +17,10 @@ public record ShowSelectedMapUIPayload(String serverConfig) implements CustomPac
 
     public ShowSelectedMapUIPayload(FriendlyByteBuf friendlyByteBuf) {
         this(friendlyByteBuf.readUtf());
+    }
+
+    public ShowSelectedMapUIPayload(ServerMapConfig mp) {
+        this(MapConfig.gson.toJson(mp));
     }
 
     public ShowSelectedMapUIPayload(MapConfig mp) {
