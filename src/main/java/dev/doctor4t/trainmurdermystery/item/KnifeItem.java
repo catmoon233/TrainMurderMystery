@@ -10,6 +10,7 @@ import dev.doctor4t.trainmurdermystery.util.KnifeStabPayload;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.Entity;
@@ -27,13 +28,17 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Locale;
 import java.util.Random;
+import java.util.function.BiConsumer;
 
 
 public class KnifeItem extends Item implements ItemWithSkin {
     public KnifeItem(Properties settings) {
         super(settings);
     }
-
+    /**
+     * (target, killer)
+     */
+    public static BiConsumer<ServerPlayer, ServerPlayer> PlayerKilledPlayer;
     public static final ResourceLocation ITEM_ID = TMM.id("knife");
     @Override
     public InteractionResultHolder<ItemStack> use(Level world, @NotNull Player user, InteractionHand hand) {
