@@ -63,10 +63,10 @@ public class TMM implements ModInitializer {
     public static List<Predicate<Role>> canUseChatHud = new ArrayList<>();
     public static List<Predicate<Player>> canCollide = new ArrayList<>();
     public static List<Predicate<Entity>> canCollideEntity = new ArrayList<>();
-    public static List<String> canDropItem = List.of(
+    public static ArrayList<String> canDropItem = new ArrayList<>(List.of(
             "exposure:album",
             "exposure:photograph",
-            "noellesroles:mint_candies");
+            "noellesroles:mint_candies"));
 
     public static @NotNull ResourceLocation id(String name) {
         return ResourceLocation.fromNamespaceAndPath(MOD_ID, name);
