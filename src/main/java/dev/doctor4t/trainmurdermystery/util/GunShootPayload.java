@@ -17,6 +17,7 @@ import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.entity.item.ItemEntity;
@@ -68,6 +69,8 @@ public record GunShootPayload(int target) implements CustomPacketPayload {
                     && target.distanceTo(player) < 65.0) {
                 GameWorldComponent game = GameWorldComponent.KEY.get(player.level());
                 Item revolver = TMMItems.REVOLVER;
+                boolean isDerringer = mainHandStack.is(TMMItems.DERRINGER);
+                ResourceLocation deathReason = isDerringer ? GameConstants.DeathReasons.DERRINGER : GameConstants.DeathReasons.REVOLVER;
 
                 boolean backfire = false;
                 final var role = game.getRole(player);
@@ -81,7 +84,7 @@ public record GunShootPayload(int target) implements CustomPacketPayload {
                     // instead
                     if (game.isInnocent(player) && player.getRandom().nextFloat() <= game.getBackfireChance()) {
                         backfire = true;
-                        GameFunctions.killPlayer(player, true, player, GameConstants.DeathReasons.GUN);
+                        GameFunctions.killPlayer(player, true, player, deathReason);
                     } else {
                         Scheduler.schedule(() -> {
                             if (!context.player().getInventory().contains((s) -> s.is(TMMItemTags.GUNS)))
@@ -100,7 +103,7 @@ public record GunShootPayload(int target) implements CustomPacketPayload {
                 }
 
                 if (!backfire) {
-                    GameFunctions.killPlayer(target, true, player, GameConstants.DeathReasons.GUN);
+                    GameFunctions.killPlayer(target, true, player, deathReason);
                 }
             }
 

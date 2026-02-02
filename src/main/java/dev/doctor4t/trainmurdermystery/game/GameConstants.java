@@ -145,7 +145,8 @@ public interface GameConstants {
     interface DeathReasons {
         ResourceLocation GENERIC = TMM.id("generic");
         ResourceLocation KNIFE = TMM.id("knife_stab");
-        ResourceLocation GUN = TMM.id("gun_shot");
+        ResourceLocation REVOLVER = TMM.id("revolver_shot");
+        ResourceLocation DERRINGER = TMM.id("derringer_shot");
         ResourceLocation BAT = TMM.id("bat_hit");
         ResourceLocation GRENADE = TMM.id("grenade");
         ResourceLocation POISON = TMM.id("poison");

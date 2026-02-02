@@ -128,7 +128,8 @@ public class GameReplayData {
 
     static {
         DEATH_REASON_TO_ITEM.put(GameConstants.DeathReasons.BAT, TMMItems.BAT);
-        DEATH_REASON_TO_ITEM.put(GameConstants.DeathReasons.GUN, TMMItems.REVOLVER);
+        DEATH_REASON_TO_ITEM.put(GameConstants.DeathReasons.REVOLVER, TMMItems.REVOLVER);
+        DEATH_REASON_TO_ITEM.put(GameConstants.DeathReasons.DERRINGER, TMMItems.DERRINGER);
         DEATH_REASON_TO_ITEM.put(GameConstants.DeathReasons.KNIFE, TMMItems.KNIFE);
         DEATH_REASON_TO_ITEM.put(GameConstants.DeathReasons.GRENADE, TMMItems.GRENADE);
         DEATH_REASON_TO_ITEM.put(GameConstants.DeathReasons.POISON, TMMItems.POISON_VIAL);
