@@ -13,6 +13,7 @@ import net.minecraft.commands.SharedSuggestionProvider;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public class MapLoadArgumentType  implements ArgumentType<String> {
@@ -87,6 +88,6 @@ public class MapLoadArgumentType  implements ArgumentType<String> {
 
     @Override
     public Collection<String> getExamples() {
-        return MapManager.getAvailableMaps();
+        return List.of();
     }
 }

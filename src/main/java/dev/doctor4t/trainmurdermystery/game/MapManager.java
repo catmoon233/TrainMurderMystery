@@ -153,7 +153,7 @@ public class MapManager {
     public static boolean loadMap(ServerLevel serverWorld, String mapName) {
         try {
             // 构建地图配置文件路径
-            Path mapConfigPath = Paths.get(serverWorld.getServer().getServerDirectory().toString(), "train_maps", mapName + ".json");
+            Path mapConfigPath = Paths.get(serverWorld.getServer().getWorldPath(LevelResource.ROOT).toString(), "train_maps", mapName + ".json");
             File mapConfigFile = mapConfigPath.toFile();
 
             // 检查地图配置文件是否存在
@@ -377,30 +377,7 @@ public class MapManager {
         List<String> maps = new ArrayList<>();
 
         try {
-            Path mapsDirPath = Paths.get(serverWorld.getServer().getServerDirectory().toString(), "train_maps");
-            File mapsDir = mapsDirPath.toFile();
-
-            if (mapsDir.exists() && mapsDir.isDirectory()) {
-                File[] files = mapsDir.listFiles((dir, name) -> name.toLowerCase().endsWith(".json"));
-                if (files != null) {
-                    for (File file : files) {
-                        String fileName = file.getName();
-                        String mapName = fileName.substring(0, fileName.length() - 5); // 移除.json后缀
-                        maps.add(mapName);
-                    }
-                }
-            }
-        } catch (Exception e) {
-            TMM.LOGGER.error("Failed to list available maps", e);
-        }
-
-        return maps;
-    }
-    public static List<String> getAvailableMaps() {
-        List<String> maps = new ArrayList<>();
-
-        try {
-            Path mapsDirPath = Paths.get(FabricLoader.getInstance().getGameDir().toString(), "train_maps");
+            Path mapsDirPath = Paths.get(serverWorld.getServer().getWorldPath(LevelResource.ROOT).toString(), "train_maps");
             File mapsDir = mapsDirPath.toFile();
 
             if (mapsDir.exists() && mapsDir.isDirectory()) {
