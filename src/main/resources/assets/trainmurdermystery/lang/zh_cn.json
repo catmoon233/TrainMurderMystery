@@ -776,5 +776,7 @@
   "key.trainmurdermystery.assassinate": "刺杀",
   "key.trainmurdermystery.shot": "射击",
   "key.trainmurdermystery.bat": "满蓄力时杀害",
-  "screen.trainmurdermystery.skins.no_items":"无可用皮肤物品"
+  "screen.trainmurdermystery.skins.no_items":"无可用皮肤物品",
+  "death_reason.trainmurdermystery.revolver_shot": "左轮手枪",
+  "death_reason.trainmurdermystery.derringer_shot": "德林加手枪"
 }
