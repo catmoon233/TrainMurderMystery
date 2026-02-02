@@ -191,6 +191,9 @@ public class RoundTextRenderer {
                                 context.pose().translate(10, 8 + ((vigilanteTotal) / 2) * 16, 0);
                                 context.pose().translate(17 + (killers % 2) * 12, 14 + (killers / 2) * 16, 0);
                                 killers++;
+                            } else {
+                                context.pose().translate(-36 + (civilians % 5) * 12, 14 + (civilians / 5) * 16, 0);
+                                civilians++;
                             }
 
                         }
