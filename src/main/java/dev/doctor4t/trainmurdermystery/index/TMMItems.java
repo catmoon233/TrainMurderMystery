@@ -1,5 +1,7 @@
 package dev.doctor4t.trainmurdermystery.index;
 
+import java.util.ArrayList;
+
 import dev.doctor4t.ratatouille.util.registrar.ItemRegistrar;
 import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.item.*;
@@ -20,6 +22,12 @@ import net.minecraft.world.item.Tiers;
 public @SuppressWarnings("unchecked") interface TMMItems {
         public static ItemRegistrar registrar = new ItemRegistrar(TMM.MOD_ID);
         public ReplaceableItems INIT_ITEMS = new ReplaceableItems();
+
+        /**
+         * 可换皮肤的物品
+         */
+        public ArrayList<Item> SkinnableItem = new ArrayList<>();
+        
         ResourceKey<CreativeModeTab> BUILDING_GROUP = ResourceKey.create(Registries.CREATIVE_MODE_TAB,
                         TMM.id("building"));
         ResourceKey<CreativeModeTab> DECORATION_GROUP = ResourceKey.create(Registries.CREATIVE_MODE_TAB,
@@ -85,5 +93,11 @@ public @SuppressWarnings("unchecked") interface TMMItems {
                                 .build());
                 if (INIT_ITEMS.LETTER == null)
                         INIT_ITEMS.LETTER = LETTER;
+
+                SkinnableItem.add(TMMItems.KNIFE);
+                SkinnableItem.add(TMMItems.REVOLVER);
+                // SkinnableItem.add(TMMItems.LOCKPICK);
+                SkinnableItem.add(TMMItems.GRENADE);
+                SkinnableItem.add(TMMItems.BAT);
         }
 }

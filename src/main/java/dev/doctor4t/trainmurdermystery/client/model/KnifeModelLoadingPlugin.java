@@ -32,7 +32,6 @@ public class KnifeModelLoadingPlugin implements ModelLoadingPlugin {
             if(KNIFE_MODEL_ID.equals(context.topLevelId())) {
                 return new KnifeModel(unbakedModel);
             }
-
             return unbakedModel;
         });
     }

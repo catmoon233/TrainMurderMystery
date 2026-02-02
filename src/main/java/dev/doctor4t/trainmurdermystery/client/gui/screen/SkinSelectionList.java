@@ -1,31 +1,34 @@
 package dev.doctor4t.trainmurdermystery.client.gui.screen;
 
-import com.mojang.blaze3d.systems.RenderSystem;
-import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.cca.PlayerSkinsComponent;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.ObjectSelectionList;
-import net.minecraft.client.gui.narration.NarrationElementOutput;
+import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.component.CustomData;
+
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-
 public class SkinSelectionList extends ObjectSelectionList<SkinSelectionList.SkinEntry> {
-    private static final int ENTRY_HEIGHT = 70; // 每个条目的固定高度
-    private static final int ENTRY_PADDING = 4;
-    private static final int SCROLLBAR_WIDTH = 8;
+    public static final int ENTRY_HEIGHT = 54; // 每个条目的固定高度
+    public static final int ENTRY_PADDING = 4;
+    public static final int SCROLLBAR_WIDTH = 8;
 
-    private final SkinManagementScreen parentScreen;
+    public final SkinManagementScreen parentScreen;
     private final String itemTypeName;
+    private final ItemStack itemType;
+
     private final PlayerSkinsComponent skinsComponent;
     private final List<String> availableSkins = new ArrayList<>();
     private final Consumer<String> onSkinSelected;
@@ -51,19 +54,19 @@ public class SkinSelectionList extends ObjectSelectionList<SkinSelectionList.Ski
     };
 
     public SkinSelectionList(SkinManagementScreen parentScreen, Minecraft mc,
-                             int x, int width, int height, int y, String itemTypeName,
-                             PlayerSkinsComponent skinsComponent, Consumer<String> onSkinSelected) {
-        super(mc, width, height, y, 35);
+            int x, int width, int height, int y, ItemStack itemType,
+            PlayerSkinsComponent skinsComponent, Consumer<String> onSkinSelected) {
+        super(mc, width, height, y, ENTRY_HEIGHT);
         // 设置列表的 X 位置
         this.setX(x);
 
         this.parentScreen = parentScreen;
-        this.itemTypeName = itemTypeName;
+        this.itemType = itemType;
+        this.itemTypeName = getItemTypeName(itemType);
         this.skinsComponent = skinsComponent;
         this.onSkinSelected = onSkinSelected;
 
         // 设置正确的滚动条位置
-
 
         // 收集可用的皮肤
         collectAvailableSkins();
@@ -72,6 +75,11 @@ public class SkinSelectionList extends ObjectSelectionList<SkinSelectionList.Ski
         for (String skinName : availableSkins) {
             this.addEntry(new SkinEntry(skinName));
         }
+    }
+
+    private String getItemTypeName(ItemStack itemStack) {
+        Item item = itemStack.getItem();
+        return BuiltInRegistries.ITEM.getKey(item).toString();
     }
 
     private void collectAvailableSkins() {
@@ -101,7 +109,10 @@ public class SkinSelectionList extends ObjectSelectionList<SkinSelectionList.Ski
         return this.width - SCROLLBAR_WIDTH - 10;
     }
 
-
+    @Override
+    protected void renderHeader(GuiGraphics guiGraphics, int i, int j) {
+        // 不渲染Header
+    }
 
     @Override
     protected void renderListBackground(@NotNull GuiGraphics guiGraphics) {
@@ -143,7 +154,7 @@ public class SkinSelectionList extends ObjectSelectionList<SkinSelectionList.Ski
         }
     }
 
-    public class SkinEntry extends Entry<SkinEntry> {
+    public class SkinEntry extends ObjectSelectionList.Entry<SkinEntry> {
         private final String skinName;
         private boolean hovered = false;
         private float hoverAnimation = 0f;
@@ -168,8 +179,8 @@ public class SkinSelectionList extends ObjectSelectionList<SkinSelectionList.Ski
 
         @Override
         public void render(GuiGraphics guiGraphics, int index, int y, int x,
-                           int entryWidth, int entryHeight, int mouseX, int mouseY,
-                           boolean hovered, float partialTick) {
+                int entryWidth, int entryHeight, int mouseX, int mouseY,
+                boolean hovered, float partialTick) {
             this.hovered = hovered;
 
             // 更新悬停动画
@@ -202,7 +213,7 @@ public class SkinSelectionList extends ObjectSelectionList<SkinSelectionList.Ski
             }
 
             // 渲染背景
-            guiGraphics.fill(x + 2, y + 2, x + width - 2, y + height - 2, backgroundColor);
+            guiGraphics.fill(x + 2, y + 2, x + width - 6, y + height - 2, backgroundColor);
 
             // 渲染边框
             int borderColor = isCurrent ? 0xFF55AA55 : BORDER_COLOR;
@@ -210,14 +221,14 @@ public class SkinSelectionList extends ObjectSelectionList<SkinSelectionList.Ski
                 borderColor = blendColors(borderColor, 0xFF8888FF, hoverAnimation);
             }
 
-            guiGraphics.fill(x, y, x + width, y + 1, borderColor); // 上边框
-            guiGraphics.fill(x, y + height - 1, x + width, y + height, borderColor); // 下边框
+            guiGraphics.fill(x, y, x + width - 4, y + 1, borderColor); // 上边框
+            guiGraphics.fill(x, y + height - 1, x + width - 4, y + height, borderColor); // 下边框
             guiGraphics.fill(x, y, x + 1, y + height, borderColor); // 左边框
-            guiGraphics.fill(x + width - 1, y, x + width, y + height, borderColor); // 右边框
+            guiGraphics.fill(x + width - 5, y, x + width - 4, y + height, borderColor); // 右边框
 
             // 悬停时的发光效果
             if (hoverAnimation > 0) {
-                int glowAlpha = (int)(hoverAnimation * 30) << 24;
+                int glowAlpha = (int) (hoverAnimation * 30) << 24;
                 for (int i = 1; i <= 2; i++) {
                     guiGraphics.fill(x - i, y - i, x + width + i, y + height + i, glowAlpha | 0xFFFFFF);
                 }
@@ -236,38 +247,40 @@ public class SkinSelectionList extends ObjectSelectionList<SkinSelectionList.Ski
             }
 
             // 绘制圆形背景
-            drawRoundedRect(guiGraphics, iconX, iconY, iconSize, iconSize, iconSize / 2, iconBgColor);
+            drawRoundedRect(guiGraphics, iconX, iconY, iconSize, iconSize, 0, iconBgColor);
 
-            // 绘制皮肤首字母
-            String initial = skinName.substring(0, 1).toUpperCase();
-            if (skinName.equals("default")) {
-                initial = "D";
-            }
-
-            int textX = iconX + iconSize / 2 - Minecraft.getInstance().font.width(initial) / 2;
-            int textY = iconY + iconSize / 2 - Minecraft.getInstance().font.lineHeight / 2;
-            guiGraphics.drawString(Minecraft.getInstance().font, initial, textX, textY, 0xFFFFFFFF, true);
+            int textX = iconX + iconSize / 2 - 8;
+            int textY = iconY + iconSize / 2 - 8;
+            // itemType.
+            ItemStack skinedItem = itemType.copy();
+            CompoundTag tag = new CompoundTag();
+            tag.putString("train_custom_skin", skinName);
+            CustomData customData = CustomData.of(tag);
+            skinedItem.set(DataComponents.CUSTOM_DATA, customData);
+            guiGraphics.renderFakeItem(skinedItem, textX, textY);
 
             // 图标边框
             int borderColor = isCurrent ? 0xFF00FF00 : 0x80FFFFFF;
-            drawRoundedRectBorder(guiGraphics, iconX, iconY, iconSize, iconSize, iconSize / 2, borderColor);
+            drawRoundedRectBorder(guiGraphics, iconX, iconY, iconSize, iconSize, 0, borderColor);
         }
 
         private void renderSkinInfo(GuiGraphics guiGraphics, int x, int y, int width, int height) {
             int infoX = x + 70; // 图标右边
             int infoY = y + 10;
-
+            String skinLowerName = skinName.toLowerCase();
             // 皮肤名称
-            Component displayName = skinName.equals("default") ?
-                    Component.translatable("screen." + TMM.MOD_ID + ".skins.default_skin") :
-                    Component.literal(formatSkinName(skinName));
+            String itemTypeKey = (itemTypeName.replaceAll(":", "."));
+            Component displayName = Component.translatableWithFallback(
+                    "screen.trainmurdermystery.skins." + itemTypeKey + "." + skinLowerName + ".name",
+                    formatSkinName(skinLowerName));
 
             int nameColor = isCurrent ? 0xFF55FF55 : TEXT_COLOR;
             guiGraphics.drawString(Minecraft.getInstance().font, displayName, infoX, infoY, nameColor, false);
 
             // 皮肤描述
-            Component description = Component.translatable("screen." + TMM.MOD_ID + ".skins." + skinName + ".desc",
-                    skinName.equals("default") ? "Default" : formatSkinName(skinName));
+            Component description = Component.translatableWithFallback(
+                    "screen.trainmurdermystery.skins." + itemTypeKey + "." + skinLowerName + ".desc",
+                    formatSkinName(skinLowerName));
 
             int descColor = TEXT_SECONDARY_COLOR;
             int descY = infoY + 12;
@@ -293,16 +306,15 @@ public class SkinSelectionList extends ObjectSelectionList<SkinSelectionList.Ski
             }
 
             // 绘制圆角按钮
-            drawRoundedRect(guiGraphics, buttonX, buttonY, buttonWidth, buttonHeight, 4, buttonColor);
+            drawRoundedRect(guiGraphics, buttonX, buttonY, buttonWidth, buttonHeight, 0, buttonColor);
 
             // 按钮边框
             int borderColor = isCurrent ? 0xFF55FF55 : (hovered && !isCurrent ? 0xFF6688CC : 0xFF555555);
-            drawRoundedRectBorder(guiGraphics, buttonX, buttonY, buttonWidth, buttonHeight, 4, borderColor);
+            drawRoundedRectBorder(guiGraphics, buttonX, buttonY, buttonWidth, buttonHeight, 0, borderColor);
 
             // 按钮文字
-            Component buttonText = isCurrent ?
-                    Component.translatable("screen." + TMM.MOD_ID + ".skins.equipped") :
-                    Component.translatable("screen." + TMM.MOD_ID + ".skins.equip");
+            Component buttonText = isCurrent ? Component.translatable("screen.trainmurdermystery.skins.equipped")
+                    : Component.translatable("screen.trainmurdermystery.skins.equip");
 
             int textColor = isCurrent ? 0xFF00FF00 : 0xFFFFFFFF;
             int textX = buttonX + buttonWidth / 2 - Minecraft.getInstance().font.width(buttonText) / 2;
@@ -315,8 +327,11 @@ public class SkinSelectionList extends ObjectSelectionList<SkinSelectionList.Ski
                 int checkX = buttonX - checkSize - 5;
                 int checkY = buttonY + (buttonHeight - checkSize) / 2;
                 guiGraphics.fill(checkX, checkY, checkX + checkSize, checkY + checkSize, 0xFF00FF00);
-                guiGraphics.drawCenteredString(Minecraft.getInstance().font, "✓",
-                        checkX + checkSize / 2, checkY - 1, 0xFF000000);
+                var bingo = Component.literal("✔").withStyle(ChatFormatting.WHITE);
+                var font = Minecraft.getInstance().font;
+                guiGraphics.drawCenteredString(font, bingo,
+                        checkX + checkSize / 2, checkY + checkSize / 2 - font.lineHeight / 2,
+                        0xFFFFFF);
             }
         }
 
@@ -340,9 +355,7 @@ public class SkinSelectionList extends ObjectSelectionList<SkinSelectionList.Ski
                 // 播放点击音效
                 Minecraft.getInstance().getSoundManager().play(
                         net.minecraft.client.resources.sounds.SimpleSoundInstance.forUI(
-                                net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK, 1.0f
-                        )
-                );
+                                net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK, 1.0f));
 
                 // 调用回调函数
                 if (onSkinSelected != null) {
@@ -356,32 +369,34 @@ public class SkinSelectionList extends ObjectSelectionList<SkinSelectionList.Ski
 
         @Override
         public @NotNull Component getNarration() {
-            return Component.translatable("screen." + TMM.MOD_ID + ".skins.narration",
-                    skinName.equals("default") ?
-                            Component.translatable("screen." + TMM.MOD_ID + ".skins.default_skin") :
-                            Component.literal(skinName));
+            return Component.translatable("screen.trainmurdermystery.skins.narration",
+                    skinName.equals("default") ? Component.translatable("screen.trainmurdermystery.skins.default_skin")
+                            : Component.literal(skinName));
         }
     }
 
     // 工具方法
-    private static void drawRoundedRect(GuiGraphics guiGraphics, int x, int y, int width, int height, int radius, int color) {
+    private static void drawRoundedRect(GuiGraphics guiGraphics, int x, int y, int width, int height, int radius,
+            int color) {
         // 简化的圆角矩形实现
         guiGraphics.fill(x + radius, y, x + width - radius, y + height, color);
         guiGraphics.fill(x, y + radius, x + width, y + height - radius, color);
 
         // 四个角
         for (int i = 0; i < radius; i++) {
-            int alpha = (int)((1.0 - (double)i / radius) * ((color >> 24) & 0xFF)) << 24;
+            int alpha = (int) ((1.0 - (double) i / radius) * ((color >> 24) & 0xFF)) << 24;
             int cornerColor = alpha | (color & 0xFFFFFF);
 
             guiGraphics.fill(x + i, y + radius - i, x + radius, y + radius - i, cornerColor);
             guiGraphics.fill(x + width - radius + i, y + radius - i, x + width - i, y + radius - i, cornerColor);
             guiGraphics.fill(x + i, y + height - radius + i, x + radius, y + height - radius + i, cornerColor);
-            guiGraphics.fill(x + width - radius + i, y + height - radius + i, x + width - i, y + height - radius + i, cornerColor);
+            guiGraphics.fill(x + width - radius + i, y + height - radius + i, x + width - i, y + height - radius + i,
+                    cornerColor);
         }
     }
 
-    private static void drawRoundedRectBorder(GuiGraphics guiGraphics, int x, int y, int width, int height, int radius, int color) {
+    private static void drawRoundedRectBorder(GuiGraphics guiGraphics, int x, int y, int width, int height, int radius,
+            int color) {
         // 绘制边框（简化版）
         guiGraphics.fill(x + radius, y, x + width - radius, y + 1, color); // 上边
         guiGraphics.fill(x + radius, y + height - 1, x + width - radius, y + height, color); // 下边
@@ -400,10 +415,10 @@ public class SkinSelectionList extends ObjectSelectionList<SkinSelectionList.Ski
         int g2 = (color2 >> 8) & 0xFF;
         int b2 = color2 & 0xFF;
 
-        int a = (int)(a1 + (a2 - a1) * ratio);
-        int r = (int)(r1 + (r2 - r1) * ratio);
-        int g = (int)(g1 + (g2 - g1) * ratio);
-        int b = (int)(b1 + (b2 - b1) * ratio);
+        int a = (int) (a1 + (a2 - a1) * ratio);
+        int r = (int) (r1 + (r2 - r1) * ratio);
+        int g = (int) (g1 + (g2 - g1) * ratio);
+        int b = (int) (b1 + (b2 - b1) * ratio);
 
         return (a << 24) | (r << 16) | (g << 8) | b;
     }

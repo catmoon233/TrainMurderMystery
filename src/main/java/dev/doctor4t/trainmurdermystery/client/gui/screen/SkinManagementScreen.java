@@ -13,7 +13,6 @@ import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -39,7 +38,7 @@ public class SkinManagementScreen extends Screen {
     private static final int PANEL_COLOR = 0x90303030;
 
     public SkinManagementScreen() {
-        super(Component.translatable("screen." + TMM.MOD_ID + ".skins.title"));
+        super(Component.translatable("screen.trainmurdermystery.skins.title"));
         this.player = Minecraft.getInstance().player;
         this.skinsComponent = PlayerSkinsComponent.KEY.get(this.player);
     }
@@ -57,8 +56,8 @@ public class SkinManagementScreen extends Screen {
 
         // 计算布局区域
         int titleHeight = 40;
-        int categoryHeight = 30;
-        int listTop = 80;
+        int categoryHeight = 25;
+        int listTop = 104;
         int listHeight = screenHeight - 160; // 为底部按钮留出空间
         int buttonAreaHeight = 60;
 
@@ -83,18 +82,19 @@ public class SkinManagementScreen extends Screen {
         // 标题面板
         addRenderableWidget(new SimplePanel(
                 titleX, startY, titleWidth, titleHeight,
-                PANEL_COLOR, 0xFF555555
-        ));
+                PANEL_COLOR, 0xFF555555));
 
         // 标题文字
         addRenderableWidget(new CenteredText(
                 titleX + titleWidth / 2, startY + titleHeight / 2,
-                this.title, 0xFFFFFFFF
-        ));
+                this.title, 0xFFFFFFFF));
     }
 
     private void initCategoryArea(int screenWidth, int titleY, int categoryHeight) {
         // 获取可换肤物品类型
+        // if(true){
+        // return;
+        // }
         List<Item> skinnableItems = getSkinnableItemTypes();
 
         if (skinnableItems.isEmpty()) {
@@ -105,7 +105,7 @@ public class SkinManagementScreen extends Screen {
         int categorySpacing = 5;
         int totalWidth = skinnableItems.size() * categoryWidth + (skinnableItems.size() - 1) * categorySpacing;
         int startX = (screenWidth - totalWidth) / 2;
-        int categoryY = titleY + 45;
+        int categoryY = titleY + 12;
 
         for (int i = 0; i < skinnableItems.size(); i++) {
             Item item = skinnableItems.get(i);
@@ -116,13 +116,12 @@ public class SkinManagementScreen extends Screen {
                     categoryY,
                     categoryWidth,
                     categoryHeight,
-                    Component.literal(getItemShortName(item)),
+                    item,
                     button1 -> {
                         selectedCategory = finalI;
                         refreshSkinPanels();
                     },
-                    i == selectedCategory
-            );
+                    i == selectedCategory);
 
             categoryButtons.add(button);
             addRenderableWidget(button);
@@ -136,9 +135,8 @@ public class SkinManagementScreen extends Screen {
             // 显示空状态
             addRenderableWidget(new CenteredText(
                     screenWidth / 2, listTop + listHeight / 2,
-                    Component.translatable("screen." + TMM.MOD_ID + ".skins.no_items"),
-                    0xFFAAAAAA
-            ));
+                    Component.translatable("screen.trainmurdermystery.skins.no_items"),
+                    0xFFAAAAAA));
             return;
         }
 
@@ -157,14 +155,13 @@ public class SkinManagementScreen extends Screen {
                 listWidth,
                 listHeight,
                 listTop,
-                getItemTypeName(itemStack),
+                itemStack,
                 skinsComponent,
                 skinName -> {
                     // 当选择皮肤时更新玩家的皮肤设置
                     skinsComponent.setEquippedSkinForItemType(getItemTypeName(itemStack), skinName);
                     skinsComponent.setSkinInDataSync(itemStack, skinName);
-                }
-        );
+                });
 
         addRenderableWidget(skinList);
 
@@ -174,8 +171,7 @@ public class SkinManagementScreen extends Screen {
                 listTop - 25,
                 listWidth,
                 20,
-                itemStack
-        ));
+                itemStack));
     }
 
     private void initButtonArea(int screenWidth, int screenHeight, int buttonAreaHeight) {
@@ -186,32 +182,30 @@ public class SkinManagementScreen extends Screen {
 
         // 刷新按钮
         refreshButton = Button.builder(
-                        Component.translatable("screen." + TMM.MOD_ID + ".skins.refresh"),
-                        button -> refreshSkinPanels()
-                ).pos((screenWidth - buttonWidth * 2 - buttonSpacing) / 2, buttonY)
+                Component.translatable("screen.trainmurdermystery.skins.refresh"),
+                button -> refreshSkinPanels()).pos((screenWidth - buttonWidth * 2 - buttonSpacing) / 2, buttonY)
                 .size(buttonWidth, buttonHeight)
                 .build();
 
         refreshButton.setTooltip(Tooltip.create(
-                Component.translatable("screen." + TMM.MOD_ID + ".skins.refresh_tooltip")
-        ));
+                Component.translatable("screen.trainmurdermystery.skins.refresh_tooltip")));
 
         addRenderableWidget(refreshButton);
 
         // 返回按钮
         backButton = Button.builder(
-                        Component.translatable("screen." + TMM.MOD_ID + ".skins.back"),
-                        button -> this.onClose()
-                ).pos(refreshButton.getX() + buttonWidth + buttonSpacing, buttonY)
+                Component.translatable("screen.trainmurdermystery.skins.back"),
+                button -> this.onClose()).pos(refreshButton.getX() + buttonWidth + buttonSpacing, buttonY)
                 .size(buttonWidth, buttonHeight)
                 .build();
 
         addRenderableWidget(backButton);
     }
 
-    private String getItemShortName(Item item) {
+    private static String getItemShortName(Item item) {
         String name = item.getDescription().getString();
-        if (name.length() <= 12) return name;
+        if (name.length() <= 12)
+            return name;
         return name.substring(0, 10) + "...";
     }
 
@@ -226,12 +220,11 @@ public class SkinManagementScreen extends Screen {
 
         // 添加支持皮肤的物品
         if (player != null) {
-            if (TMMItems.KNIFE != null) {
-                skinnableItems.add(TMMItems.KNIFE);
+            if (TMMItems.SkinnableItem != null) {
+                skinnableItems.addAll(TMMItems.SkinnableItem);
             }
             // 可以添加更多物品
         }
-
         return skinnableItems;
     }
 
@@ -261,14 +254,14 @@ public class SkinManagementScreen extends Screen {
             float size = 1 + (float) Math.sin(time * 0.002 + i);
             int alpha = (int) (50 + 100 * Math.sin(time * 0.0005 + i));
             int starColor = (alpha << 24) | 0xFFFFFF;
-            graphics.fill((int)x, (int)y, (int)(x + size), (int)(y + size), starColor);
+            graphics.fill((int) x, (int) y, (int) (x + size), (int) (y + size), starColor);
         }
     }
 
     private void renderInstructions(GuiGraphics graphics) {
         // 底部说明文本
-        Component instructions = Component.translatable("screen." + TMM.MOD_ID + ".skins.instructions");
-        graphics.drawCenteredString(font, instructions, width / 2, height - 25, 0xFF888888);
+        Component instructions = Component.translatable("screen.trainmurdermystery.skins.instructions");
+        graphics.drawCenteredString(font, instructions, width / 2, height - 12, 0xFF888888);
 
         // 皮肤统计
         int totalSkins = 0;
@@ -283,7 +276,7 @@ public class SkinManagementScreen extends Screen {
         }
 
         if (totalSkins > 0) {
-            Component stats = Component.translatable("screen." + TMM.MOD_ID + ".skins.stats",
+            Component stats = Component.translatable("screen.trainmurdermystery.skins.stats",
                     unlockedSkins, totalSkins);
             graphics.drawString(font, stats, 10, 10, 0xFFAAAAAA, false);
         }
@@ -331,11 +324,13 @@ public class SkinManagementScreen extends Screen {
     // 分类按钮
     private static class CategoryButton extends Button {
         private final boolean selected;
+        private final ItemStack item;
 
-        public CategoryButton(int x, int y, int width, int height, Component message,
-                              OnPress onPress, boolean selected) {
-            super(x, y, width, height, message, onPress, DEFAULT_NARRATION);
+        public CategoryButton(int x, int y, int width, int height, Item item,
+                OnPress onPress, boolean selected) {
+            super(x, y, width, height, Component.literal(getItemShortName(item)), onPress, DEFAULT_NARRATION);
             this.selected = selected;
+            this.item = new ItemStack(item);
         }
 
         @Override
@@ -362,16 +357,18 @@ public class SkinManagementScreen extends Screen {
             graphics.fill(getX(), getY() + height - 2, getX() + width, getY() + height, borderColor);
             graphics.fill(getX(), getY(), getX() + 2, getY() + height, borderColor);
             graphics.fill(getX() + width - 2, getY(), getX() + width, getY() + height, borderColor);
-
+            var font = Minecraft.getInstance().font;
+            int textX = getX() + width / 2 - font.width(getMessage()) / 2;
+            int textY = getY() + (height - 8) / 2;
             // 文字
+            graphics.renderFakeItem(item, textX - 17, textY - 4);
             int textColor = selected ? 0xFF00FF00 : (isHoveredOrFocused() ? 0xFFFFFFFF : 0xFFCCCCCC);
-            graphics.drawCenteredString(
-                    Minecraft.getInstance().font,
+            graphics.drawString(
+                    font,
                     getMessage(),
-                    getX() + width / 2,
-                    getY() + (height - 8) / 2,
-                    textColor
-            );
+                    textX + 9,
+                    textY,
+                    textColor);
         }
     }
 
@@ -456,8 +453,7 @@ public class SkinManagementScreen extends Screen {
                     getX() + 25,
                     getY() + (height - 8) / 2,
                     0xFFFFFF,
-                    false
-            );
+                    false);
         }
 
         @Override

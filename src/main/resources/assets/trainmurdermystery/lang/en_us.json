@@ -756,5 +756,6 @@
   "screen.trainmurdermystery.skins.instructions": "Click on a skin to equip it",
   "screen.trainmurdermystery.skins.stats": "Skins: %d/%d",
   "screen.trainmurdermystery.skins.equipped_short": "Equipped",
+  "screen.trainmurdermystery.skins.default.desc":"This is the primordial skin of the blade's veneer, born untouched in the sea of data—the default form, the unspoken truth of the first gaze.",
   "screen.trainmurdermystery.skins.equip_short": "Equip"
 }

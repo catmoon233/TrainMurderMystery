@@ -33,7 +33,8 @@ public class PlayerSkinsComponent implements AutoSyncedComponent {
 
     public void sync() {
         KEY.sync(this.player);
-    }    /**
+    }    
+    /**
      * 获取当前装备的皮肤名称
      */
     public String getEquippedSkin(ItemStack itemStack) {

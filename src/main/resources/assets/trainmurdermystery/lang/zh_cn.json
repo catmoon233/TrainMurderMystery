@@ -77,8 +77,8 @@
   "announcement.win.loose_end": "%s 获胜！",
   "announcement.win.gambler": "赌徒获胜！",
   "announcement.win.vigilante": "乘客获胜！",
-  "screen.trainmurdermystery.skins.equipped": "装备",
-  "screen.trainmurdermystery.skins.equip": "卸下",
+  "screen.trainmurdermystery.skins.equipped": "当前装备",
+  "screen.trainmurdermystery.skins.equip": "未装备",
   "screen.trainmurdermystery.acacia_branch": "金合欢木树枝",
   "block.trainmurdermystery.anthracite_steel": "无烟煤钢",
   "block.trainmurdermystery.anthracite_steel_door": "无烟煤钢门",
@@ -309,6 +309,8 @@
   "block.trainmurdermystery.white_trimmed_bed": "白色镶边床",
   "block.trainmurdermystery.toilet_block": "马桶方块",
   "category.trainmurdermystery.keybinds": "哈比快车谋杀案",
+  "key.categories.trainmurdermystery": "哈比快车谋杀案 - 快捷指令菜单",
+  "key.trainmurdermystery.open_command_ui":"打开哈比快车谋杀案快捷指令菜单",
   "commands.supporter_only": "超级有趣的赞助者命令是为Ko-Fi和YouTube会员保留的;如果你想尝试，请考虑支持！<3",
   "commands.tmm.autostart.disabled": "自动开始已禁用",
   "commands.tmm.autostart.enabled": "自动开始已启用",
@@ -773,6 +775,6 @@
   "screen.trainmurdermystery.skins.equip_short": "装备",
   "key.trainmurdermystery.assassinate": "刺杀",
   "key.trainmurdermystery.shot": "射击",
-  "key.trainmurdermystery.bat": "满蓄力时杀害"
-
+  "key.trainmurdermystery.bat": "满蓄力时杀害",
+  "screen.trainmurdermystery.skins.no_items":"无可用皮肤物品"
 }

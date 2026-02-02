@@ -756,5 +756,6 @@
   "screen.trainmurdermystery.skins.instructions": "點擊皮膚進行裝備",
   "screen.trainmurdermystery.skins.stats": "皮膚: %d/%d",
   "screen.trainmurdermystery.skins.equipped_short": "已裝備",
+  "screen.trainmurdermystery.skins.default.desc":"此乃無銘無飾之原初刀皮，誕於數據之海未染塵色；所謂默認之相，便是無需多言的第一眼真容。",
   "screen.trainmurdermystery.skins.equip_short": "裝備"
 }

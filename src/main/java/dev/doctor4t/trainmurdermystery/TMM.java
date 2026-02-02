@@ -2,13 +2,10 @@ package dev.doctor4t.trainmurdermystery;
 
 import com.google.common.reflect.Reflection;
 
-import de.maxhenkel.voicechat.api.events.PlayerConnectedEvent;
-import dev.architectury.event.events.common.PlayerEvent.PlayerJoin;
 import dev.doctor4t.trainmurdermystery.api.Role;
 import dev.doctor4t.trainmurdermystery.api.replay.ReplayApiInitializer;
 import dev.doctor4t.trainmurdermystery.block.DoorPartBlock;
 import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
-import dev.doctor4t.trainmurdermystery.client.model.KnifeModelLoadingPlugin;
 import dev.doctor4t.trainmurdermystery.command.*;
 import dev.doctor4t.trainmurdermystery.command.argument.GameModeArgumentType;
 import dev.doctor4t.trainmurdermystery.command.argument.MapLoadArgumentType;

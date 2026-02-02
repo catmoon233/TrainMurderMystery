@@ -2,11 +2,9 @@ package dev.doctor4t.trainmurdermystery.client.model;
 
 
 
-import dev.doctor4t.trainmurdermystery.cca.PlayerSkinsComponent;
 import dev.doctor4t.trainmurdermystery.index.TMMCosmetics;
 import dev.doctor4t.trainmurdermystery.item.KnifeItem;
 import dev.doctor4t.trainmurdermystery.util.SkinManager;
-import net.fabricmc.fabric.api.renderer.v1.model.FabricBakedModel;
 import net.fabricmc.fabric.api.renderer.v1.render.RenderContext;
 
 import net.minecraft.client.Minecraft;
@@ -35,7 +33,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public class KnifeModel implements UnbakedModel, FabricBakedModel, BakedModel {
+public class KnifeModel implements UnbakedModel, BakedModel {
 
     /**
      * indexed by skin, then variant!
