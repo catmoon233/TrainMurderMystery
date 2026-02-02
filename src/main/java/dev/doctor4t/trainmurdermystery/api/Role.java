@@ -2,15 +2,12 @@ package dev.doctor4t.trainmurdermystery.api;
 
 import dev.doctor4t.trainmurdermystery.cca.AbilityPlayerComponent;
 import dev.doctor4t.trainmurdermystery.client.gui.screen.ingame.LimitedInventoryScreen;
-import dev.doctor4t.trainmurdermystery.index.TMMItems;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 import dev.doctor4t.trainmurdermystery.util.ShopEntry;
-import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;

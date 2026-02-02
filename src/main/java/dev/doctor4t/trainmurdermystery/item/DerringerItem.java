@@ -1,6 +1,7 @@
 package dev.doctor4t.trainmurdermystery.item;
 
 import dev.doctor4t.trainmurdermystery.TMM;
+import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
 import dev.doctor4t.trainmurdermystery.client.TMMClient;
 import dev.doctor4t.trainmurdermystery.client.particle.HandParticle;
 import dev.doctor4t.trainmurdermystery.client.render.TMMRenderLayers;
@@ -35,7 +36,6 @@ public class DerringerItem extends RevolverItem {
         ItemStack stack = user.getItemInHand(hand);
         boolean used = stack.getOrDefault(TMMDataComponentTypes.USED, false);
 
-
         if (world.isClientSide) {
             final var gameComponent = TMMClient.gameComponent;
             if (gameComponent != null) {
@@ -63,7 +63,7 @@ public class DerringerItem extends RevolverItem {
                 }
             }
         } else {
-            final var gameComponent = TMMClient.gameComponent;
+            GameWorldComponent gameComponent = GameWorldComponent.KEY.get(world);
             if (gameComponent != null) {
                 final var role = gameComponent.getRole(user);
                 if (role != null) {

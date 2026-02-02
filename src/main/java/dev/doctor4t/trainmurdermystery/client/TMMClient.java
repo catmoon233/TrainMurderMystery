@@ -2,8 +2,6 @@ package dev.doctor4t.trainmurdermystery.client;
 
 import com.google.common.collect.Maps;
 import com.mojang.blaze3d.platform.InputConstants;
-import com.mojang.serialization.MapCodec;
-
 import dev.doctor4t.ratatouille.client.util.OptionLocker;
 import dev.doctor4t.ratatouille.client.util.ambience.AmbienceUtil;
 import dev.doctor4t.ratatouille.client.util.ambience.BackgroundAmbience;
@@ -27,12 +25,8 @@ import dev.doctor4t.trainmurdermystery.client.render.entity.FirecrackerEntityRen
 import dev.doctor4t.trainmurdermystery.client.render.entity.HornBlockEntityRenderer;
 import dev.doctor4t.trainmurdermystery.client.render.entity.NoteEntityRenderer;
 import dev.doctor4t.trainmurdermystery.client.util.TMMItemTooltips;
-import dev.doctor4t.trainmurdermystery.command.ShowStatsCommand;
-import dev.doctor4t.trainmurdermystery.command.SkinsCommand;
 import dev.doctor4t.trainmurdermystery.data.MapConfig;
-import dev.doctor4t.trainmurdermystery.data.MapConfig.MapEntry;
 import dev.doctor4t.trainmurdermystery.entity.FirecrackerEntity;
-import dev.doctor4t.trainmurdermystery.client.AFKRenderer;
 import dev.doctor4t.trainmurdermystery.entity.NoteEntity;
 import dev.doctor4t.trainmurdermystery.game.GameConstants;
 import dev.doctor4t.trainmurdermystery.game.GameFunctions;
@@ -72,7 +66,6 @@ import net.minecraft.client.renderer.entity.ThrownItemRenderer;
 import net.minecraft.client.resources.model.ModelResourceLocation;
 import net.minecraft.client.resources.model.UnbakedModel;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
