@@ -385,7 +385,6 @@
   "commands.tmm.showstats.player_not_found": "玩家 %s 未找到或不在線",
   "container.cabinet": "櫃子",
   "container.cargo_box": "貨物箱",
-  "credits.trainmurdermystery.thank_you": "感謝你遊玩《哈比快車謀殺案》！\n我和我的團隊花了很多時間製作這個模組，希望你喜歡。\n如果你喜歡並想製作影片或直播，請務必註明我的頻道、影片和模組頁面！\n - RAT / doctor4t",
   "entity.trainmurdermystery.firecracker": "鞭炮",
   "entity.trainmurdermystery.grenade": "手榴彈",
   "entity.trainmurdermystery.note": "便條",
@@ -759,5 +758,6 @@
   "screen.trainmurdermystery.skins.default.desc":"此乃無銘無飾之原初刀皮，誕於數據之海未染塵色；所謂默認之相，便是無需多言的第一眼真容。",
   "screen.trainmurdermystery.skins.equip_short": "裝備",
   "death_reason.trainmurdermystery.revolver_shot": "左輪手槍",
-  "death_reason.trainmurdermystery.derringer_shot": "德林加手槍"
+  "death_reason.trainmurdermystery.derringer_shot": "德林加手槍",
+  "credits.trainmurdermystery.thank_you": "感謝您遊玩《哈比快車謀殺案》DLC版！\n殘月團隊花了很多時間為這個模組增加了更多的功能與遊戲內容。\n我們還添加了許多可供遊玩的地图與新職業。\n如果您喜歡並想製作視頻或直播，請務必注明我的頻道、視頻和模組頁面！\n原作者 - RAT / doctor4t \nDLC版作者 - 殘月團隊"
 }

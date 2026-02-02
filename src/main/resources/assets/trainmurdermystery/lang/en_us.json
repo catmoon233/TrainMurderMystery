@@ -385,7 +385,6 @@
   "commands.tmm.showstats.player_not_found": "Player %s not found or offline",
   "container.cabinet": "Cabinet",
   "container.cargo_box": "Cargo Box",
-  "credits.trainmurdermystery.thank_you": "Thank you for playing Train Murder Mystery!\nMy team and I spent a lot of time making this mod, hope you enjoy it.\nIf you like it and want to make a video or stream, please credit my channel, video and mod page!\n - RAT / doctor4t",
   "entity.trainmurdermystery.firecracker": "Firecracker",
   "entity.trainmurdermystery.grenade": "Grenade",
   "entity.trainmurdermystery.note": "Note",
@@ -759,5 +758,6 @@
   "screen.trainmurdermystery.skins.default.desc":"This is the primordial skin of the blade's veneer, born untouched in the sea of data—the default form, the unspoken truth of the first gaze.",
   "screen.trainmurdermystery.skins.equip_short": "Equip",
   "death_reason.trainmurdermystery.revolver_shot": "Revolver",
-  "death_reason.trainmurdermystery.derringer_shot": "Derringer"
+  "death_reason.trainmurdermystery.derringer_shot": "Derringer",
+  "credits.trainmurdermystery.thank_you": "Thank you for playing \"Train Murder Mystery\" DLC Edition!\n\nThe CANYUE Team spent a lot of time adding more features and game content to this mod.\nWe have also added many playable maps and new roles.\n\nIf you enjoy this mod and want to create videos or livestream it, please be sure to credit my channel, videos and the mod page!\n\nOriginal Author - RAT / doctor4t\nDLC Edition Authors - CANYUE Team"
 }
