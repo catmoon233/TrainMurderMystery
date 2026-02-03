@@ -31,8 +31,7 @@ public class RoleNameRenderer {
     private static final Component[] note = new Component[] { Component.empty(), Component.empty(), Component.empty(),
             Component.empty() };
 
-    private static float getPlayerRange(Player player) {
-
+    public static float getPlayerRange(Player player) {
         if (player.getMainHandItem().is(Items.SPYGLASS)) {
             if (player.isUsingItem())
                 if (player.getUseItem().is(Items.SPYGLASS)) {
