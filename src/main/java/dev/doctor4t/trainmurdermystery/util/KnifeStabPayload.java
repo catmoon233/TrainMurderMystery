@@ -3,11 +3,11 @@ package dev.doctor4t.trainmurdermystery.util;
 import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.api.TMMGameModes;
 import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
+import dev.doctor4t.trainmurdermystery.event.OnPlayerKilledPlayer;
 import dev.doctor4t.trainmurdermystery.game.GameConstants;
 import dev.doctor4t.trainmurdermystery.game.GameFunctions;
 import dev.doctor4t.trainmurdermystery.index.TMMItems;
 import dev.doctor4t.trainmurdermystery.index.TMMSounds;
-import dev.doctor4t.trainmurdermystery.item.KnifeItem;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
@@ -43,8 +43,7 @@ public record KnifeStabPayload(int target) implements CustomPacketPayload {
                 }
             }
             GameFunctions.killPlayer(target, true, player, GameConstants.DeathReasons.KNIFE);
-            if (KnifeItem.PlayerKilledPlayer != null)
-                KnifeItem.PlayerKilledPlayer.accept(target, player);
+            OnPlayerKilledPlayer.EVENT.invoker().playerKiller(target, player);
             target.playSound(TMMSounds.ITEM_KNIFE_STAB, 1.0f, 1.0f);
             player.swing(InteractionHand.MAIN_HAND);
             if (!player.isCreative()
