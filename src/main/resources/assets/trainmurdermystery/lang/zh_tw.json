@@ -1,4 +1,12 @@
 {
+  "language": "繁體中文",
+  "language.code": "zh_tw",
+  "language.region": "Taiwan",
+
+  "multiplayer.disconnect.mod_whitelist.modlist_mismatch": "客戶端模組列表與與服務端要求不匹配。\n請您執行以下操作，或向服務器管理員求助：\n",
+  "multiplayer.disconnect.mod_whitelist.misc.to_install": "\n安裝模組\"%s\"。",
+  "multiplayer.disconnect.mod_whitelist.misc.to_uninstall": "\n卸載模組\"%s\"。",
+  "multiplayer.disconnect.mod_whitelist.packet_corruption": "客戶端向服務端發送的數據被損壞，請卸載作弊模組。",
   "tip.skin": "皮膚: ",
   "gui.tmm.map_selector.title": "選擇地圖",
   "gui.tmm.map_selector.subtitle": "按下 %s 開始投票地圖",
@@ -765,6 +773,7 @@
   "key.trainmurdermystery.assassinate": "刺殺",
   "key.trainmurdermystery.shot": "射擊",
   "key.trainmurdermystery.bat": "滿蓄力時殺害",
+  "screen.trainmurdermystery.skins.equip": "裝備",
   "screen.trainmurdermystery.skins.no_items":"無可用皮膚物品",
   "death_reason.trainmurdermystery.revolver_shot": "左輪手槍",
   "death_reason.trainmurdermystery.derringer_shot": "德林加手槍",

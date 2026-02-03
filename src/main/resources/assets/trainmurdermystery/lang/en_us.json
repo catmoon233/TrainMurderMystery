@@ -1,4 +1,12 @@
 {
+  "language": "English",
+  "language.code": "en_us",
+  "language.region": "United States",
+
+  "multiplayer.disconnect.mod_whitelist.modlist_mismatch": "Client modlist does not match server requirements.\nPlease take the following action, or ask a server admin for help:\n",
+  "multiplayer.disconnect.mod_whitelist.misc.to_install": "\nInstall mod \"%s\".",
+  "multiplayer.disconnect.mod_whitelist.misc.to_uninstall": "\nUninstall mod \"%s\".",
+  "multiplayer.disconnect.mod_whitelist.packet_corruption": "Data sent from client to server was corrupted, please uninstall cheat mods.",
   "tip.skin": "Skin: ",
   "gui.tmm.map_selector.title": "Select Map",
   "gui.tmm.map_selector.subtitle": "Press %s to start map voting",
@@ -760,7 +768,9 @@
   "screen.trainmurdermystery.skins.back": "Back",
   "screen.trainmurdermystery.skins.instructions": "Click on a skin to equip it",
   "screen.trainmurdermystery.skins.stats": "Skins: %d/%d",
+  "screen.trainmurdermystery.skins.equipped": "Equipped",
   "screen.trainmurdermystery.skins.equipped_short": "Equipped",
+  "screen.trainmurdermystery.skins.equip": "Equip",
   "screen.trainmurdermystery.skins.equip_short": "Equip",
   "key.trainmurdermystery.assassinate": "Assassinate",
   "key.trainmurdermystery.shot": "Shoot",
