@@ -565,12 +565,14 @@ public class GameFunctions {
                         // 杀手击杀杀手
                         if (killerRole.canUseKiller() && victimRole.canUseKiller()) {
                             isTeamKill = true;
-                            OnTeammateKilledTeammate.EVENT.invoker().playerKilled(serverVictim, serverKiller, false);
+                            OnTeammateKilledTeammate.EVENT.invoker().playerKilled(serverVictim, serverKiller, false,
+                                    deathReason);
                         }
                         // 无辜者击杀无辜者
                         else if (killerRole.isInnocent() && victimRole.isInnocent()) {
                             isTeamKill = true;
-                            OnTeammateKilledTeammate.EVENT.invoker().playerKilled(serverVictim, serverKiller, true);
+                            OnTeammateKilledTeammate.EVENT.invoker().playerKilled(serverVictim, serverKiller, true,
+                                    deathReason);
                         }
                         if (isTeamKill) {
                             killerStats.incrementTotalTeamKills();
