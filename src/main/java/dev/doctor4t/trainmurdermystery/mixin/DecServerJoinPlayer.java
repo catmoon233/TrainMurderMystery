@@ -39,6 +39,7 @@ public class DecServerJoinPlayer {
         } else {
             if (serverPlayer.level() instanceof ServerLevel serverWorld) {
                 // serverWorld.getSharedSpawnPos();
+
                 AreasWorldComponent areas = AreasWorldComponent.KEY.get(serverWorld);
                 AreasWorldComponent.PosWithOrientation spectatorSpawnPos = areas.getSpawnPos();
                 serverPlayer.teleportTo(serverWorld, spectatorSpawnPos.pos.x(), spectatorSpawnPos.pos.y(),
@@ -48,6 +49,8 @@ public class DecServerJoinPlayer {
                     serverPlayer.containerMenu.broadcastChanges();
                     serverPlayer.inventoryMenu.slotsChanged(serverPlayer.getInventory());
                 }
+                if (!serverPlayer.isCreative())
+                    serverPlayer.setGameMode(net.minecraft.world.level.GameType.ADVENTURE);
             }
         }
         SyncMapConfigPayload.sendToPlayer(serverPlayer);
