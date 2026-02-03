@@ -615,11 +615,12 @@ public class GameFunctions {
                 PlayerShopComponent.KEY.get(killer).addToBalance(GameConstants.getMoneyPerKill());
             }
             if (killer != null) {
-                for (List<ItemStack> list : killer.getInventory().compartments) {
+                inventory_label: for (List<ItemStack> list : killer.getInventory().compartments) {
                     for (int i = 0; i < list.size(); i++) {
                         ItemStack stack = list.get(i);
                         if (stack.is(TMMItems.DERRINGER)) {
                             stack.set(TMMDataComponentTypes.USED, false);
+                            break inventory_label;
                         }
                     }
                 }
