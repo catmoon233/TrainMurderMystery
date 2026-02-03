@@ -60,6 +60,7 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.slf4j.LoggerFactory;
 
 import java.util.*;
 import java.util.function.UnaryOperator;
@@ -522,15 +523,20 @@ public class GameFunctions {
                             break;
                         case "knife_stab":
                             eventDeathReason = OnPlayerKilledPlayer.DeathReason.KNIFE;
+                            break;
                         case "grenade":
                             eventDeathReason = OnPlayerKilledPlayer.DeathReason.GRENADE;
+                            break;
                         case "bat_hit":
                             eventDeathReason = OnPlayerKilledPlayer.DeathReason.BAT;
+                            break;
                         case "poison":
                             eventDeathReason = OnPlayerKilledPlayer.DeathReason.POISON;
+                            break;
                         default:
                             eventDeathReason = OnPlayerKilledPlayer.DeathReason.UNKNOWN;
                     }
+                    // LoggerFactory.getLogger("death_Reason").info(deathReason.getPath());
                     OnPlayerKilledPlayer.EVENT.invoker().playerKilled(spvictim, spkiller, eventDeathReason);
                 }
             }
