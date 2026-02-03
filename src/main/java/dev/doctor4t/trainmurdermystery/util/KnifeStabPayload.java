@@ -43,7 +43,6 @@ public record KnifeStabPayload(int target) implements CustomPacketPayload {
                 }
             }
             GameFunctions.killPlayer(target, true, player, GameConstants.DeathReasons.KNIFE);
-            OnPlayerKilledPlayer.EVENT.invoker().playerKiller(target, player);
             target.playSound(TMMSounds.ITEM_KNIFE_STAB, 1.0f, 1.0f);
             player.swing(InteractionHand.MAIN_HAND);
             if (!player.isCreative()

@@ -13,6 +13,8 @@ import dev.doctor4t.trainmurdermystery.entity.FirecrackerEntity;
 import dev.doctor4t.trainmurdermystery.entity.NoteEntity;
 import dev.doctor4t.trainmurdermystery.entity.PlayerBodyEntity;
 import dev.doctor4t.trainmurdermystery.event.AllowPlayerDeath;
+import dev.doctor4t.trainmurdermystery.event.OnPlayerKilledPlayer;
+import dev.doctor4t.trainmurdermystery.event.OnTeammateKilledTeammate;
 import dev.doctor4t.trainmurdermystery.event.ShouldDropOnDeath;
 import dev.doctor4t.trainmurdermystery.index.TMMBlocks;
 import dev.doctor4t.trainmurdermystery.index.TMMEntities;
@@ -510,6 +512,29 @@ public class GameFunctions {
             // them
             return;
         }
+        if (killer != null) {
+            if (killer instanceof ServerPlayer spkiller) {
+                if (victim instanceof ServerPlayer spvictim) {
+                    OnPlayerKilledPlayer.DeathReason eventDeathReason;
+                    switch (deathReason.getPath()) {
+                        case "gun_shot":
+                            eventDeathReason = OnPlayerKilledPlayer.DeathReason.GUN_SHOOT;
+                            break;
+                        case "knife_stab":
+                            eventDeathReason = OnPlayerKilledPlayer.DeathReason.KNIFE;
+                        case "grenade":
+                            eventDeathReason = OnPlayerKilledPlayer.DeathReason.GRENADE;
+                        case "bat_hit":
+                            eventDeathReason = OnPlayerKilledPlayer.DeathReason.BAT;
+                        case "poison":
+                            eventDeathReason = OnPlayerKilledPlayer.DeathReason.POISON;
+                        default:
+                            eventDeathReason = OnPlayerKilledPlayer.DeathReason.UNKNOWN;
+                    }
+                    OnPlayerKilledPlayer.EVENT.invoker().playerKilled(spvictim, spkiller, eventDeathReason);
+                }
+            }
+        }
 
         if (!AllowPlayerDeath.EVENT.invoker().allowDeath(victim, deathReason))
             return;
@@ -540,10 +565,12 @@ public class GameFunctions {
                         // 杀手击杀杀手
                         if (killerRole.canUseKiller() && victimRole.canUseKiller()) {
                             isTeamKill = true;
+                            OnTeammateKilledTeammate.EVENT.invoker().playerKilled(serverVictim, serverKiller, false);
                         }
                         // 无辜者击杀无辜者
                         else if (killerRole.isInnocent() && victimRole.isInnocent()) {
                             isTeamKill = true;
+                            OnTeammateKilledTeammate.EVENT.invoker().playerKilled(serverVictim, serverKiller, true);
                         }
                         if (isTeamKill) {
                             killerStats.incrementTotalTeamKills();

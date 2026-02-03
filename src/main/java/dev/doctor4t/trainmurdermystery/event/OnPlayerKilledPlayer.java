@@ -7,12 +7,20 @@ import net.minecraft.server.level.ServerPlayer;
 import static net.fabricmc.fabric.api.event.EventFactory.createArrayBacked;
 
 public interface OnPlayerKilledPlayer {
-
-    Event<OnPlayerKilledPlayer> EVENT = createArrayBacked(OnPlayerKilledPlayer.class, listeners -> (victim, killer) -> {
+    public static enum DeathReason {
+        GUN_SHOOT,
+        KNIFE,
+        UNKNOWN,
+        OTHER,
+        GRENADE,
+        BAT,
+        POISON
+    }
+    Event<OnPlayerKilledPlayer> EVENT = createArrayBacked(OnPlayerKilledPlayer.class, listeners -> (victim, killer, reason) -> {
         for (OnPlayerKilledPlayer listener : listeners) {
-            listener.playerKiller(victim, killer);
+            listener.playerKilled(victim, killer,reason);
         }
     });
 
-    void playerKiller(ServerPlayer victim, ServerPlayer killer);
+    void playerKilled(ServerPlayer victim, ServerPlayer killer, DeathReason reason);
 }
