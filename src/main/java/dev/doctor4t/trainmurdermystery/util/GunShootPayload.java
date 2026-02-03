@@ -61,8 +61,9 @@ public record GunShootPayload(int target) implements CustomPacketPayload {
                     return;
                 }
 
-                if (!player.isCreative())
+                if (!player.isCreative()) {
                     mainHandStack.set(TMMDataComponentTypes.USED, true);
+                }
             }
 
             if (player.serverLevel().getEntity(payload.target()) instanceof Player target
@@ -70,7 +71,8 @@ public record GunShootPayload(int target) implements CustomPacketPayload {
                 GameWorldComponent game = GameWorldComponent.KEY.get(player.level());
                 Item revolver = TMMItems.REVOLVER;
                 boolean isDerringer = mainHandStack.is(TMMItems.DERRINGER);
-                ResourceLocation deathReason = isDerringer ? GameConstants.DeathReasons.DERRINGER : GameConstants.DeathReasons.REVOLVER;
+                ResourceLocation deathReason = isDerringer ? GameConstants.DeathReasons.DERRINGER
+                        : GameConstants.DeathReasons.REVOLVER;
 
                 boolean backfire = false;
                 final var role = game.getRole(player);

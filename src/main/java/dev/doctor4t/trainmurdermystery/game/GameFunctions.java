@@ -17,6 +17,7 @@ import dev.doctor4t.trainmurdermystery.event.OnPlayerKilledPlayer;
 import dev.doctor4t.trainmurdermystery.event.OnTeammateKilledTeammate;
 import dev.doctor4t.trainmurdermystery.event.ShouldDropOnDeath;
 import dev.doctor4t.trainmurdermystery.index.TMMBlocks;
+import dev.doctor4t.trainmurdermystery.index.TMMDataComponentTypes;
 import dev.doctor4t.trainmurdermystery.index.TMMEntities;
 import dev.doctor4t.trainmurdermystery.index.TMMItems;
 import dev.doctor4t.trainmurdermystery.index.TMMSounds;
@@ -491,7 +492,6 @@ public class GameFunctions {
         return player == null || !player.isAlive() || player.isCreative() || player.isSpectator();
     }
 
-    @SuppressWarnings("unused")
     public static void killPlayer(Player victim, boolean spawnBody, @Nullable Player killer) {
         killPlayer(victim, spawnBody, killer, GameConstants.DeathReasons.GENERIC);
     }
@@ -518,6 +518,8 @@ public class GameFunctions {
                 if (victim instanceof ServerPlayer spvictim) {
                     OnPlayerKilledPlayer.DeathReason eventDeathReason;
                     switch (deathReason.getPath()) {
+                        case "derringer_shot":
+                        case "revolver_shot":
                         case "gun_shot":
                             eventDeathReason = OnPlayerKilledPlayer.DeathReason.GUN_SHOOT;
                             break;
@@ -611,6 +613,16 @@ public class GameFunctions {
             // 杀手击杀获得金钱奖励
             if (killer != null && GameWorldComponent.KEY.get(killer.level()).canUseKillerFeatures(killer)) {
                 PlayerShopComponent.KEY.get(killer).addToBalance(GameConstants.getMoneyPerKill());
+            }
+            if (killer != null) {
+                for (List<ItemStack> list : killer.getInventory().compartments) {
+                    for (int i = 0; i < list.size(); i++) {
+                        ItemStack stack = list.get(i);
+                        if (stack.is(TMMItems.DERRINGER)) {
+                            stack.set(TMMDataComponentTypes.USED, false);
+                        }
+                    }
+                }
             }
 
             PlayerMoodComponent.KEY.get(victim).reset();
