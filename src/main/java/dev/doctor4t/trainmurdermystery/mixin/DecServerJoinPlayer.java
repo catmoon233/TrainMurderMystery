@@ -6,12 +6,10 @@ import dev.doctor4t.trainmurdermystery.game.GameFunctions;
 import dev.doctor4t.trainmurdermystery.game.GameReplayManager;
 import dev.doctor4t.trainmurdermystery.network.SyncMapConfigPayload;
 import net.minecraft.network.Connection;
-import net.minecraft.server.commands.ClearInventoryCommands;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.server.network.CommonListenerCookie;
 import net.minecraft.server.players.PlayerList;
-import net.minecraft.world.entity.player.Player;
 import org.ladysnake.cca.api.v3.component.ComponentProvider;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -29,7 +27,7 @@ public class DecServerJoinPlayer {
             if (!GameFunctions.isPlayerAliveAndSurvival(serverPlayer)) {
                 // 加群组功能已换成VoiceChat事件监听(trainVoicePlugin.java)
                 serverPlayer.setGameMode(net.minecraft.world.level.GameType.SPECTATOR);
-                
+
                 if (serverPlayer.level() instanceof ServerLevel serverWorld) {
                     AreasWorldComponent areas = AreasWorldComponent.KEY.get(serverWorld);
                     AreasWorldComponent.PosWithOrientation spectatorSpawnPos = areas.getSpectatorSpawnPos();
@@ -38,16 +36,15 @@ public class DecServerJoinPlayer {
                 }
 
             }
-        }
-
-        if (!gameWorldComponent.isRunning() && GameFunctions.isPlayerAliveAndSurvival(serverPlayer)){
+        } else {
             if (serverPlayer.level() instanceof ServerLevel serverWorld) {
+                // serverWorld.getSharedSpawnPos();
                 AreasWorldComponent areas = AreasWorldComponent.KEY.get(serverWorld);
                 AreasWorldComponent.PosWithOrientation spectatorSpawnPos = areas.getSpawnPos();
                 serverPlayer.teleportTo(serverWorld, spectatorSpawnPos.pos.x(), spectatorSpawnPos.pos.y(),
                         spectatorSpawnPos.pos.z(), spectatorSpawnPos.yaw, spectatorSpawnPos.pitch);
                 for (int i = 0; i < serverPlayer.getInventory().getContainerSize(); i++) {
-                        serverPlayer.getInventory().setItem(i, net.minecraft.world.item.ItemStack.EMPTY);
+                    serverPlayer.getInventory().setItem(i, net.minecraft.world.item.ItemStack.EMPTY);
                     serverPlayer.containerMenu.broadcastChanges();
                     serverPlayer.inventoryMenu.slotsChanged(serverPlayer.getInventory());
                 }
