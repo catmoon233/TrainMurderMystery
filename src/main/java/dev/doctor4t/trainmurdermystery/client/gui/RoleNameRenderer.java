@@ -53,6 +53,7 @@ public class RoleNameRenderer {
                 && player.level().getBrightness(LightLayer.SKY, BlockPos.containing(player.getEyePosition())) < 10)
             return;
         float range = getPlayerRange(player);
+        range = range * (GameFunctions.isPlayerSpectatingOrCreative(player) ? 1f : 1f);
         if (ProjectileUtil.getHitResultOnViewVector(player, entity -> entity instanceof Player player1,
                 range) instanceof EntityHitResult entityHitResult
                 && entityHitResult.getEntity() instanceof Player target) {
