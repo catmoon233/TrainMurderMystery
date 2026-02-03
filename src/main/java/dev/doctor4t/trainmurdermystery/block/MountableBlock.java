@@ -3,7 +3,6 @@ package dev.doctor4t.trainmurdermystery.block;
 import dev.doctor4t.trainmurdermystery.block.entity.SeatEntity;
 import dev.doctor4t.trainmurdermystery.index.TMMBlocks;
 import dev.doctor4t.trainmurdermystery.index.TMMEntities;
-import dev.doctor4t.trainmurdermystery.index.TMMItems;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
