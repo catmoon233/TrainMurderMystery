@@ -1,6 +1,5 @@
 package dev.doctor4t.trainmurdermystery.game;
 
-import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.api.TMMRoles;
 import dev.doctor4t.trainmurdermystery.api.replay.ReplayEventTypes;
 import dev.doctor4t.trainmurdermystery.api.replay.ReplayEventTypes.BlackoutEventDetails;
@@ -12,6 +11,7 @@ import dev.doctor4t.trainmurdermystery.api.replay.ReplayEventTypes.LockpickAttem
 import dev.doctor4t.trainmurdermystery.api.replay.ReplayEventTypes.MoodChangeDetails;
 import dev.doctor4t.trainmurdermystery.api.replay.ReplayEventTypes.PlayerKillDetails;
 import dev.doctor4t.trainmurdermystery.api.replay.ReplayEventTypes.PlayerPoisonedDetails;
+import dev.doctor4t.trainmurdermystery.api.replay.ReplayEventTypes.PlayerRevivalDetails;
 import dev.doctor4t.trainmurdermystery.api.replay.ReplayEventTypes.PsychoStateChangeDetails;
 import dev.doctor4t.trainmurdermystery.api.replay.ReplayEventTypes.StoreBuyDetails;
 import dev.doctor4t.trainmurdermystery.api.replay.ReplayEventTypes.TaskCompleteDetails;
@@ -207,6 +207,10 @@ public class GameReplayData {
             Role_1 = getRoleNameWithColor(roleDetail.oldRole());
             Role_2 = getRoleNameWithColor(roleDetail.newRole());
             // message = ;
+        }else if (event.details() instanceof PlayerRevivalDetails revivalDetails) {
+            sourcePlayer = revivalDetails.player();
+            Role_1 = getRoleNameWithColor(revivalDetails.Role());
+            // message = ;
         } else if (event.details() instanceof ReplayEventTypes.CustomEventDetails details) {
             // CustomEventDetails 没有 playerUuid 和 message，只有 eventId 和 data
             // 暂时不设置 sourcePlayer 和 message
@@ -304,6 +308,9 @@ public class GameReplayData {
             case CHANGE_ROLE -> {
                 yield Component.translatable("tmm.replay.event.change_role", sourceName, Role_1, Role_2);
             }
+            case PLAYER_REVIVAL -> {
+                yield Component.translatable("tmm.replay.event.player_revival", sourceName, Role_1);
+            }
             // 次要事件
 
             /*
@@ -396,7 +403,7 @@ public class GameReplayData {
         ITEM_USED,
         PSYCHO_STATE_CHANGE,
         BLACKOUT_START,
-        BLACKOUT_END, CHANGE_ROLE
+        BLACKOUT_END, CHANGE_ROLE, PLAYER_REVIVAL
     }
 
     public static class ReplayEvent {

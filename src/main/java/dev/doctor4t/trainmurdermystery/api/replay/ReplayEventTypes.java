@@ -1,6 +1,5 @@
 package dev.doctor4t.trainmurdermystery.api.replay;
 
-import dev.doctor4t.trainmurdermystery.game.GameFunctions;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import java.util.UUID;
@@ -32,12 +31,15 @@ public class ReplayEventTypes {
         BLACKOUT_END,
         GRENADE_THROWN,
         CHANGE_ROLE,
-        // Add more event types as needed
-        CUSTOM_EVENT // 用于第三方模组的自定义事件
+        PLAYER_REVIVAL,
+        /* 用于自定义事件 */ CUSTOM_EVENT
     }
 
     public record PlayerKillDetails(UUID killerUuid, UUID victimUuid, ResourceLocation deathReason)
             implements EventDetails {
+    }
+
+    public record PlayerRevivalDetails(UUID player, String Role) implements EventDetails {
     }
 
     public record ChangeRoleDetails(UUID player, String oldRole, String newRole) implements EventDetails {

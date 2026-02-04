@@ -3,9 +3,6 @@ package dev.doctor4t.trainmurdermystery.api.replay.serializers;
 import com.google.gson.*;
 
 import dev.doctor4t.trainmurdermystery.api.replay.ReplayEventTypes.ChangeRoleDetails;
-import dev.doctor4t.trainmurdermystery.api.replay.ReplayEventTypes.PlayerKillDetails;
-import net.minecraft.resources.ResourceLocation;
-
 import java.lang.reflect.Type;
 import java.util.UUID;
 
