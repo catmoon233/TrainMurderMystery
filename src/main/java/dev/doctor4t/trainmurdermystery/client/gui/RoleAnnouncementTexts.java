@@ -116,6 +116,9 @@ public class RoleAnnouncementTexts {
                     int looseEndColor = looseEndText != null ? looseEndText.colour : 0x9F0000;
                     yield Component.translatable("announcement.win.loose_end", winner).withColor(looseEndColor);
                 }
+                case NO_PLAYER ->
+                    Component.translatable("announcement.win.noplayer", winner).withColor(Color.LIGHT_GRAY.getRGB());
+                default -> Component.translatable("announcement.win.unknown", winner).withColor(Color.ORANGE.getRGB());
             };
         }
     }

@@ -77,6 +77,8 @@
   "announcement.win.loose_end": "亡命徒获胜！",
   "announcement.win.gambler": "赌徒获胜！",
   "announcement.win.vigilante": "乘客获胜！",
+  "announcement.win.noplayer": "无人获胜！",
+  "announcement.win.unknown": "未知获胜！",
   "screen.trainmurdermystery.skins.equipped": "当前装备",
   "screen.trainmurdermystery.skins.equip": "未装备",
   "block.trainmurdermystery.acacia_branch": "金合欢木树枝",
