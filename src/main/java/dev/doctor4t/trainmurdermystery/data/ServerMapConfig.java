@@ -2,6 +2,8 @@ package dev.doctor4t.trainmurdermystery.data;
 
 import com.google.gson.Gson;
 
+import dev.doctor4t.trainmurdermystery.TMMConfig;
+import dev.doctor4t.trainmurdermystery.data.MapConfig.MapEntry;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -12,6 +14,9 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 public class ServerMapConfig {
@@ -38,6 +43,19 @@ public class ServerMapConfig {
 
     public static synchronized void reload(ServerLevel sl) {
         reload(sl.getServer());
+    }
+
+    public List<MapEntry> getRandomMaps() {
+        return getRandomMaps(TMMConfig.mapRandomCount);
+    }
+
+    public List<MapEntry> getRandomMaps(int count) {
+        if (count < 0) {
+            return this.maps;
+        }
+        var a = new ArrayList<>(this.maps);
+        Collections.shuffle(a);
+        return a.subList(0, count);
     }
 
     private static ServerMapConfig loadOrCreateConfig(MinecraftServer sl) {

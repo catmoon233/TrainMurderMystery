@@ -1,10 +1,7 @@
 package dev.doctor4t.trainmurdermystery.network;
 
-import java.util.List;
-
 import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.data.MapConfig;
-import dev.doctor4t.trainmurdermystery.data.MapConfig.MapEntry;
 import dev.doctor4t.trainmurdermystery.data.ServerMapConfig;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
@@ -20,7 +17,13 @@ public record ShowSelectedMapUIPayload(String serverConfig) implements CustomPac
     }
 
     public ShowSelectedMapUIPayload(ServerMapConfig mp) {
-        this(MapConfig.gson.toJson(mp));
+        this(convertServerMapConfigToString(mp));
+    }
+
+    public static String convertServerMapConfigToString(ServerMapConfig mp) {
+        MapConfig cfg = new MapConfig();
+        cfg.maps = mp.getRandomMaps();
+        return MapConfig.gson.toJson(cfg);
     }
 
     public ShowSelectedMapUIPayload(MapConfig mp) {

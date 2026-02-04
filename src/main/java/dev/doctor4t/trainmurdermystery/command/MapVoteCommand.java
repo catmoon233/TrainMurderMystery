@@ -30,10 +30,13 @@ public class MapVoteCommand {
         }
 
         votingManager.startVoting(time);
+        String mapconfigs = ShowSelectedMapUIPayload
+                .convertServerMapConfigToString(ServerMapConfig.getInstance(source.getServer()));
+                
         source.getServer().getPlayerList().getPlayers().forEach(
                 serverPlayer -> {
                     ServerPlayNetworking.send(serverPlayer,
-                            new ShowSelectedMapUIPayload(ServerMapConfig.getInstance(serverPlayer.getServer())));
+                            new ShowSelectedMapUIPayload(mapconfigs));
                 });
         source.sendSuccess(() -> Component.translatable("command.tmm.votemap.success"), false);
 
