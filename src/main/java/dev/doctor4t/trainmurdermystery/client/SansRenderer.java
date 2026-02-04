@@ -1,11 +1,13 @@
 package dev.doctor4t.trainmurdermystery.client;
 
+import com.mojang.blaze3d.pipeline.RenderTarget;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
 import dev.doctor4t.trainmurdermystery.cca.PlayerMoodComponent;
 import dev.doctor4t.trainmurdermystery.cca.PlayerPsychoComponent;
+import dev.doctor4t.trainmurdermystery.game.GameConstants;
 import dev.doctor4t.trainmurdermystery.game.GameFunctions;
 import dev.doctor4t.trainmurdermystery.util.MathHelper;
 import net.minecraft.client.Minecraft;
@@ -13,6 +15,7 @@ import net.minecraft.client.gui.Gui;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.ShaderInstance;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
@@ -162,8 +165,54 @@ public class SansRenderer {
         });
         m_post.addSinglePassEntry("crazy", pass -> {
             return processPlayer(mc.player, cap -> {
-                if (PlayerPsychoComponent.KEY.get(mc.player).psychoTicks<=0)
+                PlayerPsychoComponent psycho = PlayerPsychoComponent.KEY.get(mc.player);
+                if (psycho.psychoTicks <= 0)
                     return false;
+
+                // 获取着色器效果
+                var effect = pass.getEffect();
+
+                // 设置时间参数（游戏时间）
+                float gameTime = m_post.getTime() / 20.0f; // 转换为秒
+                effect.safeGetUniform("Time").set(gameTime);
+                effect.safeGetUniform("GameTime").set(gameTime);
+
+                // 设置屏幕尺寸
+                RenderTarget mainTarget = mc.getMainRenderTarget();
+                effect.safeGetUniform("ScreenSize").set((float)mainTarget.width, (float)mainTarget.height);
+
+                // 根据psychoTicks计算疯狂强度（值越大效果越强）
+                // psychoTicks可能是倒计时，所以计算剩余比例
+                float intensity;
+                if (GameConstants.getPsychoModeArmour()> 0) {
+                    // 如果有最大时间，计算剩余比例
+                    intensity = 1.0f - (float)psycho.psychoTicks / GameConstants.getPsychoModeArmour();
+                } else {
+                    // 否则使用固定强度或基于当前ticks
+                    intensity = Mth.clamp((100.0f - psycho.psychoTicks) / 100.0f, 0.0f, 1.0f);
+                }
+
+                // 设置疯狂强度参数
+                effect.safeGetUniform("Intensity").set(intensity);
+
+                // 设置扭曲参数
+                effect.safeGetUniform("DistortionStrength").set(intensity * 0.1f);
+
+                // 设置颜色偏移参数
+                effect.safeGetUniform("ChromaticAberration").set(intensity * 0.02f);
+
+                // 设置闪烁频率
+                effect.safeGetUniform("FlickerSpeed").set(intensity * 5.0f);
+
+                // 设置扫描线强度
+                effect.safeGetUniform("ScanlineStrength").set(intensity * 0.3f);
+
+                // 如果理智也很低，增强效果
+                if (cap != null && cap.getMood() < 0.3f) {
+                    float moodIntensity = 1.0f - (cap.getMood() / 0.3f);
+                    effect.safeGetUniform("DistortionStrength").set(intensity * 0.1f + moodIntensity * 0.05f);
+                    effect.safeGetUniform("ChromaticAberration").set(intensity * 0.02f + moodIntensity * 0.01f);
+                }
 
                 return true;
             });
