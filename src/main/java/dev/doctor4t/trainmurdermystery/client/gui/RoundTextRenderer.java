@@ -139,7 +139,7 @@ public class RoundTextRenderer {
                 context.pose().popPose();
             } else {
                 int vigilanteTotal = 1;
-                int loose_endsTotal = 0;
+                int loose_endsTotal = 1;
 
                 for (GameRoundEndComponent.RoundEndData entry : roundEnd.players) {
                     final var role1 = lastRole.get(entry.player().getId());
@@ -156,7 +156,7 @@ public class RoundTextRenderer {
                         -renderer.width(
                                 Component.translatable("announcement.title.neutral"))
                                 / 2 - 90,
-                        (loose_endsTotal <= 0) ? 14 : (14 + 16 + 32 * ((vigilanteTotal) / 2)), Color.YELLOW.getRGB());
+                        (loose_endsTotal <= 0) ? 14 : (14 + 16 + 32 * ((loose_endsTotal) / 2)), Color.YELLOW.getRGB());
                 if (loose_endsTotal > 0) {
                     context.drawString(renderer, Component.translatable("announcement.role.loose_end"),
                             -renderer.width(
