@@ -23,6 +23,7 @@ import dev.doctor4t.trainmurdermystery.index.TMMDataComponentTypes;
 import dev.doctor4t.trainmurdermystery.index.TMMEntities;
 import dev.doctor4t.trainmurdermystery.index.TMMItems;
 import dev.doctor4t.trainmurdermystery.index.TMMSounds;
+import dev.doctor4t.trainmurdermystery.network.BreakArmorPayload;
 import dev.doctor4t.trainmurdermystery.network.CloseUiPayload;
 import dev.doctor4t.trainmurdermystery.network.TriggerScreenEdgeEffectPayload;
 import dev.doctor4t.trainmurdermystery.util.AnnounceEndingPayload;
@@ -581,6 +582,11 @@ public class GameFunctions {
         if (component.getPsychoTicks() > 0) {
             if (component.getArmour() > 0) {
                 component.setArmour(component.getArmour() - 1);
+                if (killer instanceof ServerPlayer serverPlayer){
+                    ServerPlayNetworking.send(serverPlayer,new BreakArmorPayload(victim.getX(), victim.getY(), victim.getZ()
+
+                    ));
+                }
                 component.sync();
                 victim.playNotifySound(TMMSounds.ITEM_PSYCHO_ARMOUR, SoundSource.MASTER, 5F, 1F);
                 return;

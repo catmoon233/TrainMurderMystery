@@ -5,6 +5,7 @@ import com.mojang.blaze3d.vertex.*;
 import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
 import dev.doctor4t.trainmurdermystery.cca.PlayerMoodComponent;
+import dev.doctor4t.trainmurdermystery.cca.PlayerPsychoComponent;
 import dev.doctor4t.trainmurdermystery.game.GameFunctions;
 import dev.doctor4t.trainmurdermystery.util.MathHelper;
 import net.minecraft.client.Minecraft;
@@ -156,6 +157,14 @@ public class SansRenderer {
                     return false;
                 pass.getEffect().safeGetUniform("DesaturateFactor").set(MathHelper.clampNorm(Mth.inverseLerp(cap.getMood(), .4f, .8f)) * .69f);
                 pass.getEffect().safeGetUniform("SpreadFactor").set(MathHelper.clampNorm(Mth.inverseLerp(cap.getMood(), .4f, .8f)) * 1.43f);
+                return true;
+            });
+        });
+        m_post.addSinglePassEntry("crazy", pass -> {
+            return processPlayer(mc.player, cap -> {
+                if (PlayerPsychoComponent.KEY.get(mc.player).psychoTicks<=0)
+                    return false;
+
                 return true;
             });
         });
