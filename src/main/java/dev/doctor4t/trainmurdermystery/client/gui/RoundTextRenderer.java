@@ -16,7 +16,6 @@ import org.jetbrains.annotations.NotNull;
 import java.awt.Color;
 import java.util.*;
 
-import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.Font;
@@ -97,8 +96,11 @@ public class RoundTextRenderer {
             context.pose().popPose();
             context.pose().pushPose();
             context.pose().scale(1.2f, 1.2f, 1f);
-            MutableComponent winMessage = Component
-                    .translatable("game.win." + roundEnd.getWinStatus().name().toLowerCase().toLowerCase());
+            MutableComponent winMessage = (winner == null ? Component
+                    .translatable("game.win." + roundEnd.getWinStatus().name().toLowerCase().toLowerCase())
+                    : Component
+                            .translatable("game.win." + roundEnd.getWinStatus().name().toLowerCase().toLowerCase(),
+                                    winner.getDisplayName()));
             context.drawString(renderer, winMessage, -renderer.width(winMessage) / 2, -4, 0xFFFFFF);
             context.pose().popPose();
             if (isLooseEnds) {
@@ -137,23 +139,31 @@ public class RoundTextRenderer {
                 context.pose().popPose();
             } else {
                 int vigilanteTotal = 1;
+                int loose_endsTotal = 0;
+
                 for (GameRoundEndComponent.RoundEndData entry : roundEnd.players) {
                     final var role1 = lastRole.get(entry.player().getId());
-                    if (entry.role().getId().getPath().equals(RoleAnnouncementTexts.VIGILANTE.getId().getPath()))
-                        vigilanteTotal += 1;
-                    else {
-                        if (role1 != null)
-                            if (role1.isVigilanteTeam()) {
-                                vigilanteTotal += 1;
-                            }
-                    }
+                    if (role1 != null)
+                        if (role1.identifier().getPath().equals(TMMRoles.LOOSE_END.identifier().getPath())) {
+                            loose_endsTotal++;
+                        } else if (role1.isVigilanteTeam()) {
+                            vigilanteTotal += 1;
+                        }
+
                 }
 
                 context.drawString(renderer, Component.translatable("announcement.title.neutral"),
                         -renderer.width(
                                 Component.translatable("announcement.title.neutral"))
                                 / 2 - 90,
-                        14, Color.YELLOW.getRGB());
+                        (loose_endsTotal > 0) ? 14 : (14 + 16 + 32 * ((vigilanteTotal) / 2)), Color.YELLOW.getRGB());
+                if (loose_endsTotal > 0) {
+                    context.drawString(renderer, Component.translatable("announcement.role.loose_end"),
+                            -renderer.width(
+                                    Component.translatable("announcement.role.loose_end"))
+                                    / 2 - 90,
+                            14, new Color(160, 0, 0).getRGB());
+                }
                 context.drawString(renderer, RoleAnnouncementTexts.CIVILIAN.titleText,
                         -renderer.width(RoleAnnouncementTexts.CIVILIAN.titleText) / 2, 14, 0xFFFFFF);
                 context.drawString(renderer, RoleAnnouncementTexts.VIGILANTE.titleText,
@@ -165,6 +175,8 @@ public class RoundTextRenderer {
                 int neutrals = 0;
                 int vigilantes = 0;
                 int killers = 0;
+                int loose_ends = 0;
+
                 for (GameRoundEndComponent.RoundEndData entry : roundEnd.players) {
                     context.pose().pushPose();
                     context.pose().scale(2f, 2f, 1f);
@@ -181,15 +193,21 @@ public class RoundTextRenderer {
                         civilians++;
                     } else {
                         if (role2 != null) {
-                            if (role2.isNeutrals()) {
+                            if (role2.identifier().getPath().equals(TMMRoles.LOOSE_END.identifier().getPath())) {
+                                context.pose().translate(-63 + (loose_ends % 2) * 12, 14 + (loose_ends / 2) * 16, 0);
+                                loose_ends++;
+                            } else if (role2.isNeutrals()) {
+                                if (loose_endsTotal > 0) {
+                                    context.pose().translate(0, 8 + ((loose_endsTotal) / 2) * 16, 0);
+                                }
                                 context.pose().translate(-63 + (neutrals % 2) * 12, 14 + (neutrals / 2) * 16, 0);
                                 neutrals++;
                             } else if (role2.isInnocent() || role2.isVigilanteTeam()) {
                                 context.pose().translate(27 + (vigilantes % 2) * 12, 14 + (vigilantes / 2) * 16, 0);
                                 vigilantes++;
                             } else if (role2.canUseKiller()) {
-                                context.pose().translate(10, 8 + ((vigilanteTotal) / 2) * 16, 0);
-                                context.pose().translate(17 + (killers % 2) * 12, 14 + (killers / 2) * 16, 0);
+                                context.pose().translate(0, 8 + ((vigilanteTotal) / 2) * 16, 0);
+                                context.pose().translate(27 + (killers % 2) * 12, 14 + (killers / 2) * 16, 0);
                                 killers++;
                             } else {
                                 context.pose().translate(-36 + (civilians % 5) * 12, 14 + (civilians / 5) * 16, 0);
