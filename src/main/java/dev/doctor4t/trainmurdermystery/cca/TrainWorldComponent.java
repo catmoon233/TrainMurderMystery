@@ -139,9 +139,9 @@ public class TrainWorldComponent implements AutoSyncedComponent, ServerTickingCo
     public void serverTick() {
         tickTime();
 
-        ServerLevel serverWorld = (ServerLevel) world;
-        serverWorld.setDayTime(timeOfDay.time);
-        
+//        ServerLevel serverWorld = (ServerLevel) world;
+//        serverWorld.setDayTime(timeOfDay.time);
+
         // 每秒同步一次（减少网络占用）
         if (this.needsSync && this.world.getGameTime() % 20 == 0) {
             this.sync();

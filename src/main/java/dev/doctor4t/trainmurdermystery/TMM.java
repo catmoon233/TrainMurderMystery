@@ -62,6 +62,7 @@ public class TMM implements ModInitializer {
     public static List<Predicate<Role>> canUseOtherPerson = new ArrayList<>();
     public static List<Predicate<Role>> canUseChatHud = new ArrayList<>();
     public static List<Predicate<Player>> canCollide = new ArrayList<>();
+    public static List<Predicate<Entity>> canPushableBy = new ArrayList<>();
     public static List<Predicate<Entity>> canCollideEntity = new ArrayList<>();
     public static ArrayList<String> canDropItem = new ArrayList<>();
 

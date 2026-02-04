@@ -19,9 +19,9 @@ public class MapDetailsRenderer {
     public static String mapDescription = "";
     public static String mapAuthor = "";
     private static long displayStartTime = 0L;
-    private static final long DISPLAY_DURATION = 12000L; // 12秒显示时间
+    private static final long DISPLAY_DURATION = 10000L; // 12秒显示时间
     private static final long FADE_DURATION = 1000L; // 1秒淡入淡出时间
-    private static final long FINAL_ANIMATION_START = 12000L; // 最后4秒开始合拢再张开动画
+    private static final long FINAL_ANIMATION_START = 10000L; // 最后4秒开始合拢再张开动画
 
     // 文字颜色 - 电影风格黑白
     private static final int TITLE_COLOR = 0xFFFFFFFF; // 纯白标题

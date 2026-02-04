@@ -76,36 +76,58 @@ import static dev.doctor4t.trainmurdermystery.compat.TrainVoicePlugin.isVoiceCha
 public class GameFunctions {
 
     public static void limitPlayerToBox(ServerPlayer player, AABB box) {
-        // Vec3 playerPos = player.position();
-        //
-        // if (!box.contains(playerPos)) {
-        // double x = playerPos.x();
-        // double y = playerPos.y();
-        // double z = playerPos.z();
-        //
-        // if (z < box.minZ) {
-        // z = box.minZ;
-        // }
-        // if (z > box.maxZ) {
-        // z = box.maxZ;
-        // }
-        //
-        // if (y < box.minY) {
-        // y = box.minY;
-        // }
-        // if (y > box.maxY) {
-        // y = box.maxY;
-        // }
-        //
-        // if (x < box.minX) {
-        // x = box.minX;
-        // }
-        // if (x > box.maxX) {
-        // x = box.maxX;
-        // }
-        //
-        // player.teleportTo(x, y, z);
-        // }
+        Vec3 playerPos = player.position();
+        Vec3 teleportPos = playerPos;
+
+        if (!box.contains(playerPos)) {
+            double x = playerPos.x();
+            double y = playerPos.y();
+            double z = playerPos.z();
+            double bounceFactor = 0.2; // 反弹系数，可根据需要调整
+
+            // Z轴边界检测和反弹
+            if (z < box.minZ) {
+                z = box.minZ;
+                // 添加Z轴正方向的反弹速度
+                player.setDeltaMovement(player.getDeltaMovement().add(0, 0, bounceFactor));
+            }
+            if (z > box.maxZ) {
+                z = box.maxZ;
+                // 添加Z轴负方向的反弹速度
+                player.setDeltaMovement(player.getDeltaMovement().add(0, 0, -bounceFactor));
+            }
+
+            // Y轴边界检测和反弹
+            if (y < box.minY) {
+                y = box.minY;
+                // 添加Y轴正方向的反弹速度
+                player.setDeltaMovement(player.getDeltaMovement().add(0, bounceFactor, 0));
+            }
+            if (y > box.maxY) {
+                y = box.maxY;
+                // 添加Y轴负方向的反弹速度
+                player.setDeltaMovement(player.getDeltaMovement().add(0, -bounceFactor, 0));
+            }
+
+            // X轴边界检测和反弹
+            if (x < box.minX) {
+                x = box.minX;
+                // 添加X轴正方向的反弹速度
+                player.setDeltaMovement(player.getDeltaMovement().add(bounceFactor, 0, 0));
+            }
+            if (x > box.maxX) {
+                x = box.maxX;
+                // 添加X轴负方向的反弹速度
+                player.setDeltaMovement(player.getDeltaMovement().add(-bounceFactor, 0, 0));
+            }
+
+            teleportPos = new Vec3(x, y, z);
+        }
+
+        // 只有在玩家位置需要调整时才进行传送
+        if (!teleportPos.equals(playerPos)) {
+            player.teleportTo(teleportPos.x(), teleportPos.y(), teleportPos.z());
+        }
     }
 
     public static void startGame(ServerLevel world, GameMode gameMode, int time) {

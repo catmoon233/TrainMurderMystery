@@ -394,7 +394,7 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
             // spectator limits
             if (trainComponent.getSpeed() > 0) {
                 for (ServerPlayer player : serverWorld.players()) {
-                    if (!GameFunctions.isPlayerAliveAndSurvival(player) && isBound()) {
+                    if (!GameFunctions.isPlayerAliveAndSurvival(player) && isBound() && !GameFunctions.isPlayerCreative( player)) {
                         GameFunctions.limitPlayerToBox(player, areas.playArea);
                     }
                 }
