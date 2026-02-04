@@ -20,19 +20,24 @@ import net.minecraft.world.item.ItemStack;
 public class PlayerEntityRendererMixin {
     @Inject(method = "getArmPose", at = @At("TAIL"), cancellable = true)
     private static void tmm$customArmPose(AbstractClientPlayer player,
-                                          InteractionHand hand, CallbackInfoReturnable<HumanoidModel.ArmPose> cir) {
+            InteractionHand hand, CallbackInfoReturnable<HumanoidModel.ArmPose> cir) {
         if (player.getItemInHand(hand).is(TMMItems.BAT))
             cir.setReturnValue(HumanoidModel.ArmPose.CROSSBOW_CHARGE);
     }
 
     @ModifyExpressionValue(method = "getArmPose", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/AbstractClientPlayer;getItemInHand(Lnet/minecraft/world/InteractionHand;)Lnet/minecraft/world/item/ItemStack;"))
-    private static ItemStack tmm$changeNoteAndPsychosisItemsArmPos(ItemStack original, AbstractClientPlayer player, InteractionHand hand) {
+    private static ItemStack tmm$changeNoteAndPsychosisItemsArmPos(ItemStack original, AbstractClientPlayer player,
+            InteractionHand hand) {
         if (hand.equals(InteractionHand.MAIN_HAND)) {
-            if (original.is(TMMItems.NOTE)) {
-                return ItemStack.EMPTY;
+            for (var i : TMMItems.INVISIBLE_ITEMS) {
+                if (original.is(i)) {
+                    return ItemStack.EMPTY;
+                }
             }
 
-            if (TMMClient.moodComponent != null && TMMClient.moodComponent.isLowerThanMid()) { // make sure it's only the main hand item that's being replaced
+            if (TMMClient.moodComponent != null && TMMClient.moodComponent.isLowerThanMid()) { // make sure it's only
+                                                                                               // the main hand item
+                                                                                               // that's being replaced
                 HashMap<UUID, ItemStack> psychosisItems = TMMClient.moodComponent.getPsychosisItems();
                 UUID uuid = player.getUUID();
                 if (psychosisItems.containsKey(uuid)) {

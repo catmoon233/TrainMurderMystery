@@ -21,13 +21,14 @@ import net.minecraft.world.item.Tiers;
 
 public @SuppressWarnings("unchecked") interface TMMItems {
         public static ItemRegistrar registrar = new ItemRegistrar(TMM.MOD_ID);
+        public static ArrayList<Item> INVISIBLE_ITEMS = new ArrayList<>();
         public ReplaceableItems INIT_ITEMS = new ReplaceableItems();
 
         /**
          * 可换皮肤的物品
          */
         public ArrayList<Item> SkinnableItem = new ArrayList<>();
-        
+
         ResourceKey<CreativeModeTab> BUILDING_GROUP = ResourceKey.create(Registries.CREATIVE_MODE_TAB,
                         TMM.id("building"));
         ResourceKey<CreativeModeTab> DECORATION_GROUP = ResourceKey.create(Registries.CREATIVE_MODE_TAB,
@@ -77,6 +78,7 @@ public @SuppressWarnings("unchecked") interface TMMItems {
                         EQUIPMENT_GROUP);
 
         static void initialize() {
+                INVISIBLE_ITEMS.add(TMMItems.NOTE);
                 registrar.registerEntries();
 
                 Registry.register(BuiltInRegistries.CREATIVE_MODE_TAB, BUILDING_GROUP, FabricItemGroup.builder()
