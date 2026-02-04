@@ -5,6 +5,7 @@ import dev.doctor4t.trainmurdermystery.client.TMMClient;
 import dev.doctor4t.trainmurdermystery.event.AllowItemShowInHand;
 import dev.doctor4t.trainmurdermystery.index.TMMItems;
 
+import org.slf4j.LoggerFactory;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -33,6 +34,7 @@ public class PlayerEntityRendererMixin {
         if (hand.equals(InteractionHand.MAIN_HAND)) {
             for (var i : TMMItems.INVISIBLE_ITEMS) {
                 if (original.is(i)) {
+                    // LoggerFactory.getLogger("train").info("Hide " + i.toString());
                     return ItemStack.EMPTY;
                 }
             }
