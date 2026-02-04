@@ -2,8 +2,8 @@ package dev.doctor4t.trainmurdermystery.mixin.client;
 
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import dev.doctor4t.trainmurdermystery.client.TMMClient;
+import dev.doctor4t.trainmurdermystery.event.AllowItemShowInHand;
 import dev.doctor4t.trainmurdermystery.index.TMMItems;
-import dev.doctor4t.trainmurdermystery.mixin.client.events.AllowItemShowInHand;
 
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
