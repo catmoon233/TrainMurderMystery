@@ -156,8 +156,8 @@ public class RoundTextRenderer {
                         -renderer.width(
                                 Component.translatable("announcement.title.neutral"))
                                 / 2 - 90,
-                        (loose_endsTotal <= 0) ? 14 : (14 + 16 + 32 * ((loose_endsTotal) / 2)), Color.YELLOW.getRGB());
-                if (loose_endsTotal > 0) {
+                        (loose_endsTotal <= 1) ? 14 : (14 + 16 + 32 * ((loose_endsTotal) / 2)), Color.YELLOW.getRGB());
+                if (loose_endsTotal > 1) {
                     context.drawString(renderer, Component.translatable("announcement.role.loose_end"),
                             -renderer.width(
                                     Component.translatable("announcement.role.loose_end"))
@@ -197,7 +197,7 @@ public class RoundTextRenderer {
                                 context.pose().translate(-63 + (loose_ends % 2) * 12, 14 + (loose_ends / 2) * 16, 0);
                                 loose_ends++;
                             } else if (role2.isNeutrals()) {
-                                if (loose_endsTotal > 0) {
+                                if (loose_endsTotal > 1) {
                                     context.pose().translate(0, 8 + ((loose_endsTotal) / 2) * 16, 0);
                                 }
                                 context.pose().translate(-63 + (neutrals % 2) * 12, 14 + (neutrals / 2) * 16, 0);
