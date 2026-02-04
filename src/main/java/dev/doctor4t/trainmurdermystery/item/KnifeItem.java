@@ -130,6 +130,6 @@ public class KnifeItem extends Item implements ItemWithSkin {
 
     @Override
     public int getUseDuration(ItemStack stack, LivingEntity user) {
-        return 120;
+        return 110;
     }
 }

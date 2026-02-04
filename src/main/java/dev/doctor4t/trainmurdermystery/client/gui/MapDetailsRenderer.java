@@ -1,6 +1,7 @@
 package dev.doctor4t.trainmurdermystery.client.gui;
 
 import dev.doctor4t.trainmurdermystery.data.MapConfig;
+import dev.doctor4t.trainmurdermystery.game.GameConstants;
 import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.player.LocalPlayer;
@@ -20,7 +21,7 @@ public class MapDetailsRenderer {
     private static long displayStartTime = 0L;
     private static final long DISPLAY_DURATION = 12000L; // 12秒显示时间
     private static final long FADE_DURATION = 1000L; // 1秒淡入淡出时间
-    private static final long FINAL_ANIMATION_START = 8000L; // 最后4秒开始合拢再张开动画
+    private static final long FINAL_ANIMATION_START = 12000L; // 最后4秒开始合拢再张开动画
 
     // 文字颜色 - 电影风格黑白
     private static final int TITLE_COLOR = 0xFFFFFFFF; // 纯白标题
@@ -444,7 +445,7 @@ public class MapDetailsRenderer {
         MapDetailsRenderer.mapId = mapId;
         MapDetailsRenderer.mapDescription = mapDescription;
         MapDetailsRenderer.mapAuthor = mapAuthor != null ? mapAuthor : "";
-        displayStartTime = System.currentTimeMillis();
+        displayStartTime = System.currentTimeMillis() + GameConstants.FADE_TIME /20 * 1000;
 
         // 重置动画状态
         titleOffsetX = 0f;
