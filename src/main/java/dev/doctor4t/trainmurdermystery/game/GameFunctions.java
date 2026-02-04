@@ -13,6 +13,7 @@ import dev.doctor4t.trainmurdermystery.entity.FirecrackerEntity;
 import dev.doctor4t.trainmurdermystery.entity.NoteEntity;
 import dev.doctor4t.trainmurdermystery.entity.PlayerBodyEntity;
 import dev.doctor4t.trainmurdermystery.event.AllowPlayerDeath;
+import dev.doctor4t.trainmurdermystery.event.OnPlayerDeath;
 import dev.doctor4t.trainmurdermystery.event.OnPlayerKilledPlayer;
 import dev.doctor4t.trainmurdermystery.event.OnTeammateKilledTeammate;
 import dev.doctor4t.trainmurdermystery.event.ShouldDropOnDeath;
@@ -606,6 +607,7 @@ public class GameFunctions {
         if (canDeath) {
             if (victim instanceof ServerPlayer serverPlayerEntity && isPlayerAliveAndSurvival(serverPlayerEntity)) {
                 serverPlayerEntity.setGameMode(net.minecraft.world.level.GameType.SPECTATOR);
+                OnPlayerDeath.EVENT.invoker().onPlayerDeath(victim, deathReason);
             } else {
                 return;
             }
