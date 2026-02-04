@@ -156,7 +156,7 @@ public class RoundTextRenderer {
                         -renderer.width(
                                 Component.translatable("announcement.title.neutral"))
                                 / 2 - 90,
-                        (loose_endsTotal <= 1) ? 14 : (14 + 16 + 32 * ((loose_endsTotal) / 2)), Color.YELLOW.getRGB());
+                        (loose_endsTotal > 1) ? (14 + 16 + 32 * ((loose_endsTotal) / 2)) : 14, Color.YELLOW.getRGB());
                 if (loose_endsTotal > 1) {
                     context.drawString(renderer, Component.translatable("announcement.role.loose_end"),
                             -renderer.width(
