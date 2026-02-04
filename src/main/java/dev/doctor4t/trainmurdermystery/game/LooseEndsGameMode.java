@@ -6,7 +6,8 @@ import dev.doctor4t.trainmurdermystery.cca.GameRoundEndComponent;
 import dev.doctor4t.trainmurdermystery.cca.GameTimeComponent;
 import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
 import dev.doctor4t.trainmurdermystery.cca.TrainWorldComponent;
-import dev.doctor4t.trainmurdermystery.client.gui.RoleAnnouncementTexts;
+import dev.doctor4t.trainmurdermystery.event.AllowGameEnd;
+import dev.doctor4t.trainmurdermystery.game.GameFunctions.WinStatus;
 import dev.doctor4t.trainmurdermystery.index.TMMItems;
 import dev.doctor4t.trainmurdermystery.util.AnnounceWelcomePayload;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -41,7 +42,8 @@ public class LooseEndsGameMode extends GameMode {
     }
 
     @Override
-    public void initializeGame(ServerLevel serverWorld, GameWorldComponent gameWorldComponent, List<ServerPlayer> players) {
+    public void initializeGame(ServerLevel serverWorld, GameWorldComponent gameWorldComponent,
+            List<ServerPlayer> players) {
         TrainWorldComponent.KEY.get(serverWorld).setTimeOfDay(TrainWorldComponent.TimeOfDay.SUNDOWN);
 
         for (ServerPlayer player : players) {
@@ -69,7 +71,8 @@ public class LooseEndsGameMode extends GameMode {
 
             gameWorldComponent.addRole(player, TMMRoles.LOOSE_END);
 
-            ServerPlayNetworking.send(player, new AnnounceWelcomePayload(TMMRoles.LOOSE_END.identifier().toString(), -1, -1));
+            ServerPlayNetworking.send(player,
+                    new AnnounceWelcomePayload(TMMRoles.LOOSE_END.identifier().toString(), -1, -1));
         }
     }
 
@@ -92,7 +95,10 @@ public class LooseEndsGameMode extends GameMode {
         }
 
         if (playersLeft <= 0) {
-            GameFunctions.stopGame(serverWorld);
+            boolean canEnd = AllowGameEnd.EVENT.invoker().allowGameEnd(serverWorld, WinStatus.NO_PLAYER, true);
+            if (canEnd) {
+                GameFunctions.stopGame(serverWorld);
+            }
         }
 
         if (playersLeft == 1) {
@@ -101,10 +107,13 @@ public class LooseEndsGameMode extends GameMode {
         }
 
         // game end on win and display
-        if (winStatus != GameFunctions.WinStatus.NONE && gameWorldComponent.getGameStatus() == GameWorldComponent.GameStatus.ACTIVE) {
-            GameRoundEndComponent.KEY.get(serverWorld).setRoundEndData(serverWorld.players(), winStatus);
-
-            GameFunctions.stopGame(serverWorld);
+        if (winStatus != GameFunctions.WinStatus.NONE
+                && gameWorldComponent.getGameStatus() == GameWorldComponent.GameStatus.ACTIVE) {
+            boolean canEnd = AllowGameEnd.EVENT.invoker().allowGameEnd(serverWorld, winStatus, true);
+            if (canEnd) {
+                GameRoundEndComponent.KEY.get(serverWorld).setRoundEndData(serverWorld.players(), winStatus);
+                GameFunctions.stopGame(serverWorld);
+            }
         }
     }
 }
