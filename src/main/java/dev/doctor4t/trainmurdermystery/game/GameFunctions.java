@@ -8,6 +8,7 @@ import dev.doctor4t.trainmurdermystery.api.Role;
 import dev.doctor4t.trainmurdermystery.block.SmallDoorBlock;
 import dev.doctor4t.trainmurdermystery.block_entity.SmallDoorBlockEntity;
 import dev.doctor4t.trainmurdermystery.cca.*;
+import dev.doctor4t.trainmurdermystery.client.StaminaRenderer;
 import dev.doctor4t.trainmurdermystery.compat.TrainVoicePlugin;
 import dev.doctor4t.trainmurdermystery.entity.FirecrackerEntity;
 import dev.doctor4t.trainmurdermystery.entity.NoteEntity;
@@ -23,11 +24,13 @@ import dev.doctor4t.trainmurdermystery.index.TMMEntities;
 import dev.doctor4t.trainmurdermystery.index.TMMItems;
 import dev.doctor4t.trainmurdermystery.index.TMMSounds;
 import dev.doctor4t.trainmurdermystery.network.CloseUiPayload;
+import dev.doctor4t.trainmurdermystery.network.TriggerScreenEdgeEffectPayload;
 import dev.doctor4t.trainmurdermystery.util.AnnounceEndingPayload;
 import dev.doctor4t.trainmurdermystery.util.ReplayPayload;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.impl.util.log.Log;
 import net.fabricmc.loader.impl.util.log.LogCategory;
+import net.minecraft.client.Minecraft;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponentMap;
@@ -63,7 +66,9 @@ import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 import java.util.function.UnaryOperator;
 
 import static dev.doctor4t.trainmurdermystery.compat.TrainVoicePlugin.isVoiceChatMissing;
@@ -499,6 +504,11 @@ public class GameFunctions {
     public static void killPlayer(Player victim, boolean spawnBody, @Nullable Player killer,
             ResourceLocation deathReason) {
         PlayerPsychoComponent component = PlayerPsychoComponent.KEY.get(victim);
+                if (killer instanceof ServerPlayer serverPlayer) {
+                    final var triggerScreenEdgeEffectPayload = new TriggerScreenEdgeEffectPayload(Color.WHITE.getRGB(), 600, 0.6f);
+                    ServerPlayNetworking.send(serverPlayer, triggerScreenEdgeEffectPayload);
+                }
+
 
         boolean canDeath = true;
         if (victim instanceof ServerPlayer serverVictim) {

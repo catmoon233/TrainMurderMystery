@@ -219,6 +219,7 @@ public class TMM implements ModInitializer {
 
         // 注册地图配置同步包
         PayloadTypeRegistry.playS2C().register(SyncMapConfigPayload.ID, SyncMapConfigPayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(TriggerScreenEdgeEffectPayload.ID, TriggerScreenEdgeEffectPayload.CODEC);
 
         PayloadTypeRegistry.playS2C().register(ShootMuzzleS2CPayload.ID, ShootMuzzleS2CPayload.CODEC);
         PayloadTypeRegistry.playS2C().register(PoisonUtils.PoisonOverlayPayload.ID,

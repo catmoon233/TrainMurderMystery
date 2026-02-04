@@ -85,7 +85,7 @@ dependencies {
 	modApi files("libs/fabric-carpet-1.21-1.4.147+v240613.jar")
 
 	modApi files("libs/LocalizedChat-fabric-1.21.1-5.2.1.jar")
-	modApi files("libs/uilib-1.0.1-1.21.1-fabric.jar")
+	//modApi files("libs/uilib-1.0.1-1.21.1-fabric.jar")
 	modApi files("libs/architectury-13.0.8-fabric.jar")
 	modApi files("libs/CrosshairAddons-2.1.0-1.21.jar")
 	modApi files("libs/WalksyLib-0.9.96+1.21.jar")

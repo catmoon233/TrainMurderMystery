@@ -37,7 +37,6 @@
     "defaultRequire": 1
   },
   "client": [
-    "client.KillEffectMixin",
     "CameraPositionMixin",
     "KeyboardHandlerMixin",
     "KnifeTooltipMixin",

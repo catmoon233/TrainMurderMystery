@@ -38,8 +38,7 @@ import dev.doctor4t.trainmurdermystery.network.*;
 import dev.doctor4t.trainmurdermystery.network.packet.SyncSpecificWaypointVisibilityPacket;
 import dev.doctor4t.trainmurdermystery.network.packet.SyncWaypointVisibilityPacket;
 import dev.doctor4t.trainmurdermystery.network.packet.SyncWaypointsPacket;
-import dev.doctor4t.trainmurdermystery.ui.TMMCommandUI;
-import dev.doctor4t.trainmurdermystery.ui.event.KeyPressHandler;
+
 import dev.doctor4t.trainmurdermystery.util.*;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.fabricmc.api.ClientModInitializer;
@@ -387,6 +386,7 @@ public class TMMClient implements ClientModInitializer {
         });
 
         SyncMapConfigPayload.registerReceiver();
+        TriggerScreenEdgeEffectPayload.registerReceiver();
         ClientPlayNetworking.registerGlobalReceiver(ShootMuzzleS2CPayload.ID, new ShootMuzzleS2CPayload.Receiver());
         ClientPlayNetworking.registerGlobalReceiver(PoisonUtils.PoisonOverlayPayload.ID,
                 new PoisonUtils.PoisonOverlayPayload.Receiver());
@@ -455,8 +455,8 @@ public class TMMClient implements ClientModInitializer {
                 GLFW.GLFW_KEY_N, // 默认热键 'N'
                 "category." + TMM.MOD_ID + ".keybinds"));
         // Initialize Command UI system
-        TMMCommandUI.init();
-        KeyPressHandler.register();
+//        TMMCommandUI.init();
+//        KeyPressHandler.register();
         InputHandler.initialize();
 
         // Register HUD rendering for security camera
