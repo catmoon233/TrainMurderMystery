@@ -468,12 +468,12 @@ public class TMMClient implements ClientModInitializer {
             WaypointHUD.renderHUD(guiGraphics, deltaTick.getRealtimeDeltaTicks());
             AFKRenderer.renderAFKEffects(guiGraphics, deltaTick.getRealtimeDeltaTicks());
             
-            // 添加地图详情渲染
-            Font font = Minecraft.getInstance().font;
-            LocalPlayer player = Minecraft.getInstance().player;
-            if (font != null && player != null) {
-                MapDetailsRenderer.renderHud(font, player, guiGraphics, deltaTick.getRealtimeDeltaTicks());
-            }
+//            // 添加地图详情渲染
+//            Font font = Minecraft.getInstance().font;
+//            LocalPlayer player = Minecraft.getInstance().player;
+//            if (font != null && player != null) {
+//                MapDetailsRenderer.renderHud(font, player, guiGraphics, deltaTick.getRealtimeDeltaTicks());
+//            }
         });
         ClientPlayNetworking.registerGlobalReceiver(SyncWaypointsPacket.ID, SyncWaypointsPacket::handle);
         ClientPlayNetworking.registerGlobalReceiver(SyncWaypointVisibilityPacket.ID,

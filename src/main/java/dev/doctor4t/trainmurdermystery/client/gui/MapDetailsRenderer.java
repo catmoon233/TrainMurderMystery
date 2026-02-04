@@ -18,8 +18,9 @@ public class MapDetailsRenderer {
     public static String mapDescription = "";
     public static String mapAuthor = "";
     private static long displayStartTime = 0L;
-    private static final long DISPLAY_DURATION = 12000L; // 7秒显示时间
+    private static final long DISPLAY_DURATION = 12000L; // 12秒显示时间
     private static final long FADE_DURATION = 1000L; // 1秒淡入淡出时间
+    private static final long FINAL_ANIMATION_START = 8000L; // 最后4秒开始合拢再张开动画
 
     // 文字颜色 - 电影风格黑白
     private static final int TITLE_COLOR = 0xFFFFFFFF; // 纯白标题
@@ -37,8 +38,15 @@ public class MapDetailsRenderer {
     private static final int LINE_SPACING = 5;
 
     // 全屏效果参数
-    private static final float VIGNETTE_INTENSITY = 0.4f; // 暗角强度
+    private static final float VIGNETTE_INTENSITY = 0.3f; // 暗角强度
     private static final int VIGNETTE_COLOR = 0x80000000; // 黑色暗角
+
+    // 上下黑框参数
+    private static final int BLACK_BAR_COLOR = 0xFF000000; // 纯黑色
+    private static final float MAX_BLACK_BAR_HEIGHT = 0.25f; // 最大覆盖1/4屏幕
+    private static float currentBarHeightRatio = 0f; // 当前黑框高度比例
+    private static boolean barsAnimatingOut = false; // 标记黑边是否在合拢阶段
+    private static boolean finalAnimationPlayed = false; // 标记最终动画是否已播放
 
     // 动画效果
     private static float titleOffsetX = 0f; // 标题偏移动画
@@ -46,7 +54,11 @@ public class MapDetailsRenderer {
 
     public static void renderHud(Font font, @NotNull LocalPlayer player, GuiGraphics context, float delta) {
         if (mapId.isEmpty() || System.currentTimeMillis() - displayStartTime > DISPLAY_DURATION) {
-            return; // 不显示，超过显示时间
+            // 重置动画状态
+            if (!mapId.isEmpty()) {
+                clearMapDetails();
+            }
+            return;
         }
 
         int screenWidth = context.guiWidth();
@@ -69,8 +81,14 @@ public class MapDetailsRenderer {
         // 更新动画
         updateAnimations(delta, elapsed);
 
+        // 更新黑框动画
+        updateBlackBarAnimation(elapsed);
+
         // 保存当前矩阵状态
         context.pose().pushPose();
+
+        // 渲染上下黑框
+        renderBlackBars(context, screenWidth, screenHeight);
 
         // 渲染全屏电影效果
         renderFullscreenEffects(context, screenWidth, screenHeight, alphaInt);
@@ -113,6 +131,72 @@ public class MapDetailsRenderer {
     }
 
     /**
+     * 更新黑框动画
+     */
+    private static void updateBlackBarAnimation(long elapsed) {
+        // 确保时间在有效范围内
+        if (elapsed > DISPLAY_DURATION) {
+            currentBarHeightRatio = 0f;
+            return;
+        }
+
+        // 第一阶段：淡入时黑边展开到最大（0-1秒）
+        if (elapsed < FADE_DURATION) {
+            float progress = (float) elapsed / FADE_DURATION;
+            currentBarHeightRatio = MAX_BLACK_BAR_HEIGHT * progress;
+            barsAnimatingOut = false;
+            finalAnimationPlayed = false;
+            return;
+        }
+
+        // 第二阶段：保持黑边在最大位置（1-8秒）
+        if (elapsed < FINAL_ANIMATION_START) {
+            currentBarHeightRatio = MAX_BLACK_BAR_HEIGHT;
+            barsAnimatingOut = false;
+            return;
+        }
+
+        // 第三阶段：最后4秒，执行一次合拢再张开的动画（8-12秒）
+        if (!finalAnimationPlayed) {
+            float progress = (float) (elapsed - FINAL_ANIMATION_START) / (DISPLAY_DURATION - FINAL_ANIMATION_START);
+
+            // 前半部分：合拢（8-10秒）
+            if (progress < 0.5f) {
+                float closeProgress = progress * 2f; // 0到1
+                currentBarHeightRatio = MAX_BLACK_BAR_HEIGHT * (1f - closeProgress);
+                barsAnimatingOut = true;
+            }
+            // 后半部分：张开（10-12秒）
+            else {
+                float openProgress = (progress - 0.5f) * 2f; // 0到1
+                currentBarHeightRatio = MAX_BLACK_BAR_HEIGHT * openProgress;
+                barsAnimatingOut = false;
+
+                // 标记动画已播放完成
+                if (progress >= 0.99f) {
+                    finalAnimationPlayed = true;
+                }
+            }
+        }
+    }
+
+    /**
+     * 渲染上下黑框
+     */
+    private static void renderBlackBars(GuiGraphics context, int screenWidth, int screenHeight) {
+        if (currentBarHeightRatio <= 0f) return;
+
+        int barHeight = (int) (screenHeight * currentBarHeightRatio);
+
+        // 上黑框 - 纯黑色，不使用透明度
+        context.fill(0, 0, screenWidth, barHeight, BLACK_BAR_COLOR);
+
+        // 下黑框 - 纯黑色，不使用透明度
+        int bottomBarY = screenHeight - barHeight;
+        context.fill(0, bottomBarY, screenWidth, screenHeight, BLACK_BAR_COLOR);
+    }
+
+    /**
      * 渲染全屏电影效果
      */
     private static void renderFullscreenEffects(GuiGraphics context, int screenWidth, int screenHeight, int alpha) {
@@ -124,31 +208,44 @@ public class MapDetailsRenderer {
 
         // 渲染扫描线效果（模拟CRT显示器）
         renderScanlines(context, screenWidth, screenHeight, alpha);
+
+        // 添加老电影噪点效果
+        renderVintageNoise(context, screenWidth, screenHeight, alpha);
     }
 
     /**
-     * 渲染暗角效果
+     * 渲染暗角效果（优化版本）
      */
     private static void renderVignette(GuiGraphics context, int screenWidth, int screenHeight, int alpha) {
-        // 计算暗角颜色和透明度
-        int vignetteAlpha = (int)(VIGNETTE_INTENSITY * alpha);
-        int vignetteColor = (vignetteAlpha << 24) | 0x000000;
+        // 使用径向渐变实现更自然的暗角效果
+        int centerX = screenWidth / 2;
+        int centerY = screenHeight / 2;
+        int maxDistance = (int) Math.sqrt(centerX * centerX + centerY * centerY);
 
-        // 简单实现：在屏幕四角添加黑色渐变
-        int cornerSize = Math.min(screenWidth, screenHeight) / 3;
+        int vignetteAlpha = (int)(VIGNETTE_INTENSITY * alpha * 0.7f); // 降低整体强度
 
-        // 左上角暗角
-        for (int i = 0; i < cornerSize; i++) {
-            int cornerAlpha = (int)(vignetteAlpha * (1.0f - (float)i / cornerSize));
-            int cornerColor = (cornerAlpha << 24) | 0x000000;
-            context.fill(0, i, i + 1, i + 1, cornerColor);
-        }
+        // 在屏幕边缘绘制多个同心圆实现渐变
+        for (int radius = maxDistance; radius > maxDistance * 0.7; radius--) {
+            float distanceRatio = (float)(maxDistance - radius) / (maxDistance * 0.3f);
+            int circleAlpha = (int)(vignetteAlpha * distanceRatio * 0.3f);
+            int circleColor = (circleAlpha << 24) | 0x000000;
 
-        // 右上角暗角
-        for (int i = 0; i < cornerSize; i++) {
-            int cornerAlpha = (int)(vignetteAlpha * (1.0f - (float)i / cornerSize));
-            int cornerColor = (cornerAlpha << 24) | 0x000000;
-            context.fill(screenWidth - i - 1, i, screenWidth, i + 1, cornerColor);
+            // 绘制圆形边缘（简化为矩形近似）
+            int left = centerX - radius;
+            int top = centerY - radius;
+            int right = centerX + radius;
+            int bottom = centerY + radius;
+
+            if (left < 0) left = 0;
+            if (top < 0) top = 0;
+            if (right > screenWidth) right = screenWidth;
+            if (bottom > screenHeight) bottom = screenHeight;
+
+            // 绘制四条边
+            context.fill(left, top, right, top + 1, circleColor); // 上边
+            context.fill(left, bottom - 1, right, bottom, circleColor); // 下边
+            context.fill(left, top, left + 1, bottom, circleColor); // 左边
+            context.fill(right - 1, top, right, bottom, circleColor); // 右边
         }
     }
 
@@ -177,6 +274,29 @@ public class MapDetailsRenderer {
 
         for (int y = 0; y < screenHeight; y += 2) {
             context.fill(0, y, screenWidth, y + 1, (lineAlpha << 24) | 0x000000);
+        }
+    }
+
+    /**
+     * 渲染老电影噪点效果
+     */
+    private static void renderVintageNoise(GuiGraphics context, int screenWidth, int screenHeight, int alpha) {
+        // 模拟老电影的随机噪点
+        long time = System.currentTimeMillis();
+        java.util.Random random = new java.util.Random(time / 100);
+
+        int noiseCount = 30; // 噪点数量
+        int noiseAlpha = (int)(alpha * 0.04f); // 很淡的噪点
+
+        for (int i = 0; i < noiseCount; i++) {
+            int x = random.nextInt(screenWidth);
+            int y = random.nextInt(screenHeight);
+
+            // 噪点大小随机
+            int size = random.nextInt(2) + 1;
+            int noiseColor = (noiseAlpha << 24) | (random.nextBoolean() ? 0xFFFFFF : 0x000000);
+
+            context.fill(x, y, x + size, y + size, noiseColor);
         }
     }
 
@@ -326,9 +446,12 @@ public class MapDetailsRenderer {
         MapDetailsRenderer.mapAuthor = mapAuthor != null ? mapAuthor : "";
         displayStartTime = System.currentTimeMillis();
 
-        // 重置动画
+        // 重置动画状态
         titleOffsetX = 0f;
         titlePulse = 1.0f;
+        currentBarHeightRatio = 0f;
+        barsAnimatingOut = false;
+        finalAnimationPlayed = false;
     }
 
     /**
@@ -345,6 +468,9 @@ public class MapDetailsRenderer {
         mapId = "";
         mapDescription = "";
         mapAuthor = "";
+        currentBarHeightRatio = 0f;
+        barsAnimatingOut = false;
+        finalAnimationPlayed = false;
     }
 
     /**

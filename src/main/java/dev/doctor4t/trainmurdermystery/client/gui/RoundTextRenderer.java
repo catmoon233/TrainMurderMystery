@@ -45,8 +45,11 @@ public class RoundTextRenderer {
     @SuppressWarnings("IntegerDivisionInFloatingPointContext")
     public static void renderHud(Font renderer, LocalPlayer player, @NotNull GuiGraphics context, float partialTicks) {
         boolean isLooseEnds = GameWorldComponent.KEY.get(player.level()).getGameMode() == TMMGameModes.LOOSE_ENDS;
-        MapDetailsRenderer.renderHud(renderer, player, context, partialTicks);
+
         if (welcomeTime > 0) {
+            if (welcomeTime<=WELCOME_DURATION-GameConstants.FADE_TIME *2) {
+                MapDetailsRenderer.renderHud(renderer, player, context, partialTicks);
+            }
             context.pose().pushPose();
             context.pose().translate(context.guiWidth() / 2f, context.guiHeight() / 2f + 3.5, 0);
             context.pose().pushPose();

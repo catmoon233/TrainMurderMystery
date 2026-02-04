@@ -58,6 +58,16 @@ public class RoleMethodDispatcher {
                     PlayerShopComponent shopComponent = PlayerShopComponent.KEY.get(player);
                     shopComponent.addToBalance(50);
                 }
+                if (gameWorldComponent.getRole(player).getMoodType().equals(Role.MoodType.FAKE)){
+                    player.level().players().forEach(
+                            a-> {
+                                if (gameWorldComponent.getRole(a).getMoodType().equals(Role.MoodType.FAKE)) {
+                                    PlayerShopComponent shopComponent = PlayerShopComponent.KEY.get(a);
+                                    shopComponent.addToBalance(5);
+                                }
+                            }
+                    );
+                }
 
             }
             role.onFinishQuest(player, quest);
