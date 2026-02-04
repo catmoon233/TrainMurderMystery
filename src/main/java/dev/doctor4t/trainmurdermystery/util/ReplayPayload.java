@@ -17,7 +17,8 @@ import org.jetbrains.annotations.NotNull;
 
 public record ReplayPayload(GameReplay replay) implements CustomPacketPayload {
     public static final CustomPacketPayload.Type<ReplayPayload> ID = new CustomPacketPayload.Type<>(TMM.id("replay"));
-    public static final StreamCodec<FriendlyByteBuf, ReplayPayload> CODEC = StreamCodec.ofMember(ReplayPayload::write, ReplayPayload::new);
+    public static final StreamCodec<FriendlyByteBuf, ReplayPayload> CODEC = StreamCodec.ofMember(ReplayPayload::write,
+            ReplayPayload::new);
 
     private ReplayPayload(FriendlyByteBuf buf) {
         this(readReplay(buf));
@@ -129,6 +130,13 @@ public record ReplayPayload(GameReplay replay) implements CustomPacketPayload {
                     details = new ReplayEventTypes.MoodChangeDetails(playerUuid, oldMood, newMood);
                     break;
                 }
+                case PLAYER_REVIVAL: {
+                    int playerIndex = buf.readVarInt();
+                    UUID playerUuid = players.get(playerIndex).uuid();
+                    String job = buf.readUtf();
+                    details = new ReplayEventTypes.PlayerRevivalDetails(playerUuid, job);
+                    break;
+                }
                 case CHANGE_ROLE: {
                     int playerIndex = buf.readVarInt();
                     UUID playerUuid = players.get(playerIndex).uuid();
@@ -169,18 +177,21 @@ public record ReplayPayload(GameReplay replay) implements CustomPacketPayload {
 
             switch (event.eventType()) {
                 case PLAYER_KILL:
-                    ReplayEventTypes.PlayerKillDetails killDetails = (ReplayEventTypes.PlayerKillDetails) event.details();
+                    ReplayEventTypes.PlayerKillDetails killDetails = (ReplayEventTypes.PlayerKillDetails) event
+                            .details();
                     buf.writeVarInt(playerUuidToIndex.get(killDetails.killerUuid()));
                     buf.writeVarInt(playerUuidToIndex.get(killDetails.victimUuid()));
                     buf.writeResourceLocation(killDetails.deathReason());
                     break;
                 case PLAYER_POISONED:
-                    ReplayEventTypes.PlayerPoisonedDetails poisonedDetails = (ReplayEventTypes.PlayerPoisonedDetails) event.details();
+                    ReplayEventTypes.PlayerPoisonedDetails poisonedDetails = (ReplayEventTypes.PlayerPoisonedDetails) event
+                            .details();
                     buf.writeVarInt(playerUuidToIndex.get(poisonedDetails.poisonerUuid()));
                     buf.writeVarInt(playerUuidToIndex.get(poisonedDetails.victimUuid()));
                     break;
                 case GRENADE_THROWN:
-                    ReplayEventTypes.GrenadeThrownDetails grenadeDetails = (ReplayEventTypes.GrenadeThrownDetails) event.details();
+                    ReplayEventTypes.GrenadeThrownDetails grenadeDetails = (ReplayEventTypes.GrenadeThrownDetails) event
+                            .details();
                     buf.writeVarInt(playerUuidToIndex.get(grenadeDetails.playerUuid()));
                     buf.writeBlockPos(grenadeDetails.position());
                     break;
@@ -190,7 +201,8 @@ public record ReplayPayload(GameReplay replay) implements CustomPacketPayload {
                     buf.writeResourceLocation(itemDetails.itemId());
                     break;
                 case TASK_COMPLETE:
-                    ReplayEventTypes.TaskCompleteDetails taskDetails = (ReplayEventTypes.TaskCompleteDetails) event.details();
+                    ReplayEventTypes.TaskCompleteDetails taskDetails = (ReplayEventTypes.TaskCompleteDetails) event
+                            .details();
                     buf.writeVarInt(playerUuidToIndex.get(taskDetails.playerUuid()));
                     buf.writeResourceLocation(taskDetails.taskId());
                     break;
@@ -202,19 +214,22 @@ public record ReplayPayload(GameReplay replay) implements CustomPacketPayload {
                     break;
                 case DOOR_OPEN:
                 case DOOR_CLOSE:
-                    ReplayEventTypes.DoorActionDetails doorDetails = (ReplayEventTypes.DoorActionDetails) event.details();
+                    ReplayEventTypes.DoorActionDetails doorDetails = (ReplayEventTypes.DoorActionDetails) event
+                            .details();
                     buf.writeVarInt(playerUuidToIndex.get(doorDetails.playerUuid()));
                     buf.writeBlockPos(doorDetails.doorPos());
                     buf.writeBoolean(doorDetails.success());
                     break;
                 case LOCKPICK_ATTEMPT:
-                    ReplayEventTypes.LockpickAttemptDetails lockpickDetails = (ReplayEventTypes.LockpickAttemptDetails) event.details();
+                    ReplayEventTypes.LockpickAttemptDetails lockpickDetails = (ReplayEventTypes.LockpickAttemptDetails) event
+                            .details();
                     buf.writeVarInt(playerUuidToIndex.get(lockpickDetails.playerUuid()));
                     buf.writeBlockPos(lockpickDetails.doorPos());
                     buf.writeBoolean(lockpickDetails.success());
                     break;
                 case MOOD_CHANGE:
-                    ReplayEventTypes.MoodChangeDetails moodDetails = (ReplayEventTypes.MoodChangeDetails) event.details();
+                    ReplayEventTypes.MoodChangeDetails moodDetails = (ReplayEventTypes.MoodChangeDetails) event
+                            .details();
                     buf.writeVarInt(playerUuidToIndex.get(moodDetails.playerUuid()));
                     buf.writeInt(moodDetails.oldMood());
                     buf.writeInt(moodDetails.newMood());
@@ -224,8 +239,15 @@ public record ReplayPayload(GameReplay replay) implements CustomPacketPayload {
                     break;
                 case BLACKOUT_START:
                     break;
+                case PLAYER_REVIVAL:
+                    ReplayEventTypes.PlayerRevivalDetails revivalDetails = (ReplayEventTypes.PlayerRevivalDetails) event
+                            .details();
+                    buf.writeVarInt(playerUuidToIndex.get(revivalDetails.player()));
+                    buf.writeUtf(revivalDetails.Role());
+                    break;
                 case CHANGE_ROLE:
-                    ReplayEventTypes.ChangeRoleDetails roleDetails = (ReplayEventTypes.ChangeRoleDetails) event.details();
+                    ReplayEventTypes.ChangeRoleDetails roleDetails = (ReplayEventTypes.ChangeRoleDetails) event
+                            .details();
                     buf.writeVarInt(playerUuidToIndex.get(roleDetails.player()));
                     buf.writeUtf(roleDetails.oldRole());
                     buf.writeUtf(roleDetails.newRole());

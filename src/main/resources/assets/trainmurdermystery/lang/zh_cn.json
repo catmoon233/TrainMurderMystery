@@ -472,6 +472,7 @@
   "task.bathe": "去洗个澡 - 在花洒下或者在水中",
   "death_reason.trainmurdermystery.shot_innocent": "误杀平民而亡",
   "tmm.replay.event.change_role": "%s 的职业从 %s 切换到 %s",
+  "tmm.replay.event.player_revival": "%s 复活了。它复活后的职业为 %s",
   "tmm.replay.event.null": "[事件无法显示]",
   "task.meditate": "冥想 - 必须蹲下且保持静止",
   "task.fake": "你可以假装去",

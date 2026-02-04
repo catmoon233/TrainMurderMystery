@@ -52,6 +52,7 @@ public class GameReplayManager {
     private ReplayEventTypes.EventType mapEventType(GameReplayData.EventType dataEventType) {
         return switch (dataEventType) {
             // 主要事件
+            case PLAYER_REVIVAL -> ReplayEventTypes.EventType.PLAYER_REVIVAL;
             case PLAYER_KILL -> ReplayEventTypes.EventType.PLAYER_KILL;
             case PLAYER_POISONED -> ReplayEventTypes.EventType.PLAYER_POISONED;
             case GRENADE_THROWN -> ReplayEventTypes.EventType.GRENADE_THROWN;
@@ -192,6 +193,10 @@ public class GameReplayManager {
                 long duration = message != null ? Long.parseLong(message) : 0L;
                 yield new ReplayEventTypes.BlackoutEventDetails(duration);
             }
+            case PLAYER_REVIVAL -> {
+                String str_arr = dataEvent.getMessage();
+                yield new ReplayEventTypes.PlayerRevivalDetails(dataEvent.getSourcePlayer(), str_arr);
+            }
             case CHANGE_ROLE -> {
                 String[] str_arr = dataEvent.getMessage().split("===");
 
@@ -326,27 +331,29 @@ public class GameReplayManager {
         // 对可能为null的字符串参数进行处理
         String safeItemUsed = itemUsed != null ? itemUsed : "minecraft:air";
         String safeMessage = message != null ? message : "";
-        GameReplayData.ReplayEvent event = new GameReplayData.ReplayEvent(type, sourcePlayer, targetPlayer, safeItemUsed, safeMessage);
+        GameReplayData.ReplayEvent event = new GameReplayData.ReplayEvent(type, sourcePlayer, targetPlayer,
+                safeItemUsed, safeMessage);
         currentReplayData
                 .addEvent(event);
         ReplayEvent event1 = convertReplayEvent(event);
         try {
 
-
             TMM.SERVER.getPlayerList().getPlayers().forEach(
                     player -> {
                         GameWorldComponent gameWorldComponent = GameWorldComponent.KEY.get(player.level());
-                        if (gameWorldComponent !=null && gameWorldComponent.isRunning() && !GameFunctions.isPlayerAliveAndSurvival(player)) {
-                            if (gameWorldComponent.getRole(player) == null || !"the_insane_damned_paranoid_killer".equals(gameWorldComponent.getRole(player).identifier().getPath())) {
+                        if (gameWorldComponent != null && gameWorldComponent.isRunning()
+                                && !GameFunctions.isPlayerAliveAndSurvival(player)) {
+                            if (gameWorldComponent.getRole(player) == null || !"the_insane_damned_paranoid_killer"
+                                    .equals(gameWorldComponent.getRole(player).identifier().getPath())) {
                                 player.sendSystemMessage(
-                                        Component.translatable("tmm.replay.event").append(currentReplayData.toText(this, currentReplayData, event1))
+                                        Component.translatable("tmm.replay.event")
+                                                .append(currentReplayData.toText(this, currentReplayData, event1))
 
-                                );
+                    );
                             }
                         }
-                    }
-            );
-        }catch (Exception ignored){
+                    });
+        } catch (Exception ignored) {
 
         }
 
@@ -355,6 +362,11 @@ public class GameReplayManager {
     public void recordPlayerKill(UUID killerUuid, UUID victimUuid, ResourceLocation deathReason) {
         String deathReasonStr = deathReason != null ? deathReason.toString() : "unknown";
         addEvent(GameReplayData.EventType.PLAYER_KILL, killerUuid, victimUuid, deathReasonStr, null);
+    }
+
+    public void recordPlayerRevival(UUID player, Role role) {
+        String rolen = role.identifier().getPath();
+        addEvent(GameReplayData.EventType.PLAYER_REVIVAL, player, null, "", rolen);
     }
 
     public void recordPlayerRoleChange(UUID player, Role oldRole, Role newRole) {
@@ -619,7 +631,8 @@ public class GameReplayManager {
                     sendSystemMessage(player, Component.literal(timePrefix).append(eventText));
                 } else {
                     // 不再显示无法显示的消息
-                    // sendSystemMessage(player, Component.literal(timePrefix).append(Component.translatable("tmm.replay.event.null")));
+                    // sendSystemMessage(player,
+                    // Component.literal(timePrefix).append(Component.translatable("tmm.replay.event.null")));
                 }
             }
         }
