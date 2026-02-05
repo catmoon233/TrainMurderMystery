@@ -5,6 +5,7 @@ import dev.doctor4t.trainmurdermystery.cca.PlayerShopComponent;
 import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -18,6 +19,8 @@ import net.minecraft.world.phys.BlockHitResult;
 
 import org.jetbrains.annotations.Nullable;
 import org.ladysnake.cca.api.v3.component.ComponentKey;
+import org.ladysnake.cca.api.v3.entity.EntityComponentFactoryRegistry;
+import org.ladysnake.cca.internal.entity.StaticEntityComponentPlugin;
 
 /**
  * 角色方法调度器，用于调用角色的各个方法
@@ -75,6 +78,35 @@ public class RoleMethodDispatcher {
         }
     }
 
+
+    public static void onStartGame(ServerLevel serverLevel){
+        serverLevel.players().forEach(
+                player -> {
+                    TMMRoles.COMPONENT_KEYS.forEach(
+                            componentKey -> {
+                                RoleComponent roleComponent = componentKey.get(player);
+                                if (roleComponent != null) {
+                                    roleComponent.reset();
+                                }
+                            }
+                    );
+                }
+        );
+    }
+    public static void onEndGame(ServerLevel serverLevel){
+        serverLevel.players().forEach(
+                player -> {
+                    TMMRoles.COMPONENT_KEYS.forEach(
+                            componentKey -> {
+                                RoleComponent roleComponent = componentKey.get(player);
+                                if (roleComponent != null) {
+                                    roleComponent.reset();
+                                }
+                            }
+                    );
+                }
+        );
+    }
 
     /**
      * 调用玩家角色的 onPickupItem 方法

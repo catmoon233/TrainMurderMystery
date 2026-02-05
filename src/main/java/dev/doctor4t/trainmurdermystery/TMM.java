@@ -3,9 +3,10 @@ package dev.doctor4t.trainmurdermystery;
 import com.google.common.reflect.Reflection;
 
 import dev.doctor4t.trainmurdermystery.api.Role;
+import dev.doctor4t.trainmurdermystery.api.TMMRoles;
 import dev.doctor4t.trainmurdermystery.api.replay.ReplayApiInitializer;
 import dev.doctor4t.trainmurdermystery.block.DoorPartBlock;
-import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
+import dev.doctor4t.trainmurdermystery.cca.*;
 import dev.doctor4t.trainmurdermystery.command.*;
 import dev.doctor4t.trainmurdermystery.command.argument.GameModeArgumentType;
 import dev.doctor4t.trainmurdermystery.command.argument.MapLoadArgumentType;
@@ -72,51 +73,85 @@ public class TMM implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        // Init config - must be called first to generate config file
+        initConfig();
+        initConstants();
+        initWaypoints();
+        initReplayApi();
+        registerEventHandlers();
+        registerServerLifecycleEvents();
+        initRegistries();
+        initNetworkStatistics();
+        registerCommandArgumentTypes();
+        registerCommands();
+        registerServerPlayConnectionEvents();
+        registerPayloadTypes();
+        registerGlobalReceivers();
+        registerPlayerCopyEvent();
+        initScheduler();
+        initCCAAuto();
+        initSkinsNetworkSync();
+    }
+    private void initCCAAuto(){
+        TMMRoles.addRoleComponents(PlayerAFKComponent.KEY);
+        TMMRoles.addRoleComponents(DynamicCoinComponent.KEY);
+        TMMRoles.addRoleComponents(AbilityPlayerComponent.KEY);
+        TMMRoles.addRoleComponents(PlayerPsychoComponent.KEY);
+        TMMRoles.addRoleComponents(PlayerMoodComponent.KEY);
+        TMMRoles.addRoleComponents(PlayerNoteComponent.KEY);
+        TMMRoles.addRoleComponents(PlayerPoisonComponent.KEY);
+        TMMRoles.addRoleComponents(PlayerShopComponent.KEY);
+    }
+
+    private void initConfig() {
         TMMConfig.init();
+    }
 
-        // Init constants
+    private void initConstants() {
         GameConstants.init();
+    }
 
-        // Initialize waypoints
+    private void initWaypoints() {
         dev.doctor4t.trainmurdermystery.util.WaypointInitUtil.initialize();
+    }
 
-        // Initialize Replay API serializers
+    private void initReplayApi() {
         ReplayApiInitializer.init();
+    }
 
-        // Register event handlers
+    private void registerEventHandlers() {
         PlayerInteractionHandler.register();
         EntityInteractionHandler.register();
         AFKEventHandler.register();
+    }
 
+    private void registerServerLifecycleEvents() {
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
             SERVER = server;
             GAME = new MurderGameMode(TMM.id("murder"));
             ServerMapConfig.getInstance(server);
-            // 注册服务器tick事件以处理投票计时
             ServerTickEvents.START_SERVER_TICK.register(serv -> {
                 dev.doctor4t.trainmurdermystery.voting.MapVotingManager.getInstance().tick();
             });
             REPLAY_MANAGER = new GameReplayManager(server);
-
-            // 当服务器启动时，发送地图配置到所有在线玩家
             SyncMapConfigPayload.sendToAllPlayers();
         });
+    }
 
-        // Registry initializers
+    private void initRegistries() {
         Reflection.initialize(TMMDataComponentTypes.class);
         TMMSounds.initialize();
         TMMEntities.initialize();
         TMMBlocks.initialize();
         TMMItems.initialize();
         TMMBlockEntities.initialize();
-
         TMMParticles.initialize();
+    }
 
-        // Initialize network statistics
+    private void initNetworkStatistics() {
         NetworkStatistics.getInstance().initialize();
+    }
 
-        // Register command argument types
+    private void registerCommandArgumentTypes() {
         ArgumentTypeRegistry.registerArgumentType(id("timeofday"), TimeOfDayArgumentType.class,
                 SingletonArgumentInfo.contextFree(TimeOfDayArgumentType::timeofday));
         ArgumentTypeRegistry.registerArgumentType(id("gamemode"), GameModeArgumentType.class,
@@ -125,8 +160,9 @@ public class TMM implements ModInitializer {
                 SingletonArgumentInfo.contextFree(SkinArgumentType::string));
         ArgumentTypeRegistry.registerArgumentType(id("map_load"), MapLoadArgumentType.class,
                 SingletonArgumentInfo.contextFree(MapLoadArgumentType::string));
+    }
 
-        // Register commands
+    private void registerCommands() {
         CommandRegistrationCallback.EVENT.register(((dispatcher, registryAccess, environment) -> {
             GiveRoomKeyCommand.register(dispatcher);
             StartCommand.register(dispatcher);
@@ -136,7 +172,6 @@ public class TMM implements ModInitializer {
             ResetWeightsCommand.register(dispatcher);
             SetVisualCommand.register(dispatcher);
             ForceRoleCommand.register(dispatcher);
-            // UpdateDoorsCommand.register(dispatcher);
             SetTimerCommand.register(dispatcher);
             SetMoneyCommand.register(dispatcher);
             SetAutoTrainResetCommand.register(dispatcher);
@@ -159,72 +194,28 @@ public class TMM implements ModInitializer {
             ReloadMapConfigCommand.register(dispatcher);
             SkinsCommand.register(dispatcher);
             ManageSkinsCommand.register(dispatcher, registryAccess);
+            dev.doctor4t.trainmurdermystery.cca.network.SkinsNetworkSyncCommand.register(dispatcher);
         }));
+    }
 
-        // // server lock to supporters
-        // ServerPlayerEvents.JOIN.register(player -> {
-        // GameWorldComponent gameWorldComponent =
-        // GameWorldComponent.KEY.get(player.level());
-        //
-        // // 优化：提前检查是否启用锁定，避免不必要的API调用
-        // if (!gameWorldComponent.isLockedToSupporters()) {
-        // if (REPLAY_MANAGER != null) {
-        // REPLAY_MANAGER.recordPlayerName(player);
-        // REPLAY_MANAGER.addEvent(GameReplayData.EventType.PLAYER_JOIN, null,
-        // player.getUUID(), null, null);
-        // }
-        // return;
-        // }
-        //
-        // // 服务器已锁定，需要验证支持者身份
-        // DataSyncAPI.refreshAllPlayerData(player.getUUID()).thenRunAsync(() -> {
-        // try {
-        // // 再次检查锁定状态（可能在异步期间已更改）
-        // if (GameWorldComponent.KEY.get(player.level()).isLockedToSupporters()) {
-        // // 检查玩家是否为支持者
-        // if (!isSupporter(player)) {
-        // LOGGER.info("Player {} attempted to join locked server (supporters only)",
-        // player.getName().getString());
-        // player.connection.disconnect(Component.translatable("Server is reserved to
-        // doctor4t supporters."));
-        // return;
-        // }
-        // }
-        //
-        // // 支持者或锁定已解除，允许加入
-        // if (REPLAY_MANAGER != null) {
-        // REPLAY_MANAGER.recordPlayerName(player);
-        // REPLAY_MANAGER.addEvent(GameReplayData.EventType.PLAYER_JOIN, null,
-        // player.getUUID(), null, null);
-        // }
-        // } catch (Exception e) {
-        // LOGGER.error("Error checking supporter status for player {}",
-        // player.getName().getString(), e);
-        // }
-        // }, player.level().getServer());
-        //
-        // // gameWorldComponent.addPlayer(player); // Removed as method does not exist
-        // });
-
+    private void registerServerPlayConnectionEvents() {
         ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
             GameWorldComponent gameWorldComponent = GameWorldComponent.KEY.get(handler.player.level());
             if (gameWorldComponent.getGameStatus() == GameWorldComponent.GameStatus.ACTIVE) {
-                // gameWorldComponent.removePlayer(handler.player); // Removed as method does
-                // not exist
+                // gameWorldComponent.removePlayer(handler.player); // Removed as method does not exist
             }
             if (REPLAY_MANAGER != null) {
-                REPLAY_MANAGER.addEvent(GameReplayData.EventType.PLAYER_LEAVE, null, handler.player.getUUID(), null,
-                        null);
+                REPLAY_MANAGER.addEvent(GameReplayData.EventType.PLAYER_LEAVE, null, handler.player.getUUID(), null, null);
             }
         });
+    }
 
-        // 注册地图配置同步包
+    private void registerPayloadTypes() {
         PayloadTypeRegistry.playS2C().register(SyncMapConfigPayload.ID, SyncMapConfigPayload.CODEC);
         PayloadTypeRegistry.playS2C().register(TriggerScreenEdgeEffectPayload.ID, TriggerScreenEdgeEffectPayload.CODEC);
         PayloadTypeRegistry.playS2C().register(BreakArmorPayload.ID, BreakArmorPayload.CODEC);
         PayloadTypeRegistry.playS2C().register(ShootMuzzleS2CPayload.ID, ShootMuzzleS2CPayload.CODEC);
-        PayloadTypeRegistry.playS2C().register(PoisonUtils.PoisonOverlayPayload.ID,
-                PoisonUtils.PoisonOverlayPayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(PoisonUtils.PoisonOverlayPayload.ID, PoisonUtils.PoisonOverlayPayload.CODEC);
         PayloadTypeRegistry.playS2C().register(GunDropPayload.ID, GunDropPayload.CODEC);
         PayloadTypeRegistry.playS2C().register(TaskCompletePayload.ID, TaskCompletePayload.CODEC);
         PayloadTypeRegistry.playS2C().register(AnnounceWelcomePayload.ID, AnnounceWelcomePayload.CODEC);
@@ -245,15 +236,15 @@ public class TMM implements ModInitializer {
                 dev.doctor4t.trainmurdermystery.network.packet.SyncSpecificWaypointVisibilityPacket.ID,
                 dev.doctor4t.trainmurdermystery.network.packet.SyncSpecificWaypointVisibilityPacket.CODEC);
         PayloadTypeRegistry.playC2S().register(KnifeStabPayload.ID, KnifeStabPayload.CODEC);
-
-        // 新加的，出问题直接删下面这一行
         PayloadTypeRegistry.playC2S().register(ReplayPayload.ID, ReplayPayload.CODEC);
-
         PayloadTypeRegistry.playC2S().register(GunShootPayload.ID, GunShootPayload.CODEC);
         PayloadTypeRegistry.playC2S().register(StoreBuyPayload.ID, StoreBuyPayload.CODEC);
         PayloadTypeRegistry.playC2S().register(NoteEditPayload.ID, NoteEditPayload.CODEC);
         PayloadTypeRegistry.playC2S().register(dev.doctor4t.trainmurdermystery.network.VoteForMapPayload.ID,
                 dev.doctor4t.trainmurdermystery.network.VoteForMapPayload.CODEC);
+    }
+
+    private void registerGlobalReceivers() {
         ServerPlayNetworking.registerGlobalReceiver(KnifeStabPayload.ID, new KnifeStabPayload.Receiver());
         ServerPlayNetworking.registerGlobalReceiver(GunShootPayload.ID, new GunShootPayload.Receiver());
         ServerPlayNetworking.registerGlobalReceiver(StoreBuyPayload.ID, new StoreBuyPayload.Receiver());
@@ -262,13 +253,32 @@ public class TMM implements ModInitializer {
                 (payload, context) -> {
                     dev.doctor4t.trainmurdermystery.network.VoteForMapPayload.Handler.handle(payload, context.player());
                 });
+    }
 
+    private void registerPlayerCopyEvent() {
         ServerPlayerEvents.COPY_FROM.register((oldPlayer, newPlayer, alive) -> {
             SyncMapConfigPayload.sendToPlayer(newPlayer);
         });
+    }
 
+    private void initScheduler() {
         Scheduler.init();
     }
+    
+    /**
+     * 初始化皮肤网络同步系统
+     */
+    private void initSkinsNetworkSync() {
+        try {
+            dev.doctor4t.trainmurdermystery.cca.network.SkinsNetworkSyncInitializer.registerEvents();
+            // 可以在此配置网络服务器地址
+            // SkinsNetworkSyncInitializer.setNetworkServer("localhost", 8888);
+            LOGGER.info("皮肤网络同步系统已初始化");
+        } catch (Exception e) {
+            LOGGER.error("初始化皮肤网络同步系统时出错", e);
+        }
+    }
+
 
     public static boolean isSkyVisibleAdjacent(@NotNull Entity player) {
         BlockPos.MutableBlockPos mutable = new BlockPos.MutableBlockPos();

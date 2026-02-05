@@ -5,6 +5,7 @@ import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.TMMConfig;
 import dev.doctor4t.trainmurdermystery.api.GameMode;
 import dev.doctor4t.trainmurdermystery.api.Role;
+import dev.doctor4t.trainmurdermystery.api.RoleMethodDispatcher;
 import dev.doctor4t.trainmurdermystery.block.SmallDoorBlock;
 import dev.doctor4t.trainmurdermystery.block_entity.SmallDoorBlockEntity;
 import dev.doctor4t.trainmurdermystery.cca.*;
@@ -177,6 +178,7 @@ public class GameFunctions {
         // AreasWorldComponent areasWorldComponent =
         // AreasWorldComponent.KEY.get(serverWorld);
 
+        RoleMethodDispatcher.onStartGame(serverWorld);
         List<ServerPlayer> readyPlayerList = getReadyPlayerList(serverWorld);
 
         // serverWorld.setWeatherParameters(0,-1, true, true);
@@ -417,6 +419,7 @@ public class GameFunctions {
     }
 
     public static void finalizeGame(ServerLevel world) {
+        RoleMethodDispatcher.onEndGame(world    );
         GameWorldComponent gameComponent = GameWorldComponent.KEY.get(world);
         // var areasWorldComponent = AreasWorldComponent.KEY.get(world);
 

@@ -1,39 +1,86 @@
 package dev.doctor4t.trainmurdermystery.cca;
 
 import dev.doctor4t.trainmurdermystery.TMM;
+import dev.doctor4t.trainmurdermystery.cca.network.SkinsNetworkSyncManager;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import org.ladysnake.cca.api.v3.component.ComponentKey;
 import org.ladysnake.cca.api.v3.component.ComponentRegistry;
 import org.ladysnake.cca.api.v3.component.sync.AutoSyncedComponent;
+import org.ladysnake.cca.api.v3.component.tick.ServerTickingComponent;
 import dev.upcraft.datasync.api.DataSyncAPI;
 import dev.upcraft.datasync.api.SyncToken;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public class PlayerSkinsComponent implements AutoSyncedComponent {
+public class PlayerSkinsComponent implements AutoSyncedComponent, ServerTickingComponent {
+    private static final Logger logger = LoggerFactory.getLogger(PlayerSkinsComponent.class);
     public static final ComponentKey<PlayerSkinsComponent> KEY = ComponentRegistry.getOrCreate(TMM.id("player_skins"), PlayerSkinsComponent.class);
     public static final ResourceLocation WEAPON_SKINS_DATA_ID = TMM.id("weapon_skins");
 
     private final Player player;
     private Map<String, String> equippedSkins; // 存储当前装备的皮肤 {itemName -> skinName}
     private Map<String, Map<String, Boolean>> unlockedSkins; // 存储解锁的皮肤 {itemName -> {skinName -> isUnlocked}}
+    
+    // TCP网络同步管理器
+    private SkinsNetworkSyncManager networkSyncManager;
+    private long lastNetworkSync = 0;
+    private static final long NETWORK_SYNC_INTERVAL = 5000; // 每5秒同步一次到网络
+    private boolean isNetworkSyncEnabled = false;
 
     public PlayerSkinsComponent(Player player) {
         this.player = player;
         this.equippedSkins = new HashMap<>();
         this.unlockedSkins = new HashMap<>();
+        this.networkSyncManager = new SkinsNetworkSyncManager(player.getStringUUID());
     }
 
     public void sync() {
         KEY.sync(this.player);
-    }    
+    }
+    
+    /**
+     * 初始化网络同步
+     * @param host 服务器主机地址
+     * @param port 服务器端口
+     */
+    public void initializeNetworkSync(String host, int port) {
+        if (!this.player.getServer().isSingleplayer()) {
+            boolean success = this.networkSyncManager.initialize(host, port);
+            this.isNetworkSyncEnabled = success;
+            if (success) {
+                logger.info("玩家 {} 的皮肤网络同步已启用", this.player.getName().getString());
+            }
+        }
+    }
+    
+    /**
+     * 禁用网络同步
+     */
+    public void disableNetworkSync() {
+        this.networkSyncManager.disconnect();
+        this.isNetworkSyncEnabled = false;
+    }
+    
+    @Override
+    public void serverTick() {
+        // 定期同步皮肤数据到服务器
+        if (this.isNetworkSyncEnabled && this.player.getServer() != null) {
+            long currentTime = System.currentTimeMillis();
+            if (currentTime - this.lastNetworkSync >= NETWORK_SYNC_INTERVAL) {
+                this.lastNetworkSync = currentTime;
+                this.syncSkinsToNetwork();
+            }
+        }
+    }
     /**
      * 获取当前装备的皮肤名称
      */
@@ -56,6 +103,8 @@ public class PlayerSkinsComponent implements AutoSyncedComponent {
     public void unlockSkin(ItemStack itemStack, String skinName) {
         String itemName = itemStack.getItem().toString().toLowerCase();
         unlockedSkins.computeIfAbsent(itemName, k -> new HashMap<>()).put(skinName, true);
+        // 触发网络同步
+        markSkinDataChanged();
     }
 
     /**
@@ -64,6 +113,8 @@ public class PlayerSkinsComponent implements AutoSyncedComponent {
     public void unlockSkinForItemType(String itemTypeName, String skinName) {
         String normalizedItemName = normalizeItemName(itemTypeName);
         unlockedSkins.computeIfAbsent(normalizedItemName, k -> new HashMap<>()).put(skinName, true);
+        // 触发网络同步
+        markSkinDataChanged();
     }
 
     /**
@@ -79,6 +130,8 @@ public class PlayerSkinsComponent implements AutoSyncedComponent {
                 unlockedSkins.remove(itemName);
             }
         }
+        // 触发网络同步
+        markSkinDataChanged();
     }
 
     /**
@@ -94,6 +147,8 @@ public class PlayerSkinsComponent implements AutoSyncedComponent {
                 unlockedSkins.remove(normalizedItemName);
             }
         }
+        // 触发网络同步
+        markSkinDataChanged();
     }
 
     /**
@@ -198,6 +253,124 @@ public class PlayerSkinsComponent implements AutoSyncedComponent {
     private String normalizeItemName(String itemTypeName) {
         // 将物品类型名称标准化为小写，去除空格等
         return itemTypeName.toLowerCase().trim().replaceAll("[^a-z0-9_:]", "");
+    }
+    
+    /**
+     * 标记皮肤数据已改变，需要网络同步
+     */
+    private void markSkinDataChanged() {
+        // 同步到本地客户端
+        this.sync();
+        // 设置网络同步标志，下一个服务器刻度时会同步
+        this.lastNetworkSync = 0;
+    }
+    
+    /**
+     * 将皮肤数据同步到TCP网络服务器
+     */
+    private void syncSkinsToNetwork() {
+        if (!this.isNetworkSyncEnabled || this.networkSyncManager == null) {
+            return;
+        }
+        
+        try {
+            boolean success = this.networkSyncManager.syncSkinsToServer(
+                    new HashMap<>(this.equippedSkins),
+                    this.deepCopyUnlockedSkins()
+            );
+            
+            if (success) {
+                logger.debug("玩家 {} 的皮肤数据已同步到网络", this.player.getName().getString());
+            }
+        } catch (Exception e) {
+            logger.error("同步玩家 {} 的皮肤数据到网络时出错", this.player.getName().getString(), e);
+        }
+    }
+    
+    /**
+     * 从网络服务器拉取皮肤数据
+     */
+    public void pullSkinsFromNetwork() {
+        if (!this.isNetworkSyncEnabled || this.networkSyncManager == null) {
+            return;
+        }
+        
+        try {
+            Map<String, Object> skinData = this.networkSyncManager.fetchSkinsFromServer();
+            if (skinData != null) {
+                this.applyNetworkSkinData(skinData);
+                this.sync();
+                logger.debug("玩家 {} 的皮肤数据已从网络拉取", this.player.getName().getString());
+            }
+        } catch (Exception e) {
+            logger.error("从网络拉取玩家 {} 的皮肤数据时出错", this.player.getName().getString(), e);
+        }
+    }
+    
+    /**
+     * 应用从网络获取的皮肤数据
+     */
+    @SuppressWarnings("unchecked")
+    private void applyNetworkSkinData(Map<String, Object> skinData) {
+        try {
+            if (skinData.containsKey("equipped")) {
+                Object equipped = skinData.get("equipped");
+                if (equipped instanceof Map) {
+                    this.equippedSkins = new HashMap<>((Map<String, String>) equipped);
+                }
+            }
+            
+            if (skinData.containsKey("unlocked")) {
+                Object unlocked = skinData.get("unlocked");
+                if (unlocked instanceof Map) {
+                    Map<String, Map<String, Boolean>> unlockedData = (Map<String, Map<String, Boolean>>) unlocked;
+                    this.unlockedSkins = this.deepCopyMap(unlockedData);
+                }
+            }
+            
+            if (skinData.containsKey("version") && skinData.get("version") instanceof Number) {
+                long version = ((Number) skinData.get("version")).longValue();
+                this.networkSyncManager.setLocalVersion(version);
+            }
+        } catch (Exception e) {
+            logger.error("应用网络皮肤数据时出错", e);
+        }
+    }
+    
+    /**
+     * 深复制解锁皮肤映射
+     */
+    private Map<String, Map<String, Boolean>> deepCopyUnlockedSkins() {
+        Map<String, Map<String, Boolean>> copy = new HashMap<>();
+        for (Map.Entry<String, Map<String, Boolean>> entry : this.unlockedSkins.entrySet()) {
+            copy.put(entry.getKey(), new HashMap<>(entry.getValue()));
+        }
+        return copy;
+    }
+    
+    /**
+     * 深复制嵌套的映射
+     */
+    private Map<String, Map<String, Boolean>> deepCopyMap(Map<String, Map<String, Boolean>> original) {
+        Map<String, Map<String, Boolean>> copy = new HashMap<>();
+        for (Map.Entry<String, Map<String, Boolean>> entry : original.entrySet()) {
+            copy.put(entry.getKey(), new HashMap<>(entry.getValue()));
+        }
+        return copy;
+    }
+    
+    /**
+     * 获取网络同步管理器
+     */
+    public SkinsNetworkSyncManager getNetworkSyncManager() {
+        return this.networkSyncManager;
+    }
+    
+    /**
+     * 检查网络同步是否已启用
+     */
+    public boolean isNetworkSyncEnabled() {
+        return this.isNetworkSyncEnabled;
     }
 
 
