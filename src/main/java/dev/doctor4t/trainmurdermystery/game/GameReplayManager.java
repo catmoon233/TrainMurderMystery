@@ -370,8 +370,12 @@ public class GameReplayManager {
     }
 
     public void recordPlayerRoleChange(UUID player, Role oldRole, Role newRole) {
-        String old_role_str = oldRole.identifier().getPath();
-        String new_role_str = newRole.identifier().getPath();
+        String old_role_str = "unknown";
+        String new_role_str = "unknown";
+        if (oldRole != null)
+            old_role_str = oldRole.identifier().getPath();
+        if (new_role_str != null)
+            new_role_str = newRole.identifier().getPath();
         addEvent(GameReplayData.EventType.CHANGE_ROLE, player, null, "", old_role_str + "===" + new_role_str);
     }
 
