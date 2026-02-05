@@ -87,6 +87,8 @@ public class RoleMethodDispatcher {
                                 RoleComponent roleComponent = componentKey.get(player);
                                 if (roleComponent != null) {
                                     roleComponent.reset();
+                                    componentKey.sync( player);
+
                                 }
                             }
                     );
@@ -101,6 +103,7 @@ public class RoleMethodDispatcher {
                                 RoleComponent roleComponent = componentKey.get(player);
                                 if (roleComponent != null) {
                                     roleComponent.reset();
+                                    componentKey.sync( player);
                                 }
                             }
                     );

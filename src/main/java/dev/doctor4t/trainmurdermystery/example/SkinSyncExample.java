@@ -16,33 +16,33 @@ public class SkinSyncExample {
     /**
      * 示例 1: 玩家加入时初始化同步客户端
      */
-    public static void onPlayerJoin(Player player) {
-        try {
-            PlayerSkinsComponent skinsComponent = PlayerSkinsComponent.KEY.get(player);
-            
-            // 初始化同步客户端，连接到 TCP 服务器
-            // 替换 "127.0.0.1" 和 8888 为实际的服务器地址和端口
-            skinsComponent.initializeSyncClient("127.0.0.1", 9999);
-            
-            logger.info("玩家 {} 的皮肤同步客户端已初始化", player.getName().getString());
-        } catch (Exception e) {
-            logger.error("初始化皮肤同步失败", e);
-        }
-    }
-    
-    /**
-     * 示例 2: 玩家离开时断开同步客户端
-     */
-    public static void onPlayerQuit(Player player) {
-        try {
-            PlayerSkinsComponent skinsComponent = PlayerSkinsComponent.KEY.get(player);
-            skinsComponent.disconnectSyncClient();
-            
-            logger.info("玩家 {} 的皮肤同步客户端已断开", player.getName().getString());
-        } catch (Exception e) {
-            logger.error("断开皮肤同步失败", e);
-        }
-    }
+//    public static void onPlayerJoin(Player player) {
+//        try {
+//            PlayerSkinsComponent skinsComponent = PlayerSkinsComponent.KEY.get(player);
+//
+//            // 初始化同步客户端，连接到 TCP 服务器
+//            // 替换 "127.0.0.1" 和 8888 为实际的服务器地址和端口
+//            skinsComponent.initializeSyncClient("127.0.0.1", 9999);
+//
+//            logger.info("玩家 {} 的皮肤同步客户端已初始化", player.getName().getString());
+//        } catch (Exception e) {
+//            logger.error("初始化皮肤同步失败", e);
+//        }
+//    }
+//
+//    /**
+//     * 示例 2: 玩家离开时断开同步客户端
+//     */
+//    public static void onPlayerQuit(Player player) {
+//        try {
+//            PlayerSkinsComponent skinsComponent = PlayerSkinsComponent.KEY.get(player);
+//            skinsComponent.disconnectSyncClient();
+//
+//            logger.info("玩家 {} 的皮肤同步客户端已断开", player.getName().getString());
+//        } catch (Exception e) {
+//            logger.error("断开皮肤同步失败", e);
+//        }
+//    }
     
     /**
      * 示例 3: 解锁皮肤（会自动同步到服务器）
@@ -100,19 +100,19 @@ public class SkinSyncExample {
     /**
      * 示例 6: 手动从服务器更新皮肤数据
      */
-    public static void syncSkinDataFromServer(Player player) {
-        try {
-            PlayerSkinsComponent skinsComponent = PlayerSkinsComponent.KEY.get(player);
-            
-            // 手动触发从服务器的数据同步
-            skinsComponent.updateSkinDataFromServer();
-            
-            logger.info("玩家 {} 的皮肤数据已从服务器更新", player.getName().getString());
-        } catch (Exception e) {
-            logger.error("同步皮肤数据失败", e);
-        }
-    }
-    
+//    public static void syncSkinDataFromServer(Player player) {
+//        try {
+//            PlayerSkinsComponent skinsComponent = PlayerSkinsComponent.KEY.get(player);
+//
+//            // 手动触发从服务器的数据同步
+//            skinsComponent.updateSkinDataFromServer();
+//
+//            logger.info("玩家 {} 的皮肤数据已从服务器更新", player.getName().getString());
+//        } catch (Exception e) {
+//            logger.error("同步皮肤数据失败", e);
+//        }
+//    }
+//
     /**
      * 示例 7: 获取玩家的所有解锁皮肤
      */

@@ -7,6 +7,7 @@ import dev.doctor4t.ratatouille.client.lib.render.helpers.Easing;
 import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.client.SansRenderer;
 import dev.doctor4t.trainmurdermystery.client.StaminaRenderer;
+import dev.doctor4t.trainmurdermystery.client.StatusBarHUD;
 import dev.doctor4t.trainmurdermystery.client.TMMClient;
 import dev.doctor4t.trainmurdermystery.client.gui.*;
 import dev.doctor4t.trainmurdermystery.game.GameConstants;
@@ -49,6 +50,7 @@ public class InGameHudMixin {
             MoodRenderer.renderHud(player, renderer, context, tickCounter);
             RoleNameRenderer.renderHud(renderer, player, context, tickCounter);
             RoundTextRenderer.renderHud(renderer, player, context, tickCounter.getRealtimeDeltaTicks());
+            StatusBarHUD.getInstance().render(context, tickCounter.getRealtimeDeltaTicks());
             if (Minecraft.getInstance().screen == null)
                 StoreRenderer.renderHud(renderer, player, context, tickCounter.getGameTimeDeltaPartialTick(true));
             TimeRenderer.renderHud(renderer, player, context, tickCounter.getGameTimeDeltaPartialTick(true));
