@@ -1,8 +1,6 @@
 package dev.doctor4t.trainmurdermystery.api;
 
-import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
 import dev.doctor4t.trainmurdermystery.cca.PlayerShopComponent;
-import net.minecraft.client.Minecraft;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerLevel;
@@ -19,8 +17,6 @@ import net.minecraft.world.phys.BlockHitResult;
 
 import org.jetbrains.annotations.Nullable;
 import org.ladysnake.cca.api.v3.component.ComponentKey;
-import org.ladysnake.cca.api.v3.entity.EntityComponentFactoryRegistry;
-import org.ladysnake.cca.internal.entity.StaticEntityComponentPlugin;
 
 /**
  * 角色方法调度器，用于调用角色的各个方法
@@ -55,31 +51,24 @@ public class RoleMethodDispatcher {
     public static void callOnFinishQuest(Player player, String quest) {
         Role role = getCurrentRole(player);
         if (role != null) {
-            GameWorldComponent gameWorldComponent = (GameWorldComponent) GameWorldComponent.KEY.get(player.level());
-            if (gameWorldComponent.getRole(player) != null) {
-                if (gameWorldComponent.getRole(player).getMoodType().equals(Role.MoodType.REAL)) {
-                    PlayerShopComponent shopComponent = PlayerShopComponent.KEY.get(player);
-                    shopComponent.addToBalance(50);
-                }
-                if (gameWorldComponent.getRole(player).getMoodType().equals(Role.MoodType.FAKE)){
-                    player.level().players().forEach(
-                            a-> {
-                                if (gameWorldComponent.getRole(a).getMoodType().equals(Role.MoodType.FAKE)) {
-                                    PlayerShopComponent shopComponent = PlayerShopComponent.KEY.get(a);
-                                    shopComponent.addToBalance(5);
-                                }
+            if (role.getMoodType().equals(Role.MoodType.REAL)) {
+                PlayerShopComponent shopComponent = PlayerShopComponent.KEY.get(player);
+                shopComponent.addToBalance(50);
+            }
+            if (role.getMoodType().equals(Role.MoodType.FAKE)) {
+                player.level().players().forEach(
+                        a -> {
+                            if (role.getMoodType().equals(Role.MoodType.FAKE)) {
+                                PlayerShopComponent shopComponent = PlayerShopComponent.KEY.get(a);
+                                shopComponent.addToBalance(5);
                             }
-                    );
-                }
-
+                        });
             }
             role.onFinishQuest(player, quest);
-
         }
     }
 
-
-    public static void onStartGame(ServerLevel serverLevel){
+    public static void onStartGame(ServerLevel serverLevel) {
         serverLevel.players().forEach(
                 player -> {
                     TMMRoles.COMPONENT_KEYS.forEach(
@@ -90,12 +79,11 @@ public class RoleMethodDispatcher {
                                     componentKey.sync( player);
 
                                 }
-                            }
-                    );
-                }
-        );
+                            });
+                });
     }
-    public static void onEndGame(ServerLevel serverLevel){
+
+    public static void onEndGame(ServerLevel serverLevel) {
         serverLevel.players().forEach(
                 player -> {
                     TMMRoles.COMPONENT_KEYS.forEach(
@@ -105,10 +93,8 @@ public class RoleMethodDispatcher {
                                     roleComponent.reset();
                                     componentKey.sync( player);
                                 }
-                            }
-                    );
-                }
-        );
+                            });
+                });
     }
 
     /**
@@ -132,15 +118,16 @@ public class RoleMethodDispatcher {
         }
     }
 
-    public static void onInit(Role role, MinecraftServer minecraftServer,ServerPlayer player){
-        role.onInit(minecraftServer,player);
-        if (role.isAutoReset()){
+    public static void onInit(Role role, MinecraftServer minecraftServer, ServerPlayer player) {
+        role.onInit(minecraftServer, player);
+        if (role.isAutoReset()) {
             ComponentKey<? extends RoleComponent> componentKey = role.getComponentKey();
             if (componentKey != null) {
                 componentKey.get(player).reset();
             }
         }
     }
+
     /**
      * 调用玩家角色的 clientTick 方法
      */
@@ -203,7 +190,6 @@ public class RoleMethodDispatcher {
         }
         return InteractionResult.PASS;
     }
-
 
     /**
      * 获取玩家当前的角色
