@@ -16,7 +16,8 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 @Mixin(LightTexture.class)
 public abstract class TrueDarknessLightmapTextureManagerMixin {
     @WrapOperation(method = "updateLightTexture", at = @At(value = "INVOKE", target = "Lorg/joml/Vector3f;lerp(Lorg/joml/Vector3fc;F)Lorg/joml/Vector3f;", ordinal = 0))
-    private Vector3f tmm$fuckYourBlueAssHueMojang(Vector3f instance, Vector3fc other, float t, Operation<Vector3f> original) {
+    private Vector3f tmm$fuckYourBlueAssHueMojang(Vector3f instance, Vector3fc other, float t,
+            Operation<Vector3f> original) {
         Minecraft client = Minecraft.getInstance();
         ClientLevel world = client.level;
 
@@ -24,12 +25,18 @@ public abstract class TrueDarknessLightmapTextureManagerMixin {
     }
 
     @WrapOperation(method = "updateLightTexture", at = @At(value = "INVOKE", target = "Lorg/joml/Vector3f;lerp(Lorg/joml/Vector3fc;F)Lorg/joml/Vector3f;", ordinal = 6))
-    private Vector3f tmm$trueDarknessAndSunLight(Vector3f instance, Vector3fc other, float t, Operation<Vector3f> original) {
+    private Vector3f tmm$trueDarknessAndSunLight(Vector3f instance, Vector3fc other, float t,
+            Operation<Vector3f> original) {
         Minecraft client = Minecraft.getInstance();
         ClientLevel world = client.level;
 
         if (client.player != null && world != null) {
-            return original.call(instance, new Vector3f(.8f, .8f, .8f), Mth.lerp(Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(false), TMMClient.prevInstinctLightLevel, TMMClient.instinctLightLevel));
+            if (client.player.isSpectator()) {
+                return original.call(instance, new Vector3f(.8f, .8f, .8f), 0.5f);
+            } else
+                return original.call(instance, new Vector3f(.8f, .8f, .8f),
+                        Mth.lerp(Minecraft.getInstance().getTimer().getGameTimeDeltaPartialTick(false),
+                                TMMClient.prevInstinctLightLevel, TMMClient.instinctLightLevel));
         }
 
         return original.call(instance, other, t);

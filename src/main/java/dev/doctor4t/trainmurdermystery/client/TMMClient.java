@@ -317,11 +317,11 @@ public class TMMClient implements ClientModInitializer {
 
             // instinct night vision - 现在基于切换状态而不是按键按下来判断
             if (TMMClient.isInstinctEnabled()) {
-                instinctLightLevel += .1f;
+                instinctLightLevel += .2f;
             } else {
-                instinctLightLevel -= .1f;
+                instinctLightLevel -= .2f;
             }
-            instinctLightLevel = Mth.clamp(instinctLightLevel, -.04f, .5f);
+            instinctLightLevel = Mth.clamp(instinctLightLevel, -.04f, 0.75f);
 
             // Cache player entries
             for (AbstractClientPlayer player : clientWorld.players()) {
