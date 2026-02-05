@@ -94,97 +94,125 @@ public class SkinsNetworkSyncManager {
     }
     
     /**
-     * 同步已解锁的皮肤到服务器
+     * 同步已解锁的皮肤到服务器（异步）
      * @param equippedSkins 装备的皮肤映射 {itemName -> skinName}
      * @param unlockedSkins 解锁的皮肤映射 {itemName -> {skinName -> isUnlocked}}
-     * @return 同步是否成功
+     * @return Future 对象，表示异步操作
      */
-    public boolean syncSkinsToServer(
+    public Future<?> syncSkinsToServerAsync(
             Map<String, String> equippedSkins,
             Map<String, Map<String, Boolean>> unlockedSkins) {
         
-        if (!isConnected.get() || isSyncing.getAndSet(true)) {
-            return false;
-        }
-        
-        try {
-            // 获取或创建玩家数据
-            PlayerData playerData = networkClient.getPlayerData(playerUuid);
-            if (playerData == null) {
-                playerData = new PlayerData(playerUuid, "unknown");
-                logger.debug("为玩家创建新的网络数据: {}", playerUuid);
-            }
-            
-            // 创建皮肤数据对象
-            Map<String, Object> skinData = new HashMap<>();
-            skinData.put("equipped", equippedSkins);
-            skinData.put("unlocked", unlockedSkins);
-            skinData.put("version", this.localVersion);
-            skinData.put("timestamp", System.currentTimeMillis());
-            
-            String skinDataJson = GSON.toJson(skinData);
-            
-            // 将皮肤数据存储在玩家的自定义数据中
-            playerData.setCustomData(skinDataJson);
-            playerData.setDataVersion(this.localVersion);
-            playerData.setLastModifiedBy("SkinsSync");
-            
-            // 同步到服务器
-            boolean success = networkClient.savePlayerData(playerData);
-            
-            if (success) {
-                this.localVersion = System.currentTimeMillis();
-                logger.debug("成功同步皮肤数据到服务器，玩家: {}", playerUuid);
-            } else {
-                logger.warn("同步皮肤数据到服务器失败，玩家: {}", playerUuid);
-            }
-            
-            return success;
-        } catch (Exception e) {
-            logger.error("同步皮肤数据时发生错误", e);
-            return false;
-        } finally {
-            isSyncing.set(false);
-        }
-    }
-    
-    /**
-     * 从服务器获取玩家的皮肤数据
-     * @return 包含皮肤数据的映射，如果失败返回null
-     */
-    public Map<String, Object> fetchSkinsFromServer() {
-        if (!isConnected.get() || isSyncing.getAndSet(true)) {
-            return null;
-        }
-        
-        try {
-            PlayerData playerData = networkClient.getPlayerData(playerUuid);
-            if (playerData == null) {
-                logger.debug("服务器上未找到玩家数据: {}", playerUuid);
-                return null;
-            }
-            
-            String customData = playerData.getCustomData();
-            if (customData == null || customData.isEmpty()) {
-                logger.debug("玩家没有皮肤数据: {}", playerUuid);
-                return null;
+        return executorService.submit(() -> {
+            if (!isConnected.get() || isSyncing.getAndSet(true)) {
+                if (syncCallback != null) {
+                    syncCallback.accept(false);
+                }
+                return;
             }
             
             try {
-                @SuppressWarnings("unchecked")
-                Map<String, Object> skinData = GSON.fromJson(customData, Map.class);
-                logger.debug("成功从服务器获取皮肤数据，玩家: {}", playerUuid);
-                return skinData;
+                // 获取或创建玩家数据
+                PlayerData playerData = networkClient.getPlayerData(playerUuid);
+                if (playerData == null) {
+                    playerData = new PlayerData(playerUuid, "unknown");
+                    logger.debug("为玩家创建新的网络数据: {}", playerUuid);
+                }
+                
+                // 创建皮肤数据对象
+                Map<String, Object> skinData = new HashMap<>();
+                skinData.put("equipped", equippedSkins);
+                skinData.put("unlocked", unlockedSkins);
+                skinData.put("version", this.localVersion);
+                skinData.put("timestamp", System.currentTimeMillis());
+                
+                String skinDataJson = GSON.toJson(skinData);
+                
+                // 将皮肤数据存储在玩家的自定义数据中
+                playerData.setCustomData(skinDataJson);
+                playerData.setDataVersion(this.localVersion);
+                playerData.setLastModifiedBy("SkinsSync");
+                
+                // 同步到服务器
+                boolean success = networkClient.savePlayerData(playerData);
+                
+                if (success) {
+                    this.localVersion = System.currentTimeMillis();
+                    logger.debug("成功同步皮肤数据到服务器，玩家: {}", playerUuid);
+                    if (syncCallback != null) {
+                        syncCallback.accept(true);
+                    }
+                } else {
+                    logger.warn("同步皮肤数据到服务器失败，玩家: {}", playerUuid);
+                    if (syncCallback != null) {
+                        syncCallback.accept(false);
+                    }
+                }
             } catch (Exception e) {
-                logger.warn("解析皮肤数据失败: {}", playerUuid, e);
-                return null;
+                logger.error("同步皮肤数据时发生错误", e);
+                if (syncCallback != null) {
+                    syncCallback.accept(false);
+                }
+            } finally {
+                isSyncing.set(false);
             }
-        } catch (Exception e) {
-            logger.error("从服务器获取皮肤数据时发生错误", e);
-            return null;
-        } finally {
-            isSyncing.set(false);
-        }
+        });
+    }
+    
+    /**
+     * 从服务器获取玩家的皮肤数据（异步）
+     * @return Future 对象，异步操作完成后返回皮肤数据
+     */
+    public Future<?> fetchSkinsFromServerAsync() {
+        return executorService.submit(() -> {
+            if (!isConnected.get() || isSyncing.getAndSet(true)) {
+                if (fetchCallback != null) {
+                    fetchCallback.accept(null);
+                }
+                return;
+            }
+            
+            try {
+                PlayerData playerData = networkClient.getPlayerData(playerUuid);
+                if (playerData == null) {
+                    logger.debug("服务器上未找到玩家数据: {}", playerUuid);
+                    if (fetchCallback != null) {
+                        fetchCallback.accept(null);
+                    }
+                    return;
+                }
+                
+                String customData = playerData.getCustomData();
+                if (customData == null || customData.isEmpty()) {
+                    logger.debug("玩家没有皮肤数据: {}", playerUuid);
+                    if (fetchCallback != null) {
+                        fetchCallback.accept(null);
+                    }
+                    return;
+                }
+                
+                try {
+                    @SuppressWarnings("unchecked")
+                    Map<String, Object> skinData = GSON.fromJson(customData, Map.class);
+                    logger.debug("成功从服务器获取皮肤数据，玩家: {}", playerUuid);
+                    if (fetchCallback != null) {
+                        fetchCallback.accept(skinData);
+                    }
+                } catch (Exception e) {
+                    logger.warn("解析皮肤数据失败: {}", playerUuid, e);
+                    if (fetchCallback != null) {
+                        fetchCallback.accept(null);
+                    }
+                }
+            } catch (Exception e) {
+                logger.error("从服务器获取皮肤数据时发生错误", e);
+                if (fetchCallback != null) {
+                    fetchCallback.accept(null);
+                }
+            } finally {
+                isSyncing.set(false);
+            }
+        });
     }
     
     /**

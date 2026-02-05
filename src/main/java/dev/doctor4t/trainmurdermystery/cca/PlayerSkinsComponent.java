@@ -266,7 +266,7 @@ public class PlayerSkinsComponent implements AutoSyncedComponent, ServerTickingC
     }
     
     /**
-     * 将皮肤数据同步到TCP网络服务器
+     * 将皮肤数据异步同步到TCP网络服务器
      */
     private void syncSkinsToNetwork() {
         if (!this.isNetworkSyncEnabled || this.networkSyncManager == null) {
@@ -274,21 +274,18 @@ public class PlayerSkinsComponent implements AutoSyncedComponent, ServerTickingC
         }
         
         try {
-            boolean success = this.networkSyncManager.syncSkinsToServer(
+            // 异步执行网络同步，不阻塞游戏线程
+            this.networkSyncManager.syncSkinsToServerAsync(
                     new HashMap<>(this.equippedSkins),
                     this.deepCopyUnlockedSkins()
             );
-            
-            if (success) {
-                logger.debug("玩家 {} 的皮肤数据已同步到网络", this.player.getName().getString());
-            }
         } catch (Exception e) {
-            logger.error("同步玩家 {} 的皮肤数据到网络时出错", this.player.getName().getString(), e);
+            logger.error("提交皮肤数据同步任务时出错，玩家: {}", this.player.getName().getString(), e);
         }
     }
     
     /**
-     * 从网络服务器拉取皮肤数据
+     * 从网络服务器异步拉取皮肤数据
      */
     public void pullSkinsFromNetwork() {
         if (!this.isNetworkSyncEnabled || this.networkSyncManager == null) {
@@ -296,12 +293,16 @@ public class PlayerSkinsComponent implements AutoSyncedComponent, ServerTickingC
         }
         
         try {
-            Map<String, Object> skinData = this.networkSyncManager.fetchSkinsFromServer();
-            if (skinData != null) {
-                this.applyNetworkSkinData(skinData);
-                this.sync();
-                logger.debug("玩家 {} 的皮肤数据已从网络拉取", this.player.getName().getString());
-            }
+            // 异步拉取，并在完成时应用数据
+            this.networkSyncManager.setFetchCallback(skinData -> {
+                if (skinData != null) {
+                    this.applyNetworkSkinData(skinData);
+                    this.sync();
+                    logger.debug("玩家 {} 的皮肤数据已从网络拉取", this.player.getName().getString());
+                }
+            });
+            
+            this.networkSyncManager.fetchSkinsFromServerAsync();
         } catch (Exception e) {
             logger.error("从网络拉取玩家 {} 的皮肤数据时出错", this.player.getName().getString(), e);
         }

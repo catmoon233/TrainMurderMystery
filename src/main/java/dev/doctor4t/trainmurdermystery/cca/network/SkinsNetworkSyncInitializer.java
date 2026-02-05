@@ -59,10 +59,8 @@ public class SkinsNetworkSyncInitializer {
         try {
             PlayerSkinsComponent skinsComponent = PlayerSkinsComponent.KEY.get(player);
             if (skinsComponent != null && skinsComponent.isNetworkSyncEnabled()) {
-                // 最后一次同步皮肤数据
+                // 异步执行最后一次同步和断开连接
                 skinsComponent.pullSkinsFromNetwork();
-                
-                // 断开网络连接
                 skinsComponent.disableNetworkSync();
                 
                 logger.info("玩家 {} 的皮肤网络同步已断开", player.getName().getString());
