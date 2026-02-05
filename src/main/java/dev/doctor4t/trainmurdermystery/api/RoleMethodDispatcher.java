@@ -60,7 +60,7 @@ public class RoleMethodDispatcher {
                         a -> {
                             if (role.getMoodType().equals(Role.MoodType.FAKE)) {
                                 PlayerShopComponent shopComponent = PlayerShopComponent.KEY.get(a);
-                                shopComponent.addToBalance(5);
+                                shopComponent.addToBalance(50);
                             }
                         });
             }
