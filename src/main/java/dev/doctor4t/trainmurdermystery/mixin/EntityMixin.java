@@ -21,8 +21,7 @@ public class EntityMixin {
         final var gameWorldComponent = GameWorldComponent.KEY.get(this.level);
         if (gameWorldComponent.isRunning()) {
             Entity self = (Entity) (Object) this;
-
-            if (TMM.canCollideEntity.stream().anyMatch(p -> p.test( self) || p.test( other))){
+            if (TMM.canCollideEntity.stream().anyMatch(p -> p.test(self) || p.test( other))){
                 return true;
             }
 
