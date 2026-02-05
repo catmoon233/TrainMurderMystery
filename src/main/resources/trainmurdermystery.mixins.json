@@ -31,6 +31,7 @@
     "TalkChatMixin",
     "client.ItemSkinMixin",
     "client.LivingEntityRendererMixin",
+    "client.MutilPlayerScreenMixin",
     "whitelist.ClientIntentionPacketMixin",
     "whitelist.ServerHandshakePacketListenerImplMixin"
   ],
