@@ -121,25 +121,20 @@ public class StatusBarHUD {
         // 渲染每个状态条
         for (Map.Entry<String, StatusBar> entry : sortedBars) {
             StatusBar bar = entry.getValue();
+            // 每秒减少1点进度
+            long elapsedSeconds = (System.currentTimeMillis() - bar.lastUpdateTime) / 50;
+            bar.currentProgress = Math.max(0, bar.maxProgress - elapsedSeconds);
             
-            // 计算透明度（淡入淡出效果）
-            long timeSinceUpdate = System.currentTimeMillis() - bar.lastUpdateTime;
-            float alpha = 1.0f;
+            // 根据当前进度计算透明度（淡入淡出效果）
+            float progressRatio = bar.currentProgress / bar.maxProgress;
+            float alpha = Mth.clamp(progressRatio/2, 0.5f, 1.0f);
             
-            // 淡入效果（前500ms）
-            if (timeSinceUpdate < 500) {
-                alpha = timeSinceUpdate / 500.0f;
-            }
-            // 淡出效果（最后1秒）
-            else if (timeSinceUpdate > bar.duration - FADE_DURATION) {
-                alpha = 1.0f - (timeSinceUpdate - (bar.duration - FADE_DURATION)) / (float) FADE_DURATION;
-            }
-            
-            alpha = Mth.clamp(alpha, 0.0f, 1.0f);
-            
+            // 如果进度为0，则完全透明
             if (alpha <= 0.01f) continue;
 
-            renderStatusBar(guiGraphics, screenWidth, currentY, bar, alpha);
+            if (bar.currentProgress > 0) {
+                renderStatusBar(guiGraphics, screenWidth, currentY, bar, alpha);
+            }
             currentY += BAR_HEIGHT + BAR_SPACING;
         }
     }

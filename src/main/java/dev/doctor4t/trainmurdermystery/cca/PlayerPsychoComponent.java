@@ -5,9 +5,13 @@ import dev.doctor4t.trainmurdermystery.api.RoleComponent;
 import dev.doctor4t.trainmurdermystery.game.GameConstants;
 import dev.doctor4t.trainmurdermystery.game.GameFunctions;
 import dev.doctor4t.trainmurdermystery.index.TMMItems;
+import dev.doctor4t.trainmurdermystery.network.RemoveStatusBarPayload;
+import dev.doctor4t.trainmurdermystery.network.TriggerStatusBarPayload;
 import dev.doctor4t.trainmurdermystery.util.ShopEntry;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
@@ -62,6 +66,8 @@ public class PlayerPsychoComponent implements RoleComponent, ServerTickingCompon
         if (--this.psychoTicks == 0) {
 //            this.player.sendMessage(Text.translatable("game.psycho_mode.over").withColor(Colors.RED), true);
             this.stopPsycho();
+        }else {
+
         }
 
         this.sync();
@@ -73,6 +79,9 @@ public class PlayerPsychoComponent implements RoleComponent, ServerTickingCompon
             this.setArmour(GameConstants.getPsychoModeArmour());
             GameWorldComponent gameWorldComponent = GameWorldComponent.KEY.get(this.player.level());
             gameWorldComponent.setPsychosActive(gameWorldComponent.getPsychosActive() + 1);
+            if (player instanceof ServerPlayer serverPlayer){
+                ServerPlayNetworking.send(serverPlayer, new TriggerStatusBarPayload("psycho", "狂暴模式", this.psychoTicks , GameConstants.getPsychoTimer(), GameConstants.getPsychoTimer()*1000));
+            }
             return true;
         }
         return false;
@@ -82,6 +91,10 @@ public class PlayerPsychoComponent implements RoleComponent, ServerTickingCompon
         GameWorldComponent gameWorldComponent = GameWorldComponent.KEY.get(this.player.level());
         gameWorldComponent.setPsychosActive(gameWorldComponent.getPsychosActive() - 1);
         this.psychoTicks = 0;
+        if (this.player instanceof ServerPlayer serverPlayer){
+            ServerPlayNetworking.send(serverPlayer, new RemoveStatusBarPayload("psycho"));
+
+        }
         this.player.getInventory().clearOrCountMatchingItems(itemStack -> itemStack.is(TMMItems.BAT), Integer.MAX_VALUE, this.player.inventoryMenu.getCraftSlots());
     }
 

@@ -1,6 +1,8 @@
 {
-  "parent": "minecraft:block/cube_all",
+  "parent": "minecraft:block/cube_bottom_top",
   "textures": {
-    "all": "trainmurdermystery:block/security_monitor"
+    "bottom": "trainmurdermystery:block/metal_sheet",
+    "top": "trainmurdermystery:block/metal_sheet",
+    "side": "trainmurdermystery:block/dark_steel"
   }
 }

@@ -388,6 +388,8 @@ public class TMMClient implements ClientModInitializer {
 
         SyncMapConfigPayload.registerReceiver();
         TriggerScreenEdgeEffectPayload.registerReceiver();
+        RemoveStatusBarPayload.registerReceiver();
+        TriggerStatusBarPayload.registerReceiver();
         ClientPlayNetworking.registerGlobalReceiver(ShootMuzzleS2CPayload.ID, new ShootMuzzleS2CPayload.Receiver());
         ClientPlayNetworking.registerGlobalReceiver(PoisonUtils.PoisonOverlayPayload.ID,
                 new PoisonUtils.PoisonOverlayPayload.Receiver());

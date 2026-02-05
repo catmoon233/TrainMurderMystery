@@ -156,7 +156,7 @@ public class SansRenderer {
         Minecraft mc = Minecraft.getInstance();
         m_post.addSinglePassEntry("insanity", pass -> {
             return processPlayer(mc.player, cap -> {
-                if (cap.getMood() > .35f)
+                if (cap.getMood() > .35f && PlayerPsychoComponent.KEY.get(mc.player).psychoTicks <= 0)
                     return false;
                 
                 var effect = pass.getEffect();
@@ -175,58 +175,58 @@ public class SansRenderer {
                 return true;
             });
         });
-        m_post.addSinglePassEntry("crazy", pass -> {
-            return processPlayer(mc.player, cap -> {
-                PlayerPsychoComponent psycho = PlayerPsychoComponent.KEY.get(mc.player);
-                if (psycho.psychoTicks <= 0)
-                    return false;
-
-                // 获取着色器效果
-                var effect = pass.getEffect();
-                if (effect == null) return false;
-
-                // 设置uniform参数
-                float gameTime = m_post.getTime() / 20.0f;
-                
-                // 安全设置uniform值，添加null检查
-                var timeUniform = effect.safeGetUniform("Time");
-                if (timeUniform != null) timeUniform.set(gameTime);
-                
-                var gameTimeUniform = effect.safeGetUniform("GameTime");
-                if (gameTimeUniform != null) gameTimeUniform.set(gameTime);
-
-//                RenderTarget mainTarget = mc.getMainRenderTarget();
-//                var screenSizeUniform = effect.safeGetUniform("ScreenSize");
-//                if (screenSizeUniform != null && mainTarget != null) {
-//                    screenSizeUniform.set((float)mainTarget.width, (float)mainTarget.height);
+//        m_post.addSinglePassEntry("crazy", pass -> {
+//            return processPlayer(mc.player, cap -> {
+//                PlayerPsychoComponent psycho = PlayerPsychoComponent.KEY.get(mc.player);
+//                if (psycho.psychoTicks <= 0)
+//                    return false;
+//
+//                // 获取着色器效果
+//                var effect = pass.getEffect();
+//                if (effect == null) return false;
+//
+//                // 设置uniform参数
+//                float gameTime = m_post.getTime() / 20.0f;
+//
+//                // 安全设置uniform值，添加null检查
+//                var timeUniform = effect.safeGetUniform("Time");
+//                if (timeUniform != null) timeUniform.set(gameTime);
+//
+//                var gameTimeUniform = effect.safeGetUniform("GameTime");
+//                if (gameTimeUniform != null) gameTimeUniform.set(gameTime);
+//
+////                RenderTarget mainTarget = mc.getMainRenderTarget();
+////                var screenSizeUniform = effect.safeGetUniform("ScreenSize");
+////                if (screenSizeUniform != null && mainTarget != null) {
+////                    screenSizeUniform.set((float)mainTarget.width, (float)mainTarget.height);
+////                }
+//
+//                // 计算强度
+//                float intensity;
+//                if (GameConstants.getPsychoTimer() > 0) {
+//                    intensity = Mth.clamp((GameConstants.getPsychoTimer() - psycho.psychoTicks) / (float) GameConstants.getPsychoTimer(), 0.0f, 1.0f);
+//                } else {
+//                    intensity = 0.5f;
 //                }
-
-                // 计算强度
-                float intensity;
-                if (GameConstants.getPsychoTimer() > 0) {
-                    intensity = Mth.clamp((GameConstants.getPsychoTimer() - psycho.psychoTicks) / (float) GameConstants.getPsychoTimer(), 0.0f, 1.0f);
-                } else {
-                    intensity = 0.5f;
-                }
-
-                var intensityUniform = effect.safeGetUniform("Intensity");
-                if (intensityUniform != null) intensityUniform.set(intensity);
-                
-                var distortionUniform = effect.safeGetUniform("DistortionStrength");
-                if (distortionUniform != null) distortionUniform.set(intensity * 0.1f);
-                
-                var chromaticUniform = effect.safeGetUniform("ChromaticAberration");
-                if (chromaticUniform != null) chromaticUniform.set(intensity * 0.02f);
-                
-                var flickerUniform = effect.safeGetUniform("FlickerSpeed");
-                if (flickerUniform != null) flickerUniform.set(5.0f + intensity * 5.0f);
-                
-                var scanlineUniform = effect.safeGetUniform("ScanlineStrength");
-                if (scanlineUniform != null) scanlineUniform.set(intensity * 0.3f);
-
-                return true;
-            });
-        });
+//
+//                var intensityUniform = effect.safeGetUniform("Intensity");
+//                if (intensityUniform != null) intensityUniform.set(intensity);
+//
+//                var distortionUniform = effect.safeGetUniform("DistortionStrength");
+//                if (distortionUniform != null) distortionUniform.set(intensity * 0.1f);
+//
+//                var chromaticUniform = effect.safeGetUniform("ChromaticAberration");
+//                if (chromaticUniform != null) chromaticUniform.set(intensity * 0.02f);
+//
+//                var flickerUniform = effect.safeGetUniform("FlickerSpeed");
+//                if (flickerUniform != null) flickerUniform.set(5.0f + intensity * 5.0f);
+//
+//                var scanlineUniform = effect.safeGetUniform("ScanlineStrength");
+//                if (scanlineUniform != null) scanlineUniform.set(intensity * 0.3f);
+//
+//                return true;
+//            });
+//        });
         m_post.addSinglePassEntry("chromatical", pass -> {
             return processPlayer(mc.player, cap -> {
                 if (cap.getMood() > .35f)
