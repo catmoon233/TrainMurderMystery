@@ -53,23 +53,23 @@ public class TrainVoicePlugin implements VoicechatPlugin {
             SERVER_API = event.getVoicechat();
         });
 
-        registration.registerEvent(PlayerConnectedEvent.class, event -> {
-            var con = event.getConnection();
-            var serverPlayer = con.getPlayer();
-            Object vcServerLevel = serverPlayer.getServerLevel().getServerLevel();
-            Object vcPlayer = serverPlayer.getPlayer();
-            if (vcServerLevel instanceof ServerLevel serverLevel) {
-                final var gameWorldComponent = GameWorldComponent.KEY.get(serverLevel);
-                if (gameWorldComponent.isRunning()) {
-                    if (vcPlayer instanceof Player player)
-                        // serverLevel
-                        if (!GameFunctions.isPlayerAliveAndSurvival(player)) {
-                            TrainVoicePlugin.addPlayer(player.getUUID());
-                        }
-                }
-            }
+        // registration.registerEvent(PlayerConnectedEvent.class, event -> {
+        //     var con = event.getConnection();
+        //     var serverPlayer = con.getPlayer();
+        //     Object vcServerLevel = serverPlayer.getServerLevel().getServerLevel();
+        //     Object vcPlayer = serverPlayer.getPlayer();
+        //     if (vcServerLevel instanceof ServerLevel serverLevel) {
+        //         final var gameWorldComponent = GameWorldComponent.KEY.get(serverLevel);
+        //         if (gameWorldComponent.isRunning()) {
+        //             if (vcPlayer instanceof Player player)
+        //                 // serverLevel
+        //                 if (!GameFunctions.isPlayerAliveAndSurvival(player)) {
+        //                     TrainVoicePlugin.addPlayer(player.getUUID());
+        //                 }
+        //         }
+        //     }
 
-        });
+        // });
     }
 
     @Override
