@@ -51,16 +51,19 @@ public class RoleMethodDispatcher {
     public static void callOnFinishQuest(Player player, String quest) {
         Role role = getCurrentRole(player);
         if (role != null) {
-            if (role.getMoodType().equals(Role.MoodType.REAL)) {
+            if (role.isInnocent()) {
                 PlayerShopComponent shopComponent = PlayerShopComponent.KEY.get(player);
                 shopComponent.addToBalance(50);
             }
-            if (role.getMoodType().equals(Role.MoodType.FAKE)) {
+            if (role.isNeutrals() || (!role.canUseKiller() && !role.isInnocent())) {
+                PlayerShopComponent shopComponent = PlayerShopComponent.KEY.get(player);
+                shopComponent.addToBalance(50);
+            } else if (role.canUseKiller()) {
                 player.level().players().forEach(
                         a -> {
-                            if (role.getMoodType().equals(Role.MoodType.FAKE)) {
+                            if (role.canUseKiller()) {
                                 PlayerShopComponent shopComponent = PlayerShopComponent.KEY.get(a);
-                                shopComponent.addToBalance(50);
+                                shopComponent.addToBalance(5);
                             }
                         });
             }
@@ -76,7 +79,7 @@ public class RoleMethodDispatcher {
                                 RoleComponent roleComponent = componentKey.get(player);
                                 if (roleComponent != null) {
                                     roleComponent.reset();
-                                    componentKey.sync( player);
+                                    componentKey.sync(player);
 
                                 }
                             });
@@ -91,7 +94,7 @@ public class RoleMethodDispatcher {
                                 RoleComponent roleComponent = componentKey.get(player);
                                 if (roleComponent != null) {
                                     roleComponent.reset();
-                                    componentKey.sync( player);
+                                    componentKey.sync(player);
                                 }
                             });
                 });
