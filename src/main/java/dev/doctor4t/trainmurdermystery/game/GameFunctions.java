@@ -285,7 +285,7 @@ public class GameFunctions {
 
         TrainWorldComponent.KEY.get(serverWorld).reset();
         WorldBlackoutComponent.KEY.get(serverWorld).reset();
-
+        serverWorld.setDayTime(18000);
         serverWorld.getGameRules().getRule(GameRules.RULE_KEEPINVENTORY).set(true, serverWorld.getServer());
         serverWorld.getGameRules().getRule(GameRules.RULE_WEATHER_CYCLE).set(false, serverWorld.getServer());
         serverWorld.getGameRules().getRule(GameRules.RULE_DAYLIGHT).set(false, serverWorld.getServer());
@@ -420,7 +420,7 @@ public class GameFunctions {
         GameWorldComponent gameComponent = GameWorldComponent.KEY.get(world);
         // var areasWorldComponent = AreasWorldComponent.KEY.get(world);
 
-        world.setDayTime(18000);
+        world.setDayTime(Level.TICKS_PER_DAY / 2);
         gameComponent.getGameMode().finalizeGame(world, gameComponent);
         TMM.REPLAY_MANAGER.finalizeReplay(gameComponent.getLastWinStatus());
 

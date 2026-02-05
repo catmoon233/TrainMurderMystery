@@ -158,8 +158,20 @@ public class SansRenderer {
             return processPlayer(mc.player, cap -> {
                 if (cap.getMood() > .35f)
                     return false;
-                pass.getEffect().safeGetUniform("DesaturateFactor").set(MathHelper.clampNorm(Mth.inverseLerp(cap.getMood(), .4f, .8f)) * .69f);
-                pass.getEffect().safeGetUniform("SpreadFactor").set(MathHelper.clampNorm(Mth.inverseLerp(cap.getMood(), .4f, .8f)) * 1.43f);
+                
+                var effect = pass.getEffect();
+                if (effect == null) return false;
+                
+                var desaturateUniform = effect.safeGetUniform("DesaturateFactor");
+                if (desaturateUniform != null) {
+                    desaturateUniform.set(MathHelper.clampNorm(Mth.inverseLerp(cap.getMood(), .4f, .8f)) * .69f);
+                }
+                
+                var spreadUniform = effect.safeGetUniform("SpreadFactor");
+                if (spreadUniform != null) {
+                    spreadUniform.set(MathHelper.clampNorm(Mth.inverseLerp(cap.getMood(), .4f, .8f)) * 1.43f);
+                }
+                
                 return true;
             });
         });
@@ -171,48 +183,46 @@ public class SansRenderer {
 
                 // 获取着色器效果
                 var effect = pass.getEffect();
+                if (effect == null) return false;
 
-                // 设置时间参数（游戏时间）
-                float gameTime = m_post.getTime() / 20.0f; // 转换为秒
-                effect.safeGetUniform("Time").set(gameTime);
-                effect.safeGetUniform("GameTime").set(gameTime);
+                // 设置uniform参数
+                float gameTime = m_post.getTime() / 20.0f;
+                
+                // 安全设置uniform值，添加null检查
+                var timeUniform = effect.safeGetUniform("Time");
+                if (timeUniform != null) timeUniform.set(gameTime);
+                
+                var gameTimeUniform = effect.safeGetUniform("GameTime");
+                if (gameTimeUniform != null) gameTimeUniform.set(gameTime);
 
-                // 设置屏幕尺寸
-                RenderTarget mainTarget = mc.getMainRenderTarget();
-                effect.safeGetUniform("ScreenSize").set((float)mainTarget.width, (float)mainTarget.height);
+//                RenderTarget mainTarget = mc.getMainRenderTarget();
+//                var screenSizeUniform = effect.safeGetUniform("ScreenSize");
+//                if (screenSizeUniform != null && mainTarget != null) {
+//                    screenSizeUniform.set((float)mainTarget.width, (float)mainTarget.height);
+//                }
 
-                // 根据psychoTicks计算疯狂强度（值越大效果越强）
-                // psychoTicks可能是倒计时，所以计算剩余比例
+                // 计算强度
                 float intensity;
-                if (GameConstants.getPsychoModeArmour()> 0) {
-                    // 如果有最大时间，计算剩余比例
-                    intensity = 1.0f - (float)psycho.psychoTicks / GameConstants.getPsychoModeArmour();
+                if (GameConstants.getPsychoTimer() > 0) {
+                    intensity = Mth.clamp((GameConstants.getPsychoTimer() - psycho.psychoTicks) / (float) GameConstants.getPsychoTimer(), 0.0f, 1.0f);
                 } else {
-                    // 否则使用固定强度或基于当前ticks
-                    intensity = Mth.clamp((100.0f - psycho.psychoTicks) / 100.0f, 0.0f, 1.0f);
+                    intensity = 0.5f;
                 }
 
-                // 设置疯狂强度参数
-                effect.safeGetUniform("Intensity").set(intensity);
-
-                // 设置扭曲参数
-                effect.safeGetUniform("DistortionStrength").set(intensity * 0.1f);
-
-                // 设置颜色偏移参数
-                effect.safeGetUniform("ChromaticAberration").set(intensity * 0.02f);
-
-                // 设置闪烁频率
-                effect.safeGetUniform("FlickerSpeed").set(intensity * 5.0f);
-
-                // 设置扫描线强度
-                effect.safeGetUniform("ScanlineStrength").set(intensity * 0.3f);
-
-                // 如果理智也很低，增强效果
-                if (cap != null && cap.getMood() < 0.3f) {
-                    float moodIntensity = 1.0f - (cap.getMood() / 0.3f);
-                    effect.safeGetUniform("DistortionStrength").set(intensity * 0.1f + moodIntensity * 0.05f);
-                    effect.safeGetUniform("ChromaticAberration").set(intensity * 0.02f + moodIntensity * 0.01f);
-                }
+                var intensityUniform = effect.safeGetUniform("Intensity");
+                if (intensityUniform != null) intensityUniform.set(intensity);
+                
+                var distortionUniform = effect.safeGetUniform("DistortionStrength");
+                if (distortionUniform != null) distortionUniform.set(intensity * 0.1f);
+                
+                var chromaticUniform = effect.safeGetUniform("ChromaticAberration");
+                if (chromaticUniform != null) chromaticUniform.set(intensity * 0.02f);
+                
+                var flickerUniform = effect.safeGetUniform("FlickerSpeed");
+                if (flickerUniform != null) flickerUniform.set(5.0f + intensity * 5.0f);
+                
+                var scanlineUniform = effect.safeGetUniform("ScanlineStrength");
+                if (scanlineUniform != null) scanlineUniform.set(intensity * 0.3f);
 
                 return true;
             });
@@ -221,8 +231,20 @@ public class SansRenderer {
             return processPlayer(mc.player, cap -> {
                 if (cap.getMood() > .35f)
                     return false;
-                pass.getEffect().safeGetUniform("Factor").set(MathHelper.clampNorm(Mth.inverseLerp(cap.getMood(), .4f, .8f)) * .1f);
-                pass.getEffect().safeGetUniform("TimeTotal").set(m_post.getTime() / 20.0f);
+                
+                var effect = pass.getEffect();
+                if (effect == null) return false;
+                
+                var factorUniform = effect.safeGetUniform("Factor");
+                if (factorUniform != null) {
+                    factorUniform.set(MathHelper.clampNorm(Mth.inverseLerp(cap.getMood(), .4f, .8f)) * .1f);
+                }
+                
+                var timeTotalUniform = effect.safeGetUniform("TimeTotal");
+                if (timeTotalUniform != null) {
+                    timeTotalUniform.set(m_post.getTime() / 20.0f);
+                }
+                
                 return true;
             });
         });

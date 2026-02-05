@@ -1,6 +1,6 @@
 {
-  "vertex": "crazy",
-  "fragment": "crazy",
+  "vertex": "trainmurdermystery:crazy",
+  "fragment": "trainmurdermystery:crazy",
   "attributes": [
     "Position",
     "UV0"
@@ -14,44 +14,41 @@
     {
       "name": "Time",
       "type": "float",
-      "count": 1,
       "values": [0.0]
     },
     {
       "name": "GameTime",
       "type": "float",
-      "count": 1,
       "values": [0.0]
     },
-
+    {
+      "name": "ScreenSize",
+      "type": "vec2",
+      "values": [1.0, 1.0]
+    },
     {
       "name": "Intensity",
       "type": "float",
-      "count": 1,
       "values": [0.0]
     },
     {
       "name": "DistortionStrength",
       "type": "float",
-      "count": 1,
       "values": [0.0]
     },
     {
       "name": "ChromaticAberration",
       "type": "float",
-      "count": 1,
       "values": [0.0]
     },
     {
       "name": "FlickerSpeed",
       "type": "float",
-      "count": 1,
       "values": [0.0]
     },
     {
       "name": "ScanlineStrength",
       "type": "float",
-      "count": 1,
       "values": [0.0]
     }
   ]

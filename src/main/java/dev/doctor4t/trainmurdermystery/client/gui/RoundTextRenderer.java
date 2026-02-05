@@ -47,7 +47,7 @@ public class RoundTextRenderer {
         boolean isLooseEnds = GameWorldComponent.KEY.get(player.level()).getGameMode() == TMMGameModes.LOOSE_ENDS;
 
         if (welcomeTime > 0) {
-            if (welcomeTime<=WELCOME_DURATION-GameConstants.FADE_TIME ) {
+            if (welcomeTime<=WELCOME_DURATION-GameConstants.FADE_TIME+15 ) {
                 MapDetailsRenderer.renderHud(renderer, player, context, partialTicks);
             }
             context.pose().pushPose();

@@ -64,10 +64,7 @@ void main() {
     float luminance = dot(color, vec3(0.299, 0.587, 0.114));
     color = mix(vec3(luminance), color, 1.0 + Intensity * 0.5);
 
-    // 扫描线效果
-    float scanline = sin(uv.y * ScreenSize.y * 3.14159 * 2.0 + t * 10.0) * 0.1;
-    scanline += sin(uv.y * ScreenSize.y * 3.14159 * 1.0 + t * 5.0) * 0.05;
-    color *= (1.0 - scanline * ScanlineStrength);
+
 
     // 添加随机噪点（高强度时）
     if (Intensity > 0.5) {
