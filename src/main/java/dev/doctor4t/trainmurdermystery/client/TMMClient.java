@@ -351,6 +351,7 @@ public class TMMClient implements ClientModInitializer {
                 TimeRenderer.tick();
                 StaminaRenderer.tick();
 
+
             }
 
             // TODO: Remove LMAO
