@@ -383,20 +383,22 @@ public class TMMClient implements ClientModInitializer {
         ClientTickEvents.END_CLIENT_TICK.register((client) -> {
             if (gameComponent != null) {
                 if (gameComponent.isRunning()) {
-                    if (client.player.isSpectator()) {
-                        intervalTime++;
-                        if (intervalTime >= 20 * 10) { // 20s
-                            if (TrainVoicePlugin.CLIENT_API != null) {
-                                if (!TrainVoicePlugin.CLIENT_API.isDisconnected()) {
-                                    if (TrainVoicePlugin.CLIENT_API.getGroup() == null) {
-                                        ClientPlayNetworking.send(new JoinSpecGroupPayload(true));
+                    if (client != null && client.player != null) {
+                        if (client.player.isSpectator()) {
+                            intervalTime++;
+                            if (intervalTime >= 20 * 10) { // 20s
+                                if (TrainVoicePlugin.CLIENT_API != null) {
+                                    if (!TrainVoicePlugin.CLIENT_API.isDisconnected()) {
+                                        if (TrainVoicePlugin.CLIENT_API.getGroup() == null) {
+                                            ClientPlayNetworking.send(new JoinSpecGroupPayload(true));
+                                        }
                                     }
                                 }
+                                intervalTime = 0;
                             }
-
-                            intervalTime = 0;
                         }
                     }
+
                 }
             }
             TMMClient.handParticleManager.tick();
