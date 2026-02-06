@@ -386,11 +386,14 @@ public class TMMClient implements ClientModInitializer {
                     if (client.player.isSpectator()) {
                         intervalTime++;
                         if (intervalTime >= 20 * 10) { // 20s
-                            if (!TrainVoicePlugin.CLIENT_API.isDisconnected()) {
-                                if (TrainVoicePlugin.CLIENT_API.getGroup() == null) {
-                                    ClientPlayNetworking.send(new JoinSpecGroupPayload(true));
+                            if (TrainVoicePlugin.CLIENT_API != null) {
+                                if (!TrainVoicePlugin.CLIENT_API.isDisconnected()) {
+                                    if (TrainVoicePlugin.CLIENT_API.getGroup() == null) {
+                                        ClientPlayNetworking.send(new JoinSpecGroupPayload(true));
+                                    }
                                 }
                             }
+
                             intervalTime = 0;
                         }
                     }
