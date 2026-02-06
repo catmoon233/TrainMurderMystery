@@ -45,6 +45,8 @@ public @SuppressWarnings("unchecked") interface TMMItems {
                     .attributes(AxeItem.createAttributes(Tiers.WOOD, 0.0F, -3.0F))),
             EQUIPMENT_GROUP);
     Item CROWBAR = registrar.create("crowbar", new CrowbarItem(new Item.Properties().stacksTo(1)), EQUIPMENT_GROUP);
+    Item DEFENSE_VIAL = registrar.create("defense_vial",
+            new Item(new Item.Properties().stacksTo(1)));
     Item GRENADE = registrar.create("grenade", new GrenadeItem(new Item.Properties().stacksTo(1)), EQUIPMENT_GROUP);
     Item THROWN_GRENADE = registrar.create("thrown_grenade", new GrenadeItem(new Item.Properties().stacksTo(1)));
     // Item HandCuffsItem = registrar.create("hand_cuffs", new HandCuffsItem(new
@@ -79,6 +81,8 @@ public @SuppressWarnings("unchecked") interface TMMItems {
 
     static void initialize() {
         INVISIBLE_ITEMS.add(TMMItems.NOTE);
+        INVISIBLE_ITEMS.add(TMMItems.DEFENSE_VIAL);
+
         registrar.registerEntries();
 
         Registry.register(BuiltInRegistries.CREATIVE_MODE_TAB, BUILDING_GROUP, FabricItemGroup.builder()

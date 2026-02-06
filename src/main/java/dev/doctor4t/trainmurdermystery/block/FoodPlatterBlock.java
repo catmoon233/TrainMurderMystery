@@ -70,28 +70,45 @@ public class FoodPlatterBlock extends BaseEntityBlock {
     }
 
     @Override
-    protected InteractionResult useWithoutItem(BlockState state, @NotNull Level world, BlockPos pos, Player player, BlockHitResult hit) {
+    protected InteractionResult useWithoutItem(BlockState state, @NotNull Level world, BlockPos pos, Player player,
+            BlockHitResult hit) {
         if (world.isClientSide) {
             if (TMM.REPLAY_MANAGER != null) {
                 if (player.getItemInHand(InteractionHand.MAIN_HAND).getItem().equals(TMMItems.POISON_VIAL)) {
-                    TMM.REPLAY_MANAGER.recordItemUse(player.getUUID(), BuiltInRegistries.ITEM.getKey(TMMItems.POISON_VIAL));
+                    TMM.REPLAY_MANAGER.recordItemUse(player.getUUID(),
+                            BuiltInRegistries.ITEM.getKey(TMMItems.POISON_VIAL));
+                } else if (player.getItemInHand(InteractionHand.MAIN_HAND).getItem().equals(TMMItems.DEFENSE_VIAL)) {
+                    TMM.REPLAY_MANAGER.recordItemUse(player.getUUID(),
+                            BuiltInRegistries.ITEM.getKey(TMMItems.DEFENSE_VIAL));
                 }
             }
             return InteractionResult.SUCCESS;
-        };
-        if (!(world.getBlockEntity(pos) instanceof BeveragePlateBlockEntity blockEntity)) return InteractionResult.PASS;
-
+        }
+        if (!(world.getBlockEntity(pos) instanceof BeveragePlateBlockEntity blockEntity))
+            return InteractionResult.PASS;
         if (player.isCreative()) {
             ItemStack heldItem = player.getItemInHand(InteractionHand.MAIN_HAND);
             if (!heldItem.isEmpty()) {
                 blockEntity.addItem(heldItem);
                 if (TMM.REPLAY_MANAGER != null) {
-                    TMM.REPLAY_MANAGER.recordItemUse(player.getUUID(), BuiltInRegistries.ITEM.getKey(heldItem.getItem()));
+                    TMM.REPLAY_MANAGER.recordItemUse(player.getUUID(),
+                            BuiltInRegistries.ITEM.getKey(heldItem.getItem()));
                 }
                 return InteractionResult.SUCCESS;
             }
         }
-        if (player.getItemInHand(InteractionHand.MAIN_HAND).is(TMMItems.POISON_VIAL) && blockEntity.getPoisoner() == null) {
+        if (player.getItemInHand(InteractionHand.MAIN_HAND).is(TMMItems.DEFENSE_VIAL)
+                && blockEntity.getArmorer() == null) {
+            blockEntity.setArmorer(player.getStringUUID());
+            player.getItemInHand(InteractionHand.MAIN_HAND).shrink(1);
+            player.playNotifySound(SoundEvents.BREWING_STAND_BREW, SoundSource.BLOCKS, 0.5f, 1f);
+            if (TMM.REPLAY_MANAGER != null) {
+                TMM.REPLAY_MANAGER.recordItemUse(player.getUUID(), BuiltInRegistries.ITEM.getKey(TMMItems.DEFENSE_VIAL));
+            }
+            return InteractionResult.SUCCESS;
+        }
+        if (player.getItemInHand(InteractionHand.MAIN_HAND).is(TMMItems.POISON_VIAL)
+                && blockEntity.getPoisoner() == null) {
             blockEntity.setPoisoner(player.getStringUUID());
             player.getItemInHand(InteractionHand.MAIN_HAND).shrink(1);
             player.playNotifySound(SoundEvents.BREWING_STAND_BREW, SoundSource.BLOCKS, 0.5f, 1f);
@@ -104,7 +121,7 @@ public class FoodPlatterBlock extends BaseEntityBlock {
             List<ItemStack> platter = blockEntity.getStoredItems();
             if (platter.isEmpty()) {
                 return InteractionResult.SUCCESS;
-            };
+            }
 
             boolean hasPlatterItem = false;
             for (ItemStack platterItem : platter) {
@@ -115,7 +132,8 @@ public class FoodPlatterBlock extends BaseEntityBlock {
                         break;
                     }
                 }
-                if (hasPlatterItem) break;
+                if (hasPlatterItem)
+                    break;
             }
 
             if (!hasPlatterItem) {
@@ -123,9 +141,15 @@ public class FoodPlatterBlock extends BaseEntityBlock {
                 randomItem.setCount(1);
                 randomItem.set(DataComponents.MAX_STACK_SIZE, 1);
                 String poisoner = blockEntity.getPoisoner();
+                String armorer = blockEntity.getArmorer();
+
                 if (poisoner != null) {
                     randomItem.set(TMMDataComponentTypes.POISONER, poisoner);
                     blockEntity.setPoisoner(null);
+                }
+                if (armorer != null) {
+                    randomItem.set(TMMDataComponentTypes.ARMORER, armorer);
+                    blockEntity.setArmorer(null);
                 }
                 player.playNotifySound(SoundEvents.ITEM_PICKUP, SoundSource.BLOCKS, 1f, 1f);
                 player.setItemInHand(InteractionHand.MAIN_HAND, randomItem);
@@ -136,8 +160,10 @@ public class FoodPlatterBlock extends BaseEntityBlock {
     }
 
     @Override
-    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(@NotNull Level world, BlockState state, BlockEntityType<T> type) {
-        if (!world.isClientSide || !type.equals(TMMBlockEntities.BEVERAGE_PLATE)) return null;
+    public @Nullable <T extends BlockEntity> BlockEntityTicker<T> getTicker(@NotNull Level world, BlockState state,
+            BlockEntityType<T> type) {
+        if (!world.isClientSide || !type.equals(TMMBlockEntities.BEVERAGE_PLATE))
+            return null;
         return BeveragePlateBlockEntity::clientTick;
     }
 }

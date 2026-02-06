@@ -22,6 +22,7 @@ import net.minecraft.world.level.block.state.BlockState;
 public class BeveragePlateBlockEntity extends BlockEntity {
     private final List<ItemStack> storedItems = new ArrayList<>();
     private String poisoner = null;
+    private String armorer = null;
     private PlateType plate = PlateType.DRINK;
 
     public BeveragePlateBlockEntity(BlockPos pos, BlockState state) {
@@ -32,7 +33,8 @@ public class BeveragePlateBlockEntity extends BlockEntity {
         if (this.level != null && !this.level.isClientSide) {
             this.setChanged();
 
-            this.level.sendBlockUpdated(this.worldPosition, this.getBlockState(), this.getBlockState(), Block.UPDATE_CLIENTS);
+            this.level.sendBlockUpdated(this.worldPosition, this.getBlockState(), this.getBlockState(),
+                    Block.UPDATE_CLIENTS);
         }
     }
 
@@ -45,13 +47,23 @@ public class BeveragePlateBlockEntity extends BlockEntity {
     }
 
     public void addItem(@NotNull ItemStack stack) {
-        if (stack.isEmpty()) return;
+        if (stack.isEmpty())
+            return;
         this.storedItems.add(stack.copy());
         this.sync();
     }
 
     public String getPoisoner() {
         return this.poisoner;
+    }
+
+    public String getArmorer() {
+        return this.armorer;
+    }
+
+    public void setArmorer(String armorer) {
+        this.armorer = armorer;
+        this.sync();
     }
 
     public void setPoisoner(String poisoner) {
@@ -77,7 +89,8 @@ public class BeveragePlateBlockEntity extends BlockEntity {
                 itemsNbt.put("Item" + i, this.storedItems.get(i).save(registryLookup));
         }
         nbt.put("Items", itemsNbt);
-        if (this.poisoner != null) nbt.putString("poisoner", this.poisoner);
+        if (this.poisoner != null)
+            nbt.putString("poisoner", this.poisoner);
         nbt.putBoolean("Drink", this.plate == PlateType.DRINK);
     }
 

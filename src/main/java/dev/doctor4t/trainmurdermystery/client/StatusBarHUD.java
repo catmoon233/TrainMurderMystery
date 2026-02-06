@@ -1,17 +1,11 @@
 package dev.doctor4t.trainmurdermystery.client;
 
-import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.*;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.util.Mth;
-import org.joml.Matrix4f;
-
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-
-import static net.minecraft.client.renderer.GameRenderer.getPositionShader;
 
 public class StatusBarHUD {
     private static final StatusBarHUD INSTANCE = new StatusBarHUD();

@@ -19,6 +19,7 @@ public class TMMConfig extends MidnightConfig {
         DEFAULT_VALUES.put("ultraPerfMode", false);
         DEFAULT_VALUES.put("disableScreenShake", false);
         DEFAULT_VALUES.put("disableStaminaBarSmoothing", false);
+        DEFAULT_VALUES.put("bartenderGlowDuration", 40);
 
         // 商店物品价格默认值
         DEFAULT_VALUES.put("mapRandomCount", -1);
@@ -136,6 +137,9 @@ public class TMMConfig extends MidnightConfig {
     @Comment(category = "game", centered = true)
     public static Comment gameConfigComment;
 
+    // Bartender - Glow duration in seconds
+    @Entry(category = "game", min = 0, max = 120, isSlider = true)
+    public static int bartenderGlowDuration = 40;
     @Entry(category = "game", min = 0, max = 1000, isSlider = true)
     public static int startingMoney = 100;
     @Entry(category = "game", min = 0, max = 100, isSlider = true)
@@ -291,6 +295,8 @@ public class TMMConfig extends MidnightConfig {
             // 读取game配置
             if (json.has("mapRandomCount") && json.get("mapRandomCount").isJsonPrimitive())
                 mapRandomCount = json.get("mapRandomCount").getAsInt();
+            if (json.has("bartenderGlowDuration") && json.get("bartenderGlowDuration").isJsonPrimitive())
+                bartenderGlowDuration = json.get("bartenderGlowDuration").getAsInt();
             if (json.has("startingMoney") && json.get("startingMoney").isJsonPrimitive())
                 startingMoney = json.get("startingMoney").getAsInt();
             if (json.has("passiveMoneyAmount") && json.get("passiveMoneyAmount").isJsonPrimitive())

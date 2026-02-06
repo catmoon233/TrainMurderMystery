@@ -32,7 +32,6 @@ import dev.doctor4t.trainmurdermystery.util.ReplayPayload;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.impl.util.log.Log;
 import net.fabricmc.loader.impl.util.log.LogCategory;
-import net.minecraft.client.Minecraft;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponentMap;
@@ -419,7 +418,7 @@ public class GameFunctions {
     }
 
     public static void finalizeGame(ServerLevel world) {
-        RoleMethodDispatcher.onEndGame(world    );
+        RoleMethodDispatcher.onEndGame(world);
         GameWorldComponent gameComponent = GameWorldComponent.KEY.get(world);
         // var areasWorldComponent = AreasWorldComponent.KEY.get(world);
 
@@ -507,6 +506,7 @@ public class GameFunctions {
         PlayerPoisonComponent.KEY.get(player).reset();
         PlayerPsychoComponent.KEY.get(player).reset();
         PlayerNoteComponent.KEY.get(player).reset();
+        BartenderPlayerComponent.KEY.get(player).reset();
         if (!isVoiceChatMissing()) {
             TrainVoicePlugin.resetPlayer(player.getUUID());
         }
@@ -530,11 +530,11 @@ public class GameFunctions {
     public static void killPlayer(Player victim, boolean spawnBody, @Nullable Player killer,
             ResourceLocation deathReason) {
         PlayerPsychoComponent component = PlayerPsychoComponent.KEY.get(victim);
-                if (killer instanceof ServerPlayer serverPlayer) {
-                    final var triggerScreenEdgeEffectPayload = new TriggerScreenEdgeEffectPayload(Color.WHITE.getRGB(), 600, 0.6f);
-                    ServerPlayNetworking.send(serverPlayer, triggerScreenEdgeEffectPayload);
-                }
-
+        if (killer instanceof ServerPlayer serverPlayer) {
+            final var triggerScreenEdgeEffectPayload = new TriggerScreenEdgeEffectPayload(Color.WHITE.getRGB(), 600,
+                    0.6f);
+            ServerPlayNetworking.send(serverPlayer, triggerScreenEdgeEffectPayload);
+        }
 
         boolean canDeath = true;
         if (victim instanceof ServerPlayer serverVictim) {
@@ -549,8 +549,20 @@ public class GameFunctions {
             // them
             return;
         }
+
         if (killer != null) {
             if (killer instanceof ServerPlayer spkiller) {
+                BartenderPlayerComponent bartenderPlayerComponent = BartenderPlayerComponent.KEY.get(victim);
+                if (bartenderPlayerComponent != null) {
+                    if (bartenderPlayerComponent.getArmor() > 0) {
+                        victim.level().playSound(victim, victim.blockPosition(), TMMSounds.ITEM_PSYCHO_ARMOUR,
+                                SoundSource.MASTER, 5.0F, 1.0F);
+                        bartenderPlayerComponent.removeArmor();
+                        ServerPlayNetworking.send(spkiller,
+                                new BreakArmorPayload(victim.getX(), victim.getY(), victim.getZ()));
+                        return;
+                    }
+                }
                 if (victim instanceof ServerPlayer spvictim) {
                     OnPlayerKilledPlayer.DeathReason eventDeathReason;
                     switch (deathReason.getPath()) {
@@ -585,10 +597,11 @@ public class GameFunctions {
         if (component.getPsychoTicks() > 0) {
             if (component.getArmour() > 0) {
                 component.setArmour(component.getArmour() - 1);
-                if (killer instanceof ServerPlayer serverPlayer){
-                    ServerPlayNetworking.send(serverPlayer,new BreakArmorPayload(victim.getX(), victim.getY(), victim.getZ()
+                if (killer instanceof ServerPlayer serverPlayer) {
+                    ServerPlayNetworking.send(serverPlayer,
+                            new BreakArmorPayload(victim.getX(), victim.getY(), victim.getZ()
 
-                    ));
+                            ));
                 }
                 component.sync();
                 victim.playNotifySound(TMMSounds.ITEM_PSYCHO_ARMOUR, SoundSource.MASTER, 5F, 1F);

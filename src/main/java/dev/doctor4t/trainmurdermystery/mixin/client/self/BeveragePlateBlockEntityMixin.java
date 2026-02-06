@@ -8,6 +8,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
@@ -25,22 +26,33 @@ public class BeveragePlateBlockEntityMixin {
 
     // haha I love writing extremely cursed mixins
     @Inject(method = "clientTick", at = @At("HEAD"))
-    private static void tickWithoutFearOfCrashing(Level world, BlockPos pos, BlockState state, BlockEntity blockEntity, CallbackInfo ci) {
+    private static void tickWithoutFearOfCrashing(Level world, BlockPos pos, BlockState state, BlockEntity blockEntity,
+            CallbackInfo ci) {
         if (!(blockEntity instanceof BeveragePlateBlockEntity tray)) {
             return;
         }
-        if ((!TMMClient.isKiller() && !CanSeePoison.EVENT.invoker().visible(Minecraft.getInstance().player)) || tray.getPoisoner() == null) {
+        if ((!TMMClient.isKiller() && !CanSeePoison.EVENT.invoker().visible(Minecraft.getInstance().player))
+                || tray.getPoisoner() == null || tray.getArmorer() == null) {
             return;
         }
         if (world.getRandom().nextIntBetweenInclusive(0, 20) < 17) {
             return;
         }
-        world.addParticle(
-                TMMParticles.POISON,
-                pos.getX() + 0.5f,
-                pos.getY(),
-                pos.getZ() + 0.5f,
-                0f, 0.05f, 0f
-        );
+        if (tray.getArmorer() != null) {
+            world.addParticle(
+                    ParticleTypes.EFFECT,
+                    pos.getX() + 0.5f,
+                    pos.getY(),
+                    pos.getZ() + 0.5f,
+                    0f, 0.05f, 0f);
+        }
+        if (tray.getPoisoner() != null) {
+            world.addParticle(
+                    TMMParticles.POISON,
+                    pos.getX() + 0.5f,
+                    pos.getY(),
+                    pos.getZ() + 0.5f,
+                    0f, 0.05f, 0f);
+        }
     }
 }

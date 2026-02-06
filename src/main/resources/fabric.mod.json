@@ -4,7 +4,6 @@
 	"version": "${version}",
 	"name": "The Last Voyage of the Harpy Express",
 	"description": "A train murder mystery social game.",
-	"accessWidener" : "trainmurdermystery.accesswidener",
 	"authors": [
 		"doctor4t",
 		"AmyMialee",
@@ -61,7 +60,8 @@
 			"trainmurdermystery:gamescoreboard",
 			"trainmurdermystery:map_voting",
 			"trainmurdermystery:player_stats",
-			"trainmurdermystery:ability"
+			"trainmurdermystery:ability",
+			"trainmurdermystery:bartender"
 		],
 		"loom:injected_interfaces": {
 			"net/minecraft/class_5483/class_5496" : ["dev/doctor4t/trainmurdermystery/util/BlockSettingsAdditions"]
