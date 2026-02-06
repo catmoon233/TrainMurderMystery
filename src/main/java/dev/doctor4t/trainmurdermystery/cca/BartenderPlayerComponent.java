@@ -16,7 +16,8 @@ import org.ladysnake.cca.api.v3.component.tick.ClientTickingComponent;
 import org.ladysnake.cca.api.v3.component.tick.ServerTickingComponent;
 
 public class BartenderPlayerComponent implements RoleComponent, ServerTickingComponent, ClientTickingComponent {
-    public static final ComponentKey<BartenderPlayerComponent> KEY = ComponentRegistry.getOrCreate(ResourceLocation.fromNamespaceAndPath(TMM.MOD_ID, "bartender"), BartenderPlayerComponent.class);
+    public static final ComponentKey<BartenderPlayerComponent> KEY = ComponentRegistry.getOrCreate(
+            ResourceLocation.fromNamespaceAndPath(TMM.MOD_ID, "bartender"), BartenderPlayerComponent.class);
     private final Player player;
     public int glowTicks = 0;
 
@@ -27,10 +28,11 @@ public class BartenderPlayerComponent implements RoleComponent, ServerTickingCom
     private int armor = 0;
 
     public void removeArmor() {
-        --this.armor ;
+        --this.armor;
         this.sync();
     }
-    public void removeArmor(int  amount) {
+
+    public void removeArmor(int amount) {
         this.armor -= amount;
         this.sync();
     }
@@ -56,7 +58,9 @@ public class BartenderPlayerComponent implements RoleComponent, ServerTickingCom
 
     public void clientTick() {
     }
+
     public static int tick_ = 0;
+
     public void serverTick() {
         if (this.glowTicks > 0) {
             --this.glowTicks;
@@ -73,13 +77,11 @@ public class BartenderPlayerComponent implements RoleComponent, ServerTickingCom
         return true;
     }
 
-
     public boolean startGlow() {
         setGlowTicks(GameConstants.getInTicks(0, TMMConfig.bartenderGlowDuration));
         this.sync();
         return true;
     }
-
 
     public void setGlowTicks(int ticks) {
         this.glowTicks = ticks;
@@ -94,5 +96,12 @@ public class BartenderPlayerComponent implements RoleComponent, ServerTickingCom
     public void readFromNbt(@NotNull CompoundTag tag, HolderLookup.Provider registryLookup) {
         this.glowTicks = tag.contains("glowTicks") ? tag.getInt("glowTicks") : 0;
         this.armor = tag.contains("armor") ? tag.getInt("armor") : 0;
+    }
+
+    @Override
+    public void clear() {
+        this.glowTicks = 0;
+        this.armor = 0;
+        this.sync();
     }
 }
