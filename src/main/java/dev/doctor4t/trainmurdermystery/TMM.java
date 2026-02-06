@@ -138,7 +138,7 @@ public class TMM implements ModInitializer {
             SyncMapConfigPayload.sendToAllPlayers();
         });
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
-            isLobby = TMM.isLobby;
+            TMM.isLobby = TMMConfig.isLobby;
             sender.sendPacket(new IsLobbyConfigPayload(TMM.isLobby));
         });
     }

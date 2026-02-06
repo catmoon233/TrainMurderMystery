@@ -66,6 +66,10 @@ public class InGameHudMixin {
 
     @WrapMethod(method = "renderCrosshair")
     private void tmm$renderHud(GuiGraphics context, DeltaTracker tickCounter, Operation<Void> original) {
+        if (TMMClient.isInLobby) {
+            original.call(context, tickCounter);
+            return;
+        }
         if (!TMMClient.isPlayerAliveAndInSurvival()) {
             original.call(context, tickCounter);
             return;
@@ -79,27 +83,28 @@ public class InGameHudMixin {
 
     @WrapMethod(method = "renderPlayerHealth")
     private void tmm$removeStatusBars(GuiGraphics context, Operation<Void> original) {
-        if (!TMMClient.isPlayerAliveAndInSurvival()) {
+
+        if (TMMClient.isInLobby || !TMMClient.isPlayerAliveAndInSurvival()) {
             original.call(context);
         }
     }
 
     @WrapMethod(method = "renderExperienceBar")
     private void tmm$removeExperienceBar(GuiGraphics context, int x, Operation<Void> original) {
-        if (!TMMClient.isPlayerAliveAndInSurvival()) {
+        if (TMMClient.isInLobby || !TMMClient.isPlayerAliveAndInSurvival()) {
             original.call(context, x);
         }
     }
 
     @WrapMethod(method = "renderTabList")
     private void tmm$removePlayerList(GuiGraphics context, DeltaTracker tickCounter, Operation<Void> original) {
-        if (!TMMClient.isPlayerAliveAndInSurvival())
+        if (TMMClient.isInLobby || !TMMClient.isPlayerAliveAndInSurvival())
             original.call(context, tickCounter);
     }
 
     @WrapMethod(method = "renderExperienceLevel")
     private void tmm$removeExperienceLevel(GuiGraphics context, DeltaTracker tickCounter, Operation<Void> original) {
-        if (!TMMClient.isPlayerAliveAndInSurvival()) {
+        if (TMMClient.isInLobby || !TMMClient.isPlayerAliveAndInSurvival()) {
             original.call(context, tickCounter);
         }
     }
@@ -107,6 +112,11 @@ public class InGameHudMixin {
     @WrapOperation(method = "renderItemHotbar", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;blitSprite(Lnet/minecraft/resources/ResourceLocation;IIII)V", ordinal = 0))
     private void tmm$overrideHotbarTexture(GuiGraphics instance, ResourceLocation texture, int x, int y, int width,
             int height, @NotNull Operation<Void> original) {
+        if (TMMClient.isInLobby) {
+            original.call(instance, texture, x, y, width,
+                    height);
+            return;
+        }
         original.call(instance, TMMClient.isPlayerAliveAndInSurvival() ? TMM_HOTBAR_TEXTURE : texture, x, y, width,
                 height);
     }
@@ -114,6 +124,11 @@ public class InGameHudMixin {
     @WrapOperation(method = "renderItemHotbar", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;blitSprite(Lnet/minecraft/resources/ResourceLocation;IIII)V", ordinal = 1))
     private void tmm$overrideHotbarSelectionTexture(GuiGraphics instance, ResourceLocation texture, int x, int y,
             int width, int height, @NotNull Operation<Void> original) {
+        if (TMMClient.isInLobby) {
+            original.call(instance, texture, x, y, width,
+                    height);
+            return;
+        }
         original.call(instance, TMMClient.isPlayerAliveAndInSurvival() ? TMM_HOTBAR_SELECTION_TEXTURE : texture, x, y,
                 width, height);
     }
@@ -122,6 +137,10 @@ public class InGameHudMixin {
     private void tmm$moveSleepOverlayToUnderUI(GuiGraphics context, DeltaTracker tickCounter,
             Operation<Void> original) {
         // sleep overlay
+        if (TMMClient.isInLobby) {
+            original.call(context);
+            return;
+        }
         if (this.minecraft.player != null && this.minecraft.player.getSleepTimer() > 0) {
             this.minecraft.getProfiler().push("sleep");
 
@@ -144,7 +163,12 @@ public class InGameHudMixin {
     @WrapMethod(method = "renderSleepOverlay")
     private void tmm$removeSleepOverlayAndDoGameFade(GuiGraphics context, DeltaTracker tickCounter,
             Operation<Void> original) {
+        if (TMMClient.isInLobby) {
+            original.call(context);
+            return;
+        }
         if (TMMClient.gameComponent != null) {
+
             // game start / stop fade in / out
             float fadeIn = TMMClient.gameComponent.getFade();
             if (fadeIn >= 0) {
