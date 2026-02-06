@@ -86,7 +86,7 @@ public class FoodPlatterBlock extends BaseEntityBlock {
             if (!heldItem.isEmpty()) {
                 blockEntity.addItem(heldItem);
                 if (TMM.REPLAY_MANAGER != null) {
-                    TMM.REPLAY_MANAGER.recordItemUse(player.getUUID(), BuiltInRegistries.ITEM.getKey(TMMItems.POISON_VIAL));
+                    TMM.REPLAY_MANAGER.recordItemUse(player.getUUID(), BuiltInRegistries.ITEM.getKey(heldItem.getItem()));
                 }
                 return InteractionResult.SUCCESS;
             }
@@ -103,9 +103,6 @@ public class FoodPlatterBlock extends BaseEntityBlock {
         if (player.getItemInHand(InteractionHand.MAIN_HAND).isEmpty()) {
             List<ItemStack> platter = blockEntity.getStoredItems();
             if (platter.isEmpty()) {
-                if (TMM.REPLAY_MANAGER != null) {
-                    TMM.REPLAY_MANAGER.recordItemUse(player.getUUID(), BuiltInRegistries.ITEM.getKey(TMMItems.POISON_VIAL));
-                }
                 return InteractionResult.SUCCESS;
             };
 
