@@ -38,14 +38,14 @@ public class GameScoreboardComponent implements AutoSyncedComponent, CommonTicki
     public GameScoreboardComponent(Scoreboard scoreboard, MinecraftServer server) {
         this.scoreboard = scoreboard;
         this.server = server;
-        initializeObjectives();
     }
 
-    private void initializeObjectives() {
+    public void initializeObjectives() {
         // 创建游戏正计时目标 (游戏开始后的正计时)
         try {
             this.gameTimerObjective = this.scoreboard.getObjective("tmm.gameTimer");
             if (this.gameTimerObjective == null) {
+                // Logger.log
                 this.gameTimerObjective = this.scoreboard.addObjective("tmm.gameTimer", ObjectiveCriteria.DUMMY, 
                     net.minecraft.network.chat.Component.literal("Game Timer"), ObjectiveCriteria.RenderType.INTEGER,
                             true,
@@ -174,6 +174,7 @@ public class GameScoreboardComponent implements AutoSyncedComponent, CommonTicki
     public void reset() {
         this.playerCompletedTasks.clear();
         this.totalRequiredTasks = 0;
+        initializeObjectives();
         
         // 重置所有计分板分数
         if (this.playerTaskCountObjective != null) {

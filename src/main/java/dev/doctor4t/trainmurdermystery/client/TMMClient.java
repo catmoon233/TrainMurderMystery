@@ -25,6 +25,7 @@ import dev.doctor4t.trainmurdermystery.client.render.entity.FirecrackerEntityRen
 import dev.doctor4t.trainmurdermystery.client.render.entity.HornBlockEntityRenderer;
 import dev.doctor4t.trainmurdermystery.client.render.entity.NoteEntityRenderer;
 import dev.doctor4t.trainmurdermystery.client.util.TMMItemTooltips;
+import dev.doctor4t.trainmurdermystery.compat.TrainVoicePlugin;
 import dev.doctor4t.trainmurdermystery.data.MapConfig;
 import dev.doctor4t.trainmurdermystery.entity.FirecrackerEntity;
 import dev.doctor4t.trainmurdermystery.entity.NoteEntity;
@@ -52,7 +53,6 @@ import net.minecraft.client.CameraType;
 import net.minecraft.client.CloudStatus;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.Font;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.PlayerInfo;
@@ -88,7 +88,7 @@ public class TMMClient implements ClientModInitializer {
     public static GameWorldComponent gameComponent;
     public static TrainWorldComponent trainComponent;
     public static PlayerMoodComponent moodComponent;
-
+    public static int intervalTime = 0;
     public static final Map<UUID, PlayerInfo> PLAYER_ENTRIES_CACHE = Maps.newHashMap();
 
     public static KeyMapping instinctKeybind;
@@ -351,7 +351,6 @@ public class TMMClient implements ClientModInitializer {
                 TimeRenderer.tick();
                 StaminaRenderer.tick();
 
-
             }
 
             // TODO: Remove LMAO
@@ -382,6 +381,21 @@ public class TMMClient implements ClientModInitializer {
         });
 
         ClientTickEvents.END_CLIENT_TICK.register((client) -> {
+            if (gameComponent != null) {
+                if (gameComponent.isRunning()) {
+                    if (client.player.isSpectator()) {
+                        intervalTime++;
+                        if (intervalTime >= 20 * 10) { // 20s
+                            if (!TrainVoicePlugin.CLIENT_API.isDisconnected()) {
+                                if (TrainVoicePlugin.CLIENT_API.getGroup() == null) {
+                                    ClientPlayNetworking.send(new JoinSpecGroupPayload(true));
+                                }
+                            }
+                            intervalTime = 0;
+                        }
+                    }
+                }
+            }
             TMMClient.handParticleManager.tick();
             RoundTextRenderer.tick();
         });
@@ -421,8 +435,7 @@ public class TMMClient implements ClientModInitializer {
         });
         ClientPlayNetworking.registerGlobalReceiver(MapVotingResultsPayload.TYPE, (payload, context) -> {
             MapDetailsRenderer.triggerMapDetails(
-                    payload.result
-            );
+                    payload.result);
         });
         ClientPlayNetworking.registerGlobalReceiver(OpenSkinScreenPaylod.ID, (payload, context) -> {
 
@@ -458,8 +471,8 @@ public class TMMClient implements ClientModInitializer {
                 GLFW.GLFW_KEY_N, // 默认热键 'N'
                 "category." + TMM.MOD_ID + ".keybinds"));
         // Initialize Command UI system
-//        TMMCommandUI.init();
-//        KeyPressHandler.register();
+        // TMMCommandUI.init();
+        // KeyPressHandler.register();
         InputHandler.initialize();
 
         // Register HUD rendering for security camera
@@ -470,13 +483,14 @@ public class TMMClient implements ClientModInitializer {
                     Minecraft.getInstance().getWindow().getGuiScaledHeight());
             WaypointHUD.renderHUD(guiGraphics, deltaTick.getRealtimeDeltaTicks());
             AFKRenderer.renderAFKEffects(guiGraphics, deltaTick.getRealtimeDeltaTicks());
-            
-//            // 添加地图详情渲染
-//            Font font = Minecraft.getInstance().font;
-//            LocalPlayer player = Minecraft.getInstance().player;
-//            if (font != null && player != null) {
-//                MapDetailsRenderer.renderHud(font, player, guiGraphics, deltaTick.getRealtimeDeltaTicks());
-//            }
+
+            // // 添加地图详情渲染
+            // Font font = Minecraft.getInstance().font;
+            // LocalPlayer player = Minecraft.getInstance().player;
+            // if (font != null && player != null) {
+            // MapDetailsRenderer.renderHud(font, player, guiGraphics,
+            // deltaTick.getRealtimeDeltaTicks());
+            // }
         });
         ClientPlayNetworking.registerGlobalReceiver(SyncWaypointsPacket.ID, SyncWaypointsPacket::handle);
         ClientPlayNetworking.registerGlobalReceiver(SyncWaypointVisibilityPacket.ID,

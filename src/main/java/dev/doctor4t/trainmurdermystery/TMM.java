@@ -12,6 +12,7 @@ import dev.doctor4t.trainmurdermystery.command.argument.GameModeArgumentType;
 import dev.doctor4t.trainmurdermystery.command.argument.MapLoadArgumentType;
 import dev.doctor4t.trainmurdermystery.command.argument.SkinArgumentType;
 import dev.doctor4t.trainmurdermystery.command.argument.TimeOfDayArgumentType;
+import dev.doctor4t.trainmurdermystery.compat.TrainVoicePlugin;
 import dev.doctor4t.trainmurdermystery.data.ServerMapConfig;
 import dev.doctor4t.trainmurdermystery.event.AFKEventHandler;
 import dev.doctor4t.trainmurdermystery.event.EntityInteractionHandler;
@@ -91,7 +92,8 @@ public class TMM implements ModInitializer {
         initCCAAuto();
         initSkinsNetworkSync();
     }
-    private void initCCAAuto(){
+
+    private void initCCAAuto() {
         TMMRoles.addRoleComponents(PlayerAFKComponent.KEY);
         TMMRoles.addRoleComponents(DynamicCoinComponent.KEY);
         TMMRoles.addRoleComponents(AbilityPlayerComponent.KEY);
@@ -202,22 +204,28 @@ public class TMM implements ModInitializer {
         ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
             GameWorldComponent gameWorldComponent = GameWorldComponent.KEY.get(handler.player.level());
             if (gameWorldComponent.getGameStatus() == GameWorldComponent.GameStatus.ACTIVE) {
-                // gameWorldComponent.removePlayer(handler.player); // Removed as method does not exist
+                // gameWorldComponent.removePlayer(handler.player); // Removed as method does
+                // not exist
             }
             if (REPLAY_MANAGER != null) {
-                REPLAY_MANAGER.addEvent(GameReplayData.EventType.PLAYER_LEAVE, null, handler.player.getUUID(), null, null);
+                REPLAY_MANAGER.addEvent(GameReplayData.EventType.PLAYER_LEAVE, null, handler.player.getUUID(), null,
+                        null);
             }
         });
     }
 
     private void registerPayloadTypes() {
+        PayloadTypeRegistry.playS2C().register(JoinSpecGroupPayload.ID, JoinSpecGroupPayload.CODEC);
+        PayloadTypeRegistry.playC2S().register(JoinSpecGroupPayload.ID, JoinSpecGroupPayload.CODEC);
+
         PayloadTypeRegistry.playS2C().register(SyncMapConfigPayload.ID, SyncMapConfigPayload.CODEC);
         PayloadTypeRegistry.playS2C().register(TriggerScreenEdgeEffectPayload.ID, TriggerScreenEdgeEffectPayload.CODEC);
         PayloadTypeRegistry.playS2C().register(RemoveStatusBarPayload.ID, RemoveStatusBarPayload.CODEC);
         PayloadTypeRegistry.playS2C().register(TriggerStatusBarPayload.ID, TriggerStatusBarPayload.CODEC);
         PayloadTypeRegistry.playS2C().register(BreakArmorPayload.ID, BreakArmorPayload.CODEC);
         PayloadTypeRegistry.playS2C().register(ShootMuzzleS2CPayload.ID, ShootMuzzleS2CPayload.CODEC);
-        PayloadTypeRegistry.playS2C().register(PoisonUtils.PoisonOverlayPayload.ID, PoisonUtils.PoisonOverlayPayload.CODEC);
+        PayloadTypeRegistry.playS2C().register(PoisonUtils.PoisonOverlayPayload.ID,
+                PoisonUtils.PoisonOverlayPayload.CODEC);
         PayloadTypeRegistry.playS2C().register(GunDropPayload.ID, GunDropPayload.CODEC);
         PayloadTypeRegistry.playS2C().register(TaskCompletePayload.ID, TaskCompletePayload.CODEC);
         PayloadTypeRegistry.playS2C().register(AnnounceWelcomePayload.ID, AnnounceWelcomePayload.CODEC);
@@ -255,6 +263,18 @@ public class TMM implements ModInitializer {
                 (payload, context) -> {
                     dev.doctor4t.trainmurdermystery.network.VoteForMapPayload.Handler.handle(payload, context.player());
                 });
+        ServerPlayNetworking.registerGlobalReceiver(JoinSpecGroupPayload.ID, (payload, context) -> {
+            ServerPlayer sp = context.player();
+            boolean isJoin = payload.isJoin();
+            if (isJoin) {
+                if (sp.isSpectator()) {
+                    TrainVoicePlugin.addPlayer(sp.getUUID());
+                }
+            } else {
+                TrainVoicePlugin.resetPlayer(sp.getUUID());
+            }
+
+        });
     }
 
     private void registerPlayerCopyEvent() {
@@ -266,7 +286,7 @@ public class TMM implements ModInitializer {
     private void initScheduler() {
         Scheduler.init();
     }
-    
+
     /**
      * 初始化皮肤网络同步系统
      */
@@ -280,7 +300,6 @@ public class TMM implements ModInitializer {
             LOGGER.error("初始化皮肤网络同步系统时出错", e);
         }
     }
-
 
     public static boolean isSkyVisibleAdjacent(@NotNull Entity player) {
         BlockPos.MutableBlockPos mutable = new BlockPos.MutableBlockPos();

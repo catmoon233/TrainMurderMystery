@@ -51,9 +51,6 @@ import java.util.UUID;
 public abstract class PlayerEntityMixin extends LivingEntity implements PlayerStaminaGetter {
 
 	@Shadow
-	public abstract Level level();
-
-	@Shadow
 	public abstract float getAttackStrengthScale(float baseTime);
 
 	@Override
