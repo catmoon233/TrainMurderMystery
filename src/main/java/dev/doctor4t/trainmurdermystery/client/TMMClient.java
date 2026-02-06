@@ -89,6 +89,7 @@ public class TMMClient implements ClientModInitializer {
     public static TrainWorldComponent trainComponent;
     public static PlayerMoodComponent moodComponent;
     public static int intervalTime = 0;
+    public static boolean isInLobby = false;
     public static final Map<UUID, PlayerInfo> PLAYER_ENTRIES_CACHE = Maps.newHashMap();
 
     public static KeyMapping instinctKeybind;
@@ -297,7 +298,12 @@ public class TMMClient implements ClientModInitializer {
         OptionLocker.overrideSoundCategoryVolume("voice", 1.0);
         ClientPlayNetworking.registerGlobalReceiver(SecurityCameraModePayload.ID,
                 new SecurityCameraModePayload.ClientReceiver());
-
+        ClientPlayNetworking.registerGlobalReceiver(IsLobbyConfigPayload.ID, (payload, context) -> {
+            TMMClient.isInLobby = payload.isLobby();
+            TMM.isLobby = payload.isLobby();
+            LoggerFactory.getLogger(this.getClass())
+                    .info("Is Lobby status: " + (TMMClient.isInLobby ? "Yes" : "No"));
+        });
         // Item tooltips
         TMMItemTooltips.addTooltips();
 

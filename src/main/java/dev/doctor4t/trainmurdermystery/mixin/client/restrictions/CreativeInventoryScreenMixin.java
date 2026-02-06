@@ -2,6 +2,7 @@ package dev.doctor4t.trainmurdermystery.mixin.client.restrictions;
 
 import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+
 import dev.doctor4t.trainmurdermystery.client.TMMClient;
 import dev.doctor4t.trainmurdermystery.client.gui.screen.ingame.LimitedInventoryScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
@@ -19,6 +20,10 @@ public abstract class CreativeInventoryScreenMixin extends EffectRenderingInvent
 
     @WrapMethod(method = "containerTick")
     public void tmm$replaceSurvivalInventory(Operation<Void> original) {
+        if (TMMClient.isInLobby) {
+            original.call();
+            return;
+        }
         if (TMMClient.isPlayerAliveAndInSurvival()) {
             this.minecraft.setScreen(new LimitedInventoryScreen(this.minecraft.player));
         } else {

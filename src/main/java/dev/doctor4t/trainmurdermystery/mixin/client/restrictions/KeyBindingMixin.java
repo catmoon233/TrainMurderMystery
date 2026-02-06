@@ -25,6 +25,9 @@ public abstract class KeyBindingMixin {
             return false;
         if (instance.player == null)
             return false;
+        if (TMMClient.isInLobby) {
+            return false;
+        }
         if (!TMMClient.isPlayerCreative() && this.same(instance.options.keyDrop)) {
             if (TMM.canDropItem
                     .contains(BuiltInRegistries.ITEM.getKey(instance.player.getMainHandItem().getItem()).toString())) {

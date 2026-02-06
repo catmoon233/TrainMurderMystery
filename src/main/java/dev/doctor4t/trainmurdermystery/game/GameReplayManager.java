@@ -345,14 +345,15 @@ public class GameReplayManager {
                         if (gameWorldComponent != null && gameWorldComponent.isRunning()
                                 && !GameFunctions.isPlayerAliveAndSurvival(player)) {
                             if (cantSeeEvent.stream().noneMatch(playerPredicate -> playerPredicate.test(player))) {
-//                            if (gameWorldComponent.getRole(player) == null || !"the_insane_damned_paranoid_killer"
-//                                    .equals(gameWorldComponent.getRole(player).identifier().getPath())) {
-                                player.sendSystemMessage(
-                                        Component.translatable("tmm.replay.event")
-                                                .append(currentReplayData.toText(this, currentReplayData, event1))
+                                try {
+                                    var text = currentReplayData.toText(this, currentReplayData, event1);
+                                    if (text != null) {
+                                        sendSystemMessage(player, Component.translatable("tmm.replay.event")
+                                                .append(text));
+                                    }
+                                } catch (Exception e) {
 
-                                );
-//                            }
+                                }
                             }
                         }
                     });
@@ -363,6 +364,7 @@ public class GameReplayManager {
     }
 
     public static List<Predicate<Player>> cantSeeEvent = new ArrayList<>();
+
     public void recordPlayerKill(UUID killerUuid, UUID victimUuid, ResourceLocation deathReason) {
         String deathReasonStr = deathReason != null ? deathReason.toString() : "unknown";
         addEvent(GameReplayData.EventType.PLAYER_KILL, killerUuid, victimUuid, deathReasonStr, null);

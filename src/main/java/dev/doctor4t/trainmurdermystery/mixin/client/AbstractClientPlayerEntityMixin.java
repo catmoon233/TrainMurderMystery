@@ -2,6 +2,7 @@ package dev.doctor4t.trainmurdermystery.mixin.client;
 
 import com.mojang.authlib.GameProfile;
 import dev.doctor4t.trainmurdermystery.cca.PlayerPoisonComponent;
+import dev.doctor4t.trainmurdermystery.client.TMMClient;
 import dev.doctor4t.trainmurdermystery.util.PoisonUtils;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.core.BlockPos;
@@ -20,7 +21,11 @@ public abstract class AbstractClientPlayerEntityMixin extends Player {
 
     @Inject(method = "getFieldOfViewModifier", at = @At("RETURN"), cancellable = true)
     private void tmm$fovPulse(CallbackInfoReturnable<Float> cir) {
+        if (TMMClient.isInLobby) {
+            return;
+        }
         float original = cir.getReturnValueF();
+
         cir.setReturnValue(original * PoisonUtils.getFovMultiplier(1f, PlayerPoisonComponent.KEY.get(this)));
     }
 }

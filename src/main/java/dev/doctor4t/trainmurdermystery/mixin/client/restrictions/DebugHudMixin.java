@@ -10,6 +10,9 @@ import org.spongepowered.asm.mixin.injection.At;
 public class DebugHudMixin {
     @ModifyReturnValue(method = "showDebugScreen", at = @At("RETURN"))
     public boolean shouldShowDebugHud(boolean original) {
+        if (TMMClient.isInLobby) {
+            return original;
+        }
         return TMMClient.isPlayerCreative() && original;
     }
 }

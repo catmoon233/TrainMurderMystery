@@ -60,7 +60,7 @@ public class TMM implements ModInitializer {
     public static TMMConfig CONFIG = new TMMConfig();
     public static GameReplayManager REPLAY_MANAGER;
     public static final Networking NETWORKING = new Networking();
-
+    public static boolean isLobby = false;
     public static List<Predicate<Role>> canUseOtherPerson = new ArrayList<>();
     public static List<Predicate<Role>> canUseChatHud = new ArrayList<>();
     public static List<Predicate<Player>> canCollide = new ArrayList<>();
@@ -136,6 +136,10 @@ public class TMM implements ModInitializer {
             });
             REPLAY_MANAGER = new GameReplayManager(server);
             SyncMapConfigPayload.sendToAllPlayers();
+        });
+        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
+            isLobby = TMM.isLobby;
+            sender.sendPacket(new IsLobbyConfigPayload(TMM.isLobby));
         });
     }
 
@@ -215,6 +219,9 @@ public class TMM implements ModInitializer {
     }
 
     private void registerPayloadTypes() {
+        PayloadTypeRegistry.playS2C().register(IsLobbyConfigPayload.ID, IsLobbyConfigPayload.CODEC);
+        PayloadTypeRegistry.playC2S().register(IsLobbyConfigPayload.ID, IsLobbyConfigPayload.CODEC);
+
         PayloadTypeRegistry.playS2C().register(JoinSpecGroupPayload.ID, JoinSpecGroupPayload.CODEC);
         PayloadTypeRegistry.playC2S().register(JoinSpecGroupPayload.ID, JoinSpecGroupPayload.CODEC);
 

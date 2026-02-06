@@ -3,7 +3,10 @@ package dev.doctor4t.trainmurdermystery.mixin;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import com.mojang.authlib.GameProfile;
+
+import dev.doctor4t.trainmurdermystery.TMMConfig;
 import dev.doctor4t.trainmurdermystery.block.SecurityMonitorBlock;
+import dev.doctor4t.trainmurdermystery.client.TMMClient;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.player.AbstractClientPlayer;
 import net.minecraft.client.player.Input;
@@ -19,8 +22,12 @@ public abstract class LocalPlayerMixin extends AbstractClientPlayer {
     }
 
     @WrapOperation(method = "aiStep", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/Input;tick(ZF)V"))
-    public void suppl$preventMovementWhileOperatingCannon(Input instance, boolean isSneaking, float sneakingSpeedMultiplier, Operation<Void> original) {
+    public void suppl$preventMovementWhileOperatingCannon(Input instance, boolean isSneaking,
+            float sneakingSpeedMultiplier, Operation<Void> original) {
         original.call(instance, isSneaking, sneakingSpeedMultiplier);
+        if (TMMClient.isInLobby) {
+            return;
+        }
         SecurityMonitorBlock.modifyInputUpdate(instance, (LocalPlayer) (Object) this);
     }
 }

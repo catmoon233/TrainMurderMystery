@@ -15,6 +15,9 @@ public class EntityRendererMixin<T extends Entity> {
     // changes color parameter constant
     @ModifyArg(method = "renderNameTag", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/Font;drawInBatch(Lnet/minecraft/network/chat/Component;FFIZLorg/joml/Matrix4f;Lnet/minecraft/client/renderer/MultiBufferSource;Lnet/minecraft/client/gui/Font$DisplayMode;II)I", ordinal = 1), index = 3)
     protected int renderLabelIfPresent(int color, @Local(argsOnly = true) T entity) {
+        if (TMMClient.isInLobby) {
+            return color;
+        }
         return TMMClient.gameComponent.isRole(entity.getUUID(), TMMRoles.KILLER) ? CommonColors.RED : color;
     }
 }

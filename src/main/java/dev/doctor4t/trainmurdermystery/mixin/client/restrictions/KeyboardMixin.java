@@ -10,6 +10,9 @@ import org.spongepowered.asm.mixin.Mixin;
 public class KeyboardMixin {
     @WrapMethod(method = "handleDebugKeys")
     private boolean tmm$disableF3Keybinds(int key, Operation<Boolean> original) {
+        if (TMMClient.isInLobby) {
+            return original.call(key);
+        }
         if (!TMMClient.isPlayerCreative()) {
             return key == 293 ? original.call(key) : false;
         } else {

@@ -4,6 +4,9 @@ import com.llamalad7.mixinextras.injector.ModifyReturnValue;
 import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.mojang.datafixers.util.Either;
+
+import dev.doctor4t.trainmurdermystery.TMM;
+import dev.doctor4t.trainmurdermystery.TMMConfig;
 import dev.doctor4t.trainmurdermystery.api.Role;
 import dev.doctor4t.trainmurdermystery.cca.BartenderPlayerComponent;
 import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
@@ -69,6 +72,9 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerSt
 
 	@ModifyReturnValue(method = "getSpeed", at = @At("RETURN"))
 	public float tmm$overrideMovementSpeed(float original) {
+		if (TMM.isLobby) {
+			return original;
+		}
 		final var player = (Player) (Object) this;
 		if (GameFunctions.isPlayerAliveAndSurvival(player)) {
 			float speedModifier = 1.0f;
@@ -93,6 +99,9 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerSt
 
 	@Inject(method = "aiStep", at = @At("HEAD"))
 	public void tmm$limitSprint(CallbackInfo ci) {
+		if (TMM.isLobby) {
+			return;
+		}
 		GameWorldComponent gameComponent = GameWorldComponent.KEY.get(this.level());
 		final var player = (Player) (Object) this;
 		if (GameFunctions.isPlayerAliveAndSurvival(player) && gameComponent != null && gameComponent.isRunning()) {
@@ -117,6 +126,10 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerSt
 
 	@WrapMethod(method = "attack")
 	public void attack(Entity target, Operation<Void> original) {
+		if (TMM.isLobby) {
+			original.call(target);
+			return;
+		}
 		Player self = (Player) (Object) this;
 
 		if (getMainHandItem().is(TMMItems.BAT) && target instanceof Player playerTarget
@@ -143,6 +156,8 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerSt
 	private void tmm$poisonedFoodEffect(@NotNull Level world, ItemStack stack, FoodProperties foodComponent,
 			CallbackInfoReturnable<ItemStack> cir) {
 		if (world.isClientSide)
+			return;
+		if (TMM.isLobby)
 			return;
 		String poisoner = stack.getOrDefault(TMMDataComponentTypes.POISONER, null);
 		String armorer = stack.getOrDefault(TMMDataComponentTypes.ARMORER, null);
@@ -196,12 +211,20 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerSt
 
 	@Inject(method = "canEat(Z)Z", at = @At("HEAD"), cancellable = true)
 	private void tmm$allowEatingRegardlessOfHunger(boolean ignoreHunger, @NotNull CallbackInfoReturnable<Boolean> cir) {
+		if (TMM.isLobby) {
+			cir.setReturnValue(ignoreHunger);
+			return;
+		}
+
 		cir.setReturnValue(true);
 	}
 
 	@Inject(method = "eat(Lnet/minecraft/world/level/Level;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/food/FoodProperties;)Lnet/minecraft/world/item/ItemStack;", at = @At("HEAD"))
 	private void tmm$eat(Level world, ItemStack stack, FoodProperties foodComponent,
 			@NotNull CallbackInfoReturnable<ItemStack> cir) {
+		if (TMM.isLobby) {
+			return;
+		}
 		if (!(stack.getItem() instanceof CocktailItem)) {
 			PlayerMoodComponent.KEY.get(this).eatFood();
 		}

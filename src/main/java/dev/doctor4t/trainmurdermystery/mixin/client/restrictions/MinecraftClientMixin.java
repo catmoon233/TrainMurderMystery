@@ -19,11 +19,18 @@ public abstract class MinecraftClientMixin {
     public LocalPlayer player;
 
     @WrapOperation(method = "handleKeybinds", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/Minecraft;setScreen(Lnet/minecraft/client/gui/screens/Screen;)V", ordinal = 1))
-    private void tmm$replaceInventoryScreenWithLimitedInventoryScreen(Minecraft instance, Screen screen, Operation<Void> original) {
+    private void tmm$replaceInventoryScreenWithLimitedInventoryScreen(Minecraft instance, Screen screen,
+            Operation<Void> original) {
+        if (TMMClient.isInLobby) {
+            original.call(instance, screen);
+            return;
+        }
+
         if (TMMClient.gameComponent.getFade() > 0) {
             return;
         }
 
-        original.call(instance, TMMClient.isPlayerAliveAndInSurvival() ? new LimitedInventoryScreen(this.player) : screen);
+        original.call(instance,
+                TMMClient.isPlayerAliveAndInSurvival() ? new LimitedInventoryScreen(this.player) : screen);
     }
 }

@@ -33,15 +33,18 @@ public abstract class MountableBlock extends Block {
         return super.getShape(state, world, pos, context);
     }
 
-    public static Map<UUID,Vec3> lastPos = new HashMap<>();
+    public static Map<UUID, Vec3> lastPos = new HashMap<>();
+
     @Override
-    public InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player player, BlockHitResult hit) {
+    public InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player player,
+            BlockHitResult hit) {
         float radius = 1;
         if (!player.isShiftKeyDown()
                 && player.position().subtract(pos.getCenter()).length() <= 1.4f
                 && !(player.getMainHandItem().getItem() instanceof BlockItem blockItem
-                && blockItem.getBlock() instanceof MountableBlock)
-                && world.getEntitiesOfClass(SeatEntity.class, AABB.ofSize(pos.getCenter(), radius, radius, radius), Entity::isAlive).isEmpty()) {
+                        && blockItem.getBlock() instanceof MountableBlock)
+                && world.getEntitiesOfClass(SeatEntity.class, AABB.ofSize(pos.getCenter(), radius, radius, radius),
+                        Entity::isAlive).isEmpty()) {
 
             if (world.isClientSide) {
                 return InteractionResult.sidedSuccess(true);
@@ -50,9 +53,14 @@ public abstract class MountableBlock extends Block {
             if (!player.getCooldowns().isOnCooldown(TMMBlocks.ACACIA_BRANCH.asItem())) {
                 player.getCooldowns().addCooldown(TMMBlocks.ACACIA_BRANCH.asItem(), 10);
 
-                if (player.getVehicle()!= null){
+                if (player.getVehicle() != null) {
                     player.stopRiding();
-                    player.setPos(lastPos.get(player.getUUID()));
+                    if (lastPos != null) {
+                        var ppos = lastPos.get(player.getUUID());
+                        if (ppos != null) {
+                            player.setPos(ppos);
+                        }
+                    }
                 }
 
                 SeatEntity seatEntity = TMMEntities.SEAT.create(world);

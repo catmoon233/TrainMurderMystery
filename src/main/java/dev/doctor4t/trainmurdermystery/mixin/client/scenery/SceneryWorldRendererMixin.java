@@ -1,8 +1,6 @@
 package dev.doctor4t.trainmurdermystery.mixin.client.scenery;
 
 import com.llamalad7.mixinextras.sugar.Local;
-import dev.doctor4t.trainmurdermystery.cca.TrainWorldComponent;
-import dev.doctor4t.trainmurdermystery.client.TMMClient;
 import it.unimi.dsi.fastutil.objects.ObjectListIterator;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.LevelRenderer;

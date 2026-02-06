@@ -43,9 +43,13 @@ public class InGameHudMixin {
 
     @Inject(method = "renderHotbarAndDecorations", at = @At("TAIL"))
     private void tmm$renderHud(GuiGraphics context, DeltaTracker tickCounter, CallbackInfo ci) {
+        if (TMMClient.isInLobby) {
+            return;
+        }
         if (TMMClient.trainComponent != null && TMMClient.trainComponent.hasHud()) {
             LocalPlayer player = this.minecraft.player;
-            if (player == null) return;
+            if (player == null)
+                return;
             Font renderer = Minecraft.getInstance().font;
             MoodRenderer.renderHud(player, renderer, context, tickCounter);
             RoleNameRenderer.renderHud(renderer, player, context, tickCounter);
@@ -54,8 +58,8 @@ public class InGameHudMixin {
             if (Minecraft.getInstance().screen == null)
                 StoreRenderer.renderHud(renderer, player, context, tickCounter.getGameTimeDeltaPartialTick(true));
             TimeRenderer.renderHud(renderer, player, context, tickCounter.getGameTimeDeltaPartialTick(true));
-            StaminaRenderer.renderHud(player, context, tickCounter.getGameTimeDeltaPartialTick( true));
-            SansRenderer.instance.tick(player, context, tickCounter.getGameTimeDeltaPartialTick( true));
+            StaminaRenderer.renderHud(player, context, tickCounter.getGameTimeDeltaPartialTick(true));
+            SansRenderer.instance.tick(player, context, tickCounter.getGameTimeDeltaPartialTick(true));
             LobbyPlayersRenderer.renderHud(renderer, player, context);
         }
     }
@@ -67,7 +71,8 @@ public class InGameHudMixin {
             return;
         }
         LocalPlayer player = this.minecraft.player;
-        if (player == null) return;
+        if (player == null)
+            return;
         CrosshairRenderer.renderCrosshair(this.minecraft, player, context, tickCounter);
 
     }
@@ -88,7 +93,8 @@ public class InGameHudMixin {
 
     @WrapMethod(method = "renderTabList")
     private void tmm$removePlayerList(GuiGraphics context, DeltaTracker tickCounter, Operation<Void> original) {
-        if (!TMMClient.isPlayerAliveAndInSurvival()) original.call(context, tickCounter);
+        if (!TMMClient.isPlayerAliveAndInSurvival())
+            original.call(context, tickCounter);
     }
 
     @WrapMethod(method = "renderExperienceLevel")
@@ -99,17 +105,22 @@ public class InGameHudMixin {
     }
 
     @WrapOperation(method = "renderItemHotbar", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;blitSprite(Lnet/minecraft/resources/ResourceLocation;IIII)V", ordinal = 0))
-    private void tmm$overrideHotbarTexture(GuiGraphics instance, ResourceLocation texture, int x, int y, int width, int height, @NotNull Operation<Void> original) {
-        original.call(instance, TMMClient.isPlayerAliveAndInSurvival() ? TMM_HOTBAR_TEXTURE : texture, x, y, width, height);
+    private void tmm$overrideHotbarTexture(GuiGraphics instance, ResourceLocation texture, int x, int y, int width,
+            int height, @NotNull Operation<Void> original) {
+        original.call(instance, TMMClient.isPlayerAliveAndInSurvival() ? TMM_HOTBAR_TEXTURE : texture, x, y, width,
+                height);
     }
 
     @WrapOperation(method = "renderItemHotbar", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/GuiGraphics;blitSprite(Lnet/minecraft/resources/ResourceLocation;IIII)V", ordinal = 1))
-    private void tmm$overrideHotbarSelectionTexture(GuiGraphics instance, ResourceLocation texture, int x, int y, int width, int height, @NotNull Operation<Void> original) {
-        original.call(instance, TMMClient.isPlayerAliveAndInSurvival() ? TMM_HOTBAR_SELECTION_TEXTURE : texture, x, y, width, height);
+    private void tmm$overrideHotbarSelectionTexture(GuiGraphics instance, ResourceLocation texture, int x, int y,
+            int width, int height, @NotNull Operation<Void> original) {
+        original.call(instance, TMMClient.isPlayerAliveAndInSurvival() ? TMM_HOTBAR_SELECTION_TEXTURE : texture, x, y,
+                width, height);
     }
 
     @WrapMethod(method = "renderCameraOverlays")
-    private void tmm$moveSleepOverlayToUnderUI(GuiGraphics context, DeltaTracker tickCounter, Operation<Void> original) {
+    private void tmm$moveSleepOverlayToUnderUI(GuiGraphics context, DeltaTracker tickCounter,
+            Operation<Void> original) {
         // sleep overlay
         if (this.minecraft.player != null && this.minecraft.player.getSleepTimer() > 0) {
             this.minecraft.getProfiler().push("sleep");
@@ -131,7 +142,8 @@ public class InGameHudMixin {
     }
 
     @WrapMethod(method = "renderSleepOverlay")
-    private void tmm$removeSleepOverlayAndDoGameFade(GuiGraphics context, DeltaTracker tickCounter, Operation<Void> original) {
+    private void tmm$removeSleepOverlayAndDoGameFade(GuiGraphics context, DeltaTracker tickCounter,
+            Operation<Void> original) {
         if (TMMClient.gameComponent != null) {
             // game start / stop fade in / out
             float fadeIn = TMMClient.gameComponent.getFade();

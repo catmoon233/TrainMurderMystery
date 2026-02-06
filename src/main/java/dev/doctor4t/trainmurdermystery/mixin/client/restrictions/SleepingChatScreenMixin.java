@@ -24,14 +24,20 @@ public abstract class SleepingChatScreenMixin extends ChatScreen {
     }
 
     @WrapMethod(method = "render")
-    public void tmm$disableSleepChat(GuiGraphics context, int mouseX, int mouseY, float delta, Operation<Void> original) {
+    public void tmm$disableSleepChat(GuiGraphics context, int mouseX, int mouseY, float delta,
+            Operation<Void> original) {
+        if (TMMClient.isInLobby) {
+            original.call(context, mouseX, mouseY, delta);
+            return;
+        }
         if (!TMMClient.isPlayerAliveAndInSurvival()) {
             original.call(context, mouseX, mouseY, delta);
         }
     }
 
     @WrapMethod(method = "render")
-    public void tmm$onlyRenderStopSleepingButton(GuiGraphics context, int mouseX, int mouseY, float delta, Operation<Void> original) {
+    public void tmm$onlyRenderStopSleepingButton(GuiGraphics context, int mouseX, int mouseY, float delta,
+            Operation<Void> original) {
         this.leaveBedButton.render(context, mouseX, mouseY, delta);
     }
 

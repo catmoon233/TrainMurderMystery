@@ -25,17 +25,27 @@ public abstract class WorldRendererMixin {
 
     @Inject(method = "offsetFrustum", at = @At(value = "RETURN"), cancellable = true)
     private static void tmm$setFrustumToAlwaysVisible(Frustum frustum, @NotNull CallbackInfoReturnable<Frustum> cir) {
+        if (TMMClient.isInLobby) {
+            return;
+        }
         cir.setReturnValue(new AlwaysVisibleFrustum(frustum));
     }
 
     @WrapOperation(method = "renderLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/LevelRenderer;renderSky(Lorg/joml/Matrix4f;Lorg/joml/Matrix4f;FLnet/minecraft/client/Camera;ZLjava/lang/Runnable;)V"))
-    public void tmm$disableSky(LevelRenderer instance, Matrix4f matrix4f, Matrix4f projectionMatrix, float tickDelta, Camera camera, boolean thickFog, Runnable fogCallback, Operation<Void> original) {
-        if (!TMMClient.isTrainMoving() || TMMClient.trainComponent.getTimeOfDay() == TrainWorldComponent.TimeOfDay.SUNDOWN)
+    public void tmm$disableSky(LevelRenderer instance, Matrix4f matrix4f, Matrix4f projectionMatrix, float tickDelta,
+            Camera camera, boolean thickFog, Runnable fogCallback, Operation<Void> original) {
+        if (!TMMClient.isTrainMoving()
+                || TMMClient.trainComponent.getTimeOfDay() == TrainWorldComponent.TimeOfDay.SUNDOWN)
             original.call(instance, matrix4f, projectionMatrix, tickDelta, camera, thickFog, fogCallback);
     }
 
     @WrapOperation(method = "renderLevel", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/FogRenderer;setupFog(Lnet/minecraft/client/Camera;Lnet/minecraft/client/renderer/FogRenderer$FogMode;FZF)V"))
-    public void tmm$applyBlizzardFog(Camera camera, FogRenderer.FogMode fogType, float viewDistance, boolean thickFog, float tickDelta, Operation<Void> original) {
+    public void tmm$applyBlizzardFog(Camera camera, FogRenderer.FogMode fogType, float viewDistance, boolean thickFog,
+            float tickDelta, Operation<Void> original) {
+        if (TMMClient.isInLobby) {
+            original.call(camera, fogType, viewDistance, thickFog, tickDelta);
+            return;
+        }
         if (TMMClient.trainComponent != null && TMMClient.trainComponent.isFoggy()) {
             if (TMMClient.isTrainMoving()) {
                 tmm$doFog(0, 130);

@@ -2,6 +2,7 @@ package dev.doctor4t.trainmurdermystery;
 
 import dev.doctor4t.trainmurdermystery.game.GameConstants;
 import eu.midnightdust.lib.config.MidnightConfig;
+import eu.midnightdust.lib.config.MidnightConfig.Entry;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 
@@ -23,6 +24,7 @@ public class TMMConfig extends MidnightConfig {
 
         // 商店物品价格默认值
         DEFAULT_VALUES.put("mapRandomCount", -1);
+        DEFAULT_VALUES.put("isLobby", false);
         DEFAULT_VALUES.put("knifePrice", 100);
         DEFAULT_VALUES.put("revolverPrice", 300);
         DEFAULT_VALUES.put("grenadePrice", 350);
@@ -80,6 +82,9 @@ public class TMMConfig extends MidnightConfig {
     // 随机地图设置
     @Entry(category = "map")
     public static int mapRandomCount = -1;
+
+    @Entry(category = "map")
+    public static boolean isLobby = false;
 
     // 商店物品价格配置 - 服务端只读
     @Comment(category = "shop", centered = true)
@@ -164,6 +169,7 @@ public class TMMConfig extends MidnightConfig {
     public static boolean verboseTrainResetLogs = true;
 
     // AFK设置
+
     @Comment(category = "afk", centered = true)
     public static Comment afkConfigComment;
     @Entry(category = "afk", min = 60, max = 12000, isSlider = true) // 3秒到10分钟
@@ -293,6 +299,8 @@ public class TMMConfig extends MidnightConfig {
                 blackoutCooldown = json.get("blackoutCooldown").getAsInt();
 
             // 读取game配置
+            if (json.has("isLobby") && json.get("isLobby").isJsonPrimitive())
+                isLobby = json.get("isLobby").getAsBoolean();
             if (json.has("mapRandomCount") && json.get("mapRandomCount").isJsonPrimitive())
                 mapRandomCount = json.get("mapRandomCount").getAsInt();
             if (json.has("bartenderGlowDuration") && json.get("bartenderGlowDuration").isJsonPrimitive())
