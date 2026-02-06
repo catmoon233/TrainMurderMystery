@@ -67,7 +67,7 @@ public record GunShootPayload(int target) implements CustomPacketPayload {
             }
 
             if (player.serverLevel().getEntity(payload.target()) instanceof Player target
-                    && target.distanceTo(player) < 65.0) {
+                    && target.distanceTo(player) < 70.0) {
                 GameWorldComponent game = GameWorldComponent.KEY.get(player.level());
                 Item revolver = TMMItems.REVOLVER;
                 boolean isDerringer = mainHandStack.is(TMMItems.DERRINGER);

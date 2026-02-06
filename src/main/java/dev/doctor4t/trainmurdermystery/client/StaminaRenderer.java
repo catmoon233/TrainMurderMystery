@@ -1,6 +1,7 @@
 package dev.doctor4t.trainmurdermystery.client;
 
 import dev.doctor4t.trainmurdermystery.TMMConfig;
+import dev.doctor4t.trainmurdermystery.api.ChargeableItemRegistry;
 import dev.doctor4t.trainmurdermystery.api.Role;
 import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
 import dev.doctor4t.trainmurdermystery.game.GameFunctions;
@@ -100,27 +101,50 @@ public class StaminaRenderer {
 
 		final var mainHandStack = player.getMainHandItem();
 		boolean isChargingWeapon = false;
-		if ( mainHandStack.getItem() == TMMItems.GRENADE){
-			maxStamina = 20;
-			final var itemUseTime = player.getTicksUsingItem();
-			staminaPercent = Math.min( (float) itemUseTime / 20,1f);
-			isChargingWeapon = true;
-		}
-		if (mainHandStack.getItem() == TMMItems.KNIFE ){
-			maxStamina = 8;
-			final var itemUseTime = player.getTicksUsingItem();
-			staminaPercent = Math.min( (float) itemUseTime / 10,1f);
-			isChargingWeapon = true;
+		// 检查是否是蓄力物品
+		if (ChargeableItemRegistry.isChargeableStack(mainHandStack)) {
+			ChargeableItemRegistry.ChargeInfo chargeInfo = ChargeableItemRegistry.getChargeInfo(mainHandStack, player);
+			if (chargeInfo != null) {
+				maxStamina = chargeInfo.maxStamina;
+				staminaPercent = chargeInfo.chargePercentage;
+				isChargingWeapon = true;
 
-			// 检测刀是否完全蓄力
-			if (itemUseTime >= 10 && !knifeFullyCharged) {
-				knifeFullyCharged = true;
-				flashStartTime = System.currentTimeMillis(); // 开始闪光效果
-				screenRedEffectStartTime = System.currentTimeMillis(); // 触发屏幕红色效果
-			} else if (itemUseTime < 10) {
-				knifeFullyCharged = false;
+				// 处理蓄力完成效果
+				if (staminaPercent >= 1.0f && !knifeFullyCharged) { // 重用knifeFullyCharged变量作为通用蓄力完成标志
+					knifeFullyCharged = true;
+					flashStartTime = System.currentTimeMillis(); // 开始闪光效果
+					screenRedEffectStartTime = System.currentTimeMillis(); // 触发屏幕红色效果
+					// 调用蓄力完成回调
+					ChargeableItemRegistry.onFullyCharged(mainHandStack, player);
+				} else if (staminaPercent < 1.0f) {
+					knifeFullyCharged = false;
+				}
+			}
+		} else {
+			// 保持原有逻辑用于兼容性
+			if ( mainHandStack.getItem() == TMMItems.GRENADE){
+				maxStamina = 20;
+				final var itemUseTime = player.getTicksUsingItem();
+				staminaPercent = Math.min( (float) itemUseTime / 20,1f);
+				isChargingWeapon = true;
+			}
+			if (mainHandStack.getItem() == TMMItems.KNIFE ){
+				maxStamina = 8;
+				final var itemUseTime = player.getTicksUsingItem();
+				staminaPercent = Math.min( (float) itemUseTime / 10,1f);
+				isChargingWeapon = true;
+
+				// 检测刀是否完全蓄力
+				if (itemUseTime >= 10 && !knifeFullyCharged) {
+					knifeFullyCharged = true;
+					flashStartTime = System.currentTimeMillis(); // 开始闪光效果
+					screenRedEffectStartTime = System.currentTimeMillis(); // 触发屏幕红色效果
+				} else if (itemUseTime < 10) {
+					knifeFullyCharged = false;
+				}
 			}
 		}
+
 
 		if (maxStamina <= 0) return; // 无体力系统
 
@@ -389,11 +413,12 @@ public class StaminaRenderer {
 
 	public static void tick() {
 		view.update();
-		// 如果不在使用刀，重置蓄力状态
+		// 如果不在使用蓄力物品，重置蓄力状态
 		Minecraft minecraft = Minecraft.getInstance();
 		if (minecraft.player != null) {
 			ItemStack mainHandStack = minecraft.player.getMainHandItem();
-			if (mainHandStack.getItem() != TMMItems.KNIFE) {
+			// 检查是否不是蓄力物品或不是原生的TMM刀
+			if (!ChargeableItemRegistry.isChargeableStack(mainHandStack) && mainHandStack.getItem() != TMMItems.KNIFE) {
 				knifeFullyCharged = false;
 				flashStartTime = 0L;
 				screenRedEffectStartTime = 0L;
