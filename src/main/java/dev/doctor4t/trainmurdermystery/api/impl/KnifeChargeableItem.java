@@ -11,7 +11,7 @@ import net.minecraft.world.item.ItemStack;
 public class KnifeChargeableItem implements ChargeableItem {
     @Override
     public int getMaxChargeTime(ItemStack stack, Player player) {
-        return 10; // 10刻（0.5秒）蓄力时间
+        return 8; // 10刻（0.5秒）蓄力时间
     }
 
     @Override
