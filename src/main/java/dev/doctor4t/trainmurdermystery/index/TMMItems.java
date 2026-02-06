@@ -4,6 +4,9 @@ import java.util.ArrayList;
 
 import dev.doctor4t.ratatouille.util.registrar.ItemRegistrar;
 import dev.doctor4t.trainmurdermystery.TMM;
+import dev.doctor4t.trainmurdermystery.api.ChargeableItemRegistry;
+import dev.doctor4t.trainmurdermystery.api.impl.GrenadeChargeableItem;
+import dev.doctor4t.trainmurdermystery.api.impl.KnifeChargeableItem;
 import dev.doctor4t.trainmurdermystery.item.*;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
 import net.minecraft.core.Registry;
@@ -105,5 +108,9 @@ public @SuppressWarnings("unchecked") interface TMMItems {
         // SkinnableItem.add(TMMItems.LOCKPICK);
         SkinnableItem.add(TMMItems.GRENADE);
         SkinnableItem.add(TMMItems.BAT);
+        
+        // 注册蓄力物品
+        ChargeableItemRegistry.register(TMMItems.KNIFE, new KnifeChargeableItem());
+        ChargeableItemRegistry.register(TMMItems.GRENADE, new GrenadeChargeableItem());
     }
 }
