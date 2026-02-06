@@ -66,11 +66,7 @@ public class InGameHudMixin {
 
     @WrapMethod(method = "renderCrosshair")
     private void tmm$renderHud(GuiGraphics context, DeltaTracker tickCounter, Operation<Void> original) {
-        if (TMMClient.isInLobby) {
-            original.call(context, tickCounter);
-            return;
-        }
-        if (!TMMClient.isPlayerAliveAndInSurvival()) {
+        if (TMMClient.isInLobby || !TMMClient.isPlayerAliveAndInSurvival()) {
             original.call(context, tickCounter);
             return;
         }
@@ -138,7 +134,7 @@ public class InGameHudMixin {
             Operation<Void> original) {
         // sleep overlay
         if (TMMClient.isInLobby) {
-            original.call(context);
+            original.call(context, tickCounter);
             return;
         }
         if (this.minecraft.player != null && this.minecraft.player.getSleepTimer() > 0) {
@@ -164,7 +160,7 @@ public class InGameHudMixin {
     private void tmm$removeSleepOverlayAndDoGameFade(GuiGraphics context, DeltaTracker tickCounter,
             Operation<Void> original) {
         if (TMMClient.isInLobby) {
-            original.call(context);
+            original.call(context, tickCounter);
             return;
         }
         if (TMMClient.gameComponent != null) {
