@@ -49,7 +49,8 @@ public class KnifeItem extends Item implements ItemWithSkin {
     public enum Skin {
         DEFAULT(Colors.LIGHT_GRAY, "Kitchen Knife"),
         CEREMONIAL(0xFFD98C28, "Ceremonial Dagger"),
-        PICK(0xFF8D4A51, "Ice Pick");
+        PICK(0xFF8D4A51, "Ice Pick"),
+        DIAMOND_KNIFE(0xFF4AEDFF, "Diamond Knife");
 
         public final int color;
         public final @Nullable String tooltipName;
