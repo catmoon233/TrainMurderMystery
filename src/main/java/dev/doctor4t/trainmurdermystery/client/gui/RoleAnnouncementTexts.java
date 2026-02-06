@@ -72,7 +72,7 @@ public class RoleAnnouncementTexts {
                     .translatable(count == 1 ? "announcement.premise" : "announcement.premises", count);
             this.goalText = (count) -> Component
                     .translatable(
-                            (count == 1 ? "announcement.goal." : "announcement.goals.")
+                            (count == 1 ? "announcement.goals." : "announcement.goals.")
                                     + this.id.getPath().toLowerCase(),
                             count)
                     .withColor(this.colour);
