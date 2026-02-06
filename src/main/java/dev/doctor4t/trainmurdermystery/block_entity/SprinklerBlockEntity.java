@@ -37,10 +37,16 @@ public class SprinklerBlockEntity extends SyncingBlockEntity {
         double z = pos.getZ() + 0.5;
 
         for (int i = 0; i < 5; i++) {
-            world.addParticle(direction == Direction.DOWN ? ParticleTypes.FALLING_WATER : ParticleTypes.SPLASH,
-                    x - direction.getStepX() * offsetScale + ((random.nextFloat() * 2f - 1f) * (direction.getAxis() != Direction.Axis.X ? randomOffsetScale : 0)),
-                    (direction == Direction.DOWN ? .5 : .6) + y - direction.getStepY() * offsetScale + ((random.nextFloat() * 2f - 1f) * (direction.getAxis() != Direction.Axis.Y ? randomOffsetScale : 0)),
-                    z - direction.getStepZ() * offsetScale + ((random.nextFloat() * 2f - 1f) * (direction.getAxis() != Direction.Axis.Z ? randomOffsetScale : 0)),
+            world.addParticle(direction == Direction.DOWN ? ParticleTypes.FALLING_WATER : ParticleTypes.SPLASH, true,
+                    x - direction.getStepX() * offsetScale
+                            + ((random.nextFloat() * 2f - 1f)
+                                    * (direction.getAxis() != Direction.Axis.X ? randomOffsetScale : 0)),
+                    (direction == Direction.DOWN ? .5 : .6) + y - direction.getStepY() * offsetScale
+                            + ((random.nextFloat() * 2f - 1f)
+                                    * (direction.getAxis() != Direction.Axis.Y ? randomOffsetScale : 0)),
+                    z - direction.getStepZ() * offsetScale
+                            + ((random.nextFloat() * 2f - 1f)
+                                    * (direction.getAxis() != Direction.Axis.Z ? randomOffsetScale : 0)),
                     direction.getStepX() * velScale,
                     direction.getStepY() * velScale * (direction == Direction.UP ? 20f : 0),
                     direction.getStepZ() * velScale);
