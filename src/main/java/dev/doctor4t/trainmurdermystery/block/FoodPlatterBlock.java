@@ -73,15 +73,15 @@ public class FoodPlatterBlock extends BaseEntityBlock {
     protected InteractionResult useWithoutItem(BlockState state, @NotNull Level world, BlockPos pos, Player player,
             BlockHitResult hit) {
         if (world.isClientSide) {
-            if (TMM.REPLAY_MANAGER != null) {
-                if (player.getItemInHand(InteractionHand.MAIN_HAND).getItem().equals(TMMItems.POISON_VIAL)) {
-                    TMM.REPLAY_MANAGER.recordItemUse(player.getUUID(),
-                            BuiltInRegistries.ITEM.getKey(TMMItems.POISON_VIAL));
-                } else if (player.getItemInHand(InteractionHand.MAIN_HAND).getItem().equals(TMMItems.DEFENSE_VIAL)) {
-                    TMM.REPLAY_MANAGER.recordItemUse(player.getUUID(),
-                            BuiltInRegistries.ITEM.getKey(TMMItems.DEFENSE_VIAL));
-                }
-            }
+            // if (TMM.REPLAY_MANAGER != null) {
+            //     if (player.getItemInHand(InteractionHand.MAIN_HAND).getItem().equals(TMMItems.POISON_VIAL)) {
+            //         TMM.REPLAY_MANAGER.recordItemUse(player.getUUID(),
+            //                 BuiltInRegistries.ITEM.getKey(TMMItems.POISON_VIAL));
+            //     } else if (player.getItemInHand(InteractionHand.MAIN_HAND).getItem().equals(TMMItems.DEFENSE_VIAL)) {
+            //         TMM.REPLAY_MANAGER.recordItemUse(player.getUUID(),
+            //                 BuiltInRegistries.ITEM.getKey(TMMItems.DEFENSE_VIAL));
+            //     }
+            // }
             return InteractionResult.SUCCESS;
         }
         if (!(world.getBlockEntity(pos) instanceof BeveragePlateBlockEntity blockEntity))

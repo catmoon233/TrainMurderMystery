@@ -63,7 +63,7 @@ public class PlayerPoisonComponent implements RoleComponent, ServerTickingCompon
         if (this.poisonTicks > 0) {
             int ticksSinceStart = this.initialPoisonTicks - this.poisonTicks;
 
-            if (ticksSinceStart < 200) return;
+            if (ticksSinceStart < 100) return;
 
             int minCooldown = 10;
             int maxCooldown = 60;

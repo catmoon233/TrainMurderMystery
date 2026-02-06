@@ -153,20 +153,19 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerSt
 						world.getRandom().nextIntBetweenInclusive(PlayerPoisonComponent.clampTime.getA(),
 								PlayerPoisonComponent.clampTime.getB()),
 						UUID.fromString(poisoner));
-				this.playSound(SoundEvents.WITCH_DRINK, 1f, 1f);
 			} else {
 				PlayerPoisonComponent.KEY.get(this)
 						.setPoisonTicks(Mth.clamp(poisonTicks - world.getRandom().nextIntBetweenInclusive(100, 300), 0,
 								PlayerPoisonComponent.clampTime.getB()), UUID.fromString(poisoner));
-				this.playSound(SoundEvents.WITCH_DRINK, 1f, 1f);
 			}
+			// this.playSound(SoundEvents.WITCH_DRINK, 1f, 1f);
 		}
 		if (armorer != null) {
 			if (world instanceof ServerLevel serverLevel) {
 				if (serverLevel.getPlayerByUUID(UUID.fromString(armorer)) == null)
 					return;
 				BartenderPlayerComponent bartenderPlayerComponent = BartenderPlayerComponent.KEY.get(this);
-				this.playSound(SoundEvents.SHIELD_BLOCK, 1f, 1f);
+				// this.playSound(SoundEvents.SHIELD_BLOCK, 1f, 1f);
 				bartenderPlayerComponent.giveArmor();
 			}
 		}
