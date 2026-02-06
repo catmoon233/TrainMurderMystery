@@ -22,6 +22,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
+import java.util.function.Predicate;
 
 import static net.fabricmc.loader.api.FabricLoader.getInstance;
 
@@ -343,13 +344,15 @@ public class GameReplayManager {
                         GameWorldComponent gameWorldComponent = GameWorldComponent.KEY.get(player.level());
                         if (gameWorldComponent != null && gameWorldComponent.isRunning()
                                 && !GameFunctions.isPlayerAliveAndSurvival(player)) {
-                            if (gameWorldComponent.getRole(player) == null || !"the_insane_damned_paranoid_killer"
-                                    .equals(gameWorldComponent.getRole(player).identifier().getPath())) {
+                            if (cantSeeEvent.stream().noneMatch(playerPredicate -> playerPredicate.test(player))) {
+//                            if (gameWorldComponent.getRole(player) == null || !"the_insane_damned_paranoid_killer"
+//                                    .equals(gameWorldComponent.getRole(player).identifier().getPath())) {
                                 player.sendSystemMessage(
                                         Component.translatable("tmm.replay.event")
                                                 .append(currentReplayData.toText(this, currentReplayData, event1))
 
-                    );
+                                );
+//                            }
                             }
                         }
                     });
@@ -359,6 +362,7 @@ public class GameReplayManager {
 
     }
 
+    public static List<Predicate<Player>> cantSeeEvent = new ArrayList<>();
     public void recordPlayerKill(UUID killerUuid, UUID victimUuid, ResourceLocation deathReason) {
         String deathReasonStr = deathReason != null ? deathReason.toString() : "unknown";
         addEvent(GameReplayData.EventType.PLAYER_KILL, killerUuid, victimUuid, deathReasonStr, null);

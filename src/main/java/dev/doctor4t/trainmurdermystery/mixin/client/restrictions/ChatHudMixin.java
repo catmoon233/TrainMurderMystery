@@ -5,6 +5,7 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.api.Role;
 import dev.doctor4t.trainmurdermystery.client.TMMClient;
+import dev.doctor4t.trainmurdermystery.game.GameReplayManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.ChatComponent;
@@ -21,13 +22,15 @@ public class ChatHudMixin {
             original.call(context, currentTick, mouseX, mouseY, focused);
             return;
         }
-        
+        if (GameReplayManager.cantSeeEvent.stream().anyMatch(p -> p.test(minecraft.player))){
+            return;
+        }
         // 如果游戏组件不存在或玩家不在游戏中，直接渲染聊天框
         if (TMMClient.gameComponent == null || !TMMClient.isPlayerAliveAndInSurvival()) {
             original.call(context, currentTick, mouseX, mouseY, focused);
             return;
         }
-        
+
         // 获取玩家角色
         final var playerRole = TMMClient.gameComponent.getRole(minecraft.player);
         
