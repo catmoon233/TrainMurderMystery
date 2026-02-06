@@ -284,7 +284,7 @@ public class SansRenderer {
         if (m_mc.player == null || m_mc.player.isCreative() || m_mc.player.isSpectator())
             return;
 
-        if (m_btAlpha > 0f) {
+        if (m_btAlpha >= 0f) {
             RenderSystem.enableBlend();
             RenderSystem.defaultBlendFunc();
 
@@ -299,13 +299,13 @@ public class SansRenderer {
             poseStack.scale(scale, scale, 1f);
 
             // 应用旋转
-            poseStack.mulPose(com.mojang.math.Axis.ZP.rotationDegrees(m_bloodTendrilsRotation));
+            //poseStack.mulPose(com.mojang.math.Axis.ZP.rotationDegrees(m_bloodTendrilsRotation));
 
             // 应用偏移
-            poseStack.translate(m_bloodTendrilsOffsetX, m_bloodTendrilsOffsetY, 0f);
+            //poseStack.translate(m_bloodTendrilsOffsetX, m_bloodTendrilsOffsetY, 0f);
 
             // 移回原位置
-            poseStack.translate(-scw / 2f, -sch / 2f, 0f);
+            //poseStack.translate(-scw / 2f, -sch / 2f, 0f);
 
             // 设置纹理
             RenderSystem.setShaderTexture(0, BLOOD_TENDRILS_OVERLAY);
@@ -317,7 +317,7 @@ public class SansRenderer {
             renderFullscreen(poseStack, scw, sch, 100, 58, 0, 0, 100, 58, finalAlpha);
 
             // 如果理智非常低，渲染第二层血丝增强效果
-            if (m_cap != null && m_cap.getMood() < 0.15f) {
+            /*if (m_cap != null && m_cap.getMood() < 0.15f) {
                 float secondaryAlpha = finalAlpha * 0.5f;
                 float secondaryScale = 1.0f + (float)Math.sin(m_bloodTendrilsAnimationTimer * 0.03f) * 0.1f;
 
@@ -330,7 +330,7 @@ public class SansRenderer {
 
                 renderFullscreen(poseStack, scw, sch, 100, 58, 0, 0, 100, 58, secondaryAlpha);
                 poseStack.popPose();
-            }
+            }*/
 
             poseStack.popPose();
             RenderSystem.disableBlend();
@@ -374,7 +374,7 @@ public class SansRenderer {
         if (m_mc.player != null && m_hint != null && m_cap != null) {
             renderHint(new Gui(m_mc), context.pose(), dt, m_mc.getWindow().getGuiScaledWidth(), m_mc.getWindow().getGuiScaledHeight(), context);
         }
-        if (m_cap != null && m_cap.getMood() < .36f) {
+        if (m_cap != null && m_cap.getMood() <= .36f) {
             renderBloodTendrilsOverlay(new Gui(m_mc), context.pose(), dt, m_mc.getWindow().getGuiScaledWidth(), m_mc.getWindow().getGuiScaledHeight());
         }
     }

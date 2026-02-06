@@ -69,6 +69,8 @@ public class PlayerMoodComponent implements RoleComponent, ServerTickingComponen
         return player == this.player;
     }
 
+
+
     @Override
     public void reset() {
         this.tasks.clear();
@@ -77,6 +79,11 @@ public class PlayerMoodComponent implements RoleComponent, ServerTickingComponen
         this.psychosisItems.clear();
         this.setMood(1f);
         this.sync();
+    }
+
+    @Override
+    public void clear() {
+        this.reset();
     }
 
     private List<Item> getPsychosisItemPool() {

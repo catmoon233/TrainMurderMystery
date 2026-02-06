@@ -43,6 +43,10 @@ public class DynamicCoinComponent implements RoleComponent, ServerTickingCompone
     }
 
     @Override
+    public void clear(){
+        reset();
+    }
+    @Override
     public void clientTick() {
 
     }

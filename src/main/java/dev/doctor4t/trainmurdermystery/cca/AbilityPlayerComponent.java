@@ -1,6 +1,7 @@
 package dev.doctor4t.trainmurdermystery.cca;
 
 import dev.doctor4t.trainmurdermystery.TMM;
+import dev.doctor4t.trainmurdermystery.api.Role;
 import dev.doctor4t.trainmurdermystery.api.RoleComponent;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -67,7 +68,11 @@ public class AbilityPlayerComponent implements RoleComponent, ServerTickingCompo
         this.maxCharges = -1;
         this.sync();
     }
-    
+
+    @Override
+    public void clear() {
+        this.reset();
+    }
     /**
      * 设置冷却时间
      * 
@@ -96,13 +101,14 @@ public class AbilityPlayerComponent implements RoleComponent, ServerTickingCompo
      */
     static int TICK_R;
     public boolean useAbility() {
-        if (cooldown > 0) {
-            return false;
-        }
-        if (charges == 0) {
-            return false;
-        }
-        if (charges > 0) {
+        if (canUseAbility()) {
+            final var gameWorldComponent = GameWorldComponent.KEY.get(this.player);
+            final var role = gameWorldComponent.getRole(this.player);
+            if (role == null) {
+                return false;
+            }else {
+                role.onAbilityUse(this.player);
+            }
             charges--;
         }
 

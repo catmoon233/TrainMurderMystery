@@ -38,7 +38,10 @@ public class PlayerAFKComponent implements RoleComponent, ServerTickingComponent
     public void sync() {
         KEY.sync(this.player);
     }
-
+    @Override
+    public void clear(){
+        reset();
+    }
     @Override
     public void reset() {
         this.resetAFKTimer();

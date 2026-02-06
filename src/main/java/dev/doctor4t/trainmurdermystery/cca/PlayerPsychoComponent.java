@@ -80,13 +80,16 @@ public class PlayerPsychoComponent implements RoleComponent, ServerTickingCompon
             GameWorldComponent gameWorldComponent = GameWorldComponent.KEY.get(this.player.level());
             gameWorldComponent.setPsychosActive(gameWorldComponent.getPsychosActive() + 1);
             if (player instanceof ServerPlayer serverPlayer){
-                ServerPlayNetworking.send(serverPlayer, new TriggerStatusBarPayload("psycho", "狂暴模式", this.psychoTicks , GameConstants.getPsychoTimer(), GameConstants.getPsychoTimer()*1000));
+                ServerPlayNetworking.send(serverPlayer, new TriggerStatusBarPayload("psycho"));
             }
             return true;
         }
         return false;
     }
-
+    @Override
+    public void clear(){
+        reset();
+    }
     public void stopPsycho() {
         GameWorldComponent gameWorldComponent = GameWorldComponent.KEY.get(this.player.level());
         gameWorldComponent.setPsychosActive(gameWorldComponent.getPsychosActive() - 1);

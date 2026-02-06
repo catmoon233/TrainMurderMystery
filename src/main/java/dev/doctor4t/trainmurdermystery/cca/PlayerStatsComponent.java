@@ -18,6 +18,7 @@ import org.jetbrains.annotations.NotNull;
 import org.ladysnake.cca.api.v3.component.Component;
 import org.ladysnake.cca.api.v3.component.ComponentKey;
 import org.ladysnake.cca.api.v3.component.ComponentRegistry;
+import org.ladysnake.cca.api.v3.component.sync.AutoSyncedComponent;
 import org.ladysnake.cca.api.v3.component.tick.ClientTickingComponent;
 import org.ladysnake.cca.api.v3.component.tick.ServerTickingComponent;
 
@@ -31,7 +32,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public class PlayerStatsComponent implements RoleComponent, ServerTickingComponent {
+public class PlayerStatsComponent implements AutoSyncedComponent, ServerTickingComponent {
     public static final ComponentKey<PlayerStatsComponent> KEY = ComponentRegistry.getOrCreate(TMM.id("player_stats"), PlayerStatsComponent.class);
     private final Player player;
     private long totalPlayTime = 0;
@@ -63,7 +64,6 @@ public class PlayerStatsComponent implements RoleComponent, ServerTickingCompone
         this.player = player;
     }
 
-    @Override
     public Player getPlayer() {
         return player;
     }
@@ -71,11 +71,7 @@ public class PlayerStatsComponent implements RoleComponent, ServerTickingCompone
     /**
      * 重置统计数据（用于游戏结束时）
      */
-    @Override
-    public void reset() {
-        // PlayerStatsComponent 不需要重置，因为它是持久化统计数据
-        // 这个方法留空以满足 RoleComponent 接口要求
-    }
+
 
     public void sync() {
         KEY.sync(this.player);

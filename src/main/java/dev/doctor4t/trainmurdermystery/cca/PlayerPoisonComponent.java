@@ -53,6 +53,11 @@ public class PlayerPoisonComponent implements RoleComponent, ServerTickingCompon
     }
 
     @Override
+    public void clear() {
+        this.reset();
+    }
+
+    @Override
     public void clientTick() {
         if (this.poisonTicks > -1) this.poisonTicks--;
         if (this.poisonTicks > 0) {
