@@ -34,7 +34,10 @@ public class PlayerNoteComponent implements RoleComponent {
         this.written = false;
         this.sync();
     }
-
+    @Override
+    public void clear(){
+        reset();
+    }
     public void setNote(@NotNull String s, String s1, String s2, String s3) {
         this.text = new String[]{s, s1, s2, s3};
         this.written = !s.isEmpty() || !s1.isEmpty() || !s2.isEmpty() || !s3.isEmpty();

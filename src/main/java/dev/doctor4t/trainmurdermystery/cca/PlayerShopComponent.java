@@ -50,7 +50,10 @@ public class PlayerShopComponent implements RoleComponent, ServerTickingComponen
         this.balance = 0;
         this.sync();
     }
-
+    @Override
+    public void clear(){
+        reset();
+    }
     public void addToBalance(int amount) {
         this.setBalance(this.balance + amount);
     }

@@ -4,6 +4,7 @@ import dev.doctor4t.trainmurdermystery.mod_whitelist.client.ModWhitelistClient;
 import dev.doctor4t.trainmurdermystery.mod_whitelist.common.network.IPacketWithMOD_IDs;
 import dev.doctor4t.trainmurdermystery.mod_whitelist.common.utils.MWLogger;
 import io.netty.handler.codec.DecoderException;
+import net.minecraft.client.resources.SkinManager;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.protocol.handshake.ClientIntent;
 import net.minecraft.network.protocol.handshake.ClientIntentionPacket;
