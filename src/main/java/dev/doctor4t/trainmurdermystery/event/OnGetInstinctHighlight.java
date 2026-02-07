@@ -16,7 +16,7 @@ public interface OnGetInstinctHighlight {
             listeners -> (stack, isInstinctEnabled) -> {
                 for (OnGetInstinctHighlight listener : listeners) {
                     int color = listener.GetInstinctHighlight(stack, isInstinctEnabled);
-                    if (color >= 0) {
+                    if (color != -1) {
                         return color;
                     }
                 }
