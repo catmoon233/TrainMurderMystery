@@ -14,11 +14,16 @@ import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.level.Level;
 
 public class NoteEntity extends Entity {
-    private static final EntityDataAccessor<Integer> DIRECTION = SynchedEntityData.defineId(NoteEntity.class, EntityDataSerializers.INT);
-    private static final EntityDataAccessor<String> LINE1 = SynchedEntityData.defineId(NoteEntity.class, EntityDataSerializers.STRING);
-    private static final EntityDataAccessor<String> LINE2 = SynchedEntityData.defineId(NoteEntity.class, EntityDataSerializers.STRING);
-    private static final EntityDataAccessor<String> LINE3 = SynchedEntityData.defineId(NoteEntity.class, EntityDataSerializers.STRING);
-    private static final EntityDataAccessor<String> LINE4 = SynchedEntityData.defineId(NoteEntity.class, EntityDataSerializers.STRING);
+    private static final EntityDataAccessor<Integer> DIRECTION = SynchedEntityData.defineId(NoteEntity.class,
+            EntityDataSerializers.INT);
+    private static final EntityDataAccessor<String> LINE1 = SynchedEntityData.defineId(NoteEntity.class,
+            EntityDataSerializers.STRING);
+    private static final EntityDataAccessor<String> LINE2 = SynchedEntityData.defineId(NoteEntity.class,
+            EntityDataSerializers.STRING);
+    private static final EntityDataAccessor<String> LINE3 = SynchedEntityData.defineId(NoteEntity.class,
+            EntityDataSerializers.STRING);
+    private static final EntityDataAccessor<String> LINE4 = SynchedEntityData.defineId(NoteEntity.class,
+            EntityDataSerializers.STRING);
     public final int seed;
 
     public NoteEntity(EntityType<?> type, Level world) {
@@ -27,17 +32,24 @@ public class NoteEntity extends Entity {
     }
 
     @Override
+    public boolean isPushable() {
+        return false;
+    }
+
+    @Override
     public void tick() {
         super.tick();
 
         Supplier<Float> randomGiver = () -> (random.nextFloat() - .5f) * .2f;
         if (random.nextFloat() < .1f) {
-            this.level().addParticle(ParticleTypes.WAX_ON, this.getX() + randomGiver.get(), this.getY() + randomGiver.get() + this.getBbHeight() / 2f, this.getZ() + randomGiver.get(), 0, 0, 0);
+            this.level().addParticle(ParticleTypes.WAX_ON, this.getX() + randomGiver.get(),
+                    this.getY() + randomGiver.get() + this.getBbHeight() / 2f, this.getZ() + randomGiver.get(), 0, 0,
+                    0);
         }
     }
 
     public String[] getLines() {
-        return new String[]{
+        return new String[] {
                 this.entityData.get(LINE1),
                 this.entityData.get(LINE2),
                 this.entityData.get(LINE3),
@@ -46,10 +58,14 @@ public class NoteEntity extends Entity {
     }
 
     public void setLines(String @NotNull [] lines) {
-        if (lines.length > 0) this.entityData.set(LINE1, lines[0]);
-        if (lines.length > 1) this.entityData.set(LINE2, lines[1]);
-        if (lines.length > 2) this.entityData.set(LINE3, lines[2]);
-        if (lines.length > 3) this.entityData.set(LINE4, lines[3]);
+        if (lines.length > 0)
+            this.entityData.set(LINE1, lines[0]);
+        if (lines.length > 1)
+            this.entityData.set(LINE2, lines[1]);
+        if (lines.length > 2)
+            this.entityData.set(LINE3, lines[2]);
+        if (lines.length > 3)
+            this.entityData.set(LINE4, lines[3]);
     }
 
     public @NotNull Direction getDirection() {
@@ -80,10 +96,15 @@ public class NoteEntity extends Entity {
 
     @Override
     protected void readAdditionalSaveData(@NotNull CompoundTag nbt) {
-        if (nbt.contains("Direction")) this.entityData.set(DIRECTION, nbt.getInt("Direction"));
-        if (nbt.contains("Line1")) this.entityData.set(LINE1, nbt.getString("Line1"));
-        if (nbt.contains("Line2")) this.entityData.set(LINE2, nbt.getString("Line2"));
-        if (nbt.contains("Line3")) this.entityData.set(LINE3, nbt.getString("Line3"));
-        if (nbt.contains("Line4")) this.entityData.set(LINE4, nbt.getString("Line4"));
+        if (nbt.contains("Direction"))
+            this.entityData.set(DIRECTION, nbt.getInt("Direction"));
+        if (nbt.contains("Line1"))
+            this.entityData.set(LINE1, nbt.getString("Line1"));
+        if (nbt.contains("Line2"))
+            this.entityData.set(LINE2, nbt.getString("Line2"));
+        if (nbt.contains("Line3"))
+            this.entityData.set(LINE3, nbt.getString("Line3"));
+        if (nbt.contains("Line4"))
+            this.entityData.set(LINE4, nbt.getString("Line4"));
     }
 }

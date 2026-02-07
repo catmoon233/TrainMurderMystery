@@ -15,8 +15,12 @@ public class EntitySelectorMixin {
     @Inject(method = "pushableBy", at = @At("TAIL"), cancellable = true)
     private static void pushableBy(Entity entity, CallbackInfoReturnable<Predicate<Entity>> cir) {
         Predicate<Entity> originalPredicate = cir.getReturnValue();
-        Predicate<Entity> additionalPredicate = e -> TMM.canPushableBy.stream()
-                .anyMatch(predicate -> predicate.test(e));
-        cir.setReturnValue(originalPredicate.or(additionalPredicate));
+        Predicate<Entity> additionalPredicate = e -> {
+            if (TMM.canPushableBy.size() > 0)
+                return TMM.canPushableBy.stream()
+                        .anyMatch(predicate -> predicate.test(e));
+            return true;
+        };
+        cir.setReturnValue(originalPredicate.and(additionalPredicate));
     }
 }
