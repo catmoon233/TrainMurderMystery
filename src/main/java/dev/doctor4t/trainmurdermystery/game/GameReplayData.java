@@ -23,6 +23,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -133,6 +134,7 @@ public class GameReplayData {
         DEATH_REASON_TO_ITEM.put(GameConstants.DeathReasons.KNIFE, TMMItems.KNIFE);
         DEATH_REASON_TO_ITEM.put(GameConstants.DeathReasons.GRENADE, TMMItems.GRENADE);
         DEATH_REASON_TO_ITEM.put(GameConstants.DeathReasons.POISON, TMMItems.POISON_VIAL);
+        DEATH_REASON_TO_ITEM.put(GameConstants.DeathReasons.ARROW, Items.ARROW);
         // 注意：FELL_OUT_OF_TRAIN 和 GENERIC 没有对应物品
     }
 

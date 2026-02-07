@@ -438,9 +438,11 @@ public class GameFunctions {
                 isWinner = true;
             } else if (winStatus == WinStatus.LOOSE_END && player.getUUID().equals(gameComponent.getLooseEndWinner())) {
                 isWinner = true;
-            } else if (winStatus == WinStatus.GAMBLER && playerRole != null && "gambler".equals(playerRole.getIdentifier().getPath())) {
+            } else if (winStatus == WinStatus.GAMBLER && playerRole != null
+                    && "gambler".equals(playerRole.getIdentifier().getPath())) {
                 isWinner = true;
-            } else if (winStatus == WinStatus.RECORDER && playerRole != null && "recorder".equals(playerRole.getIdentifier().getPath())) {
+            } else if (winStatus == WinStatus.RECORDER && playerRole != null
+                    && "recorder".equals(playerRole.getIdentifier().getPath())) {
                 isWinner = true;
             }
 
@@ -583,6 +585,9 @@ public class GameFunctions {
                             break;
                         case "poison":
                             eventDeathReason = OnPlayerKilledPlayer.DeathReason.POISON;
+                            break;
+                        case "arrow":
+                            eventDeathReason = OnPlayerKilledPlayer.DeathReason.ARROW;
                             break;
                         default:
                             eventDeathReason = OnPlayerKilledPlayer.DeathReason.UNKNOWN;

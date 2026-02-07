@@ -151,5 +151,6 @@ public interface GameConstants {
         ResourceLocation GRENADE = TMM.id("grenade");
         ResourceLocation POISON = TMM.id("poison");
         ResourceLocation FELL_OUT_OF_TRAIN = TMM.id("fell_out_of_train");
+        ResourceLocation ARROW = TMM.id("arrow");
     }
 }
