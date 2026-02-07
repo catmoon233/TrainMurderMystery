@@ -1,5 +1,6 @@
 package dev.doctor4t.trainmurdermystery.mixin;
 
+import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.cca.AreasWorldComponent;
 import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
 import dev.doctor4t.trainmurdermystery.game.GameFunctions;
@@ -21,8 +22,11 @@ public class DecServerJoinPlayer {
     @Inject(method = "placeNewPlayer", at = @At("TAIL"))
     public void placeNewPlayer(Connection connection, ServerPlayer serverPlayer,
             CommonListenerCookie commonListenerCookie, CallbackInfo ci) {
+        if (TMM.isLobby)
+            return;
         GameReplayManager.playerNames.put(serverPlayer.getUUID(), serverPlayer.getScoreboardName());
         final var gameWorldComponent = GameWorldComponent.KEY.get(serverPlayer.level());
+
         if (gameWorldComponent.isRunning()) {
             if (!GameFunctions.isPlayerAliveAndSurvival(serverPlayer)) {
                 // 加群组功能已换成VoiceChat事件监听(trainVoicePlugin.java)
