@@ -91,6 +91,8 @@ public class BeveragePlateBlockEntity extends BlockEntity {
         nbt.put("Items", itemsNbt);
         if (this.poisoner != null)
             nbt.putString("poisoner", this.poisoner);
+        if (this.armorer != null)
+            nbt.putString("armorer", this.armorer);
         nbt.putBoolean("Drink", this.plate == PlateType.DRINK);
     }
 
@@ -106,6 +108,7 @@ public class BeveragePlateBlockEntity extends BlockEntity {
             }
         }
         this.poisoner = nbt.contains("poisoner") ? nbt.getString("poisoner") : null;
+        this.armorer = nbt.contains("armorer") ? nbt.getString("armorer") : null;
         this.plate = nbt.getBoolean("Drink") ? PlateType.DRINK : PlateType.FOOD;
     }
 
