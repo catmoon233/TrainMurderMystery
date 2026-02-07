@@ -252,7 +252,8 @@ public interface TMMBlocks {
     Block PANEL_STRIPES = registrar.createWithItem("panel_stripes", new PanelStripesBlock(BlockBehaviour.Properties.of().sound(SoundType.CHISELED_BOOKSHELF).strength(0.5f).noOcclusion()), TMMItems.DECORATION_GROUP);
     Block CARGO_BOX = registrar.createWithItem("cargo_box", new CargoBoxBlock(BlockBehaviour.Properties.of().strength(1).sound(SoundType.COPPER).mapColor(MapColor.COLOR_GRAY).noOcclusion()), TMMItems.DECORATION_GROUP);
     Block WHITE_LOUNGE_COUCH = registrar.createWithItem("white_lounge_couch", new LoungeCouch(BlockBehaviour.Properties.of().noOcclusion().strength(0.5f).sound(SoundType.CHISELED_BOOKSHELF)), TMMItems.DECORATION_GROUP);
-    Block TOILET_BLOCK = registrar.createWithItem("toilet_block", new ToiletBlock(BlockBehaviour.Properties.of().noOcclusion().strength(0.5f).sound(SoundType.METAL)), TMMItems.DECORATION_GROUP);
+    Block LIGHT_TOILET = registrar.createWithItem("light_toilet", new ToiletBlock(BlockBehaviour.Properties.of().noOcclusion().strength(0.5f).sound(SoundType.METAL)), TMMItems.DECORATION_GROUP);
+    Block DARK_TOILET = registrar.createWithItem("dark_toilet", new ToiletBlock(BlockBehaviour.Properties.of().noOcclusion().strength(0.5f).sound(SoundType.METAL)), TMMItems.DECORATION_GROUP);
     Block WHITE_OTTOMAN = registrar.createWithItem("white_ottoman", new OttomanBlock(BlockBehaviour.Properties.ofFullCopy(WHITE_LOUNGE_COUCH)), TMMItems.DECORATION_GROUP);
     Block BLUE_LOUNGE_COUCH = registrar.createWithItem("blue_lounge_couch", new LoungeCouch(BlockBehaviour.Properties.ofFullCopy(WHITE_LOUNGE_COUCH)), TMMItems.DECORATION_GROUP);
     Block GREEN_LOUNGE_COUCH = registrar.createWithItem("green_lounge_couch", new LoungeCouch(BlockBehaviour.Properties.ofFullCopy(WHITE_LOUNGE_COUCH)), TMMItems.DECORATION_GROUP);

@@ -1,5 +1,5 @@
 {
-	"parent": "trainmurdermystery:block/toilet_block",
+	"parent": "trainmurdermystery:block/light_toilet",
 	"display": {
 		"thirdperson_righthand": {
 			"rotation": [10, -45, 170],
