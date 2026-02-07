@@ -1,0 +1,64 @@
+{
+  "variants": {
+    "arms=noarms,facing=north": {
+      "model": "trainmurdermystery:block/toilet_block"
+    },
+    "arms=noarms,facing=east": {
+      "model": "trainmurdermystery:block/toilet_block",
+      "y": 90
+    },
+    "arms=noarms,facing=south": {
+      "model": "trainmurdermystery:block/toilet_block",
+      "y": 180
+    },
+    "arms=noarms,facing=west": {
+      "model": "trainmurdermystery:block/toilet_block",
+      "y": 270
+    },
+    "arms=single,facing=north": {
+      "model": "trainmurdermystery:block/toilet_block"
+    },
+    "arms=single,facing=east": {
+      "model": "trainmurdermystery:block/toilet_block",
+      "y": 90
+    },
+    "arms=single,facing=south": {
+      "model": "trainmurdermystery:block/toilet_block",
+      "y": 180
+    },
+    "arms=single,facing=west": {
+      "model": "trainmurdermystery:block/toilet_block",
+      "y": 270
+    },
+    "arms=left,facing=north": {
+      "model": "trainmurdermystery:block/toilet_block"
+    },
+    "arms=left,facing=east": {
+      "model": "trainmurdermystery:block/toilet_block",
+      "y": 90
+    },
+    "arms=left,facing=south": {
+      "model": "trainmurdermystery:block/toilet_block",
+      "y": 180
+    },
+    "arms=left,facing=west": {
+      "model": "trainmurdermystery:block/toilet_block",
+      "y": 270
+    },
+    "arms=right,facing=north": {
+      "model": "trainmurdermystery:block/toilet_block"
+    },
+    "arms=right,facing=east": {
+      "model": "trainmurdermystery:block/toilet_block",
+      "y": 90
+    },
+    "arms=right,facing=south": {
+      "model": "trainmurdermystery:block/toilet_block",
+      "y": 180
+    },
+    "arms=right,facing=west": {
+      "model": "trainmurdermystery:block/toilet_block",
+      "y": 270
+    }
+  }
+}
