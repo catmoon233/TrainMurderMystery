@@ -45,45 +45,31 @@ public class SecurityMonitorBlock extends BaseEntityBlock {
     
     // 添加监控模式相关字段
     private static BlockPos currentCameraPos = null;
+    private static BlockPos currentMonitorPos = null; // 当前监控控制台的位置
     private static boolean isInSecurityMode = false;
     public static float lastCameraYaw;
     public static float lastCameraPitch;
     public static float yawIncrease;
     public static float pitchIncrease;
-    public static float currentYaw = 0.0f; // 记录当前视角的yaw
-    public static float currentPitch = 0.0f; // 记录当前视角的pitch
+    public static float currentYaw = 0.0f; // 记录当前视角的yaw偏移量
+    public static float currentPitch = 0.0f; // 记录当前视角的pitch偏移量
 
 
     public static boolean onPlayerRotated(double yawAdd, double pitchAdd) {
         if (isInSecurityMode()) {
             LocalPlayer player = Minecraft.getInstance().player;
             if (player == null) return false;
-            
-            // 检查玩家是否在创造模式
-            boolean isCreativeMode = player.isCreative();
-            
-            float scale = 0.2f ;
-            yawIncrease += (float) (yawAdd * scale);
-            pitchIncrease += (float) (pitchAdd * scale);
 
-            if (isCreativeMode) {
-                // 在创造模式下，允许自由调整视角
-                currentYaw += (float) yawAdd * scale;
-                currentPitch = Mth.clamp(currentPitch + (float) pitchAdd * scale, -90, 90);
-                
-                // 更新玩家朝向
-                player.turn(Mth.wrapDegrees(currentYaw - player.yHeadRot),
-                        Mth.wrapDegrees(currentPitch - player.getXRot()));
-                player.yHeadRotO = player.yHeadRot;
-                player.xRotO = player.getXRot();
-            } else {
-                // 在非创造模式下，保持固定视角，仅用于监控
-                //make player face camera while maneuvering
-                player.turn(Mth.wrapDegrees((lastCameraYaw + yawAdd) - player.yHeadRot),
-                        Mth.wrapDegrees((lastCameraPitch + pitchAdd) - player.getXRot()));
-                player.yHeadRotO = player.yHeadRot;
-                player.xRotO = player.getXRot();
-            }
+            float scale = 0.2f;
+
+            // 累加视角偏移量
+            currentYaw += (float) (yawAdd * scale);
+            currentPitch = Mth.clamp(currentPitch + (float) (pitchAdd * scale), -90, 90);
+
+            // 更新玩家朝向（保持视觉一致性）
+            player.turn((float) (yawAdd * scale), (float) (pitchAdd * scale));
+            player.yHeadRotO = player.yHeadRot;
+            player.xRotO = player.getXRot();
 
             return true;
         }
@@ -150,54 +136,37 @@ public class SecurityMonitorBlock extends BaseEntityBlock {
 
         float targetYRot;
         float targetXRot;
-        
+
         LocalPlayer player = Minecraft.getInstance().player;
-        boolean isCreativeMode = player != null && player.isCreative();
-        
-        // 获取摄像头的朝向 - 通过Minecraft实例获取世界
+
+        // 获取监控控制台的位置（用于获取监控方块朝向）
+        BlockPos monitorPos = getCurrentMonitorPos();
         Level actualLevel = player != null ? player.level() : null;
-        if (actualLevel != null && cameraPos != null) {
-            BlockState cameraState = actualLevel.getBlockState(cameraPos);
-            if (cameraState.getBlock() instanceof CameraBlock) {
-                Direction cameraFacing = cameraState.getValue(CameraBlock.FACING);
-                
-                // 根据摄像头方向计算基础旋转角度
-                float baseYaw = getBaseYawFromDirection(cameraFacing);
-                
-                if (isCreativeMode) {
-                    // 在创造模式下，使用玩家当前调整的视角
-                    targetYRot = baseYaw + currentYaw + yawIncrease;
-                    targetXRot = Mth.clamp(currentPitch + pitchIncrease, -90, 90);
-                } else {
-                    // 在非创造模式下，基于摄像头方向进行视角调整
-                    targetYRot = baseYaw + currentYaw + yawIncrease;
-                    targetXRot = Mth.clamp(currentPitch + pitchIncrease, -90, 90);
-                }
+
+        if (actualLevel != null && monitorPos != null) {
+            BlockState monitorState = actualLevel.getBlockState(monitorPos);
+            if (monitorState.getBlock() instanceof SecurityMonitorBlock) {
+                Direction monitorFacing = monitorState.getValue(FACING);
+
+                // 根据监控控制台方向计算基础旋转角度
+                float baseYaw = getBaseYawFromDirection(monitorFacing);
+
+                // 计算目标视角：基础角度 + 玩家调整的偏移量
+                targetYRot = baseYaw + currentYaw;
+                targetXRot = Mth.clamp(currentPitch, -90, 90);
             } else {
-                // 如果不是摄像头，则使用默认行为
-                if (isCreativeMode) {
-                    // 在创造模式下，使用玩家当前调整的视角
-                    targetYRot = currentYaw + yawIncrease;
-                    targetXRot = Mth.clamp(currentPitch + pitchIncrease, -90, 90);
-                } else {
-                    // 在非创造模式下，固定视角
-                    targetYRot = camera.getYRot() + yawIncrease;
-                    targetXRot = Mth.clamp(camera.getXRot() + pitchIncrease -180, -180, 180);
-                }
+                // 如果无法获取监控方块，使用默认值
+                targetYRot = currentYaw;
+                targetXRot = Mth.clamp(currentPitch, -90, 90);
             }
         } else {
-            // 如果无法获取世界或摄像头位置，则使用默认行为
-            if (isCreativeMode) {
-                targetYRot = currentYaw + yawIncrease;
-                targetXRot = Mth.clamp(currentPitch + pitchIncrease, -90, 90);
-            } else {
-                targetYRot = camera.getYRot() + yawIncrease;
-                targetXRot = Mth.clamp(camera.getXRot() + pitchIncrease -180, -180, 180);
-            }
+            // 如果无法获取世界或监控方块位置，则使用默认行为
+            targetYRot = currentYaw;
+            targetXRot = Mth.clamp(currentPitch, -90, 90);
         }
-        
+
         camera.setRotation(targetYRot, targetXRot);
-        // lerp camera
+        // 设置相机位置到摄像头位置
         Vec3 targetCameraPos = cameraPos.getCenter().add(0.5, -1.2, 0.5);
 
         camera.setPosition(targetCameraPos);
@@ -284,6 +253,8 @@ public class SecurityMonitorBlock extends BaseEntityBlock {
                     player.displayClientMessage(Component.literal("此监控器未连接任何摄像头").withStyle(ChatFormatting.RED), true);
                     return InteractionResult.SUCCESS;
                 } else {
+                    // 记录当前监控控制台的位置
+                    currentMonitorPos = pos;
                     // 进入监控模式，循环切换摄像头
                     cycleToNextCamera(player, cameraPositions);
                     enterSecurityMode((net.minecraft.server.level.ServerPlayer) player);
@@ -335,6 +306,7 @@ public class SecurityMonitorBlock extends BaseEntityBlock {
     private static void exitSecurityMode(net.minecraft.server.level.ServerPlayer player) {
         isInSecurityMode = false;
         currentCameraPos = null;
+        currentMonitorPos = null; // 清除监控控制台位置
         // 重置视角参数
         currentYaw = 0.0f;
         currentPitch = 0.0f;
@@ -357,6 +329,10 @@ public class SecurityMonitorBlock extends BaseEntityBlock {
 
     public static BlockPos getCurrentCameraPos() {
         return currentCameraPos;
+    }
+
+    public static BlockPos getCurrentMonitorPos() {
+        return currentMonitorPos;
     }
     
     public static void setCurrentCameraPos(BlockPos pos) {
