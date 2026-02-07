@@ -2,6 +2,8 @@ package dev.doctor4t.trainmurdermystery.mixin;
 
 import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+
+import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.cca.PlayerPsychoComponent;
 import dev.doctor4t.trainmurdermystery.index.TMMItems;
 import net.minecraft.world.entity.player.Inventory;
@@ -19,12 +21,16 @@ public class PlayerInventoryMixin {
 
     @WrapMethod(method = "swapPaint")
     private void tmm$invalid(double scrollAmount, @NotNull Operation<Void> original) {
+        if (TMM.isLobby) {
+            original.call(scrollAmount);
+            return;
+        }
         int oldSlot = this.player.getInventory().selected;
         original.call(scrollAmount);
         PlayerPsychoComponent component = PlayerPsychoComponent.KEY.get(this.player);
         if (component.getPsychoTicks() > 0 &&
                 (this.player.getInventory().getItem(oldSlot).is(TMMItems.BAT)) &&
-                (!this.player.getInventory().getItem(this.player.getInventory().selected).is(TMMItems.BAT))
-        ) this.player.getInventory().selected = oldSlot;
+                (!this.player.getInventory().getItem(this.player.getInventory().selected).is(TMMItems.BAT)))
+            this.player.getInventory().selected = oldSlot;
     }
 }

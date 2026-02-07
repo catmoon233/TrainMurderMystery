@@ -2,6 +2,8 @@ package dev.doctor4t.trainmurdermystery.mixin;
 
 import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
+
+import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.cca.PlayerPsychoComponent;
 import dev.doctor4t.trainmurdermystery.index.TMMItems;
 import net.minecraft.network.protocol.game.ServerboundSetCarriedItemPacket;
@@ -18,6 +20,10 @@ public class ServerPlayNetworkHandlerMixin {
 
     @WrapMethod(method = "handleSetCarriedItem")
     private void tmm$invalid(ServerboundSetCarriedItemPacket packet, @NotNull Operation<Void> original) {
+        if (TMM.isLobby) {
+            original.call(packet);
+            return;
+        }
         PlayerPsychoComponent component = PlayerPsychoComponent.KEY.get(this.player);
         if (component.getPsychoTicks() > 0 && !this.player.getInventory().getItem(packet.getSlot()).is(TMMItems.BAT))
             return;

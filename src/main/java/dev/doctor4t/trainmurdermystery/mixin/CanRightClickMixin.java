@@ -76,9 +76,8 @@ public abstract class CanRightClickMixin extends LivingEntity implements DataSyn
 @Inject(method = "canInteractWithBlock", at = @At("TAIL"), cancellable = true)
     public void canInteractWithBlockAt(BlockPos pos, double additionalRange,
                                        CallbackInfoReturnable<Boolean> cir) {
-
+        if(TMM.isLobby) return;
         if (!cir.getReturnValue()) return;
-
         final var player = (Player) (Object) this;
         final var mainHandItem = player.getMainHandItem();
         if (TMM.canDropItem.contains(BuiltInRegistries.ITEM.getKey(mainHandItem.getItem()).toString())){
@@ -113,6 +112,7 @@ public abstract class CanRightClickMixin extends LivingEntity implements DataSyn
      * 判断是否应该阻止与方块的交互
      */
     private boolean shouldPreventInteraction(Block block) {
+        if(TMM.isLobby) return false;
         return !isAllowedBlock(block) || cantClickItems.contains(BuiltInRegistries.BLOCK.getKey(block).toString()) ;
     }
 
