@@ -1,6 +1,7 @@
 package dev.doctor4t.trainmurdermystery.item;
 
 import dev.doctor4t.trainmurdermystery.TMM;
+import dev.doctor4t.trainmurdermystery.cca.BartenderPlayerComponent;
 import dev.doctor4t.trainmurdermystery.cca.PlayerMoodComponent;
 import net.minecraft.advancements.CriteriaTriggers;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -27,6 +28,10 @@ public class CocktailItem extends Item {
     public ItemStack finishUsingItem(ItemStack stack, Level world, LivingEntity user) {
         super.finishUsingItem(stack, world, user);
         if (user instanceof ServerPlayer serverPlayerEntity) {
+            BartenderPlayerComponent barComponent = BartenderPlayerComponent.KEY.get(serverPlayerEntity);
+            if (barComponent != null) {
+                barComponent.startGlow();
+            }
             CriteriaTriggers.CONSUME_ITEM.trigger(serverPlayerEntity, stack);
             serverPlayerEntity.awardStat(Stats.ITEM_USED.get(this));
             PlayerMoodComponent.KEY.get(serverPlayerEntity).drinkCocktail();
