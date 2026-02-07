@@ -271,17 +271,21 @@ public class TMM implements ModInitializer {
                     dev.doctor4t.trainmurdermystery.network.VoteForMapPayload.Handler.handle(payload, context.player());
                 });
         ServerPlayNetworking.registerGlobalReceiver(JoinSpecGroupPayload.ID, (payload, context) -> {
-            ServerPlayer sp = context.player();
-            boolean isJoin = payload.isJoin();
-            if (isJoin) {
-                if (sp.isSpectator()) {
-                    TrainVoicePlugin.addPlayer(sp.getUUID());
-                }
-            } else {
-                TrainVoicePlugin.resetPlayer(sp.getUUID());
-            }
+            joinVoice(payload, context);
 
         });
+    }
+
+    private void joinVoice(JoinSpecGroupPayload payload, ServerPlayNetworking.Context context) {
+        ServerPlayer sp = context.player();
+        boolean isJoin = payload.isJoin();
+        if (isJoin) {
+            if (sp.isSpectator()) {
+                TrainVoicePlugin.addPlayer(sp.getUUID());
+            }
+        } else {
+            TrainVoicePlugin.resetPlayer(sp.getUUID());
+        }
     }
 
     private void registerPlayerCopyEvent() {

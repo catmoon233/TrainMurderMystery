@@ -284,19 +284,19 @@ public class SansRenderer {
         if (m_mc.player == null || m_mc.player.isCreative() || m_mc.player.isSpectator())
             return;
 
-        if (m_btAlpha >= 0f) {
+
             RenderSystem.enableBlend();
             RenderSystem.defaultBlendFunc();
 
             // 应用血丝动画效果
             poseStack.pushPose();
-
-            // 移动到屏幕中心
-            poseStack.translate(scw / 2f, sch / 2f, 0f);
+//
+//            // 移动到屏幕中心
+//            poseStack.translate(scw / 2f, sch / 2f, 0f);
 
             // 应用缩放
-            float scale = m_bloodTendrilsScale;
-            poseStack.scale(scale, scale, 1f);
+//            float scale = m_bloodTendrilsScale;
+//            poseStack.scale(scale, scale, 1f);
 
             // 应用旋转
             //poseStack.mulPose(com.mojang.math.Axis.ZP.rotationDegrees(m_bloodTendrilsRotation));
@@ -334,7 +334,7 @@ public class SansRenderer {
 
             poseStack.popPose();
             RenderSystem.disableBlend();
-        }
+
     }
 
     public void tick(@NotNull LocalPlayer player, @NotNull GuiGraphics context, float dt) {
