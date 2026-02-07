@@ -3,6 +3,8 @@ package dev.doctor4t.trainmurdermystery.mixin.client.items;
 import com.llamalad7.mixinextras.injector.ModifyExpressionValue;
 import com.llamalad7.mixinextras.sugar.Local;
 import com.mojang.blaze3d.vertex.PoseStack;
+
+import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.client.TMMClient;
 import dev.doctor4t.trainmurdermystery.index.tag.TMMItemTags;
 import dev.doctor4t.trainmurdermystery.item.RevolverItem;
@@ -33,17 +35,21 @@ public class HeldItemRendererMixin {
     @Final
     private Minecraft minecraft;
 
-    @Shadow @Final private ItemRenderer itemRenderer;
+    @Shadow
+    @Final
+    private ItemRenderer itemRenderer;
 
-    @Inject(method = "renderItem(Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemDisplayContext;ZLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V",
-            at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/ItemRenderer;renderStatic(Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemDisplayContext;ZLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;Lnet/minecraft/world/level/Level;III)V",
-                    shift = At.Shift.AFTER))
-    private void tmm$itemVFX(LivingEntity entity, ItemStack stack, ItemDisplayContext renderMode, boolean leftHanded, PoseStack matrices, MultiBufferSource vertexConsumers, int light, CallbackInfo ci) {
+    @Inject(method = "renderItem(Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemDisplayContext;ZLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;I)V", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/renderer/entity/ItemRenderer;renderStatic(Lnet/minecraft/world/entity/LivingEntity;Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemDisplayContext;ZLcom/mojang/blaze3d/vertex/PoseStack;Lnet/minecraft/client/renderer/MultiBufferSource;Lnet/minecraft/world/level/Level;III)V", shift = At.Shift.AFTER))
+    private void tmm$itemVFX(LivingEntity entity, ItemStack stack, ItemDisplayContext renderMode, boolean leftHanded,
+            PoseStack matrices, MultiBufferSource vertexConsumers, int light, CallbackInfo ci) {
+        if (TMM.isLobby)
+            return;
         if (renderMode.firstPerson()) {
             TMMClient.handParticleManager.render(matrices, vertexConsumers, light);
         }
 
-        if (entity instanceof Player playerEntity &&( stack.is(TMMItemTags.GUNS) ||( this.mainHandItem.getItem() instanceof RevolverItem)) ) {
+        if (entity instanceof Player playerEntity
+                && (stack.is(TMMItemTags.GUNS) || (this.mainHandItem.getItem() instanceof RevolverItem))) {
             if (playerEntity.getUUID() != Minecraft.getInstance().player.getUUID()) {
                 MatrixParticleManager.setMuzzlePosForPlayer(playerEntity, MatrixUtils.matrixToVec(matrices));
             } else if (!renderMode.firstPerson()) {
@@ -52,16 +58,13 @@ public class HeldItemRendererMixin {
         }
     }
 
-    @ModifyExpressionValue(
-            method = "tick",
-            at = @At(
-                    value = "INVOKE",
-                    target = "Lnet/minecraft/world/item/ItemStack;matches(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;)Z"
-            )
-    )
+    @ModifyExpressionValue(method = "tick", at = @At(value = "INVOKE", target = "Lnet/minecraft/world/item/ItemStack;matches(Lnet/minecraft/world/item/ItemStack;Lnet/minecraft/world/item/ItemStack;)Z"))
     private boolean tmm$ignoreNbtUpdateForRevolver(boolean original, @Local(ordinal = 0) ItemStack newItemStack) {
+        if (TMM.isLobby)
+            return original;
         if (!original) {
-            if (this.mainHandItem.is(TMMItemTags.GUNS) && newItemStack.is(TMMItemTags.GUNS) ||( this.mainHandItem.getItem() instanceof RevolverItem)) {
+            if (this.mainHandItem.is(TMMItemTags.GUNS) && newItemStack.is(TMMItemTags.GUNS)
+                    || (this.mainHandItem.getItem() instanceof RevolverItem)) {
                 return true;
             }
         }

@@ -39,7 +39,8 @@ import java.util.function.Function;
 import static dev.doctor4t.trainmurdermystery.TMM.isSkyVisibleAdjacent;
 
 public class PlayerMoodComponent implements RoleComponent, ServerTickingComponent, ClientTickingComponent {
-    public static final ComponentKey<PlayerMoodComponent> KEY = ComponentRegistry.getOrCreate(TMM.id("mood"), PlayerMoodComponent.class);
+    public static final ComponentKey<PlayerMoodComponent> KEY = ComponentRegistry.getOrCreate(TMM.id("mood"),
+            PlayerMoodComponent.class);
     private final Player player;
     public final Map<Task, TrainTask> tasks = new HashMap<>();
     public final Map<Task, Integer> timesGotten = new HashMap<>();
@@ -65,8 +66,6 @@ public class PlayerMoodComponent implements RoleComponent, ServerTickingComponen
     public boolean shouldSyncWith(ServerPlayer player) {
         return player == this.player;
     }
-
-
 
     @Override
     public void reset() {
@@ -103,36 +102,45 @@ public class PlayerMoodComponent implements RoleComponent, ServerTickingComponen
     public void clientTick() {
         if (!GameWorldComponent.KEY.get(this.player.level()).isRunning() || !TMMClient.isPlayerAliveAndInSurvival())
             return;
-        if (!this.tasks.isEmpty()) this.setMood(this.mood - this.tasks.size() * GameConstants.MOOD_DRAIN);
+        if (!this.tasks.isEmpty())
+            this.setMood(this.mood - this.tasks.size() * GameConstants.MOOD_DRAIN);
 
         if (this.isLowerThanMid()) {
             // imagine random items for players
             for (Player playerEntity : this.player.level().players()) {
-                if (!playerEntity.equals(this.player) && this.player.level().getRandom().nextInt(GameConstants.ITEM_PSYCHOSIS_REROLL_TIME) == 0) {
+                if (!playerEntity.equals(this.player)
+                        && this.player.level().getRandom().nextInt(GameConstants.ITEM_PSYCHOSIS_REROLL_TIME) == 0) {
                     ItemStack psychosisStack;
                     List<Item> taggedItems = getPsychosisItemPool();
 
-                    if (!taggedItems.isEmpty() && this.player.getRandom().nextFloat() < GameConstants.ITEM_PSYCHOSIS_CHANCE) {
+                    if (!taggedItems.isEmpty()
+                            && this.player.getRandom().nextFloat() < GameConstants.ITEM_PSYCHOSIS_CHANCE) {
                         Item item = Util.getRandom(taggedItems, this.player.getRandom());
                         psychosisStack = new ItemStack(item);
                     } else {
                         psychosisStack = playerEntity.getMainHandItem();
                     }
 
-                    //this.psychosisItems.put(playerEntity.getUuid(), playerEntity.getRandom().nextFloat() < GameConstants.ITEM_PSYCHOSIS_CHANCE ? PSYCHOSIS_ITEM_POOL[playerEntity.getRandom().nextInt(PSYCHOSIS_ITEM_POOL.length)].getDefaultStack() : playerEntity.getMainHandStack());
+                    // this.psychosisItems.put(playerEntity.getUuid(),
+                    // playerEntity.getRandom().nextFloat() < GameConstants.ITEM_PSYCHOSIS_CHANCE ?
+                    // PSYCHOSIS_ITEM_POOL[playerEntity.getRandom().nextInt(PSYCHOSIS_ITEM_POOL.length)].getDefaultStack()
+                    // : playerEntity.getMainHandStack());
                     this.psychosisItems.put(playerEntity.getUUID(), psychosisStack);
                 }
             }
         } else {
-            if (!this.psychosisItems.isEmpty()) this.psychosisItems.clear();
+            if (!this.psychosisItems.isEmpty())
+                this.psychosisItems.clear();
         }
     }
 
     @Override
     public void serverTick() {
         GameWorldComponent gameWorldComponent = GameWorldComponent.KEY.get(this.player.level());
-        if (!gameWorldComponent.isRunning() || !GameFunctions.isPlayerAliveAndSurvival(this.player)) return;
-        if (!this.tasks.isEmpty()) this.setMood(this.mood - this.tasks.size() * GameConstants.MOOD_DRAIN);
+        if (!gameWorldComponent.isRunning() || !GameFunctions.isPlayerAliveAndSurvival(this.player))
+            return;
+        if (!this.tasks.isEmpty())
+            this.setMood(this.mood - this.tasks.size() * GameConstants.MOOD_DRAIN);
         boolean shouldSync = false;
         this.nextTaskTimer--;
         if (this.nextTaskTimer <= 0) {
@@ -142,7 +150,9 @@ public class PlayerMoodComponent implements RoleComponent, ServerTickingComponen
                 this.timesGotten.putIfAbsent(task.getType(), 1);
                 this.timesGotten.put(task.getType(), this.timesGotten.get(task.getType()) + 1);
             }
-            this.nextTaskTimer = (int) (this.player.getRandom().nextFloat() * (GameConstants.MAX_TASK_COOLDOWN - GameConstants.MIN_TASK_COOLDOWN) + GameConstants.MIN_TASK_COOLDOWN);
+            this.nextTaskTimer = (int) (this.player.getRandom().nextFloat()
+                    * (GameConstants.MAX_TASK_COOLDOWN - GameConstants.MIN_TASK_COOLDOWN)
+                    + GameConstants.MIN_TASK_COOLDOWN);
             this.nextTaskTimer = Math.max(this.nextTaskTimer, 2);
             shouldSync = true;
         }
@@ -161,25 +171,29 @@ public class PlayerMoodComponent implements RoleComponent, ServerTickingComponen
             this.tasks.remove(task.getType());
             // 更新计分板上的任务计数
             if (this.player instanceof ServerPlayer serverPlayer) {
-                GameScoreboardComponent scoreboardComponent = GameScoreboardComponent.KEY.get(serverPlayer.getServer().getScoreboard());
+                GameScoreboardComponent scoreboardComponent = GameScoreboardComponent.KEY
+                        .get(serverPlayer.getServer().getScoreboard());
                 scoreboardComponent.incrementPlayerTaskCount(this.player);
-                
+
                 // 调用角色的任务完成方法
                 dev.doctor4t.trainmurdermystery.api.RoleMethodDispatcher.callOnFinishQuest(this.player, task.getName());
             }
         }
-        if (shouldSync) this.sync();
-		
-		// 根据情绪值调整玩家速度
-		updatePlayerMovementSpeed();
+        if (shouldSync)
+            this.sync();
+
+        // 根据情绪值调整玩家速度
+        updatePlayerMovementSpeed();
     }
 
     private @Nullable TrainTask generateTask() {
-        if (!this.tasks.isEmpty()) return null;
+        if (!this.tasks.isEmpty())
+            return null;
         HashMap<Task, Float> map = new HashMap<>();
         float total = 0f;
         for (Task task : Task.values()) {
-            if (this.tasks.containsKey(task)) continue;
+            if (this.tasks.containsKey(task))
+                continue;
             float weight = 1f / this.timesGotten.getOrDefault(task, 1);
             map.put(task, weight);
             total += weight;
@@ -210,7 +224,8 @@ public class PlayerMoodComponent implements RoleComponent, ServerTickingComponen
         Role role = gameWorldComponent.getRole(player);
         if (gameWorldComponent.isRunning() && role != null && role.getMoodType() == Role.MoodType.REAL) {
             return this.mood;
-        } else return 1;
+        } else
+            return 1;
     }
 
     public void setMood(float mood) {
@@ -219,7 +234,7 @@ public class PlayerMoodComponent implements RoleComponent, ServerTickingComponen
         if (role != null && role.getMoodType() == Role.MoodType.REAL) {
             float clampedMood = Math.clamp(mood, 0, 1);
             // 只有当情绪变化超过0.05时才同步（减少网络占用）
-            if (Math.abs(this.mood - clampedMood) > 0.01f ) {
+            if (Math.abs(this.mood - clampedMood) > 0.01f) {
                 this.mood = clampedMood;
                 this.sync();
             } else {
@@ -234,12 +249,13 @@ public class PlayerMoodComponent implements RoleComponent, ServerTickingComponen
     }
 
     public void eatFood() {
-        if (this.tasks.get(Task.EAT) instanceof EatTask eatTask) eatTask.fulfilled = true;
+        if (this.tasks.get(Task.EAT) instanceof EatTask eatTask)
+            eatTask.fulfilled = true;
     }
 
-
     public void drinkCocktail() {
-        if (this.tasks.get(Task.DRINK) instanceof DrinkTask drinkTask) drinkTask.fulfilled = true;
+        if (this.tasks.get(Task.DRINK) instanceof DrinkTask drinkTask)
+            drinkTask.fulfilled = true;
     }
 
     public boolean isLowerThanMid() {
@@ -262,7 +278,8 @@ public class PlayerMoodComponent implements RoleComponent, ServerTickingComponen
     public void writeToNbt(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registryLookup) {
         tag.putFloat("mood", this.mood);
         ListTag tasks = new ListTag();
-        for (TrainTask task : this.tasks.values()) tasks.add(task.toNbt());
+        for (TrainTask task : this.tasks.values())
+            tasks.add(task.toNbt());
         tag.put("tasks", tasks);
     }
 
@@ -274,7 +291,8 @@ public class PlayerMoodComponent implements RoleComponent, ServerTickingComponen
             for (Tag element : tag.getList("tasks", Tag.TAG_COMPOUND)) {
                 if (element instanceof CompoundTag compound && compound.contains("type")) {
                     int type = compound.getInt("type");
-                    if (type < 0 || type >= Task.values().length) continue;
+                    if (type < 0 || type >= Task.values().length)
+                        continue;
                     Task typeEnum = Task.values()[type];
                     this.tasks.put(typeEnum, typeEnum.setFunction.apply(compound));
                 }
@@ -283,20 +301,20 @@ public class PlayerMoodComponent implements RoleComponent, ServerTickingComponen
     }
 
     public enum Task {
-	SLEEP(nbt -> new SleepTask(nbt.getInt("timer"))),
-	OUTSIDE(nbt -> new OutsideTask(nbt.getInt("timer"))),
-	RAED_BOOK(nbt -> new ReadBookTask(nbt.getInt("timer"))),
-	EAT(nbt -> new EatTask()),
-	DRINK(nbt -> new DrinkTask()),
-	EXERCISE(nbt -> new ExerciseTask(nbt.getInt("timer"))),
-	MEDITATE(nbt -> new MeditateTask(nbt.getInt("timer"))), // 添加冥想任务
-	BATHE(nbt -> new BatheTask(nbt.getInt("timer"))); // 添加洗澡任务
+        SLEEP(nbt -> new SleepTask(nbt.getInt("timer"))),
+        OUTSIDE(nbt -> new OutsideTask(nbt.getInt("timer"))),
+        RAED_BOOK(nbt -> new ReadBookTask(nbt.getInt("timer"))),
+        EAT(nbt -> new EatTask()),
+        DRINK(nbt -> new DrinkTask()),
+        EXERCISE(nbt -> new ExerciseTask(nbt.getInt("timer"))),
+        MEDITATE(nbt -> new MeditateTask(nbt.getInt("timer"))), // 添加冥想任务
+        BATHE(nbt -> new BatheTask(nbt.getInt("timer"))); // 添加洗澡任务
 
-	public final @NotNull Function<CompoundTag, TrainTask> setFunction;
+        public final @NotNull Function<CompoundTag, TrainTask> setFunction;
 
-	Task(@NotNull Function<CompoundTag, TrainTask> function) {
-		this.setFunction = function;
-	}
+        Task(@NotNull Function<CompoundTag, TrainTask> function) {
+            this.setFunction = function;
+        }
     }
 
     public static class SleepTask implements TrainTask {
@@ -308,7 +326,8 @@ public class PlayerMoodComponent implements RoleComponent, ServerTickingComponen
 
         @Override
         public void tick(@NotNull Player player) {
-            if (player.isSleeping() && this.timer > 0) this.timer--;
+            if (player.isSleeping() && this.timer > 0)
+                this.timer--;
         }
 
         @Override
@@ -339,12 +358,13 @@ public class PlayerMoodComponent implements RoleComponent, ServerTickingComponen
         private int timer;
 
         public OutsideTask(int time) {
-            this.timer = time+6;
+            this.timer = time + 6;
         }
 
         @Override
         public void tick(@NotNull Player player) {
-            if (isSkyVisibleAdjacent(player) && this.timer > 0) this.timer--;
+            if (isSkyVisibleAdjacent(player) && this.timer > 0)
+                this.timer--;
         }
 
         @Override
@@ -380,7 +400,6 @@ public class PlayerMoodComponent implements RoleComponent, ServerTickingComponen
 
         @Override
         public void tick(@NotNull Player player) {
-
 
             if (player.containerMenu instanceof LecternMenu && this.timer > 0) {
                 this.timer--;
@@ -474,7 +493,8 @@ public class PlayerMoodComponent implements RoleComponent, ServerTickingComponen
         @Override
         public void tick(@NotNull Player player) {
             // 玩家必须在跑步状态下才能完成锻炼任务
-            if ( player.level().getBlockState(player.blockPosition().offset(0, -1, 0)).getBlock() == Blocks.BLACK_CONCRETE && this.timer > 0) {
+            if (player.level().getBlockState(player.blockPosition().offset(0, -1, 0))
+                    .getBlock() == Blocks.BLACK_CONCRETE && this.timer > 0) {
                 this.timer--;
             }
         }
@@ -557,7 +577,6 @@ public class PlayerMoodComponent implements RoleComponent, ServerTickingComponen
             this.timer = time;
         }
 
-
         @Override
         public void tick(@NotNull Player player) {
             // 检查玩家是否在水中或头顶4格内有洒水器(SPRINKLERS)
@@ -566,7 +585,8 @@ public class PlayerMoodComponent implements RoleComponent, ServerTickingComponen
             } else {
                 // 检查头顶4格范围内是否有洒水器
                 for (int y = 0; y < 4; y++) {
-                    if (player.level().getBlockState(player.blockPosition().above(y)).is(TMMBlockTags.SPRINKLERS) && this.timer > 0) {
+                    if (player.level().getBlockState(player.blockPosition().above(y)).is(TMMBlockTags.SPRINKLERS)
+                            && this.timer > 0) {
                         this.timer--;
                         break;
                     }
@@ -598,8 +618,6 @@ public class PlayerMoodComponent implements RoleComponent, ServerTickingComponen
         }
     }
 
-
-
     public interface TrainTask {
         default void tick(@NotNull Player player) {
         }
@@ -618,29 +636,31 @@ public class PlayerMoodComponent implements RoleComponent, ServerTickingComponen
      */
     private void updatePlayerMovementSpeed() {
         if (this.player instanceof ServerPlayer) {
+
             // 获取当前玩家的移动速度属性
             var speedAttribute = this.player.getAttribute(Attributes.MOVEMENT_SPEED);
-            
+
             if (speedAttribute != null) {
                 // 移除之前可能添加的修饰符
                 speedAttribute.removeModifier(TMM.id("mood_speed_modifier"));
-                
+                if (TMM.isLobby) {
+                    // 删除速度
+                    return;
+                }
                 // 根据情绪值添加新的修饰符
                 if (this.isLowerThanDepressed()) {
                     // 抑郁状态 - 降低20%速度
                     AttributeModifier modifier = new AttributeModifier(
                             TMM.id("mood_speed_modifier"),
                             -0.2,
-                            AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL
-                    );
+                            AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
                     speedAttribute.addTransientModifier(modifier);
                 } else if (this.isHigherThanAngry()) {
                     // 愤怒状态 - 提高15%速度
                     AttributeModifier modifier = new AttributeModifier(
                             TMM.id("mood_speed_modifier"),
                             0.15,
-                            AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL
-                    );
+                            AttributeModifier.Operation.ADD_MULTIPLIED_TOTAL);
                     speedAttribute.addTransientModifier(modifier);
                 }
                 // 正常情绪范围内保持默认速度

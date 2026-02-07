@@ -29,6 +29,7 @@ import dev.doctor4t.trainmurdermystery.compat.TrainVoicePlugin;
 import dev.doctor4t.trainmurdermystery.data.MapConfig;
 import dev.doctor4t.trainmurdermystery.entity.FirecrackerEntity;
 import dev.doctor4t.trainmurdermystery.entity.NoteEntity;
+import dev.doctor4t.trainmurdermystery.event.OnGetInstinctHighlight;
 import dev.doctor4t.trainmurdermystery.game.GameConstants;
 import dev.doctor4t.trainmurdermystery.game.GameFunctions;
 import dev.doctor4t.trainmurdermystery.index.*;
@@ -308,11 +309,13 @@ public class TMMClient implements ClientModInitializer {
         TMMItemTooltips.addTooltips();
 
         ClientTickEvents.START_WORLD_TICK.register(clientWorld -> {
-
-            if (Screen.hasShiftDown()) {
-                SecurityMonitorBlock.setSecurityMode(false);
-                Minecraft.getInstance().options.setCameraType(CameraType.FIRST_PERSON);
+            if (Minecraft.getInstance() != null && Minecraft.getInstance().player != null) {
+                if (Minecraft.getInstance().player.isShiftKeyDown()) {
+                    SecurityMonitorBlock.setSecurityMode(false);
+                    Minecraft.getInstance().options.setCameraType(CameraType.FIRST_PERSON);
+                }
             }
+
             prevInstinctLightLevel = instinctLightLevel;
             // 检测按键按下事件，只在按键状态从释放变为按下时切换
             boolean isKeyDown = instinctKeybind.isDown();
@@ -598,6 +601,9 @@ public class TMMClient implements ClientModInitializer {
     }
 
     public static int getInstinctHighlight(Entity target) {
+        int invokerColor = OnGetInstinctHighlight.EVENT.invoker().GetInstinctHighlight(target, isInstinctEnabled());
+        if (invokerColor >= 0)
+            return invokerColor;
         if (!isInstinctEnabled())
             return -1;
         // if (target instanceof PlayerBodyEntity) return 0x606060;
@@ -633,10 +639,17 @@ public class TMMClient implements ClientModInitializer {
     };
 
     public static boolean isInstinctEnabled() {
+        boolean canUseInstinct = isKiller();
         final var player = Minecraft.getInstance().player;
+        if (TMMClient.gameComponent != null) {
+            var role = TMMClient.gameComponent.getRole(player);
+            if (role != null) {
+                canUseInstinct = role.canUseInstinct();
+            }
+        }
         return (isInstinctToggleEnabled
-                && ((isKiller() && isPlayerAliveAndInSurvival()) || isPlayerSpectatingOrCreative()))
-                || (isKiller() && isHoldSpecialItem.test(player));
+                && ((canUseInstinct && isPlayerAliveAndInSurvival()) || isPlayerSpectatingOrCreative()))
+                || (canUseInstinct && isHoldSpecialItem.test(player));
     }
 
     public static Object getLockedRenderDistance(boolean ultraPerfMode) {

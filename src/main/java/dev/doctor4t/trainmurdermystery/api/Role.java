@@ -27,6 +27,16 @@ import org.ladysnake.cca.api.v3.component.ComponentKey;
 public abstract class Role {
     private ResourceLocation identifier;
     private boolean canSeeCoin = true;
+    private boolean canUseInstinct = false;
+
+    public Role setCanUseInstinct(boolean canUseInstinct) {
+        this.canUseInstinct = canUseInstinct;
+        return this;
+    }
+
+    public boolean canUseInstinct() {
+        return this.canUseInstinct;
+    }
 
     public Role setColor(int color) {
         this.color = color;
@@ -301,6 +311,7 @@ public abstract class Role {
         this.moodType = moodType;
         this.maxSprintTime = maxSprintTime;
         this.canSeeTime = canSeeTime;
+        this.canUseInstinct = this.canUseKiller;
     }
 
     public Role addChild(Consumer<LimitedInventoryScreen> addChild) {
