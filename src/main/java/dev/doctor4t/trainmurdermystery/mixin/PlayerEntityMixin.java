@@ -6,7 +6,6 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.mojang.datafixers.util.Either;
 
 import dev.doctor4t.trainmurdermystery.TMM;
-import dev.doctor4t.trainmurdermystery.TMMConfig;
 import dev.doctor4t.trainmurdermystery.api.Role;
 import dev.doctor4t.trainmurdermystery.cca.BartenderPlayerComponent;
 import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
@@ -28,7 +27,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.sounds.SoundEvents;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.util.Unit;
