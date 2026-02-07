@@ -602,8 +602,11 @@ public class TMMClient implements ClientModInitializer {
 
     public static int getInstinctHighlight(Entity target) {
         int invokerColor = OnGetInstinctHighlight.EVENT.invoker().GetInstinctHighlight(target, isInstinctEnabled());
-        if (invokerColor >= 0)
+        if (invokerColor != -1) {
+            if (invokerColor == -2)
+                return -1;
             return invokerColor;
+        }
         if (!isInstinctEnabled())
             return -1;
         // if (target instanceof PlayerBodyEntity) return 0x606060;
