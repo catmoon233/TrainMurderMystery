@@ -311,7 +311,7 @@ public class TMMClient implements ClientModInitializer {
 
         ClientTickEvents.START_WORLD_TICK.register(clientWorld -> {
             if (Minecraft.getInstance() != null && Minecraft.getInstance().player != null) {
-                if (Minecraft.getInstance().player.isShiftKeyDown()) {
+                if (Minecraft.getInstance().options.keyShift.consumeClick()) {
                     if (SecurityMonitorBlock.isInSecurityMode()) {
                         SecurityMonitorBlock.setSecurityMode(false);
                         Minecraft.getInstance().options.setCameraType(CameraType.FIRST_PERSON);
