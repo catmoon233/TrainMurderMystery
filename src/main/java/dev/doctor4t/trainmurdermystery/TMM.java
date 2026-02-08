@@ -259,6 +259,7 @@ public class TMM implements ModInitializer {
         PayloadTypeRegistry.playC2S().register(NoteEditPayload.ID, NoteEditPayload.CODEC);
         PayloadTypeRegistry.playC2S().register(dev.doctor4t.trainmurdermystery.network.VoteForMapPayload.ID,
                 dev.doctor4t.trainmurdermystery.network.VoteForMapPayload.CODEC);
+        PayloadTypeRegistry.playC2S().register(SecurityCameraExitRequestPayload.ID, SecurityCameraExitRequestPayload.CODEC);
     }
 
     private void registerGlobalReceivers() {
@@ -270,6 +271,7 @@ public class TMM implements ModInitializer {
                 (payload, context) -> {
                     dev.doctor4t.trainmurdermystery.network.VoteForMapPayload.Handler.handle(payload, context.player());
                 });
+        ServerPlayNetworking.registerGlobalReceiver(SecurityCameraExitRequestPayload.ID, new SecurityCameraExitRequestPayload.ServerReceiver());
         ServerPlayNetworking.registerGlobalReceiver(JoinSpecGroupPayload.ID, (payload, context) -> {
             joinVoice(payload, context);
 

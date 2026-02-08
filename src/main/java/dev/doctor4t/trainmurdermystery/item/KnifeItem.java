@@ -50,7 +50,15 @@ public class KnifeItem extends Item implements ItemWithSkin {
         DEFAULT(Colors.LIGHT_GRAY, "Kitchen Knife"),
         CEREMONIAL(0xFFD98C28, "Ceremonial Dagger"),
         PICK(0xFF8D4A51, "Ice Pick"),
-        DIAMOND_KNIFE(0xFF4AEDFF, "Diamond Knife");
+        DIAMOND_KNIFE(0xFF4AEDFF, "Diamond Knife"),
+        DAGGER(0xFF808080, "Dagger"),
+        RAINBOW_KNIFE(0xFFFFFFFF, "Rainbow Knife"),
+        FLY_CUTTER(0xFFE0E0E0, "Fly Cutter"),
+        STORM_BLADE(0xFF4A90E2, "Storm Blade"),
+        DRAGON_BLADE(0xFFFF4444, "Dragon Blade"),
+        CHOPPER(0xFF8B4513, "Chopper"),
+        NEPTUNE_KNIFE(0xFF1E90FF, "Neptune Knife"),
+        COLORFUL_FOLDING_KNIFE(0xFFFF69B4, "Colorful Folding Knife");
 
         public final int color;
         public final @Nullable String tooltipName;
