@@ -616,7 +616,7 @@
   "info.screen.roleid.vigilante": "警长阵营\n开局获得一把左轮手枪\n如果杀死平民,你也会死亡",
   "commands.tmm.entitydata.set.success": "成功为 %s 个实体设置了自定义数据: %s",
   "block.trainmurdermystery.camera": "监控摄像头",
-  "screen.trainmurdermystery.security_monitor.exit": "按下 %s 或 SHIFT 退出监控",
+  "screen.trainmurdermystery.security_monitor.exit": "按下 %s 或 ESC 退出监控",
   "block.trainmurdermystery.security_monitor": "安全监控器",
   "item.trainmurdermystery.binding_tool": "绑定工具",
   "item.trainmurdermystery.binding_tool.tooltip": "右键点击摄像头保存位置，再右键点击监控器进行绑定",

@@ -107,7 +107,7 @@ public class SecurityCameraHUD {
         Font font = minecraft.font;
 
         MutableComponent exitHint = Component.translatable("screen.trainmurdermystery.security_monitor.exit",
-                Component.keybind("key.esc"));
+                Component.keybind("key.shift"));
         int textWidth = font.width(exitHint);
         int x = (screenWidth - textWidth) / 2;
         int y = screenHeight - 36; // 屏幕底部

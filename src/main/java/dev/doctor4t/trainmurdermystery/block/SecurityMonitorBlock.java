@@ -118,16 +118,13 @@ public class SecurityMonitorBlock extends BaseEntityBlock {
             }
             return true;
         } else if (options.keyInventory.matches(key, scanCode)) {
-
             return true;
         }
         if (options.keyJump.matches(key, scanCode)) {
-
             return true;
         }
         if (options.keyShift.matches(key, scanCode)) {
-
-            return true;
+            return false;
         }
         return false;
     }

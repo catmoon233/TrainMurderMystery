@@ -22,11 +22,11 @@ public class MouseHandlerMixin {
     public void TMM$onMove(long window, double x, double y, CallbackInfo ci) {
         if (SecurityMonitorBlock.isInSecurityMode()) {
             // 传递鼠标移动给监控视角控制
-            double xOffset = x;
-            double yOffset = y;
+            // double xOffset = x;
+            // double yOffset = y;
             // 注意：xOffset是水平旋转(yaw)，yOffset是垂直旋转(pitch)
             // 这里的参数值是原始鼠标移动量，需要进行适当的缩放
-            SecurityMonitorBlock.onPlayerRotated(xOffset, yOffset);
+            // SecurityMonitorBlock.onPlayerRotated(xOffset, yOffset);
             ci.cancel();
         }
     }
