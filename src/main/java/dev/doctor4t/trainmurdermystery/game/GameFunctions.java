@@ -773,6 +773,7 @@ public class GameFunctions {
     }
 
     // returns whether another reset should be attempted
+    @SuppressWarnings("deprecation")
     public static boolean tryResetTrain(ServerLevel serverWorld) {
 
         if (TMMConfig.enableAutoTrainReset) {
@@ -936,6 +937,7 @@ public class GameFunctions {
         return false;
     }
 
+    @SuppressWarnings("deprecation")
     public static boolean tryResetTrainOnlyDoors(ServerLevel serverWorld) {
         if (serverWorld.getServer().overworld().equals(serverWorld)) {
             AreasWorldComponent areas = AreasWorldComponent.KEY.get(serverWorld);
@@ -1007,17 +1009,11 @@ public class GameFunctions {
                             if (blockState.getBlock() instanceof SmallDoorBlock
                                     && blockState.getValue(SmallDoorBlock.HALF).equals(DoubleBlockHalf.LOWER)) {
                                 if (serverWorld.getBlockEntity(blockPos6) instanceof SmallDoorBlockEntity entity) {
-                                    if (entity != null) {
-                                        BlockEntityInfo blockEntityInfo = new BlockEntityInfo(
-                                                entity.saveCustomOnly(serverWorld.registryAccess()),
-                                                entity.components());
-                                        list2.add(new BlockInfo(blockPos7, blockState, blockEntityInfo));
-                                        deque.addLast(blockPos6); // Add to end to process last
-                                    } else {
-                                        // Add door block without entity if somehow it doesn't have one
-                                        list2.add(new BlockInfo(blockPos7, blockState, null));
-                                        deque.addLast(blockPos6);
-                                    }
+                                    BlockEntityInfo blockEntityInfo = new BlockEntityInfo(
+                                            entity.saveCustomOnly(serverWorld.registryAccess()),
+                                            entity.components());
+                                    list2.add(new BlockInfo(blockPos7, blockState, blockEntityInfo));
+                                    deque.addLast(blockPos6); // Add to end to process last
                                 }
                             }
                         }
@@ -1096,7 +1092,7 @@ public class GameFunctions {
     /**
      * Checks if a block is one of TMM's door blocks
      */
-    private static boolean isTmmDoorBlock(Block block) {
+    public static boolean isTmmDoorBlock(Block block) {
         return block == TMMBlocks.SMALL_GLASS_DOOR
                 || block == TMMBlocks.SMALL_WOOD_DOOR
                 || block == TMMBlocks.ANTHRACITE_STEEL_DOOR

@@ -37,6 +37,7 @@ import dev.doctor4t.trainmurdermystery.item.GrenadeItem;
 import dev.doctor4t.trainmurdermystery.item.KnifeItem;
 import dev.doctor4t.trainmurdermystery.mod_whitelist.client.ModWhitelistClient;
 import dev.doctor4t.trainmurdermystery.network.*;
+import dev.doctor4t.trainmurdermystery.network.packet.SyncRoomToPlayerPayload;
 import dev.doctor4t.trainmurdermystery.network.packet.SyncSpecificWaypointVisibilityPacket;
 import dev.doctor4t.trainmurdermystery.network.packet.SyncWaypointVisibilityPacket;
 import dev.doctor4t.trainmurdermystery.network.packet.SyncWaypointsPacket;
@@ -432,6 +433,17 @@ public class TMMClient implements ClientModInitializer {
             context.client().execute(() -> {
                 context.client().setScreen(new PlayerStatsScreen(targetPlayerUuid));
             });
+        });
+        ClientPlayNetworking.registerGlobalReceiver(SyncRoomToPlayerPayload.ID, (payload, context) -> {
+            Map<UUID, Integer> data = payload.data();
+            if (Minecraft.getInstance().isSingleplayer()) {
+                TMM.LOGGER.info("Singleplayer. No need to sync info.");
+                return;
+            } else {
+                TMM.LOGGER.info("Sync RoomToPlayer info from server.");
+            }
+            GameFunctions.roomToPlayer.clear();
+            GameFunctions.roomToPlayer.putAll(data);
         });
         ClientPlayNetworking.registerGlobalReceiver(ShowSelectedMapUIPayload.ID, (payload, context) -> {
             var str = payload.serverConfig();
