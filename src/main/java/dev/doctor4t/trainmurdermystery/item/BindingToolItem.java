@@ -22,10 +22,21 @@ public class BindingToolItem extends Item {
         super(settings);
     }
 
+    public static BlockPos CalcRelativePosition(BlockPos from, BlockPos to) {
+        var x1 = from.getX();
+        var x2 = to.getX();
+        var y1 = from.getY();
+        var y2 = to.getY();
+        var z1 = from.getZ();
+        var z2 = to.getZ();
+        return new BlockPos(x2 - x1, y2 - y1, z2 - z1);
+    }
+
     @Override
     public InteractionResult useOn(UseOnContext context) {
         Level world = context.getLevel();
-        if (world.isClientSide)return InteractionResult.PASS;
+        if (world.isClientSide)
+            return InteractionResult.PASS;
         BlockPos pos = context.getClickedPos();
         Player player = context.getPlayer();
 
@@ -38,7 +49,10 @@ public class BindingToolItem extends Item {
         if (blockEntity instanceof CameraBlockEntity) {
             // 右键点击摄像头：保存摄像头位置
             lastCameraPos = pos;
-            player.displayClientMessage(Component.literal("已绑定摄像头: X=" + pos.getX() + ", Y=" + pos.getY() + ", Z=" + pos.getZ()).withStyle(ChatFormatting.GREEN), true);
+            player.displayClientMessage(
+                    Component.literal("已绑定摄像头: X=" + pos.getX() + ", Y=" + pos.getY() + ", Z=" + pos.getZ())
+                            .withStyle(ChatFormatting.GREEN),
+                    true);
             if (TMM.REPLAY_MANAGER != null) {
                 TMM.REPLAY_MANAGER.recordItemUse(player.getUUID(), BuiltInRegistries.ITEM.getKey(this));
             }
@@ -47,10 +61,14 @@ public class BindingToolItem extends Item {
             // 右键点击监控器：保存摄像头位置到监控器
             if (lastCameraPos != null) {
                 SecurityMonitorBlockEntity monitorEntity = (SecurityMonitorBlockEntity) blockEntity;
-                monitorEntity.addCameraPosition(lastCameraPos);
+                monitorEntity.addCameraPosition(CalcRelativePosition(pos, lastCameraPos));
                 player.displayClientMessage(Component.literal("已将摄像头绑定到监控器").withStyle(ChatFormatting.AQUA), true);
-                player.displayClientMessage(Component.literal("摄像头位置: X=" + lastCameraPos.getX() + ", Y=" + lastCameraPos.getY() + ", Z=" + lastCameraPos.getZ()).withStyle(ChatFormatting.GRAY), false);
-                player.displayClientMessage(Component.literal("监控器位置: X=" + pos.getX() + ", Y=" + pos.getY() + ", Z=" + pos.getZ()).withStyle(ChatFormatting.GRAY), false);
+                player.displayClientMessage(Component.literal("摄像头位置: X=" + lastCameraPos.getX() + ", Y="
+                        + lastCameraPos.getY() + ", Z=" + lastCameraPos.getZ()).withStyle(ChatFormatting.GRAY), false);
+                player.displayClientMessage(
+                        Component.literal("监控器位置: X=" + pos.getX() + ", Y=" + pos.getY() + ", Z=" + pos.getZ())
+                                .withStyle(ChatFormatting.GRAY),
+                        false);
                 if (TMM.REPLAY_MANAGER != null) {
                     TMM.REPLAY_MANAGER.recordItemUse(player.getUUID(), BuiltInRegistries.ITEM.getKey(this));
                 }
