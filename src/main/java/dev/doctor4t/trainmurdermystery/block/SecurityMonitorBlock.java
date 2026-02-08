@@ -4,6 +4,7 @@ import com.mojang.serialization.MapCodec;
 import dev.doctor4t.trainmurdermystery.block_entity.CameraBlockEntity;
 import dev.doctor4t.trainmurdermystery.block_entity.SecurityMonitorBlockEntity;
 import dev.doctor4t.trainmurdermystery.network.PacketTracker;
+import dev.doctor4t.trainmurdermystery.network.SecurityCameraExitRequestPayload;
 import dev.doctor4t.trainmurdermystery.network.SecurityCameraModePayload;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.ChatFormatting;
@@ -66,10 +67,11 @@ public class SecurityMonitorBlock extends BaseEntityBlock {
             currentYaw += (float) (yawAdd * scale);
             currentPitch = Mth.clamp(currentPitch + (float) (pitchAdd * scale), -90, 90);
 
-            // 更新玩家朝向（保持视觉一致性）
-            player.turn((float) (yawAdd * scale), (float) (pitchAdd * scale));
-            player.yHeadRotO = player.yHeadRot;
-            player.xRotO = player.getXRot();
+            // 不更新玩家实体朝向，只更新相机视角
+            // 移除 player.turn() 调用以避免与相机视角冲突
+            // player.turn((float) (yawAdd * scale), (float) (pitchAdd * scale));
+            // player.yHeadRotO = player.yHeadRot;
+            // player.xRotO = player.getXRot();
 
             return true;
         }
@@ -105,8 +107,15 @@ public class SecurityMonitorBlock extends BaseEntityBlock {
         if (!isInSecurityMode()) return false;
         if (action != GLFW.GLFW_PRESS) return false;
         var options = Minecraft.getInstance().options;
+        // ESC 键退出监控模式 - 发送退出请求到服务端
         if (key == 256) {
-
+            LocalPlayer player = Minecraft.getInstance().player;
+            if (player != null) {
+                // 发送退出请求到服务端
+                net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.send(
+                        new SecurityCameraExitRequestPayload()
+                );
+            }
             return true;
         } else if (options.keyInventory.matches(key, scanCode)) {
 
@@ -303,7 +312,7 @@ public class SecurityMonitorBlock extends BaseEntityBlock {
         ServerPlayNetworking.send(player, new SecurityCameraModePayload(true, currentCameraPos, currentYaw, currentPitch));
     }
 
-    private static void exitSecurityMode(net.minecraft.server.level.ServerPlayer player) {
+    public static void exitSecurityMode(net.minecraft.server.level.ServerPlayer player) {
         isInSecurityMode = false;
         currentCameraPos = null;
         currentMonitorPos = null; // 清除监控控制台位置
