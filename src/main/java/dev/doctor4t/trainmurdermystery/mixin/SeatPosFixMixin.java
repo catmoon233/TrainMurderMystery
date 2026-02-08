@@ -1,6 +1,5 @@
 package dev.doctor4t.trainmurdermystery.mixin;
 
-
 import dev.doctor4t.trainmurdermystery.block.MountableBlock;
 import dev.doctor4t.trainmurdermystery.block.entity.SeatEntity;
 import net.minecraft.server.level.ServerPlayer;
@@ -18,12 +17,12 @@ public class SeatPosFixMixin {
         ServerPlayer player = (ServerPlayer) (Object) this;
         var lastPos = MountableBlock.lastPos.get(player.getUUID());
         if (lastPos != null) {
-                if (lastPos.distanceTo(player.position()) < 5) {
-                    player.teleportTo(lastPos.x, lastPos.y+0.75, lastPos.z);
-                    MountableBlock.lastPos.remove(player.getUUID());
-                }
+            if (lastPos.distanceTo(player.position()) < 5) {
+                player.teleportTo(lastPos.x, lastPos.y + 0.25, lastPos.z);
+                MountableBlock.lastPos.remove(player.getUUID());
             }
-            ci.cancel();
         }
+        ci.cancel();
+    }
 
 }
