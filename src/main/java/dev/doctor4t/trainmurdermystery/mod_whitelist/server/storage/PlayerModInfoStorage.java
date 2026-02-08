@@ -21,7 +21,7 @@ import java.util.*;
  * Tracks mod lists and their SHA256 hashes for each player session
  */
 public class PlayerModInfoStorage {
-	private static final Path STORAGE_DIR = FabricLoader.getInstance().getConfigDir().resolve("/mod_whitelist/player_mods");
+	private static final Path STORAGE_DIR = FabricLoader.getInstance().getConfigDir().resolve("mod_whitelist/player_mods");
 	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 	private static final DateTimeFormatter TIMESTAMP_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
@@ -44,6 +44,9 @@ public class PlayerModInfoStorage {
 	 */
 	public static void storePlayerMods(UUID playerUUID, String playerName, List<ModInfo> mods, String ipAddress, String macAddress) {
 		try {
+			// Ensure directory exists before writing
+			Files.createDirectories(STORAGE_DIR);
+			
 			Path playerFile = STORAGE_DIR.resolve(playerUUID + ".json");
 			
 			// Load existing data or create new
