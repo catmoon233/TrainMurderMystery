@@ -69,8 +69,9 @@ public class DecServerJoinPlayer {
     @Inject(method = "getMaxPlayers", at = @At("HEAD"), cancellable=true)
     private void getMaxPlayers(CallbackInfoReturnable<Integer> cir) {
         final var maxPlayers = ModWhitelistCommand.maxPlayers;
-        if (maxPlayers != 404) {
+        if (maxPlayers != -404) {
             cir.setReturnValue(maxPlayers);
+            cir.cancel();
         }
     }
 }
