@@ -168,6 +168,8 @@ public class SecurityMonitorBlock extends BaseEntityBlock {
                 // 计算目标视角：基础角度 + 玩家调整的偏移量
                 targetXRot = baseYaw;
                 targetYRot = Mth.clamp(currentPitch, -90, 90);
+                currentYaw = baseYaw;
+
             } else {
                 // 如果无法获取监控方块，使用默认值
                 targetXRot = currentYaw;
@@ -191,7 +193,6 @@ public class SecurityMonitorBlock extends BaseEntityBlock {
 
         yawIncrease = 0;
         pitchIncrease = 0;
-
         float followSpeed = 1;
 
         return true;
