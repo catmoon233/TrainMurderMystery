@@ -93,6 +93,6 @@ public class RevolverItem extends Item {
 
     public static HitResult getGunTarget(Player user) {
         return ProjectileUtil.getHitResultOnViewVector(user,
-                entity -> entity instanceof Player player && GameFunctions.isPlayerAliveAndSurvival(player), 30f);
+                entity -> entity instanceof Player player && GameFunctions.isPlayerAliveAndSurvival(player), 20F);
     }
 }
