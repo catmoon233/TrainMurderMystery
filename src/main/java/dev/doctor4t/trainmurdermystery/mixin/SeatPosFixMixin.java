@@ -18,7 +18,7 @@ public class SeatPosFixMixin {
         var lastPos = MountableBlock.lastPos.get(player.getUUID());
         if (lastPos != null) {
             if (lastPos.distanceTo(player.position()) < 5) {
-                player.teleportTo(lastPos.x, lastPos.y + 0.25, lastPos.z);
+                player.teleportTo(lastPos.x, lastPos.y + 0.75, lastPos.z);
                 MountableBlock.lastPos.remove(player.getUUID());
             }
         }
