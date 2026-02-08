@@ -66,7 +66,7 @@ public class DecServerJoinPlayer {
         gameWorldComponent.setSyncRole(false);
     }
 
-    @Inject(method = "getMaxPlayers", at = @At("HEAD"))
+    @Inject(method = "getMaxPlayers", at = @At("HEAD"), cancellable=true)
     private void getMaxPlayers(CallbackInfoReturnable<Integer> cir) {
         final var maxPlayers = ModWhitelistCommand.maxPlayers;
         if (maxPlayers != 404) {
