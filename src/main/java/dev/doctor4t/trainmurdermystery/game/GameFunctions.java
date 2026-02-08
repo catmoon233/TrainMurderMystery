@@ -14,6 +14,7 @@ import dev.doctor4t.trainmurdermystery.entity.FirecrackerEntity;
 import dev.doctor4t.trainmurdermystery.entity.NoteEntity;
 import dev.doctor4t.trainmurdermystery.entity.PlayerBodyEntity;
 import dev.doctor4t.trainmurdermystery.event.AllowPlayerDeath;
+import dev.doctor4t.trainmurdermystery.event.OnGameTrueStarted;
 import dev.doctor4t.trainmurdermystery.event.OnPlayerDeath;
 import dev.doctor4t.trainmurdermystery.event.OnPlayerKilledPlayer;
 import dev.doctor4t.trainmurdermystery.event.OnTeammateKilledTeammate;
@@ -225,6 +226,7 @@ public class GameFunctions {
                 stats.getOrCreateRoleStats(playerRole.identifier()).incrementTimesPlayed();
             }
         }
+        OnGameTrueStarted.EVENT.invoker().onGameTrueStarted(serverWorld);
         // --- 结束新增统计数据更新逻辑 ---
     }
 
@@ -398,6 +400,7 @@ public class GameFunctions {
                 player.teleportTo(player.serverLevel(), pos1.x(), pos1.y() + 1, pos1.z(), Set.of(), 0, 0);
             }
         }
+        
         // Don't set game status to ACTIVE here - it will be set after roles are
         // assigned in initializeGame()
         // Create a copy of entities to avoid concurrent modification issues

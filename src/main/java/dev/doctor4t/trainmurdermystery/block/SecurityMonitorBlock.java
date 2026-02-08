@@ -48,6 +48,8 @@ public class SecurityMonitorBlock extends BaseEntityBlock {
 
     // 添加监控模式相关字段
     private static BlockPos currentCameraPos = null;
+    private static BlockPos currentCameraOffset = null;
+
     private static BlockPos currentMonitorPos = null; // 当前监控控制台的位置
     private static boolean isInSecurityMode = false;
     public static float lastCameraYaw;
@@ -168,6 +170,8 @@ public class SecurityMonitorBlock extends BaseEntityBlock {
                 // 计算目标视角：基础角度 + 玩家调整的偏移量
                 targetXRot = baseYaw;
                 targetYRot = Mth.clamp(currentPitch, -90, 90);
+                currentYaw = baseYaw;
+
             } else {
                 // 如果无法获取监控方块，使用默认值
                 targetXRot = currentYaw;
@@ -191,7 +195,6 @@ public class SecurityMonitorBlock extends BaseEntityBlock {
 
         yawIncrease = 0;
         pitchIncrease = 0;
-
         float followSpeed = 1;
 
         return true;
@@ -289,12 +292,13 @@ public class SecurityMonitorBlock extends BaseEntityBlock {
             return;
 
         int currentIndex = -1;
-        if (currentCameraPos != null) {
-            currentIndex = cameraPositions.indexOf(currentCameraPos);
+        if (currentCameraOffset != null) {
+            currentIndex = cameraPositions.indexOf(currentCameraOffset);
         }
 
         int nextIndex = (currentIndex + 1) % cameraPositions.size();
-        currentCameraPos = cameraPositions.get(nextIndex);
+        currentCameraOffset = cameraPositions.get(nextIndex);
+        currentCameraPos = AddBlockPosOffset(currentMonitorPos, currentCameraOffset);
 
         // 重置视角为新摄像头的初始视角
         currentYaw = 0.0f;
@@ -308,6 +312,7 @@ public class SecurityMonitorBlock extends BaseEntityBlock {
                     ": X=" + currentCameraPos.getX() + ", Y=" + currentCameraPos.getY() +
                     ", Z=" + currentCameraPos.getZ() + ", 方向=" + cameraFacing.getName()).withStyle(ChatFormatting.AQUA),
                     true);
+            currentYaw = getBaseYawFromDirection(cameraFacing);
         } else {
             player.displayClientMessage(Component.literal("切换到摄像头 " + (nextIndex + 1) +
                     ": X=" + currentCameraPos.getX() + ", Y=" + currentCameraPos.getY() +
@@ -315,11 +320,32 @@ public class SecurityMonitorBlock extends BaseEntityBlock {
         }
     }
 
+    private static BlockPos AddBlockPosOffset(BlockPos pos, BlockPos add) {
+        var x1 = pos.getX();
+        var y1 = pos.getY();
+        var z1 = pos.getZ();
+        var addx = add.getX();
+        var addy = add.getY();
+        var addz = add.getZ();
+        return new BlockPos(x1 + addx, y1 + addy, z1 + addz);
+    }
+
     private static void enterSecurityMode(net.minecraft.server.level.ServerPlayer player) {
+        BlockPos monitorPos = getCurrentMonitorPos();
+        var level = player.level();
+        if (level != null && monitorPos != null) {
+            BlockState monitorState = level.getBlockState(getCurrentCameraPos());
+            if (monitorState.getBlock() instanceof CameraBlock) {
+                Direction monitorFacing = monitorState.getValue(FACING);
+
+                // 根据监控控制台方向计算基础旋转角度
+                float baseYaw = getBaseYawFromDirection(monitorFacing);
+                currentYaw = baseYaw;
+            }
+        }
         isInSecurityMode = true;
         currentPitch = 0f;
         player.displayClientMessage(Component.literal("已进入监控模式").withStyle(ChatFormatting.GREEN), true);
-
         // 发送网络包到客户端以更新视角
         ServerPlayNetworking.send(player,
                 new SecurityCameraModePayload(true, currentCameraPos, currentYaw, currentPitch));
@@ -328,6 +354,7 @@ public class SecurityMonitorBlock extends BaseEntityBlock {
     public static void exitSecurityMode(net.minecraft.server.level.ServerPlayer player) {
         isInSecurityMode = false;
         currentCameraPos = null;
+        currentCameraOffset = null;
         currentMonitorPos = null; // 清除监控控制台位置
         // 重置视角参数
         currentYaw = 0.0f;
