@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
+@SuppressWarnings("deprecation")
 public class LooseEndsGameMode extends GameMode {
     public static final List<Supplier<ItemStack>> looseEndsItems = new ArrayList<>();
 

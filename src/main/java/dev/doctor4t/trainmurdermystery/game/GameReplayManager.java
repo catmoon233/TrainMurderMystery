@@ -496,7 +496,7 @@ public class GameReplayManager {
                 Component.translatable("tmm.replay.player_count", playerCount != null ? playerCount : 0)
                         .withStyle(ChatFormatting.WHITE));
 
-        sendSystemMessage(player, Component.nullToEmpty("---").withStyle(ChatFormatting.GRAY));
+        sendSystemMessage(player, Component.literal("---").withStyle(ChatFormatting.GRAY));
 
         Map<UUID, String> playerRoles = replayData.getPlayerRoles();
         if (playerRoles != null && !playerRoles.isEmpty()) {
@@ -642,7 +642,7 @@ public class GameReplayManager {
                     TMM.LOGGER.error("Error converting replay event to text: ", e);
                 }
                 if (eventText != null) {
-                    sendSystemMessage(player, Component.nullToEmpty(timePrefix).append(eventText));
+                    sendSystemMessage(player, Component.literal(timePrefix).append(eventText));
                 } else {
                     // 不再显示无法显示的消息
                     // sendSystemMessage(player,
@@ -651,7 +651,7 @@ public class GameReplayManager {
             }
         }
 
-        sendSystemMessage(player, Component.nullToEmpty("---").withStyle(ChatFormatting.GRAY));
+        sendSystemMessage(player, Component.literal("---").withStyle(ChatFormatting.GRAY));
         sendSystemMessage(player, Component.translatable("tmm.replay.footer").withStyle(ChatFormatting.GRAY));
     }
 
