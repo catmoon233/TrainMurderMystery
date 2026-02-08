@@ -5,9 +5,9 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.context.CommandContext;
 import dev.doctor4t.trainmurdermystery.mod_whitelist.common.utils.MWLogger;
 import dev.doctor4t.trainmurdermystery.mod_whitelist.server.config.MWServerConfig;
-import net.minecraft.server.command.CommandManager;
-import net.minecraft.server.command.ServerCommandSource;
-import net.minecraft.text.Text;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
+import net.minecraft.network.chat.Component;
 
 /**
  * Command handler for Mod Whitelist system
@@ -19,10 +19,10 @@ public class ModWhitelistCommand {
 	 * Registers all mod whitelist commands
 	 * Called during server initialization
 	 */
-	public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
+	public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
 		dispatcher.register(
-			CommandManager.literal("mw:reload")
-				.requires(source -> source.hasPermissionLevel(3)) // OP only
+				Commands.literal("mw:reload")
+				.requires(source -> source.hasPermission(2)) // OP only
 				.executes(ModWhitelistCommand::reloadConfig)
 		);
 
@@ -33,20 +33,20 @@ public class ModWhitelistCommand {
 	 * Handles the mw:reload command
 	 * Reloads configuration from file
 	 */
-	private static int reloadConfig(CommandContext<ServerCommandSource> context) {
-		ServerCommandSource source = context.getSource();
+	private static int reloadConfig(CommandContext<CommandSourceStack> context) {
+		CommandSourceStack source = context.getSource();
 
 		try {
 			MWServerConfig.reloadConfig();
-			source.sendFeedback(
-				() -> Text.literal("§aMod Whitelist configuration reloaded successfully!"),
+			source.sendSuccess(
+				() -> Component.literal("§aMod Whitelist configuration reloaded successfully!"),
 				true
 			);
 			MWLogger.LOGGER.info("Config reloaded by: " + source.getEntity().getName().getString());
 			return Command.SINGLE_SUCCESS;
 		} catch (Exception e) {
-			source.sendError(
-				Text.literal("§cFailed to reload Mod Whitelist configuration: " + e.getMessage())
+			source.sendFailure(
+				Component.literal("§cFailed to reload Mod Whitelist configuration: " + e.getMessage())
 			);
 			MWLogger.LOGGER.error("Error reloading config", e);
 			return 0;
