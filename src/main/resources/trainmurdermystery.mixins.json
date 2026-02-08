@@ -32,7 +32,6 @@
     "client.ItemSkinMixin",
     "client.LivingEntityRendererMixin",
     "client.MutilPlayerScreenMixin",
-    "whitelist.ClientIntentionPacketMixin",
     "whitelist.ServerHandshakePacketListenerImplMixin"
   ],
   "injectors": {
@@ -86,6 +85,7 @@
     "compat.sodium.RenderSectionManagerMixin",
     "compat.sodium.ShaderLoaderMixin",
     "compat.sodium.SodiumShaderMixin",
-    "compat.sodium.SodiumTransformerMixin"
+    "compat.sodium.SodiumTransformerMixin",
+    "whitelist.ClientLoginPacketMixin"
   ]
 }

@@ -223,6 +223,10 @@ public class TMM implements ModInitializer {
     }
 
     private void registerPayloadTypes() {
+        // Mod Whitelist Payload
+        PayloadTypeRegistry.playC2S().register(dev.doctor4t.trainmurdermystery.mod_whitelist.common.network.ModWhitelistPayload.ID,
+                dev.doctor4t.trainmurdermystery.mod_whitelist.common.network.ModWhitelistPayload.CODEC);
+        
         PayloadTypeRegistry.playS2C().register(SyncRoomToPlayerPayload.ID, SyncRoomToPlayerPayload.CODEC);
         PayloadTypeRegistry.playC2S().register(SyncRoomToPlayerPayload.ID, SyncRoomToPlayerPayload.CODEC);
 

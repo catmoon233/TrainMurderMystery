@@ -110,7 +110,7 @@ public class TMMClient implements ClientModInitializer {
 
     public static boolean isPlayerCreative() {
         Minecraft client = Minecraft.getInstance();
-        return (client != null && client.player != null && (client.player.isCreative() || client.player.isSpectator()));
+        return (client != null && client.player != null && (client.player.isCreative()));
     }
 
     @Override

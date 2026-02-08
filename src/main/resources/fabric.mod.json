@@ -23,6 +23,9 @@
 		"client": [
 			"dev.doctor4t.trainmurdermystery.client.TMMClient"
 		],
+		"server": [
+			"dev.doctor4t.trainmurdermystery.mod_whitelist.server.ModWhitelistServer"
+		],
 		"fabric-datagen": [
           "dev.doctor4t.trainmurdermystery.datagen.TMMDatagen"
 		],

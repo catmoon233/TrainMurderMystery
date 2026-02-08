@@ -117,7 +117,7 @@ public class SansRenderer {
             poseStack.mulPose(com.mojang.math.Axis.ZP.rotationDegrees(rotation));
         }
 
-        poseStack.scale(2f, 2f, 1f);
+        poseStack.scale(3f, 3f, 1f);
 
         float o = ((int) m_showingHintTimer % 10) / 10f;
         o = ((int) m_showingHintTimer / 10) % 2 == 0 ? o : 1 - o;
@@ -164,12 +164,12 @@ public class SansRenderer {
                 
                 var desaturateUniform = effect.safeGetUniform("DesaturateFactor");
                 if (desaturateUniform != null) {
-                    desaturateUniform.set(MathHelper.clampNorm(Mth.inverseLerp(cap.getMood(), .4f, .8f)) * .69f);
+                    desaturateUniform.set(MathHelper.clampNorm(Mth.inverseLerp(1, .4f, .8f)) * .69f);
                 }
                 
                 var spreadUniform = effect.safeGetUniform("SpreadFactor");
                 if (spreadUniform != null) {
-                    spreadUniform.set(MathHelper.clampNorm(Mth.inverseLerp(cap.getMood(), .4f, .8f)) * 1.43f);
+                    spreadUniform.set(MathHelper.clampNorm(Mth.inverseLerp(1, .4f, .8f)) * 1.43f);
                 }
                 
                 return true;
@@ -237,7 +237,7 @@ public class SansRenderer {
                 
                 var factorUniform = effect.safeGetUniform("Factor");
                 if (factorUniform != null) {
-                    factorUniform.set(MathHelper.clampNorm(Mth.inverseLerp(cap.getMood(), .4f, .8f)) * .1f);
+                    factorUniform.set(MathHelper.clampNorm(Mth.inverseLerp(1, .4f, .8f)) * .1f);
                 }
                 
                 var timeTotalUniform = effect.safeGetUniform("TimeTotal");

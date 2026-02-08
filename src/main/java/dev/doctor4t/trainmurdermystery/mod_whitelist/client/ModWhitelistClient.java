@@ -2,19 +2,23 @@ package dev.doctor4t.trainmurdermystery.mod_whitelist.client;
 
 import com.google.common.collect.Lists;
 import dev.doctor4t.trainmurdermystery.mod_whitelist.ModWhitelist;
+import dev.doctor4t.trainmurdermystery.mod_whitelist.client.network.ModWhitelistClientNetworkHandler;
 import dev.doctor4t.trainmurdermystery.mod_whitelist.common.utils.MWLogger;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
 
 import java.util.List;
 
-public class ModWhitelistClient  {
+public class ModWhitelistClient {
 	public static final List<String> mods = Lists.newArrayList();
 
 	public static void onInitializeClient() {
 		mods.clear();
 		FabricLoader.getInstance().getAllMods().forEach(mod -> mods.add(mod.getMetadata().getId()));
 		mods.sort(String::compareTo);
+
+		// Initialize network handler for sending mod info when joining
+		ModWhitelistClientNetworkHandler.initializeClient();
 
 		hello();
 	}

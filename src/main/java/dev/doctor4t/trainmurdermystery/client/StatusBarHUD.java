@@ -14,11 +14,11 @@ public class StatusBarHUD {
     private final Map<String, Long> removalTimers = new ConcurrentHashMap<>();
 
     // 现代化配置参数
-    private static final float BAR_HEIGHT = 20.0f;
+    private static final float BAR_HEIGHT = 12.0f;
     private static final float BAR_WIDTH = 220.0f;
     private static final float BAR_SPACING = 12.0f;
     private static final long FADE_DURATION = 500L;
-    private static final long DEFAULT_DURATION = 5000L;
+    private static final long DEFAULT_DURATION = 500000L;
 
     // 现代化颜色方案 (深色主题)
     private static final int BACKGROUND_COLOR = 0x1A1A2E;
@@ -27,14 +27,14 @@ public class StatusBarHUD {
     private static final int TEXT_SECONDARY = 0xFFB0B0B0;
     private static final int ACCENT_COLOR = 0xFF00D4FF;
 
-    // 现代化进度条颜色梯度 (蓝色到紫色)
+    // 现代化进度条颜色梯度 (绿色到红色)
     private static final int[] PROGRESS_COLORS = {
-            0xFF00D4FF, // 亮蓝 (100%)
-            0xFF3B7FFF, // 蓝
-            0xFF6B5FFF, // 靛蓝
-            0xFF9B3FFF, // 紫
-            0xFFBB2FFF, // 深紫
-            0xFFFF2F9F // 粉紫 (0%)
+            0xFF00FF00, // 亮绿 (100%)
+            0xFF7FFF00, // 黄绿
+            0xFFFFFF00, // 黄色
+            0xFFFF7F00, // 橙色
+            0xFFFF3F00, // 橙红
+            0xFFFF0000  // 红色 (0%)
     };
 
     private StatusBarHUD() {
@@ -173,7 +173,7 @@ public class StatusBarHUD {
 
         progressRatio = Mth.clamp(progressRatio, 0.0f, 1.0f);
 
-        // 计算颜色（蓝色到紫色的渐变）
+        // 计算颜色（绿色到红色的渐变）
         int colorIndex = (int) (progressRatio * (PROGRESS_COLORS.length - 1));
         colorIndex = Mth.clamp(colorIndex, 0, PROGRESS_COLORS.length - 1);
         int progressColor = PROGRESS_COLORS[colorIndex];
@@ -204,7 +204,7 @@ public class StatusBarHUD {
         int percentWidth = mc.font.width(percentText);
 
         int titleX = barX + 6;
-        int titleY = barY + 4;
+        int titleY = barY + 2;
         int percentX = barX + barWidth - percentWidth - 6;
 
         // 绘制文字

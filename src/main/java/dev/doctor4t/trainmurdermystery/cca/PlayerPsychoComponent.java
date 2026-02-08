@@ -80,7 +80,7 @@ public class PlayerPsychoComponent implements RoleComponent, ServerTickingCompon
             GameWorldComponent gameWorldComponent = GameWorldComponent.KEY.get(this.player.level());
             gameWorldComponent.setPsychosActive(gameWorldComponent.getPsychosActive() + 1);
             if (player instanceof ServerPlayer serverPlayer){
-                ServerPlayNetworking.send(serverPlayer, new TriggerStatusBarPayload("psycho"));
+                ServerPlayNetworking.send(serverPlayer, new TriggerStatusBarPayload("Psycho"));
             }
             return true;
         }
@@ -95,7 +95,7 @@ public class PlayerPsychoComponent implements RoleComponent, ServerTickingCompon
         gameWorldComponent.setPsychosActive(gameWorldComponent.getPsychosActive() - 1);
         this.psychoTicks = 0;
         if (this.player instanceof ServerPlayer serverPlayer){
-            ServerPlayNetworking.send(serverPlayer, new RemoveStatusBarPayload("psycho"));
+            ServerPlayNetworking.send(serverPlayer, new RemoveStatusBarPayload("Psycho"));
 
         }
         this.player.getInventory().clearOrCountMatchingItems(itemStack -> itemStack.is(TMMItems.BAT), Integer.MAX_VALUE, this.player.inventoryMenu.getCraftSlots());
