@@ -269,12 +269,16 @@ public class TMMClient implements ClientModInitializer {
 
         ClientTickEvents.START_WORLD_TICK.register(clientWorld -> {
             if (Minecraft.getInstance() != null && Minecraft.getInstance().player != null) {
-                if (Minecraft.getInstance().options.keyShift.consumeClick()) {
-                    if (SecurityMonitorBlock.isInSecurityMode()) {
-                        SecurityMonitorBlock.setSecurityMode(false);
-                        Minecraft.getInstance().options.setCameraType(CameraType.FIRST_PERSON);
+                var keycode = Minecraft.getInstance().options.keyShift.getDefaultKey().getNumericKeyValue();
+                if (!keycode.isEmpty()) {
+                    if (Screen.hasShiftDown()) {
+                        if (SecurityMonitorBlock.isInSecurityMode()) {
+                            SecurityMonitorBlock.setSecurityMode(false);
+                            Minecraft.getInstance().options.setCameraType(CameraType.FIRST_PERSON);
+                        }
                     }
                 }
+
             }
 
             prevInstinctLightLevel = instinctLightLevel;

@@ -106,10 +106,11 @@ public class SecurityCameraHUD {
         Minecraft minecraft = Minecraft.getInstance();
         Font font = minecraft.font;
 
-        MutableComponent exitHint = Component.keybind("key.sneak");
+        MutableComponent exitHint = Component.translatable("screen.trainmurdermystery.security_monitor.exit",
+                Component.keybind("key.esc"));
         int textWidth = font.width(exitHint);
         int x = (screenWidth - textWidth) / 2;
-        int y = screenHeight - 25; // 屏幕底部
+        int y = screenHeight - 36; // 屏幕底部
 
         guiGraphics.drawString(font, exitHint.withStyle(ChatFormatting.GRAY), x, y, 0xFFFFFFFF,
                 true);
@@ -139,7 +140,7 @@ public class SecurityCameraHUD {
         // 绘制"SECURITY FEED"文字
         Minecraft minecraft = Minecraft.getInstance();
         Font font = minecraft.font;
-        String feedTitle = "安全监控";
+        String feedTitle = "SECURITY MONITOR";
         int titleWidth = font.width(feedTitle);
         int titleX = x + (feedWidth - titleWidth) / 2;
         int titleY = y + 8;
@@ -170,7 +171,7 @@ public class SecurityCameraHUD {
         Minecraft minecraft = Minecraft.getInstance();
         Font font = minecraft.font;
 
-        String status = "监控模式";
+        String status = "STREAM";
         int textWidth = font.width(status);
         int x = (screenWidth - textWidth) / 2;
         int y = 35; // 在摄像头信息下方
