@@ -30,13 +30,13 @@ public class DecServerJoinPlayer {
         if (gameWorldComponent.isRunning()) {
             if (!GameFunctions.isPlayerAliveAndSurvival(serverPlayer)) {
                 // 加群组功能已换成VoiceChat事件监听(trainVoicePlugin.java)
-                serverPlayer.setGameMode(net.minecraft.world.level.GameType.SPECTATOR);
 
                 if (serverPlayer.level() instanceof ServerLevel serverWorld) {
                     AreasWorldComponent areas = AreasWorldComponent.KEY.get(serverWorld);
                     AreasWorldComponent.PosWithOrientation spectatorSpawnPos = areas.getSpectatorSpawnPos();
                     serverPlayer.teleportTo(serverWorld, spectatorSpawnPos.pos.x(), spectatorSpawnPos.pos.y(),
                             spectatorSpawnPos.pos.z(), spectatorSpawnPos.yaw, spectatorSpawnPos.pitch);
+                    serverPlayer.setGameMode(net.minecraft.world.level.GameType.SPECTATOR);
                 }
 
             }

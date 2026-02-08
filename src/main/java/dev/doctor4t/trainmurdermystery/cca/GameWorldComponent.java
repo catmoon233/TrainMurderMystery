@@ -403,17 +403,15 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
                 for (ServerPlayer player : serverWorld.players()) {
                     if (GameFunctions.isPlayerAliveAndSurvival(player)) {
                         // kill players who fell off the train
-                        final var block = player.level().getBlockState(new BlockPos((int) player.getX(), (int) player.getY(), (int) player.getZ())).getBlock();
-                        final var block1 = player.level().getBlockState(new BlockPos((int) player.getX(), (int) (player.getY()-1), (int) player.getZ())).getBlock();
-                        final var block2 = player.level().getBlockState(new BlockPos((int) player.getX(), (int) (player.getY()-2), (int) player.getZ())).getBlock();
-                        if (player.getY() < areas.playArea.minY || (block == Blocks.WATER && block1 == Blocks.WATER && block2 == Blocks.WATER)) {
-                            GameFunctions.killPlayer(player, false, player.getLastAttacker() instanceof Player killerPlayer ? killerPlayer : null, GameConstants.DeathReasons.FELL_OUT_OF_TRAIN);
-                        }
-
-                        // put players with no role in spectator mode
                         if (GameWorldComponent.KEY.get(world).getRole(player) == null) {
                             player.setGameMode(net.minecraft.world.level.GameType.SPECTATOR);
                         }
+                        if (GameFunctions.isPlayerAliveAndSurvival( player)) {
+                            isPlayerOutGameAreas(player, areas);
+                        }
+
+                        // put players with no role in spectator mode
+
                         
                         // 调用角色的服务器端tick方法
                         dev.doctor4t.trainmurdermystery.api.RoleMethodDispatcher.callServerTick(player);
@@ -440,7 +438,16 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
 //            }
         }
     }
-    
+
+    public static void isPlayerOutGameAreas(ServerPlayer player, AreasWorldComponent areas) {
+        final var block = player.level().getBlockState(new BlockPos((int) player.getX(), (int) player.getY(), (int) player.getZ())).getBlock();
+        final var block1 = player.level().getBlockState(new BlockPos((int) player.getX(), (int) (player.getY()-1), (int) player.getZ())).getBlock();
+        final var block2 = player.level().getBlockState(new BlockPos((int) player.getX(), (int) (player.getY()-2), (int) player.getZ())).getBlock();
+        if (player.getY() < areas.playArea.minY || (block == Blocks.WATER && block1 == Blocks.WATER && block2 == Blocks.WATER)) {
+            GameFunctions.killPlayer(player, false, player.getLastAttacker() instanceof Player killerPlayer ? killerPlayer : null, GameConstants.DeathReasons.FELL_OUT_OF_TRAIN);
+        }
+    }
+
     private void tickCommon() {
         // fade and start / stop game
         if (this.getGameStatus() == GameStatus.STARTING || this.getGameStatus() == GameStatus.STOPPING) {

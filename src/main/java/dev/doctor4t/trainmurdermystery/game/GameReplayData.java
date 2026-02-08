@@ -261,10 +261,11 @@ public class GameReplayData {
                     yield Component.translatable("tmm.replay.event.poison_no_killer", targetName, itemUsedText);
                 }
             }
+            case ARMOR_BREAK -> Component.translatable("tmm.replay.event.armor_break", sourceName);
             case GRENADE_THROWN -> Component.translatable("tmm.replay.event.grenade_thrown", sourceName);
             case ITEM_USED -> Component.translatable("tmm.replay.event.skill_used", sourceName, itemUsedText);
             case BLACKOUT_START ->
-                Component.translatable("tmm.replay.event.blackout_start", Component.literal(message));
+                Component.translatable("tmm.replay.event.blackout_start", Component.nullToEmpty(message));
             case BLACKOUT_END -> Component.translatable("tmm.replay.event.blackout_end");
             // 系统事件
             case GAME_START -> Component.translatable("tmm.replay.event.game_start").withStyle(ChatFormatting.GREEN);
@@ -331,29 +332,29 @@ public class GameReplayData {
              * Component.translatable("tmm.replay.event.task_complete", sourceName,
              * itemUsedText);
              * case STORE_BUY -> {
-             * Component costComponent = message != null ? Component.literal(message) :
-             * Component.literal("?");
+             * Component costComponent = message != null ? Component.nullToEmpty(message) :
+             * Component.nullToEmpty("?");
              * yield Component.translatable("tmm.replay.event.store_buy", sourceName,
              * itemUsedText, costComponent);
              * }
              * case MOOD_CHANGE -> Component.translatable("tmm.replay.event.mood_change",
-             * sourceName, Component.literal(message));
+             * sourceName, Component.nullToEmpty(message));
              * case DOOR_LOCK -> Component.translatable("tmm.replay.event.door_lock",
-             * sourceName, Component.literal(message));
+             * sourceName, Component.nullToEmpty(message));
              * case DOOR_UNLOCK -> Component.translatable("tmm.replay.event.door_unlock",
-             * sourceName, Component.literal(message));
+             * sourceName, Component.nullToEmpty(message));
              * case PSYCHO_STATE_CHANGE ->
              * Component.translatable("tmm.replay.event.psycho_state_change", sourceName,
-             * Component.literal(message));
+             * Component.nullToEmpty(message));
              */
             case CUSTOM_EVENT -> {
                 if (event
                         .details() instanceof ReplayEventTypes.CustomEventDetails(ResourceLocation eventId, String data)) {
                     // CustomEventDetails 没有 playerUuid，只有 eventId 和 data
-                    yield Component.translatable("tmm.replay.event.custom_event", Component.literal(eventId.toString()),
-                            Component.literal(data));
+                    yield Component.translatable("tmm.replay.event.custom_event", Component.nullToEmpty(eventId.toString()),
+                            Component.nullToEmpty(data));
                 }
-                yield Component.translatable("tmm.replay.event.custom_event", Component.literal("未知自定义事件"));
+                yield Component.translatable("tmm.replay.event.custom_event", Component.nullToEmpty("未知自定义事件"));
             }
             default -> throw new IllegalArgumentException("Unexpected value: " + event.eventType());
         };
@@ -389,6 +390,7 @@ public class GameReplayData {
         PLAYER_JOIN,
         PLAYER_LEAVE,
         PLAYER_KILL,
+        ARMOR_BREAK,
         PLAYER_POISONED,
         GRENADE_THROWN,
         SKILL_USED,

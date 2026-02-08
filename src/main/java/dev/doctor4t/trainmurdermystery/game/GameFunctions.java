@@ -35,6 +35,7 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
@@ -86,37 +87,37 @@ public class GameFunctions {
             double bounceFactor = 0.2; // 反弹系数，可根据需要调整
 
             // Z轴边界检测和反弹
-            if (z < box.minZ) {
-                z = box.minZ;
+            if (z < box.minZ-50) {
+                z = box.minZ-50;
                 // 添加Z轴正方向的反弹速度
                 player.setDeltaMovement(player.getDeltaMovement().add(0, 0, bounceFactor));
             }
-            if (z > box.maxZ) {
-                z = box.maxZ;
+            if (z > box.maxZ+50) {
+                z = box.maxZ+50;
                 // 添加Z轴负方向的反弹速度
                 player.setDeltaMovement(player.getDeltaMovement().add(0, 0, -bounceFactor));
             }
 
             // Y轴边界检测和反弹
-            if (y < box.minY) {
-                y = box.minY;
+            if (y < box.minY-20) {
+                y = box.minY-20;
                 // 添加Y轴正方向的反弹速度
                 player.setDeltaMovement(player.getDeltaMovement().add(0, bounceFactor, 0));
             }
-            if (y > box.maxY) {
-                y = box.maxY;
+            if (y > box.maxY+20) {
+                y = box.maxY+20;
                 // 添加Y轴负方向的反弹速度
                 player.setDeltaMovement(player.getDeltaMovement().add(0, -bounceFactor, 0));
             }
 
             // X轴边界检测和反弹
-            if (x < box.minX) {
-                x = box.minX;
+            if (x < box.minX-50) {
+                x = box.minX-50;
                 // 添加X轴正方向的反弹速度
                 player.setDeltaMovement(player.getDeltaMovement().add(bounceFactor, 0, 0));
             }
-            if (x > box.maxX) {
-                x = box.maxX;
+            if (x > box.maxX+50) {
+                x = box.maxX+50;
                 // 添加X轴负方向的反弹速度
                 player.setDeltaMovement(player.getDeltaMovement().add(-bounceFactor, 0, 0));
             }
@@ -347,7 +348,7 @@ public class GameFunctions {
             roomNumber = roomNumber % roomCount + 1;
             int finalRoomNumber = roomNumber;
             itemStack.update(DataComponents.LORE, ItemLore.EMPTY, component -> new ItemLore(Component
-                    .literal("Room " + finalRoomNumber).toFlatList(Style.EMPTY.withItalic(false).withColor(0xFF8C00))));
+                    .nullToEmpty("Room " + finalRoomNumber).toFlatList(Style.EMPTY.withItalic(false).withColor(0xFF8C00))));
             serverPlayerEntity.addItem(itemStack);
             roomToPlayer.put(serverPlayerEntity.getUUID(), finalRoomNumber);
 
@@ -603,6 +604,10 @@ public class GameFunctions {
         if (component.getPsychoTicks() > 0) {
             if (component.getArmour() > 0) {
                 component.setArmour(component.getArmour() - 1);
+                if (TMM.REPLAY_MANAGER != null) {
+                    TMM.REPLAY_MANAGER.breakArmor(victim.getUUID());
+                }
+
                 if (killer instanceof ServerPlayer serverPlayer) {
                     ServerPlayNetworking.send(serverPlayer,
                             new BreakArmorPayload(victim.getX(), victim.getY(), victim.getZ()

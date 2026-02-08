@@ -65,6 +65,7 @@ public class GameReplayManager {
             case ROLE_ASSIGNMENT -> ReplayEventTypes.EventType.GAME_START;
             case PLAYER_JOIN -> ReplayEventTypes.EventType.PLAYER_JOIN;
             case PLAYER_LEAVE -> ReplayEventTypes.EventType.PLAYER_LEAVE;
+            case ARMOR_BREAK -> ReplayEventTypes.EventType.ARMOR_BREAK;
             // 次要事件
             case DOOR_OPEN -> ReplayEventTypes.EventType.DOOR_OPEN;
             case DOOR_CLOSE -> ReplayEventTypes.EventType.DOOR_CLOSE;
@@ -311,7 +312,7 @@ public class GameReplayManager {
     public Component getPlayerName(UUID uuid) {
         String name = playerNames.get(uuid);
         if (name != null) {
-            return Component.literal(name);
+            return Component.nullToEmpty(name);
         } else {
             // 如果在回放期间遇到未记录的玩家，尝试从服务器获取名称
             if (server != null) {
@@ -319,11 +320,11 @@ public class GameReplayManager {
                 if (serverPlayer != null) {
                     String playerName = serverPlayer.getName().getString();
                     recordPlayerName(uuid, playerName); // 记录以便将来使用
-                    return Component.literal(playerName);
+                    return Component.nullToEmpty(playerName);
                 }
             }
             // 如果无法获取玩家名称，返回带UUID的描述
-            return Component.literal("未知玩家(" + uuid.toString().substring(0, 8) + ")");
+            return Component.nullToEmpty("未知玩家(" + uuid.toString().substring(0, 8) + ")");
         }
     }
 
@@ -394,6 +395,9 @@ public class GameReplayManager {
     public void recordItemUse(UUID playerUuid, ResourceLocation itemUsed) {
         String itemUsedStr = itemUsed != null ? itemUsed.toString() : "unknown";
         addEvent(GameReplayData.EventType.ITEM_USED, playerUuid, null, itemUsedStr, null);
+    }
+    public void breakArmor(UUID playerUuid) {
+        addEvent(GameReplayData.EventType.ARMOR_BREAK, playerUuid, null, "unknown", null);
     }
 
     public void recordSkillUsed(UUID playerUuid, ResourceLocation skillUsed) {
@@ -482,7 +486,7 @@ public class GameReplayManager {
         }
         // Clear previous messages
         for (int i = 0; i < 50; i++) {
-            sendSystemMessage(player, Component.literal(""));
+            sendSystemMessage(player, Component.nullToEmpty(""));
         }
         // Send game statistics
         sendSystemMessage(player,
@@ -492,7 +496,7 @@ public class GameReplayManager {
                 Component.translatable("tmm.replay.player_count", playerCount != null ? playerCount : 0)
                         .withStyle(ChatFormatting.WHITE));
 
-        sendSystemMessage(player, Component.literal("---").withStyle(ChatFormatting.GRAY));
+        sendSystemMessage(player, Component.nullToEmpty("---").withStyle(ChatFormatting.GRAY));
 
         Map<UUID, String> playerRoles = replayData.getPlayerRoles();
         if (playerRoles != null && !playerRoles.isEmpty()) {
@@ -638,16 +642,16 @@ public class GameReplayManager {
                     TMM.LOGGER.error("Error converting replay event to text: ", e);
                 }
                 if (eventText != null) {
-                    sendSystemMessage(player, Component.literal(timePrefix).append(eventText));
+                    sendSystemMessage(player, Component.nullToEmpty(timePrefix).append(eventText));
                 } else {
                     // 不再显示无法显示的消息
                     // sendSystemMessage(player,
-                    // Component.literal(timePrefix).append(Component.translatable("tmm.replay.event.null")));
+                    // Component.nullToEmpty(timePrefix).append(Component.translatable("tmm.replay.event.null")));
                 }
             }
         }
 
-        sendSystemMessage(player, Component.literal("---").withStyle(ChatFormatting.GRAY));
+        sendSystemMessage(player, Component.nullToEmpty("---").withStyle(ChatFormatting.GRAY));
         sendSystemMessage(player, Component.translatable("tmm.replay.footer").withStyle(ChatFormatting.GRAY));
     }
 

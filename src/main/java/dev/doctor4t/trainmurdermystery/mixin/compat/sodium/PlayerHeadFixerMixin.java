@@ -15,9 +15,15 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 public class PlayerHeadFixerMixin {
     @Redirect(method = "getRenderType",at= @At(value = "INVOKE", target = "Lnet/minecraft/client/resources/SkinManager;getInsecureSkin(Lcom/mojang/authlib/GameProfile;)Lnet/minecraft/client/resources/PlayerSkin;"))
     private static PlayerSkin getRenderType(SkinManager instance, GameProfile gameProfile){
-        PlayerSkin playerSkin = (PlayerSkin)instance.getOrLoad(gameProfile).getNow((PlayerSkin) null);
-        return playerSkin != null ? playerSkin : DefaultPlayerSkin.get(gameProfile);
+        try {
 
+
+            PlayerSkin playerSkin = (PlayerSkin) instance.getOrLoad(gameProfile).getNow((PlayerSkin) null);
+            return playerSkin != null ? playerSkin : DefaultPlayerSkin.get(gameProfile);
+        }catch (Exception ignored){
+
+        }
+        return DefaultPlayerSkin.get(gameProfile);
 //        return playerInfo.getSkin();
     }
 }

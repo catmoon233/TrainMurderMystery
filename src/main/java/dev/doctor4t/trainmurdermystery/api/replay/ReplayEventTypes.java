@@ -22,6 +22,7 @@ public class ReplayEventTypes {
         DOOR_LOCK,
         DOOR_UNLOCK,
         DOOR_OPEN,
+        ARMOR_BREAK,
         DOOR_CLOSE,
         LOCKPICK_ATTEMPT,
         ITEM_USED,
