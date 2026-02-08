@@ -52,15 +52,15 @@ public abstract class MountableBlock extends Block {
 
             if (!player.getCooldowns().isOnCooldown(TMMBlocks.ACACIA_BRANCH.asItem())) {
                 player.getCooldowns().addCooldown(TMMBlocks.ACACIA_BRANCH.asItem(), 10);
-
                 if (player.getVehicle() != null) {
-                    player.stopRiding();
-                    if (lastPos != null) {
-                        var ppos = lastPos.get(player.getUUID());
-                        if (ppos != null) {
-                            player.setPos(ppos);
-                        }
-                    }
+                    return InteractionResult.FAIL;
+                    // player.stopRiding();
+                    // if (lastPos != null) {
+                    //     var ppos = lastPos.get(player.getUUID());
+                    //     if (ppos != null) {
+                    //         player.setPos(ppos);
+                    //     }
+                    // }
                 }
 
                 SeatEntity seatEntity = TMMEntities.SEAT.create(world);
