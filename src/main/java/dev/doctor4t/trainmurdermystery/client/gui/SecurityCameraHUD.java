@@ -107,7 +107,7 @@ public class SecurityCameraHUD {
         Font font = minecraft.font;
 
         MutableComponent exitHint = Component.translatable("screen.trainmurdermystery.security_monitor.exit",
-                Component.keybind("key.shift"));
+                Component.keybind("key.sneak"));
         int textWidth = font.width(exitHint);
         int x = (screenWidth - textWidth) / 2;
         int y = screenHeight - 36; // 屏幕底部
@@ -171,7 +171,7 @@ public class SecurityCameraHUD {
         Minecraft minecraft = Minecraft.getInstance();
         Font font = minecraft.font;
 
-        String status = "STREAM";
+        String status = "STREAMING";
         int textWidth = font.width(status);
         int x = (screenWidth - textWidth) / 2;
         int y = 35; // 在摄像头信息下方

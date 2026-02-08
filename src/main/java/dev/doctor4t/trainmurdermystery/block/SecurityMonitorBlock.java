@@ -1,6 +1,8 @@
 package dev.doctor4t.trainmurdermystery.block;
 
 import com.mojang.serialization.MapCodec;
+
+import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.block_entity.CameraBlockEntity;
 import dev.doctor4t.trainmurdermystery.block_entity.SecurityMonitorBlockEntity;
 import dev.doctor4t.trainmurdermystery.network.PacketTracker;
@@ -43,7 +45,7 @@ import java.util.List;
 public class SecurityMonitorBlock extends BaseEntityBlock {
     public static final DirectionProperty FACING = BlockStateProperties.HORIZONTAL_FACING;
     protected static final VoxelShape SHAPE = Block.box(0.0D, 0.0D, 0.0D, 16.0D, 12.0D, 16.0D);
-    
+
     // 添加监控模式相关字段
     private static BlockPos currentCameraPos = null;
     private static BlockPos currentMonitorPos = null; // 当前监控控制台的位置
@@ -55,17 +57,17 @@ public class SecurityMonitorBlock extends BaseEntityBlock {
     public static float currentYaw = 0.0f; // 记录当前视角的yaw偏移量
     public static float currentPitch = 0.0f; // 记录当前视角的pitch偏移量
 
-
-    public static boolean onPlayerRotated(double yawAdd, double pitchAdd) {
+    public static boolean onPlayerRotated(double pitchAdd) {
         if (isInSecurityMode()) {
             LocalPlayer player = Minecraft.getInstance().player;
-            if (player == null) return false;
+            if (player == null)
+                return false;
 
-            float scale = 0.2f;
+            // float scale = 0.02f;
 
             // 累加视角偏移量
-            currentYaw += (float) (yawAdd * scale);
-            currentPitch = Mth.clamp(currentPitch + (float) (pitchAdd * scale), -90, 90);
+            // currentPitch = Mth.clamp(currentPitch + (float) ((pitchAdd - currentPitch) *
+            // scale), -90, 90);
 
             // 不更新玩家实体朝向，只更新相机视角
             // 移除 player.turn() 调用以避免与相机视角冲突
@@ -77,7 +79,9 @@ public class SecurityMonitorBlock extends BaseEntityBlock {
         }
         return false;
     }
+
     private static boolean preventShiftTillNextKeyUp = false;
+
     public static void onInputUpdate(Input input) {
         // resets input
         if (isInSecurityMode()) {
@@ -91,6 +95,7 @@ public class SecurityMonitorBlock extends BaseEntityBlock {
         input.shiftKeyDown = false;
         input.jumping = false;
     }
+
     public static void modifyInputUpdate(Input instance, LocalPlayer player) {
         if (isInSecurityMode()) {
             onInputUpdate(instance);
@@ -103,9 +108,12 @@ public class SecurityMonitorBlock extends BaseEntityBlock {
             }
         }
     }
+
     public static boolean onEarlyKeyPress(int key, int scanCode, int action, int modifiers) {
-        if (!isInSecurityMode()) return false;
-        if (action != GLFW.GLFW_PRESS) return false;
+        if (!isInSecurityMode())
+            return false;
+        if (action != GLFW.GLFW_PRESS)
+            return false;
         var options = Minecraft.getInstance().options;
         // ESC 键退出监控模式 - 发送退出请求到服务端
         if (key == 256) {
@@ -113,8 +121,7 @@ public class SecurityMonitorBlock extends BaseEntityBlock {
             if (player != null) {
                 // 发送退出请求到服务端
                 net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.send(
-                        new SecurityCameraExitRequestPayload()
-                );
+                        new SecurityCameraExitRequestPayload());
             }
             return true;
         } else if (options.keyInventory.matches(key, scanCode)) {
@@ -128,52 +135,54 @@ public class SecurityMonitorBlock extends BaseEntityBlock {
         }
         return false;
     }
+
     public SecurityMonitorBlock(BlockBehaviour.Properties settings) {
         super(settings);
         this.registerDefaultState(this.stateDefinition.any().setValue(FACING, Direction.NORTH));
     }
+
     private static final MapCodec<SecurityMonitorBlock> CODEC = simpleCodec(SecurityMonitorBlock::new);
 
     public static boolean setupCameraMod(Camera camera, BlockGetter level, Entity entity,
-                                         boolean detached, boolean thirdPersonReverse, float partialTick) {
+            boolean detached, boolean thirdPersonReverse, float partialTick) {
 
-        if (!SecurityMonitorBlock.isInSecurityMode()) return false;
+        if (!SecurityMonitorBlock.isInSecurityMode())
+            return false;
         BlockPos cameraPos = SecurityMonitorBlock.getCurrentCameraPos();
 
         float targetYRot;
         float targetXRot;
-
-        LocalPlayer player = Minecraft.getInstance().player;
+        currentPitch = 0f;
 
         // 获取监控控制台的位置（用于获取监控方块朝向）
         BlockPos monitorPos = getCurrentMonitorPos();
-        Level actualLevel = player != null ? player.level() : null;
 
-        if (actualLevel != null && monitorPos != null) {
-            BlockState monitorState = actualLevel.getBlockState(monitorPos);
-            if (monitorState.getBlock() instanceof SecurityMonitorBlock) {
+        if (level != null && monitorPos != null) {
+            BlockState monitorState = level.getBlockState(cameraPos);
+            if (monitorState.getBlock() instanceof CameraBlock) {
                 Direction monitorFacing = monitorState.getValue(FACING);
 
                 // 根据监控控制台方向计算基础旋转角度
                 float baseYaw = getBaseYawFromDirection(monitorFacing);
-
+                // TMM.LOGGER.info(monitorFacing.getName());
                 // 计算目标视角：基础角度 + 玩家调整的偏移量
-                targetYRot = baseYaw + currentYaw;
-                targetXRot = Mth.clamp(currentPitch, -90, 90);
+                targetXRot = baseYaw;
+                targetYRot = Mth.clamp(currentPitch, -90, 90);
             } else {
                 // 如果无法获取监控方块，使用默认值
-                targetYRot = currentYaw;
-                targetXRot = Mth.clamp(currentPitch, -90, 90);
+                targetXRot = currentYaw;
+                targetYRot = Mth.clamp(currentPitch, -90, 90);
             }
         } else {
             // 如果无法获取世界或监控方块位置，则使用默认行为
+            // TMM.LOGGER.info("default screen");
             targetYRot = currentYaw;
             targetXRot = Mth.clamp(currentPitch, -90, 90);
         }
 
-        camera.setRotation(targetYRot, targetXRot);
+        camera.setRotation(targetXRot, targetYRot);
         // 设置相机位置到摄像头位置
-        Vec3 targetCameraPos = cameraPos.getCenter().add(0.5, -1.2, 0.5);
+        Vec3 targetCameraPos = cameraPos.getCenter().add(0, -1.2, 0);
 
         camera.setPosition(targetCameraPos);
 
@@ -187,21 +196,22 @@ public class SecurityMonitorBlock extends BaseEntityBlock {
 
         return true;
     }
-    
+
     /**
      * 根据方向获取基础偏航角
+     * 
      * @param direction 摄像头方向
      * @return 对应的基础偏航角
      */
     private static float getBaseYawFromDirection(Direction direction) {
         switch (direction) {
-            case NORTH: // -Z方向
+            case SOUTH: // -Z方向
                 return 180.0f;
-            case SOUTH: // +Z方向
+            case NORTH: // +Z方向
                 return 0.0f;
-            case WEST:  // -X方向
+            case EAST: // -X方向
                 return 90.0f;
-            case EAST:  // +X方向
+            case WEST: // +X方向
                 return -90.0f;
             default:
                 return 0.0f;
@@ -240,7 +250,8 @@ public class SecurityMonitorBlock extends BaseEntityBlock {
     }
 
     @Override
-    public InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player player, BlockHitResult hit) {
+    public InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player player,
+            BlockHitResult hit) {
         if (world.isClientSide) {
             return InteractionResult.SUCCESS; // 客户端直接返回，主要逻辑在服务端
         }
@@ -274,7 +285,8 @@ public class SecurityMonitorBlock extends BaseEntityBlock {
     }
 
     private static void cycleToNextCamera(Player player, List<BlockPos> cameraPositions) {
-        if (cameraPositions.isEmpty()) return;
+        if (cameraPositions.isEmpty())
+            return;
 
         int currentIndex = -1;
         if (currentCameraPos != null) {
@@ -287,26 +299,30 @@ public class SecurityMonitorBlock extends BaseEntityBlock {
         // 重置视角为新摄像头的初始视角
         currentYaw = 0.0f;
         currentPitch = 0.0f;
-        
+
         // 获取摄像头的朝向信息
-        if (player.level() != null && player.level().getBlockEntity(currentCameraPos) instanceof CameraBlockEntity cameraBlockEntity) {
+        if (player.level() != null
+                && player.level().getBlockEntity(currentCameraPos) instanceof CameraBlockEntity cameraBlockEntity) {
             Direction cameraFacing = cameraBlockEntity.getFacing();
-            player.displayClientMessage(Component.literal("切换到摄像头 " + (nextIndex + 1) + 
-                    ": X=" + currentCameraPos.getX() + ", Y=" + currentCameraPos.getY() + 
-                    ", Z=" + currentCameraPos.getZ() + ", 方向=" + cameraFacing.getName()).withStyle(ChatFormatting.AQUA), true);
+            player.displayClientMessage(Component.literal("切换到摄像头 " + (nextIndex + 1) +
+                    ": X=" + currentCameraPos.getX() + ", Y=" + currentCameraPos.getY() +
+                    ", Z=" + currentCameraPos.getZ() + ", 方向=" + cameraFacing.getName()).withStyle(ChatFormatting.AQUA),
+                    true);
         } else {
-            player.displayClientMessage(Component.literal("切换到摄像头 " + (nextIndex + 1) + 
-                    ": X=" + currentCameraPos.getX() + ", Y=" + currentCameraPos.getY() + 
+            player.displayClientMessage(Component.literal("切换到摄像头 " + (nextIndex + 1) +
+                    ": X=" + currentCameraPos.getX() + ", Y=" + currentCameraPos.getY() +
                     ", Z=" + currentCameraPos.getZ()).withStyle(ChatFormatting.AQUA), true);
         }
     }
 
     private static void enterSecurityMode(net.minecraft.server.level.ServerPlayer player) {
         isInSecurityMode = true;
+        currentPitch = 0f;
         player.displayClientMessage(Component.literal("已进入监控模式").withStyle(ChatFormatting.GREEN), true);
 
         // 发送网络包到客户端以更新视角
-        ServerPlayNetworking.send(player, new SecurityCameraModePayload(true, currentCameraPos, currentYaw, currentPitch));
+        ServerPlayNetworking.send(player,
+                new SecurityCameraModePayload(true, currentCameraPos, currentYaw, currentPitch));
     }
 
     public static void exitSecurityMode(net.minecraft.server.level.ServerPlayer player) {
@@ -319,15 +335,17 @@ public class SecurityMonitorBlock extends BaseEntityBlock {
         player.displayClientMessage(Component.literal("已退出监控模式").withStyle(ChatFormatting.RED), true);
 
         // 发送网络包到客户端以更新视角
-        PacketTracker.sendToClient(player, new SecurityCameraModePayload(false, BlockPos.ZERO, currentYaw, currentPitch));
+        PacketTracker.sendToClient(player,
+                new SecurityCameraModePayload(false, BlockPos.ZERO, currentYaw, currentPitch));
     }
 
     @Nullable
     @Override
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> type) {
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state,
+            BlockEntityType<T> type) {
         return null;
     }
-    
+
     // 提供公共方法供其他类使用
     public static boolean isInSecurityMode() {
         return isInSecurityMode;
@@ -340,11 +358,11 @@ public class SecurityMonitorBlock extends BaseEntityBlock {
     public static BlockPos getCurrentMonitorPos() {
         return currentMonitorPos;
     }
-    
+
     public static void setCurrentCameraPos(BlockPos pos) {
         currentCameraPos = pos;
     }
-    
+
     public static void setSecurityMode(boolean mode) {
         isInSecurityMode = mode;
     }
