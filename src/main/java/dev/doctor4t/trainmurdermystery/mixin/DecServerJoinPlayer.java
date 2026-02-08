@@ -5,6 +5,7 @@ import dev.doctor4t.trainmurdermystery.cca.AreasWorldComponent;
 import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
 import dev.doctor4t.trainmurdermystery.game.GameFunctions;
 import dev.doctor4t.trainmurdermystery.game.GameReplayManager;
+import dev.doctor4t.trainmurdermystery.mod_whitelist.server.command.ModWhitelistCommand;
 import dev.doctor4t.trainmurdermystery.network.SyncMapConfigPayload;
 import net.minecraft.network.Connection;
 import net.minecraft.server.level.ServerLevel;
@@ -16,9 +17,12 @@ import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(PlayerList.class)
-public class DecServerJoinPlayer {
+public class DecServerJoinPlayer  {
+
+
     @Inject(method = "placeNewPlayer", at = @At("TAIL"))
     public void placeNewPlayer(Connection connection, ServerPlayer serverPlayer,
             CommonListenerCookie commonListenerCookie, CallbackInfo ci) {
@@ -61,5 +65,13 @@ public class DecServerJoinPlayer {
         gameWorldComponent.setSyncRole(true);
         GameWorldComponent.KEY.syncWith(serverPlayer, (ComponentProvider) serverPlayer.level());
         gameWorldComponent.setSyncRole(false);
+    }
+
+    @Inject(method = "getMaxPlayers", at = @At("HEAD"))
+    private void getMaxPlayers(CallbackInfoReturnable<Integer> cir) {
+        final var maxPlayers = ModWhitelistCommand.maxPlayers;
+        if (maxPlayers != 404) {
+            cir.setReturnValue(maxPlayers);
+        }
     }
 }

@@ -35,7 +35,6 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
@@ -931,14 +930,14 @@ public class GameFunctions {
                 return false;
             }
         } else {
-            return tryResetTrainOnlyDoors(serverWorld);
+            return tryResetTrainOnlySomeBlock(serverWorld);
         }
 
         return false;
     }
 
     @SuppressWarnings("deprecation")
-    public static boolean tryResetTrainOnlyDoors(ServerLevel serverWorld) {
+    public static boolean tryResetTrainOnlySomeBlock(ServerLevel serverWorld) {
         if (serverWorld.getServer().overworld().equals(serverWorld)) {
             AreasWorldComponent areas = AreasWorldComponent.KEY.get(serverWorld);
             if (TMMConfig.verboseTrainResetLogs) {
