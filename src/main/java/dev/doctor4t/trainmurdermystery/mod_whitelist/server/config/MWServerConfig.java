@@ -317,4 +317,27 @@ public class MWServerConfig {
 	public static void hello() {
 		MWLogger.LOGGER.info("%s v%s is protecting your server!".formatted(ModWhitelist.MOD_NAME, ModWhitelist.MOD_VERSION));
 	}
+
+	/**
+	 * Reloads the configuration from file
+	 * Used for hot-reloading without server restart
+	 */
+	public static void reloadConfig() {
+		try {
+			if (configFile.exists()) {
+				try (Reader reader = new FileReader(configFile)) {
+					JsonElement json = JsonParser.parseReader(reader);
+					loadFromJson(json.getAsJsonObject());
+				}
+				checkValues();
+				MWLogger.LOGGER.info("Configuration reloaded successfully!");
+			} else {
+				MWLogger.LOGGER.warn("Config file does not exist: " + configFile.getAbsolutePath());
+			}
+		} catch (IOException e) {
+			MWLogger.LOGGER.error("Error during reloading config.", e);
+		} catch (ConfigValueException e) {
+			MWLogger.LOGGER.error("Invalid config value: " + e.getMessage(), e);
+		}
+	}
 }

@@ -48,6 +48,7 @@
     "ScreenDrawableGetMixin",
     "client.AbstractClientPlayerEntityMixin",
     "client.CapeCancleMixin",
+    "client.DisconnectedScreenMixin",
     "client.EntityRendererDispatchMixin",
     "client.GameRendererMixin",
     "client.MinecraftClientMixin",

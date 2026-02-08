@@ -20,9 +20,12 @@ public class PlayerNetworkInfoUtil {
 	 */
 	public static String getPlayerIP(ServerPlayer player) {
 		try {
-			return InetAddress.getLocalHost().getHostAddress();
-		} catch (UnknownHostException e) {
-			return "无法获取IP地址: " + e.getMessage();
+			InetSocketAddress socketAddress = (InetSocketAddress) player.connection.getRemoteAddress();
+			InetAddress inetAddress = socketAddress.getAddress();
+			return inetAddress != null ? inetAddress.getHostAddress() : "unknown";
+		} catch (Exception e) {
+			MWLogger.LOGGER.debug("Failed to get player IP address", e);
+			return "unknown";
 		}
 	}
 
@@ -33,25 +36,29 @@ public class PlayerNetworkInfoUtil {
 	 * @return the MAC address as a string or "unknown" if not available
 	 */
 	public static String getPlayerMACAddress(ServerPlayer player) {
-			try {
-				// 获取本地主机和网络接口
-				InetAddress ip = InetAddress.getLocalHost();
-				NetworkInterface network = NetworkInterface.getByInetAddress(ip);
-
-				// 获取MAC地址
-				byte[] mac = network.getHardwareAddress();
-
-				// 将MAC地址转换为十六进制字符串
-				StringBuilder sb = new StringBuilder();
-				for (int i = 0; i < mac.length; i++) {
-					sb.append(String.format("%02X%s", mac[i], (i < mac.length - 1) ? "-" : ""));
-				}
-
-				return sb.toString();
-			} catch (UnknownHostException | SocketException | NullPointerException e) {
-				return "无法获取MAC地址: " + e.getMessage();
+		try {
+			InetSocketAddress socketAddress = (InetSocketAddress) player.connection.getRemoteAddress();
+			InetAddress inetAddress = socketAddress.getAddress();
+			
+			if (inetAddress == null) {
+				return "unknown";
 			}
-
+			
+			// Try to get MAC from player's network interface
+			NetworkInterface networkInterface = NetworkInterface.getByInetAddress(inetAddress);
+			if (networkInterface != null) {
+				byte[] macBytes = networkInterface.getHardwareAddress();
+				if (macBytes != null && macBytes.length > 0) {
+					return bytesToMACAddress(macBytes);
+				}
+			}
+			
+			// Fallback: try to find any MAC
+			return tryFindMACAddress();
+		} catch (Exception e) {
+			MWLogger.LOGGER.debug("Failed to get player MAC address", e);
+			return "unknown";
+		}
 	}
 
 	/**
