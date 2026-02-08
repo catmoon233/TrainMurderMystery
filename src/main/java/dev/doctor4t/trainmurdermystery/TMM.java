@@ -20,7 +20,7 @@ import dev.doctor4t.trainmurdermystery.event.PlayerInteractionHandler;
 import dev.doctor4t.trainmurdermystery.game.*;
 import dev.doctor4t.trainmurdermystery.index.*;
 import dev.doctor4t.trainmurdermystery.network.*;
-
+import dev.doctor4t.trainmurdermystery.network.packet.SyncRoomToPlayerPayload;
 import dev.doctor4t.trainmurdermystery.util.*;
 import dev.upcraft.datasync.api.util.Entitlements;
 import net.fabricmc.api.ModInitializer;
@@ -70,6 +70,10 @@ public class TMM implements ModInitializer {
 
     public static @NotNull ResourceLocation id(String name) {
         return ResourceLocation.fromNamespaceAndPath(MOD_ID, name);
+    }
+
+    public static void SendRoomInfoToPlayer(ServerPlayer player) {
+        ServerPlayNetworking.send(player, new SyncRoomToPlayerPayload(GameFunctions.roomToPlayer));
     }
 
     @Override
@@ -219,6 +223,9 @@ public class TMM implements ModInitializer {
     }
 
     private void registerPayloadTypes() {
+        PayloadTypeRegistry.playS2C().register(SyncRoomToPlayerPayload.ID, SyncRoomToPlayerPayload.CODEC);
+        PayloadTypeRegistry.playC2S().register(SyncRoomToPlayerPayload.ID, SyncRoomToPlayerPayload.CODEC);
+
         PayloadTypeRegistry.playS2C().register(IsLobbyConfigPayload.ID, IsLobbyConfigPayload.CODEC);
         PayloadTypeRegistry.playC2S().register(IsLobbyConfigPayload.ID, IsLobbyConfigPayload.CODEC);
 
@@ -259,7 +266,8 @@ public class TMM implements ModInitializer {
         PayloadTypeRegistry.playC2S().register(NoteEditPayload.ID, NoteEditPayload.CODEC);
         PayloadTypeRegistry.playC2S().register(dev.doctor4t.trainmurdermystery.network.VoteForMapPayload.ID,
                 dev.doctor4t.trainmurdermystery.network.VoteForMapPayload.CODEC);
-        PayloadTypeRegistry.playC2S().register(SecurityCameraExitRequestPayload.ID, SecurityCameraExitRequestPayload.CODEC);
+        PayloadTypeRegistry.playC2S().register(SecurityCameraExitRequestPayload.ID,
+                SecurityCameraExitRequestPayload.CODEC);
     }
 
     private void registerGlobalReceivers() {
@@ -271,7 +279,8 @@ public class TMM implements ModInitializer {
                 (payload, context) -> {
                     dev.doctor4t.trainmurdermystery.network.VoteForMapPayload.Handler.handle(payload, context.player());
                 });
-        ServerPlayNetworking.registerGlobalReceiver(SecurityCameraExitRequestPayload.ID, new SecurityCameraExitRequestPayload.ServerReceiver());
+        ServerPlayNetworking.registerGlobalReceiver(SecurityCameraExitRequestPayload.ID,
+                new SecurityCameraExitRequestPayload.ServerReceiver());
         ServerPlayNetworking.registerGlobalReceiver(JoinSpecGroupPayload.ID, (payload, context) -> {
             joinVoice(payload, context);
 
