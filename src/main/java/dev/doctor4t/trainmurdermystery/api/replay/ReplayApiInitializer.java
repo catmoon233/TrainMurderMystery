@@ -39,6 +39,8 @@ public class ReplayApiInitializer {
                 new GrenadeThrownDetailsSerializer(), new GrenadeThrownDetailsSerializer());
         ReplayEventRegistry.register(EventType.CHANGE_ROLE, ChangeRoleDetails.class, new ChangeRoleDetailsSerializer(),
                 new ChangeRoleDetailsSerializer());
+                ReplayEventRegistry.register(EventType.ARMOR_BREAK, ArmorBreakDetails.class, new ArmorBreakDetailsSerializer(),
+                new ArmorBreakDetailsSerializer());
         ReplayEventRegistry.register(EventType.PLAYER_REVIVAL, PlayerRevivalDetails.class,
                 new PlayerRevivalDetailsSerializer(), new PlayerRevivalDetailsSerializer());
 

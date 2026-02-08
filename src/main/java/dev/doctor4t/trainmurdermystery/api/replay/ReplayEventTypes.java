@@ -84,6 +84,9 @@ public class ReplayEventTypes {
     // 手榴弹投掷事件详情
     public record GrenadeThrownDetails(UUID playerUuid, BlockPos position) implements EventDetails {
     }
+    // 手榴弹投掷事件详情
+    public record ArmorBreakDetails(UUID playerUuid) implements EventDetails {
+    }
 
     // 自定义事件详情，用于第三方模组
     public record CustomEventDetails(ResourceLocation eventId, String data) implements EventDetails {

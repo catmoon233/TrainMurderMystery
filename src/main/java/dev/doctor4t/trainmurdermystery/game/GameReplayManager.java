@@ -199,6 +199,9 @@ public class GameReplayManager {
                 String str_arr = dataEvent.getMessage();
                 yield new ReplayEventTypes.PlayerRevivalDetails(dataEvent.getSourcePlayer(), str_arr);
             }
+            case ARMOR_BREAK -> {
+                yield new ReplayEventTypes.ArmorBreakDetails(dataEvent.getSourcePlayer());
+            }
             case CHANGE_ROLE -> {
                 String[] str_arr = dataEvent.getMessage().split("===");
 
@@ -396,6 +399,7 @@ public class GameReplayManager {
         String itemUsedStr = itemUsed != null ? itemUsed.toString() : "unknown";
         addEvent(GameReplayData.EventType.ITEM_USED, playerUuid, null, itemUsedStr, null);
     }
+
     public void breakArmor(UUID playerUuid) {
         addEvent(GameReplayData.EventType.ARMOR_BREAK, playerUuid, null, "unknown", null);
     }
