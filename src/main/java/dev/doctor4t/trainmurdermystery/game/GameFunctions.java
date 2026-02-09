@@ -6,8 +6,18 @@ import dev.doctor4t.trainmurdermystery.TMMConfig;
 import dev.doctor4t.trainmurdermystery.api.GameMode;
 import dev.doctor4t.trainmurdermystery.api.Role;
 import dev.doctor4t.trainmurdermystery.api.RoleMethodDispatcher;
+import dev.doctor4t.trainmurdermystery.block.FoodPlatterBlock;
+import dev.doctor4t.trainmurdermystery.block.NeonPillarBlock;
+import dev.doctor4t.trainmurdermystery.block.NeonTubeBlock;
 import dev.doctor4t.trainmurdermystery.block.SmallDoorBlock;
+import dev.doctor4t.trainmurdermystery.block.SprinklerBlock;
+import dev.doctor4t.trainmurdermystery.block.ToggleableFacingLightBlock;
+import dev.doctor4t.trainmurdermystery.block.TrimmedBedBlock;
+import dev.doctor4t.trainmurdermystery.block.VentHatchBlock;
+import dev.doctor4t.trainmurdermystery.block_entity.BeveragePlateBlockEntity;
 import dev.doctor4t.trainmurdermystery.block_entity.SmallDoorBlockEntity;
+import dev.doctor4t.trainmurdermystery.block_entity.SprinklerBlockEntity;
+import dev.doctor4t.trainmurdermystery.block_entity.TrimmedBedBlockEntity;
 import dev.doctor4t.trainmurdermystery.cca.*;
 import dev.doctor4t.trainmurdermystery.compat.TrainVoicePlugin;
 import dev.doctor4t.trainmurdermystery.entity.FirecrackerEntity;
@@ -59,6 +69,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.pattern.BlockInWorld;
+import net.minecraft.world.level.block.state.properties.BedPart;
 import net.minecraft.world.level.block.state.properties.DoubleBlockHalf;
 import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.portal.DimensionTransition;
@@ -87,37 +98,37 @@ public class GameFunctions {
             double bounceFactor = 0.2; // 反弹系数，可根据需要调整
 
             // Z轴边界检测和反弹
-            if (z < box.minZ-50) {
-                z = box.minZ-50;
+            if (z < box.minZ - 50) {
+                z = box.minZ - 50;
                 // 添加Z轴正方向的反弹速度
                 player.setDeltaMovement(player.getDeltaMovement().add(0, 0, bounceFactor));
             }
-            if (z > box.maxZ+50) {
-                z = box.maxZ+50;
+            if (z > box.maxZ + 50) {
+                z = box.maxZ + 50;
                 // 添加Z轴负方向的反弹速度
                 player.setDeltaMovement(player.getDeltaMovement().add(0, 0, -bounceFactor));
             }
 
             // Y轴边界检测和反弹
-            if (y < box.minY-20) {
-                y = box.minY-20;
+            if (y < box.minY - 20) {
+                y = box.minY - 20;
                 // 添加Y轴正方向的反弹速度
                 player.setDeltaMovement(player.getDeltaMovement().add(0, bounceFactor, 0));
             }
-            if (y > box.maxY+20) {
-                y = box.maxY+20;
+            if (y > box.maxY + 20) {
+                y = box.maxY + 20;
                 // 添加Y轴负方向的反弹速度
                 player.setDeltaMovement(player.getDeltaMovement().add(0, -bounceFactor, 0));
             }
 
             // X轴边界检测和反弹
-            if (x < box.minX-50) {
-                x = box.minX-50;
+            if (x < box.minX - 50) {
+                x = box.minX - 50;
                 // 添加X轴正方向的反弹速度
                 player.setDeltaMovement(player.getDeltaMovement().add(bounceFactor, 0, 0));
             }
-            if (x > box.maxX+50) {
-                x = box.maxX+50;
+            if (x > box.maxX + 50) {
+                x = box.maxX + 50;
                 // 添加X轴负方向的反弹速度
                 player.setDeltaMovement(player.getDeltaMovement().add(-bounceFactor, 0, 0));
             }
@@ -349,7 +360,8 @@ public class GameFunctions {
             roomNumber = roomNumber % roomCount + 1;
             int finalRoomNumber = roomNumber;
             itemStack.update(DataComponents.LORE, ItemLore.EMPTY, component -> new ItemLore(Component
-                    .nullToEmpty("Room " + finalRoomNumber).toFlatList(Style.EMPTY.withItalic(false).withColor(0xFF8C00))));
+                    .nullToEmpty("Room " + finalRoomNumber)
+                    .toFlatList(Style.EMPTY.withItalic(false).withColor(0xFF8C00))));
             serverPlayerEntity.addItem(itemStack);
             roomToPlayer.put(serverPlayerEntity.getUUID(), finalRoomNumber);
 
@@ -400,7 +412,7 @@ public class GameFunctions {
                 player.teleportTo(player.serverLevel(), pos1.x(), pos1.y() + 1, pos1.z(), Set.of(), 0, 0);
             }
         }
-        
+
         // Don't set game status to ACTIVE here - it will be set after roles are
         // assigned in initializeGame()
         // Create a copy of entities to avoid concurrent modification issues
@@ -974,11 +986,11 @@ public class GameFunctions {
                 }
 
                 // Force load the required chunks
-                for (int x = backupChunkMinX; x <= backupChunkMaxX; x++) {
-                    for (int z = backupChunkMinZ; z <= backupChunkMaxZ; z++) {
-                        serverWorld.getChunk(x, z);
-                    }
-                }
+                // for (int x = backupChunkMinX; x <= backupChunkMaxX; x++) {
+                // for (int z = backupChunkMinZ; z <= backupChunkMaxZ; z++) {
+                // serverWorld.getChunk(x, z);
+                // }
+                // }
                 for (int x = trainChunkMinX; x <= trainChunkMaxX; x++) {
                     for (int z = trainChunkMinZ; z <= trainChunkMaxZ; z++) {
                         serverWorld.getChunk(x, z);
@@ -993,18 +1005,17 @@ public class GameFunctions {
 
             if (serverWorld.hasChunksAt(backupMinPos, backupMaxPos)
                     && serverWorld.hasChunksAt(trainMinPos, trainMaxPos)) {
+                List<BlockInfo> list3 = Lists.newArrayList(); // 仅更新方块状态
+
                 List<BlockInfo> list2 = Lists.newArrayList(); // Only store block entities (doors have block entities)
-                Deque<BlockPos> deque = Lists.newLinkedList();
-                BlockPos blockPos5 = new BlockPos(
-                        trainBox.minX() - backupTrainBox.minX(), trainBox.minY() - backupTrainBox.minY(),
-                        trainBox.minZ() - backupTrainBox.minZ());
+                // Deque<BlockPos> deque = Lists.newLinkedList();
 
                 // Only clone door blocks and their entities
-                for (int k = backupTrainBox.minZ(); k <= backupTrainBox.maxZ(); k++) {
-                    for (int l = backupTrainBox.minY(); l <= backupTrainBox.maxY(); l++) {
-                        for (int m = backupTrainBox.minX(); m <= backupTrainBox.maxX(); m++) {
+                for (int k = trainBox.minZ(); k <= trainBox.maxZ(); k++) {
+                    for (int l = trainBox.minY(); l <= trainBox.maxY(); l++) {
+                        for (int m = trainBox.minX(); m <= trainBox.maxX(); m++) {
                             BlockPos blockPos6 = new BlockPos(m, l, k);
-                            BlockPos blockPos7 = blockPos6.offset(blockPos5);
+                            BlockPos blockPos7 = blockPos6;
                             BlockInWorld cachedBlockPosition = new BlockInWorld(serverWorld, blockPos6, false);
                             BlockState blockState = cachedBlockPosition.getState();
 
@@ -1012,12 +1023,63 @@ public class GameFunctions {
                             if (blockState.getBlock() instanceof SmallDoorBlock
                                     && blockState.getValue(SmallDoorBlock.HALF).equals(DoubleBlockHalf.LOWER)) {
                                 if (serverWorld.getBlockEntity(blockPos6) instanceof SmallDoorBlockEntity entity) {
+                                    entity.setBlasted(false);
+                                    entity.setJammed(0);
                                     BlockEntityInfo blockEntityInfo = new BlockEntityInfo(
                                             entity.saveCustomOnly(serverWorld.registryAccess()),
                                             entity.components());
+                                    blockState = blockState.setValue(SmallDoorBlock.OPEN, false);
                                     list2.add(new BlockInfo(blockPos7, blockState, blockEntityInfo));
-                                    deque.addLast(blockPos6); // Add to end to process last
+                                    // SmallDoorBlock.
+                                    // deque.addLast(blockPos6); // Add to end to process last
                                 }
+                            } else if (blockState.getBlock() instanceof TrimmedBedBlock
+                                    && blockState.getValue(TrimmedBedBlock.PART).equals(BedPart.HEAD)) {
+                                if (serverWorld.getBlockEntity(blockPos6) instanceof TrimmedBedBlockEntity entity) {
+                                    entity.setHasScorpion(false, null);
+                                    BlockEntityInfo blockEntityInfo = new BlockEntityInfo(
+                                            entity.saveCustomOnly(serverWorld.registryAccess()),
+                                            entity.components());
+                                    list3.add(new BlockInfo(blockPos7, blockState, blockEntityInfo));
+                                    // deque.addLast(blockPos6); // Add to end to process last
+                                }
+                            } else if (blockState.getBlock() instanceof FoodPlatterBlock) {
+                                if (serverWorld.getBlockEntity(blockPos6) instanceof BeveragePlateBlockEntity entity) {
+                                    entity.setArmorer(null);
+                                    entity.setPoisoner(null);
+                                    BlockEntityInfo blockEntityInfo = new BlockEntityInfo(
+                                            entity.saveCustomOnly(serverWorld.registryAccess()),
+                                            entity.components());
+                                    list3.add(new BlockInfo(blockPos7, blockState, blockEntityInfo));
+                                }
+                            } else if (blockState.getBlock() instanceof SprinklerBlock) {
+                                if (serverWorld.getBlockEntity(blockPos6) instanceof SprinklerBlockEntity entity) {
+                                    entity.setPowered(false);
+                                    BlockEntityInfo blockEntityInfo = new BlockEntityInfo(
+                                            entity.saveCustomOnly(serverWorld.registryAccess()),
+                                            entity.components());
+                                    blockState = blockState.setValue(SprinklerBlock.POWERED, false);
+                                    list2.add(new BlockInfo(blockPos7, blockState, blockEntityInfo));
+                                }
+                            } else if (blockState.getBlock() instanceof NeonPillarBlock) {
+                                blockState = blockState.setValue(NeonPillarBlock.ACTIVE, true);
+                                blockState = blockState.setValue(NeonPillarBlock.LIT, true);
+                                list2.add(new BlockInfo(blockPos7, blockState, null));
+                            } else if (blockState.getBlock() instanceof NeonTubeBlock) {
+                                blockState = blockState.setValue(NeonTubeBlock.ACTIVE, true);
+                                blockState = blockState.setValue(NeonTubeBlock.LIT, true);
+                                list2.add(new BlockInfo(blockPos7, blockState, null));
+                            } else if (blockState.getBlock() instanceof NeonTubeBlock) {
+                                blockState = blockState.setValue(NeonTubeBlock.ACTIVE, true);
+                                blockState = blockState.setValue(NeonTubeBlock.LIT, true);
+                                list2.add(new BlockInfo(blockPos7, blockState, null));
+                            } else if (blockState.getBlock() instanceof ToggleableFacingLightBlock) {
+                                blockState = blockState.setValue(ToggleableFacingLightBlock.ACTIVE, true);
+                                blockState = blockState.setValue(ToggleableFacingLightBlock.LIT, true);
+                                list2.add(new BlockInfo(blockPos7, blockState, null));
+                            } else if (blockState.getBlock() instanceof VentHatchBlock) {
+                                blockState = blockState.setValue(VentHatchBlock.OPEN, false);
+                                list2.add(new BlockInfo(blockPos7, blockState, null));
                             }
                         }
                     }
@@ -1025,16 +1087,24 @@ public class GameFunctions {
 
                 List<BlockInfo> list4 = Lists.newArrayList();
                 list4.addAll(list2); // Only doors
-                List<BlockInfo> list5 = Lists.reverse(list4);
+                List<BlockInfo> list_onlyBlockEntity = Lists.newArrayList();
+                list_onlyBlockEntity.addAll(list2);
+                list_onlyBlockEntity.addAll(list3);
+                List<BlockInfo> list6 = Lists.newArrayList();
+                list6.addAll(list4);
+                list6.addAll(list3);
+                List<BlockInfo> list5 = Lists.reverse(list6);
 
                 // Clear only the door locations with barrier blocks
                 for (BlockInfo blockInfo : list5) {
                     BlockEntity blockEntity3 = serverWorld.getBlockEntity(blockInfo.pos);
                     Clearable.tryClear(blockEntity3);
+                }
+                for (BlockInfo blockInfo : list4) {
                     serverWorld.setBlock(blockInfo.pos, Blocks.BARRIER.defaultBlockState(), Block.UPDATE_CLIENTS);
                 }
 
-                int mx = 0;
+                int mx = 1;
 
                 // Place the doors back
                 for (BlockInfo blockInfo2 : list4) {
@@ -1044,7 +1114,7 @@ public class GameFunctions {
                 }
 
                 // Restore block entities for doors
-                for (BlockInfo blockInfo2x : list2) {
+                for (BlockInfo blockInfo2x : list_onlyBlockEntity) {
                     BlockEntity blockEntity4 = serverWorld.getBlockEntity(blockInfo2x.pos);
                     if (blockInfo2x.blockEntityInfo != null && blockEntity4 != null) {
                         blockEntity4.loadCustomOnly(blockInfo2x.blockEntityInfo.nbt, serverWorld.registryAccess());
@@ -1052,8 +1122,11 @@ public class GameFunctions {
                         blockEntity4.setChanged();
                     }
 
-                    serverWorld.setBlock(blockInfo2x.pos, blockInfo2x.state, Block.UPDATE_CLIENTS);
                 }
+                // for (BlockInfo blockInfo2x : list4) {
+                // serverWorld.setBlock(blockInfo2x.pos, blockInfo2x.state,
+                // Block.UPDATE_CLIENTS);
+                // }
 
                 // Update the blocks after setting them
                 for (BlockInfo blockInfo2x : list5) {
