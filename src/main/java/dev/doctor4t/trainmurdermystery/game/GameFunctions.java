@@ -459,6 +459,9 @@ public class GameFunctions {
             } else if (winStatus == WinStatus.RECORDER && playerRole != null
                     && "recorder".equals(playerRole.getIdentifier().getPath())) {
                 isWinner = true;
+            } else if (winStatus == WinStatus.NIAN_SHOU && playerRole != null
+                    && "nianshou".equals(playerRole.getIdentifier().getPath())) {
+                isWinner = true;
             }
 
             if (isWinner) {
@@ -1187,6 +1190,6 @@ public class GameFunctions {
     }
 
     public enum WinStatus {
-        NONE, KILLERS, PASSENGERS, TIME, LOOSE_END, GAMBLER, RECORDER, NO_PLAYER
+        NONE, KILLERS, PASSENGERS, TIME, LOOSE_END, GAMBLER, RECORDER, NIAN_SHOU, NO_PLAYER
     }
 }
