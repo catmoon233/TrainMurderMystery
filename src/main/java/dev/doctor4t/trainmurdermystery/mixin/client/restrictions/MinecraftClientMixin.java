@@ -4,6 +4,7 @@ import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.llamalad7.mixinextras.injector.wrapoperation.WrapOperation;
 import dev.doctor4t.trainmurdermystery.client.TMMClient;
 import dev.doctor4t.trainmurdermystery.client.gui.screen.ingame.LimitedInventoryScreen;
+import dev.doctor4t.trainmurdermystery.event.OnOpenInventory;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.player.LocalPlayer;
@@ -29,8 +30,12 @@ public abstract class MinecraftClientMixin {
         if (TMMClient.gameComponent.getFade() > 0) {
             return;
         }
+        boolean flag = TMMClient.isPlayerAliveAndInSurvival();
+        if(!flag && OnOpenInventory.EVENT.invoker().needOpenLimittedInventory(player, screen)){
+            flag = true;
+        }
 
         original.call(instance,
-                TMMClient.isPlayerAliveAndInSurvival() ? new LimitedInventoryScreen(this.player) : screen);
+                flag ? new LimitedInventoryScreen(this.player) : screen);
     }
 }
