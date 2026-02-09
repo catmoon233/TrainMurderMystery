@@ -22,9 +22,8 @@ public class SeatPosFixMixin {
                 player.teleportTo(lastPos.x, lastPos.y + 0.75, lastPos.z);
                 // 移除记录,防止连续坐椅子时累积高度
                 MountableBlock.lastPos.remove(player.getUUID());
-                if (!player.getCooldowns().isOnCooldown(TMMBlocks.ACACIA_BRANCH.asItem())) {
-                    player.getCooldowns().addCooldown(TMMBlocks.ACACIA_BRANCH.asItem(), 10);
-                }
+
+                player.getCooldowns().addCooldown(TMMBlocks.ACACIA_BRANCH.asItem(), 10);
                 // 下座椅添加cooldown
             }
         }
