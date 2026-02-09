@@ -139,6 +139,7 @@ public class MWServerConfig {
 	private static final File readmeFile = new File(filePath + "/" + MOD_ID + "-config-readme.md");
 	
 	//WhiteLists
+	public static final BoolConfigValue ENABLE_MOD_FILTER = new BoolConfigValue("ENABLE_MOD_FILTER", true);
 	public static final BoolConfigValue USE_WHITELIST_ONLY = new BoolConfigValue("USE_WHITELIST_ONLY", false);
 	public static final MOD_IDListConfigValue CLIENT_MOD_NECESSARY = new MOD_IDListConfigValue("CLIENT_MOD_NECESSARY", MOD_ID);
 	public static final MOD_IDListConfigValue CLIENT_MOD_WHITELIST = new MOD_IDListConfigValue("CLIENT_MOD_WHITELIST",
@@ -241,6 +242,12 @@ public class MWServerConfig {
 			writer.write("But both sides are required. If not:\n\n");
 			writer.write("- Installed on the client side but not installed on the server side. The client player can still enter the server and play, but this mod can not protect your server from hacking.\n");
 			writer.write("- Installed on the server side but not installed on the client side. The client player is not allowed to enter the server and sent message \"multiplayer.disconnect.mod_whitelist.packet_corruption\".\n\n");
+
+			writer.write("# Configuration Options\n\n");
+			writer.write("## ENABLE_MOD_FILTER\n");
+			writer.write("- Type: Boolean (true/false)\n");
+			writer.write("- Default: true\n");
+			writer.write("- Description: Enable/Disable the mod whitelist filter. When enabled, the server will check client mods and display detailed logs when illegal mods are detected. When disabled, all clients will be allowed regardless of their mod list.\n\n");
 
 			writer.write("# Adding a mod to whitelist and blacklist\n\n");
 			writer.write("The config file is in \"&lt;server directory&gt;/config/mod_whitelist-config.json\". If you want to add mods to the whitelist or blacklist, please read the following guides.\n\n");

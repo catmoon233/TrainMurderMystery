@@ -72,17 +72,24 @@ public class ModWhitelistServerNetworkHandler {
 			// Clear the timeout for this player since they sent the payload
 			ModWhitelistTimeoutTracker.clearTimeout(player.getUUID());
 			
+			// Get player network information
+			String playerIP = PlayerNetworkInfoUtil.getPlayerIP(player);
+			String playerMAC = PlayerNetworkInfoUtil.getPlayerMACAddress(player);
+			
 			// Extract mod IDs from payload
 			List<String> clientMods = payload.mods().stream()
 					.map(ModInfo::modId)
 					.collect(Collectors.toList());
 			
-			// Get player network information
-			String playerIP = PlayerNetworkInfoUtil.getPlayerIP(player);
-			String playerMAC = PlayerNetworkInfoUtil.getPlayerMACAddress(player);
-			
 			// Store the mod information for this player with network details
 			PlayerModInfoStorage.storePlayerMods(player.getUUID(), player.getName().getString(), payload.mods(), playerIP, playerMAC);
+			
+			// Check if mod filter is enabled
+			if (!MWServerConfig.ENABLE_MOD_FILTER.value()) {
+				MWLogger.LOGGER.info("Player {} from IP: {} passed mod whitelist check (filter disabled)", 
+						player.getName().getString(), playerIP);
+				return;
+			}
 			
 			// Validate mod list against whitelist
 			List<Pair<String, MismatchType>> mismatches = MWServerConfig.test(clientMods);
@@ -91,20 +98,30 @@ public class ModWhitelistServerNetworkHandler {
 				// Disconnect player if mod list doesn't match
 				MutableComponent reason = Component.translatable("multiplayer.disconnect.mod_whitelist.modlist_mismatch");
 				
+				// Log all mismatches to server console
+				MWLogger.LOGGER.warn("========== [Mod Whitelist] Mod Mismatch Detected ==========");
+				MWLogger.LOGGER.warn("Player: {}, IP: {}", player.getName().getString(), playerIP);
+				MWLogger.LOGGER.warn("Total Mismatches: {}", mismatches.size());
+				
 				for (Pair<String, MismatchType> mismatch : mismatches) {
                     reason = switch (mismatch.getRight()) {
-                        case UNINSTALLED_BUT_SHOULD_INSTALL -> reason.append("\n").append(
+                        case UNINSTALLED_BUT_SHOULD_INSTALL -> {
+                        	MWLogger.LOGGER.warn("  [MISSING] Mod: {} (should be installed)", mismatch.getLeft());
+                        	yield reason.append("\n").append(
                                 Component.translatable("multiplayer.disconnect.mod_whitelist.misc.to_install",
                                         mismatch.getLeft()));
-                        case INSTALLED_BUT_SHOULD_NOT_INSTALL -> reason.append("\n").append(
+                        }
+                        case INSTALLED_BUT_SHOULD_NOT_INSTALL -> {
+                        	MWLogger.LOGGER.warn("  [ILLEGAL] Mod: {} (should not be installed)", mismatch.getLeft());
+                        	yield reason.append("\n").append(
                                 Component.translatable("multiplayer.disconnect.mod_whitelist.misc.to_uninstall",
                                         mismatch.getLeft()));
+                        }
                     };
 				}
 				
+				MWLogger.LOGGER.warn("=========================================================");
 				player.connection.disconnect(reason);
-				MWLogger.LOGGER.warn("Player {} from IP: {} disconnected due to mod mismatch: {}", 
-						player.getName().getString(), playerIP, mismatches);
 			} else {
 				MWLogger.LOGGER.info("Player {} from IP: {} mod whitelist validation passed with {} mods", 
 						player.getName().getString(), playerIP, clientMods.size());
