@@ -290,6 +290,7 @@ public class GameFunctions {
 
     public static long startTime = 0;
     public static Map<UUID, Integer> roomToPlayer = new HashMap<>();
+    public static Map<TaskPointType, List<BlockPos>> taskPoints = new HashMap<>();
 
     private static void baseInitialize(ServerLevel serverWorld, GameWorldComponent gameComponent,
             List<ServerPlayer> players) {
@@ -951,7 +952,6 @@ public class GameFunctions {
         } else {
             return tryResetTrainOnlySomeBlock(serverWorld);
         }
-
         return false;
     }
 
@@ -1191,5 +1191,8 @@ public class GameFunctions {
 
     public enum WinStatus {
         NONE, KILLERS, PASSENGERS, TIME, LOOSE_END, GAMBLER, RECORDER, NO_PLAYER, NIAN_SHOU
+    }
+
+    public static void getAllTaskPoints() {
     }
 }

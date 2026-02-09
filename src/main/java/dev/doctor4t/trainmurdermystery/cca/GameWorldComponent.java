@@ -374,6 +374,7 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
             if (GameFunctions.tryResetTrain(serverWorld)) {
                 queueTrainReset();
             } else {
+                GameFunctions.getAllTaskPoints();
                 ticksUntilNextResetAttempt = -1;
             }
         }
