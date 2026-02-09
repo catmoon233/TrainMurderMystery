@@ -96,7 +96,7 @@ public class ModWhitelistServerNetworkHandler {
 			
 			if (!mismatches.isEmpty()) {
 				// Disconnect player if mod list doesn't match
-				MutableComponent reason = Component.translatable("multiplayer.disconnect.mod_whitelist.modlist_mismatch");
+				MutableComponent reason = Component.translatable("模组不匹配");
 				
 				// Log all mismatches to server console
 				MWLogger.LOGGER.warn("========== [Mod Whitelist] Mod Mismatch Detected ==========");
@@ -108,13 +108,13 @@ public class ModWhitelistServerNetworkHandler {
                         case UNINSTALLED_BUT_SHOULD_INSTALL -> {
                         	MWLogger.LOGGER.warn("  [MISSING] Mod: {} (should be installed)", mismatch.getLeft());
                         	yield reason.append("\n").append(
-                                Component.translatable("multiplayer.disconnect.mod_whitelist.misc.to_install",
+                                Component.literal("请安装模组： " +
                                         mismatch.getLeft()));
                         }
                         case INSTALLED_BUT_SHOULD_NOT_INSTALL -> {
                         	MWLogger.LOGGER.warn("  [ILLEGAL] Mod: {} (should not be installed)", mismatch.getLeft());
                         	yield reason.append("\n").append(
-                                Component.translatable("multiplayer.disconnect.mod_whitelist.misc.to_uninstall",
+                                Component.literal("请卸载模组: "+
                                         mismatch.getLeft()));
                         }
                     };
