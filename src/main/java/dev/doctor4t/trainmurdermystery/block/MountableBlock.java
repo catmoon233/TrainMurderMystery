@@ -68,7 +68,10 @@ public abstract class MountableBlock extends Block {
                 if (seatEntity == null) {
                     return InteractionResult.PASS;
                 }
-                lastPos.put(player.getUUID(), player.position());
+                // 只在首次坐下时保存位置,避免连续坐椅子时累积高度
+                if (!lastPos.containsKey(player.getUUID())) {
+                    lastPos.put(player.getUUID(), player.position());
+                }
                 Vec3 sitPos = this.getSitPos(world, state, pos);
                 Vec3 vec3d = Vec3.atLowerCornerOf(pos).add(sitPos);
 

@@ -19,6 +19,7 @@ public class SeatPosFixMixin {
         if (lastPos != null) {
             if (lastPos.distanceTo(player.position()) < 5) {
                 player.teleportTo(lastPos.x, lastPos.y + 0.75, lastPos.z);
+                // 移除记录,防止连续坐椅子时累积高度
                 MountableBlock.lastPos.remove(player.getUUID());
             }
         }
