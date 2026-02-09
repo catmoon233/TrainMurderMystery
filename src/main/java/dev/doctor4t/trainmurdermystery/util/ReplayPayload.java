@@ -130,6 +130,12 @@ public record ReplayPayload(GameReplay replay) implements CustomPacketPayload {
                     details = new ReplayEventTypes.MoodChangeDetails(playerUuid, oldMood, newMood);
                     break;
                 }
+                case ARMOR_BREAK: {
+                    int playerIndex = buf.readVarInt();
+                    UUID playerUuid = players.get(playerIndex).uuid();
+                    details = new ReplayEventTypes.ArmorBreakDetails(playerUuid);
+                    break;
+                }
                 case PLAYER_REVIVAL: {
                     int playerIndex = buf.readVarInt();
                     UUID playerUuid = players.get(playerIndex).uuid();

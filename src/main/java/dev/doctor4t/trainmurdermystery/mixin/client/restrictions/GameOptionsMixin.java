@@ -5,6 +5,7 @@ import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.api.Role;
 import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
 import dev.doctor4t.trainmurdermystery.client.TMMClient;
+import dev.doctor4t.trainmurdermystery.event.AllowOtherCameraType;
 import dev.doctor4t.trainmurdermystery.game.GameFunctions;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.Minecraft;
@@ -19,9 +20,27 @@ public class GameOptionsMixin {
         if (TMMClient.isInLobby) {
             return original;
         }
+        if (Minecraft.getInstance() == null)
+            return original;
+        if (Minecraft.getInstance().player == null)
+            return original;
+
+        var camera = AllowOtherCameraType.EVENT.invoker().onGetCameraType(original, Minecraft.getInstance().player);
+        if (camera != AllowOtherCameraType.ReturnCameraType.NO_CHANGE) {
+            switch (camera) {
+                case AllowOtherCameraType.ReturnCameraType.FIRST_PERSON:
+                    return CameraType.FIRST_PERSON;
+                case AllowOtherCameraType.ReturnCameraType.THIRD_PERSON_BACK:
+                    return CameraType.THIRD_PERSON_BACK;
+                case AllowOtherCameraType.ReturnCameraType.THIRD_PERSON_FRONT:
+                    return CameraType.THIRD_PERSON_FRONT;
+                default:
+            }
+        }
         if (GameFunctions.isPlayerAliveAndSurvival(Minecraft.getInstance().player)) {
-            if (TMMClient.gameComponent!=null) {
+            if (TMMClient.gameComponent != null) {
                 final var role = TMMClient.gameComponent.getRole(Minecraft.getInstance().player);
+
                 if (role != null && TMM.canUseOtherPerson.stream().anyMatch(predicate -> predicate.test(role))) {
                     return original;
                 }

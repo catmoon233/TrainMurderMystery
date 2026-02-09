@@ -52,15 +52,15 @@ public abstract class MountableBlock extends Block {
 
             if (!player.getCooldowns().isOnCooldown(TMMBlocks.ACACIA_BRANCH.asItem())) {
                 player.getCooldowns().addCooldown(TMMBlocks.ACACIA_BRANCH.asItem(), 10);
-
                 if (player.getVehicle() != null) {
-                    player.stopRiding();
-                    if (lastPos != null) {
-                        var ppos = lastPos.get(player.getUUID());
-                        if (ppos != null) {
-                            player.setPos(ppos);
-                        }
-                    }
+                    return InteractionResult.FAIL;
+                    // player.stopRiding();
+                    // if (lastPos != null) {
+                    //     var ppos = lastPos.get(player.getUUID());
+                    //     if (ppos != null) {
+                    //         player.setPos(ppos);
+                    //     }
+                    // }
                 }
 
                 SeatEntity seatEntity = TMMEntities.SEAT.create(world);
@@ -68,7 +68,10 @@ public abstract class MountableBlock extends Block {
                 if (seatEntity == null) {
                     return InteractionResult.PASS;
                 }
-                lastPos.put(player.getUUID(), player.position());
+                // 只在首次坐下时保存位置,避免连续坐椅子时累积高度
+                if (!lastPos.containsKey(player.getUUID())) {
+                    lastPos.put(player.getUUID(), player.position());
+                }
                 Vec3 sitPos = this.getSitPos(world, state, pos);
                 Vec3 vec3d = Vec3.atLowerCornerOf(pos).add(sitPos);
 

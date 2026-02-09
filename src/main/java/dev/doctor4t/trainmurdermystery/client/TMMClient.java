@@ -29,6 +29,7 @@ import dev.doctor4t.trainmurdermystery.compat.TrainVoicePlugin;
 import dev.doctor4t.trainmurdermystery.data.MapConfig;
 import dev.doctor4t.trainmurdermystery.entity.FirecrackerEntity;
 import dev.doctor4t.trainmurdermystery.entity.NoteEntity;
+import dev.doctor4t.trainmurdermystery.event.AllowOtherCameraType;
 import dev.doctor4t.trainmurdermystery.event.OnGetInstinctHighlight;
 import dev.doctor4t.trainmurdermystery.game.GameConstants;
 import dev.doctor4t.trainmurdermystery.game.GameFunctions;
@@ -266,7 +267,12 @@ public class TMMClient implements ClientModInitializer {
         });
         // Item tooltips
         TMMItemTooltips.addTooltips();
-
+        AllowOtherCameraType.EVENT.register((original, localPlayer) -> {
+            if (SecurityMonitorBlock.isInSecurityMode()) {
+                return AllowOtherCameraType.ReturnCameraType.THIRD_PERSON_BACK;
+            }
+            return AllowOtherCameraType.ReturnCameraType.NO_CHANGE;
+        });
         ClientTickEvents.START_WORLD_TICK.register(clientWorld -> {
             if (Minecraft.getInstance() != null && Minecraft.getInstance().player != null) {
                 boolean keycode = Minecraft.getInstance().options.keyShift.consumeClick();
@@ -350,14 +356,14 @@ public class TMMClient implements ClientModInitializer {
             // }
             // }
         });
-
+        intervalTime = new Random().nextInt(0, 200);
         ClientTickEvents.END_CLIENT_TICK.register((client) -> {
             if (gameComponent != null) {
                 if (gameComponent.isRunning()) {
                     if (client != null && client.player != null) {
                         if (client.player.isSpectator()) {
                             intervalTime++;
-                            if (intervalTime >= 20 * 10) { // 20s
+                            if (intervalTime >= 30 * 10) { // 30s
                                 if (TrainVoicePlugin.CLIENT_API != null) {
                                     if (!TrainVoicePlugin.CLIENT_API.isDisconnected()) {
                                         if (TrainVoicePlugin.CLIENT_API.getGroup() == null) {

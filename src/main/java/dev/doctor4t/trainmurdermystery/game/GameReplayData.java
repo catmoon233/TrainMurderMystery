@@ -2,6 +2,7 @@ package dev.doctor4t.trainmurdermystery.game;
 
 import dev.doctor4t.trainmurdermystery.api.TMMRoles;
 import dev.doctor4t.trainmurdermystery.api.replay.ReplayEventTypes;
+import dev.doctor4t.trainmurdermystery.api.replay.ReplayEventTypes.ArmorBreakDetails;
 import dev.doctor4t.trainmurdermystery.api.replay.ReplayEventTypes.BlackoutEventDetails;
 import dev.doctor4t.trainmurdermystery.api.replay.ReplayEventTypes.ChangeRoleDetails;
 import dev.doctor4t.trainmurdermystery.api.replay.ReplayEventTypes.DoorActionDetails;
@@ -209,9 +210,12 @@ public class GameReplayData {
             Role_1 = getRoleNameWithColor(roleDetail.oldRole());
             Role_2 = getRoleNameWithColor(roleDetail.newRole());
             // message = ;
-        }else if (event.details() instanceof PlayerRevivalDetails revivalDetails) {
+        } else if (event.details() instanceof PlayerRevivalDetails revivalDetails) {
             sourcePlayer = revivalDetails.player();
             Role_1 = getRoleNameWithColor(revivalDetails.Role());
+            // message = ;
+        } else if (event.details() instanceof ArmorBreakDetails ambd) {
+            sourcePlayer = ambd.playerUuid();
             // message = ;
         } else if (event.details() instanceof ReplayEventTypes.CustomEventDetails details) {
             // CustomEventDetails 没有 playerUuid 和 message，只有 eventId 和 data
@@ -351,7 +355,8 @@ public class GameReplayData {
                 if (event
                         .details() instanceof ReplayEventTypes.CustomEventDetails(ResourceLocation eventId, String data)) {
                     // CustomEventDetails 没有 playerUuid，只有 eventId 和 data
-                    yield Component.translatable("tmm.replay.event.custom_event", Component.nullToEmpty(eventId.toString()),
+                    yield Component.translatable("tmm.replay.event.custom_event",
+                            Component.nullToEmpty(eventId.toString()),
                             Component.nullToEmpty(data));
                 }
                 yield Component.translatable("tmm.replay.event.custom_event", Component.nullToEmpty("未知自定义事件"));
