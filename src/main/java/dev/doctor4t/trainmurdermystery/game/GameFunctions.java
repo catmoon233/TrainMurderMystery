@@ -66,7 +66,9 @@ import net.minecraft.world.level.GameRules;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.LecternBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.block.entity.LecternBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.pattern.BlockInWorld;
 import net.minecraft.world.level.block.state.properties.BedPart;
@@ -1050,6 +1052,13 @@ public class GameFunctions {
                                 if (serverWorld.getBlockEntity(blockPos6) instanceof BeveragePlateBlockEntity entity) {
                                     entity.setArmorer(null);
                                     entity.setPoisoner(null);
+                                    BlockEntityInfo blockEntityInfo = new BlockEntityInfo(
+                                            entity.saveCustomOnly(serverWorld.registryAccess()),
+                                            entity.components());
+                                    list3.add(new BlockInfo(blockPos7, blockState, blockEntityInfo));
+                                }
+                            }else if (blockState.getBlock() instanceof LecternBlock) {
+                                if (serverWorld.getBlockEntity(blockPos6) instanceof LecternBlockEntity entity) {
                                     BlockEntityInfo blockEntityInfo = new BlockEntityInfo(
                                             entity.saveCustomOnly(serverWorld.registryAccess()),
                                             entity.components());
