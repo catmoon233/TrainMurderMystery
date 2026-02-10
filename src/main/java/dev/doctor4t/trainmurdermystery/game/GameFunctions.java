@@ -48,8 +48,6 @@ import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.ComponentUtils;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -438,11 +436,12 @@ public class GameFunctions {
                 .getPlayers(serverPlayerEntity -> areas.getReadyArea().contains(serverPlayerEntity.position()));
     }
 
-    public static ArrayList<Player> CustomWinnerPlayers = new ArrayList<>();
     public static ArrayList<Predicate<Entry<Player, String>>> CustomWinnersPredicates = new ArrayList<>();
 
     public static void finalizeGame(ServerLevel world) {
-        CustomWinnerPlayers.clear();
+        // CustomWinnerPlayers.clear();
+        GameRoundEndComponent roundEnd = GameRoundEndComponent.KEY.get(world);
+        roundEnd.CustomWinnerPlayers.clear();
         RoleMethodDispatcher.onEndGame(world);
         GameWorldComponent gameComponent = GameWorldComponent.KEY.get(world);
         // var areasWorldComponent = AreasWorldComponent.KEY.get(world);
@@ -475,14 +474,14 @@ public class GameFunctions {
                 isWinner = true;
             } else if (winStatus == WinStatus.CUSTOM && playerRole != null) {
                 if (CustomWinnersPredicates.stream().anyMatch((pred) -> {
-                    return pred.test(Map.entry(player, CustomWinnerID));
+                    return pred.test(Map.entry(player, roundEnd.CustomWinnerID));
                 })) {
                     isWinner = true;
                 }
             }
 
             if (isWinner) {
-                CustomWinnerPlayers.add(player);
+                roundEnd.CustomWinnerPlayers.add(player.getUUID());
                 stats.incrementTotalWins();
                 if (playerRole != null) {
                     stats.getOrCreateRoleStats(playerRole.identifier()).incrementWinsAsRole();
@@ -530,6 +529,7 @@ public class GameFunctions {
         GameScoreboardComponent scoreboardComponent = GameScoreboardComponent.KEY
                 .get(world.getServer().getScoreboard());
         scoreboardComponent.reset();
+        roundEnd.sync();
     }
 
     public static void resetPlayer(ServerPlayer player) {
@@ -1213,8 +1213,6 @@ public class GameFunctions {
         return Math.toIntExact(players.stream().filter(p -> areas.getReadyArea().contains(p.position())).count());
     }
 
-    public static String CustomWinnerID = null;
-    public static int CustomWinnerColor = 0;
 
     public enum WinStatus {
         NOT_MODIFY, NONE, KILLERS, PASSENGERS, TIME, LOOSE_END, GAMBLER, RECORDER, NO_PLAYER, NIAN_SHOU, CUSTOM
@@ -1223,16 +1221,4 @@ public class GameFunctions {
     public static void getAllTaskPoints() {
     }
 
-    public static Component getCustomWinners() {
-        if (CustomWinnerPlayers != null) {
-            if (CustomWinnerPlayers.size() > 0) {
-                MutableComponent winners = ComponentUtils.formatList(CustomWinnerPlayers, Component.literal(", "),
-                        (player) -> {
-                            return player.getDisplayName();
-                        });
-                return winners;
-            }
-        }
-        return Component.empty();
-    }
 }

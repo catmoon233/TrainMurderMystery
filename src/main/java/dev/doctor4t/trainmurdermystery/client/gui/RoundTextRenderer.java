@@ -90,7 +90,7 @@ public class RoundTextRenderer {
             if (game.getLooseEndWinner() != null)
                 winner = player.level().getPlayerByUUID(game.getLooseEndWinner());
             Component endText = role.getEndText(roundEnd.getWinStatus(),
-                    winner == null ? GameFunctions.getCustomWinners() : winner.getDisplayName());
+                    winner == null ? roundEnd.getCustomWinners() : winner.getDisplayName(),roundEnd);
             if (endText == null)
                 return;
             context.pose().pushPose();
@@ -286,10 +286,11 @@ public class RoundTextRenderer {
     private static MutableComponent getWinMessage(GameRoundEndComponent roundEnd, Player winner) {
         if (roundEnd.getWinStatus().equals(WinStatus.CUSTOM)) {
             if (winner != null) {
-                return Component.translatable("game.win." + GameFunctions.CustomWinnerID,
+                return Component.translatable("game.win." + roundEnd.CustomWinnerID,
                         winner.getDisplayName());
             } else {
-                return Component.translatable("game.win." + GameFunctions.CustomWinnerID);
+                Component winners = roundEnd.getCustomWinners();
+                return Component.translatable("game.win." + roundEnd.CustomWinnerID, winners);
             }
         }
         if (winner != null) {

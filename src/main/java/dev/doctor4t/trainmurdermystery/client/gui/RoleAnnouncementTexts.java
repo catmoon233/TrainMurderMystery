@@ -1,6 +1,7 @@
 package dev.doctor4t.trainmurdermystery.client.gui;
 
 import dev.doctor4t.trainmurdermystery.api.TMMRoles;
+import dev.doctor4t.trainmurdermystery.cca.GameRoundEndComponent;
 import dev.doctor4t.trainmurdermystery.game.GameFunctions;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -98,7 +99,8 @@ public class RoleAnnouncementTexts {
             }
         }
 
-        public @Nullable Component getEndText(GameFunctions.@NotNull WinStatus status, Component winner) {
+        public @Nullable Component getEndText(GameFunctions.@NotNull WinStatus status, Component winner,
+                GameRoundEndComponent roundEnd) {
             return switch (status) {
                 case NONE -> null;
                 case PASSENGERS, TIME -> this.id.getPath().equals("killer") ? this.getLoseText() : this.winText;
@@ -122,8 +124,8 @@ public class RoleAnnouncementTexts {
                 case NO_PLAYER ->
                     Component.translatable("announcement.win.noplayer", winner).withColor(Color.LIGHT_GRAY.getRGB());
                 case CUSTOM ->
-                    Component.translatable("announcement.win." + GameFunctions.CustomWinnerID, winner)
-                            .withColor(GameFunctions.CustomWinnerColor);
+                    Component.translatable("announcement.win." + roundEnd.CustomWinnerID, winner)
+                            .withColor(roundEnd.CustomWinnerColor);
                 default -> Component.translatable("announcement.win.unknown", winner).withColor(Color.ORANGE.getRGB());
             };
         }
