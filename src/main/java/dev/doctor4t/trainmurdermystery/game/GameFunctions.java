@@ -173,6 +173,7 @@ public class GameFunctions {
 
     public static void startGame(ServerLevel world, GameMode gameMode, int time) {
         executeFunction(world.getServer().createCommandSourceStack(), "harpymodloader:early_start_game");
+        executeFunction(world.getServer().createCommandSourceStack(), "harpymodloader:early_start_game_"+MapManager.last_start_map);
         for (ServerPlayer player : world.players()) {
             ServerPlayNetworking.send(player, new CloseUiPayload());
         }
@@ -183,6 +184,7 @@ public class GameFunctions {
         game.setGameMode(gameMode);
         GameTimeComponent.KEY.get(world).setResetTime(time);
 
+
         if (playerCount >= gameMode.minPlayerCount) {
             game.setGameStatus(GameWorldComponent.GameStatus.STARTING);
 
@@ -190,6 +192,7 @@ public class GameFunctions {
             GameScoreboardComponent scoreboardComponent = GameScoreboardComponent.KEY
                     .get(world.getServer().getScoreboard());
             scoreboardComponent.reset();
+
         } else {
             for (ServerPlayer player : world.players()) {
                 player.displayClientMessage(
@@ -268,6 +271,8 @@ public class GameFunctions {
         }
         OnGameTrueStarted.EVENT.invoker().onGameTrueStarted(serverWorld);
         // --- 结束新增统计数据更新逻辑 ---
+        executeFunction(serverWorld.getServer().createCommandSourceStack(), "harpymodloader:start_game_"+MapManager.last_start_map);
+
     }
 
     public static Vec3 getSpawnPos(AreasWorldComponent areas, int room) {

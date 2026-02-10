@@ -606,7 +606,7 @@
   "info.screen.roleid.discovery_civilian": "平民陣營\n遊客模式。",
   "info.screen.roleid.civilian": "平民陣營\n你沒有任何特殊能力，努力在這趟旅程中活下去。",
   "info.screen.roleid.killer": "殺手陣營\n你是一名普通的殺手。\n擁有最基礎的殺手商店。\n你的目標是殺光所有平民。",
-  "info.screen.roleid.loose_end": "中立陣營\n你獲得1把刀、1把德林加手槍、1個撬棍、1個防禦試劑。\n你擁有小丑透視，刀命中玩家後沒有冷卻。\n用你的武器殺掉所有人！！！",
+  "info.screen.roleid.loose_end": "中立陣營\n你獲得1把刀、1把德林加手槍、1個撬棍、1個防禦試劑。\n你擁有小丑透視，刀命中玩家後沒有冷卻。\n右鍵飲用護盾試劑獲得護盾。\n用你的武器殺掉所有人！！！",
   "info.screen.roleid.vigilante": "警長陣營\n開局獲得一把左輪手槍\n如果殺死平民,你也會死亡",
   "commands.tmm.entitydata.set.success": "成功為 %s 個實體設置了自定義數據: %s",
   "block.trainmurdermystery.camera": "監控攝像頭",

@@ -144,6 +144,8 @@ public class MapManager {
         }
     }
 
+    public static String last_start_map =  "";
+
     /**
      * 加载指定的地图配置
      * @param serverWorld 服务器世界
@@ -327,6 +329,7 @@ public class MapManager {
 
             // 同步到客户端
             areas.sync();
+            last_start_map = mapName;
 
             TMM.LOGGER.info("Successfully loaded map: " + mapName);
             return true;
