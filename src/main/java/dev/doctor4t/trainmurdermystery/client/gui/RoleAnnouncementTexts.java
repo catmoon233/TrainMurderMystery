@@ -121,6 +121,9 @@ public class RoleAnnouncementTexts {
                 }
                 case NO_PLAYER ->
                     Component.translatable("announcement.win.noplayer", winner).withColor(Color.LIGHT_GRAY.getRGB());
+                case CUSTOM ->
+                    Component.translatable("announcement.win." + GameFunctions.CustomWinnerID, winner)
+                            .withColor(GameFunctions.CustomWinnerColor);
                 default -> Component.translatable("announcement.win.unknown", winner).withColor(Color.ORANGE.getRGB());
             };
         }

@@ -47,7 +47,7 @@ public class RoundTextRenderer {
         boolean isLooseEnds = GameWorldComponent.KEY.get(player.level()).getGameMode() == TMMGameModes.LOOSE_ENDS;
 
         if (welcomeTime > 0) {
-            if (welcomeTime<=WELCOME_DURATION-GameConstants.FADE_TIME+15 ) {
+            if (welcomeTime <= WELCOME_DURATION - GameConstants.FADE_TIME + 15) {
                 MapDetailsRenderer.renderHud(renderer, player, context, partialTicks);
             }
             context.pose().pushPose();
@@ -85,10 +85,11 @@ public class RoundTextRenderer {
             GameRoundEndComponent roundEnd = GameRoundEndComponent.KEY.get(player.level());
             if (roundEnd.getWinStatus() == GameFunctions.WinStatus.NONE)
                 return;
-            Player winner = player.level()
-                    .getPlayerByUUID(game.getLooseEndWinner() == null ? UUID.randomUUID() : game.getLooseEndWinner());
+            Player winner = null;
+            if (game.getLooseEndWinner() != null)
+                winner = player.level().getPlayerByUUID(game.getLooseEndWinner());
             Component endText = role.getEndText(roundEnd.getWinStatus(),
-                    winner == null ? Component.empty() : winner.getDisplayName());
+                    winner == null ? GameFunctions.getCustomWinners() : winner.getDisplayName());
             if (endText == null)
                 return;
             context.pose().pushPose();

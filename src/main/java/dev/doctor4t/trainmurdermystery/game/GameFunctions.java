@@ -48,6 +48,8 @@ import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ComponentUtils;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
@@ -83,6 +85,8 @@ import org.jetbrains.annotations.Nullable;
 import java.awt.*;
 import java.util.*;
 import java.util.List;
+import java.util.Map.Entry;
+import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 
 import static dev.doctor4t.trainmurdermystery.compat.TrainVoicePlugin.isVoiceChatMissing;
@@ -434,7 +438,11 @@ public class GameFunctions {
                 .getPlayers(serverPlayerEntity -> areas.getReadyArea().contains(serverPlayerEntity.position()));
     }
 
+    public static ArrayList<Player> CustomWinnerPlayers = new ArrayList<>();
+    public static ArrayList<Predicate<Entry<Player, String>>> isCustomWinners = new ArrayList<>();
+
     public static void finalizeGame(ServerLevel world) {
+        CustomWinnerPlayers.clear();
         RoleMethodDispatcher.onEndGame(world);
         GameWorldComponent gameComponent = GameWorldComponent.KEY.get(world);
         // var areasWorldComponent = AreasWorldComponent.KEY.get(world);
@@ -465,9 +473,16 @@ public class GameFunctions {
             } else if (winStatus == WinStatus.NIAN_SHOU && playerRole != null
                     && "nianshou".equals(playerRole.getIdentifier().getPath())) {
                 isWinner = true;
+            } else if (winStatus == WinStatus.CUSTOM && playerRole != null) {
+                if (isCustomWinners.stream().anyMatch((pred) -> {
+                    return pred.test(Map.entry(player, CustomWinnerID));
+                })) {
+                    isWinner = true;
+                }
             }
 
             if (isWinner) {
+                CustomWinnerPlayers.add(player);
                 stats.incrementTotalWins();
                 if (playerRole != null) {
                     stats.getOrCreateRoleStats(playerRole.identifier()).incrementWinsAsRole();
@@ -1057,7 +1072,7 @@ public class GameFunctions {
                                             entity.components());
                                     list3.add(new BlockInfo(blockPos7, blockState, blockEntityInfo));
                                 }
-                            }else if (blockState.getBlock() instanceof LecternBlock) {
+                            } else if (blockState.getBlock() instanceof LecternBlock) {
                                 if (serverWorld.getBlockEntity(blockPos6) instanceof LecternBlockEntity entity) {
                                     BlockEntityInfo blockEntityInfo = new BlockEntityInfo(
                                             entity.saveCustomOnly(serverWorld.registryAccess()),
@@ -1198,10 +1213,26 @@ public class GameFunctions {
         return Math.toIntExact(players.stream().filter(p -> areas.getReadyArea().contains(p.position())).count());
     }
 
+    public static String CustomWinnerID = null;
+    public static int CustomWinnerColor = 0;
+
     public enum WinStatus {
-        NONE, KILLERS, PASSENGERS, TIME, LOOSE_END, GAMBLER, RECORDER, NO_PLAYER, NIAN_SHOU
+        NONE, KILLERS, PASSENGERS, TIME, LOOSE_END, GAMBLER, RECORDER, NO_PLAYER, NIAN_SHOU, CUSTOM
     }
 
     public static void getAllTaskPoints() {
+    }
+
+    public static Component getCustomWinners() {
+        if (CustomWinnerPlayers != null) {
+            if (CustomWinnerPlayers.size() > 0) {
+                MutableComponent winners = ComponentUtils.formatList(CustomWinnerPlayers, Component.literal(", "),
+                        (player) -> {
+                            return player.getDisplayName();
+                        });
+                return winners;
+            }
+        }
+        return Component.empty();
     }
 }
