@@ -4,6 +4,7 @@ import dev.doctor4t.trainmurdermystery.game.GameConstants;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.NotNull;
 import org.ladysnake.cca.api.v3.component.ComponentKey;
@@ -41,6 +42,11 @@ public class BartenderPlayerComponent implements RoleComponent, ServerTickingCom
         this.glowTicks = 0;
         this.armor = 0;
         this.sync();
+    }
+
+    @Override
+    public boolean shouldSyncWith(ServerPlayer player) {
+        return true;
     }
 
     @Override

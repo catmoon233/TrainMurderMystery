@@ -4,6 +4,7 @@ import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.api.RoleComponent;
 import dev.doctor4t.trainmurdermystery.game.GameConstants;
 import dev.doctor4t.trainmurdermystery.game.GameFunctions;
+import net.minecraft.server.level.ServerPlayer;
 import org.jetbrains.annotations.NotNull;
 import org.ladysnake.cca.api.v3.component.ComponentKey;
 import org.ladysnake.cca.api.v3.component.ComponentRegistry;
@@ -31,6 +32,11 @@ public class PlayerPoisonComponent implements RoleComponent, ServerTickingCompon
 
     public PlayerPoisonComponent(Player player) {
         this.player = player;
+    }
+
+    @Override
+    public boolean shouldSyncWith(ServerPlayer player) {
+        return true;
     }
 
     @Override
