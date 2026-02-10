@@ -517,37 +517,37 @@ public class AreasWorldComponent implements AutoSyncedComponent {
 
     @Override
     public void readFromNbt(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registryLookup) {
-        this.spawnPos = getPosWithOrientationFromNbt(tag, "spawnPos");
-        this.spectatorSpawnPos = getPosWithOrientationFromNbt(tag, "spectatorSpawnPos");
+//        this.spawnPos = getPosWithOrientationFromNbt(tag, "spawnPos");
+//        this.spectatorSpawnPos = getPosWithOrientationFromNbt(tag, "spectatorSpawnPos");
 
         this.readyArea = getBoxFromNbt(tag, "readyArea");
-        this.playAreaOffset = getVec3dFromNbt(tag, "playAreaOffset");
-        this.playArea = getBoxFromNbt(tag, "playArea");
-
-        this.resetTemplateArea = getBoxFromNbt(tag, "resetTemplateArea");
-        this.resetPasteArea = getBoxFromNbt(tag, "resetPasteArea");
-        
-        // 从NBT读取房间数量和房间位置（如果存在）
-        if (tag.contains("roomCount")) {
-            this.roomCount = tag.getInt("roomCount");
-        }
-        
+//        this.playAreaOffset = getVec3dFromNbt(tag, "playAreaOffset");
+//        this.playArea = getBoxFromNbt(tag, "playArea");
+//
+//        this.resetTemplateArea = getBoxFromNbt(tag, "resetTemplateArea");
+//        this.resetPasteArea = getBoxFromNbt(tag, "resetPasteArea");
+//
+//        // 从NBT读取房间数量和房间位置（如果存在）
+//        if (tag.contains("roomCount")) {
+//            this.roomCount = tag.getInt("roomCount");
+//        }
+//
         // 房间位置需要从NBT中读取（如果实现此功能）
         // 这里暂时不实现，因为NBT格式可能需要专门处理Map类型
     }
 
     @Override
     public void writeToNbt(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registryLookup) {
-        writePosWithOrientationToNbt(tag, this.spawnPos, "spawnPos");
-        writePosWithOrientationToNbt(tag, this.spectatorSpawnPos, "spectatorSpawnPos");
+//        writePosWithOrientationToNbt(tag, this.spawnPos, "spawnPos");
+//        writePosWithOrientationToNbt(tag, this.spectatorSpawnPos, "spectatorSpawnPos");
 
         writeBoxToNbt(tag, this.readyArea, "readyArea");
-        writeVec3dToNbt(tag, this.playAreaOffset, "playAreaOffset");
-        writeBoxToNbt(tag, this.playArea, "playArea");
-
-        writeBoxToNbt(tag, this.resetTemplateArea, "resetTemplateArea");
-        writeBoxToNbt(tag, this.resetPasteArea, "resetPasteArea");
-        
+//        writeVec3dToNbt(tag, this.playAreaOffset, "playAreaOffset");
+//        writeBoxToNbt(tag, this.playArea, "playArea");
+//
+//        writeBoxToNbt(tag, this.resetTemplateArea, "resetTemplateArea");
+//        writeBoxToNbt(tag, this.resetPasteArea, "resetPasteArea");
+//
         // 将房间数量写入NBT
         tag.putInt("roomCount", this.roomCount);
         
