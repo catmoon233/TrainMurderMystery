@@ -96,8 +96,8 @@ public class LooseEndsGameMode extends GameMode {
         }
 
         if (playersLeft <= 0) {
-            boolean canEnd = AllowGameEnd.EVENT.invoker().allowGameEnd(serverWorld, WinStatus.NO_PLAYER, true);
-            if (canEnd) {
+            var modifiedWinStatus = AllowGameEnd.EVENT.invoker().allowGameEnd(serverWorld, WinStatus.NO_PLAYER, true);
+            if (!modifiedWinStatus.equals(WinStatus.NONE)) {
                 GameFunctions.stopGame(serverWorld);
             }
         }
@@ -110,8 +110,11 @@ public class LooseEndsGameMode extends GameMode {
         // game end on win and display
         if (winStatus != GameFunctions.WinStatus.NONE
                 && gameWorldComponent.getGameStatus() == GameWorldComponent.GameStatus.ACTIVE) {
-            boolean canEnd = AllowGameEnd.EVENT.invoker().allowGameEnd(serverWorld, winStatus, true);
-            if (canEnd) {
+            var modifiedStatus = AllowGameEnd.EVENT.invoker().allowGameEnd(serverWorld, winStatus, true);
+            if (!modifiedStatus.equals(GameFunctions.WinStatus.NONE)) {
+                if (!modifiedStatus.equals(GameFunctions.WinStatus.NOT_MODIFY)) {
+                    winStatus = modifiedStatus;
+                }
                 GameRoundEndComponent.KEY.get(serverWorld).setRoundEndData(serverWorld.players(), winStatus);
                 GameFunctions.stopGame(serverWorld);
             }

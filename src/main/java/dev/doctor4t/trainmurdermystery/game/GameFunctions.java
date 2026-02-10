@@ -1217,7 +1217,7 @@ public class GameFunctions {
     public static int CustomWinnerColor = 0;
 
     public enum WinStatus {
-        NONE, KILLERS, PASSENGERS, TIME, LOOSE_END, GAMBLER, RECORDER, NO_PLAYER, NIAN_SHOU, CUSTOM
+        NOT_MODIFY, NONE, KILLERS, PASSENGERS, TIME, LOOSE_END, GAMBLER, RECORDER, NO_PLAYER, NIAN_SHOU, CUSTOM
     }
 
     public static void getAllTaskPoints() {

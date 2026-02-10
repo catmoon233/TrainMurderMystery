@@ -129,8 +129,12 @@ public class MurderGameMode extends GameMode {
         // game end on win and display
         if (winStatus != GameFunctions.WinStatus.NONE
                 && gameWorldComponent.getGameStatus() == GameWorldComponent.GameStatus.ACTIVE) {
-            boolean canEnd = AllowGameEnd.EVENT.invoker().allowGameEnd(serverWorld, winStatus, false);
-            if (canEnd) {
+            GameFunctions.WinStatus modifiedWinStatus = AllowGameEnd.EVENT.invoker().allowGameEnd(serverWorld,
+                    winStatus, false);
+            if (!modifiedWinStatus.equals(GameFunctions.WinStatus.NONE)) {
+                if (!modifiedWinStatus.equals(GameFunctions.WinStatus.NOT_MODIFY)) {
+                    winStatus = modifiedWinStatus;
+                }
                 GameRoundEndComponent.KEY.get(serverWorld).setRoundEndData(serverWorld.players(), winStatus);
                 GameFunctions.stopGame(serverWorld);
             }
