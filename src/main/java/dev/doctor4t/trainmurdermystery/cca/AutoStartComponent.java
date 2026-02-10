@@ -8,6 +8,7 @@ import dev.doctor4t.trainmurdermystery.game.GameFunctions;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
 import org.jetbrains.annotations.NotNull;
 import org.ladysnake.cca.api.v3.component.ComponentKey;
@@ -16,7 +17,8 @@ import org.ladysnake.cca.api.v3.component.sync.AutoSyncedComponent;
 import org.ladysnake.cca.api.v3.component.tick.CommonTickingComponent;
 
 public class AutoStartComponent implements AutoSyncedComponent, CommonTickingComponent {
-    public static final ComponentKey<AutoStartComponent> KEY = ComponentRegistry.getOrCreate(TMM.id("autostart"), AutoStartComponent.class);
+    public static final ComponentKey<AutoStartComponent> KEY = ComponentRegistry.getOrCreate(TMM.id("autostart"),
+            AutoStartComponent.class);
     public final Level world;
     public int startTime;
     public int time;
@@ -36,28 +38,45 @@ public class AutoStartComponent implements AutoSyncedComponent, CommonTickingCom
     @Override
     public void tick() {
         GameWorldComponent gameWorldComponent = GameWorldComponent.KEY.get(this.world);
-        if (gameWorldComponent.isRunning()) return;
+        if (gameWorldComponent.isRunning())
+            return;
 
-        if (this.startTime <= 0 && this.time <= 0) return;
+        if (this.startTime <= 0 && this.time <= 0)
+            return;
 
         if (GameFunctions.getReadyPlayerCount(world) >= gameWorldComponent.getGameMode().minPlayerCount) {
             if (this.time-- <= 0 && this.world instanceof ServerLevel serverWorld) {
                 if (gameWorldComponent.getGameStatus() == GameWorldComponent.GameStatus.INACTIVE) {
                     GameMode gameMode = TMMGameModes.MURDER;
-                    GameFunctions.startGame(serverWorld, gameMode, GameConstants.getInTicks(gameMode.defaultStartTime, 0));
+                    GameFunctions.startGame(serverWorld, gameMode,
+                            GameConstants.getInTicks(gameMode.defaultStartTime, 0));
                     return;
                 }
             }
-
 
             if (this.getTime() % 40 == 0) {
                 this.sync();
             }
         } else {
             if (this.world.getGameTime() % 20 == 0) {
-                this.setTime(this.startTime);
+                // this.setTime(this.startTime);
+                this.time = this.startTime;
+            }
+            if (this.world.getGameTime() % 40 == 0) {
+                this.sync();
             }
         }
+    }
+
+    @Override
+    public boolean shouldSyncWith(ServerPlayer serverPlayer) {
+        GameWorldComponent gameWorldComponent = GameWorldComponent.KEY.get(this.world);
+        if (gameWorldComponent.isRunning()) {
+            return false;
+        }
+        if (this.startTime <= 0 && this.time <= 0)
+            return false;
+        return true;
     }
 
     public boolean isAutoStartActive() {

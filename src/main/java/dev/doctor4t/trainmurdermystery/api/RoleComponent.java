@@ -3,7 +3,6 @@ package dev.doctor4t.trainmurdermystery.api;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import org.ladysnake.cca.api.v3.component.sync.AutoSyncedComponent;
-
 /**
  * @author canyuesama
  */

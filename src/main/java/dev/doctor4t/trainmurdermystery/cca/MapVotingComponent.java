@@ -1,16 +1,13 @@
 package dev.doctor4t.trainmurdermystery.cca;
 
 import dev.doctor4t.trainmurdermystery.TMM;
-import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
-import dev.doctor4t.trainmurdermystery.game.GameFunctions;
 import dev.doctor4t.trainmurdermystery.network.MapVotingResultsPayload;
-import dev.doctor4t.trainmurdermystery.voting.MapVotingManager;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.level.Level;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import org.jetbrains.annotations.NotNull;
@@ -18,13 +15,15 @@ import org.ladysnake.cca.api.v3.component.ComponentKey;
 import org.ladysnake.cca.api.v3.component.ComponentRegistry;
 import org.ladysnake.cca.api.v3.component.sync.AutoSyncedComponent;
 import org.ladysnake.cca.api.v3.component.tick.CommonTickingComponent;
+import org.spongepowered.asm.mixin.Overwrite;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
 public class MapVotingComponent implements AutoSyncedComponent, CommonTickingComponent {
-    public static final ComponentKey<MapVotingComponent> KEY = ComponentRegistry.getOrCreate(TMM.id("map_voting"), MapVotingComponent.class);
+    public static final ComponentKey<MapVotingComponent> KEY = ComponentRegistry.getOrCreate(TMM.id("map_voting"),
+            MapVotingComponent.class);
 
     private final Level world;
     private boolean votingActive = false;
@@ -43,7 +42,7 @@ public class MapVotingComponent implements AutoSyncedComponent, CommonTickingCom
         this.votingActive = tag.getBoolean("VotingActive");
         this.votingTimeLeft = tag.getInt("VotingTimeLeft");
         this.totalVotingTime = tag.getInt("TotalVotingTime");
-        
+
         // 读取投票数据
         this.votes.clear();
         ListTag votesList = tag.getList("Votes", Tag.TAG_COMPOUND);
@@ -60,7 +59,7 @@ public class MapVotingComponent implements AutoSyncedComponent, CommonTickingCom
         tag.putBoolean("VotingActive", this.votingActive);
         tag.putInt("VotingTimeLeft", this.votingTimeLeft);
         tag.putInt("TotalVotingTime", this.totalVotingTime);
-        
+
         // 写入投票数据
         ListTag votesList = new ListTag();
         for (Map.Entry<String, Integer> entry : this.votes.entrySet()) {
@@ -79,19 +78,25 @@ public class MapVotingComponent implements AutoSyncedComponent, CommonTickingCom
             sync();
             shouldSync = false;
         }
-        
+
         // 处理投票倒计时
         if (votingActive && world != null && !world.isClientSide) {
             votingTimeLeft--;
             if (votingTimeLeft <= 0) {
                 finishVoting();
+                sync();
             } else {
-                // 每秒同步一次倒计时
-                if (votingTimeLeft % 20 == 0) {
+                // 每3秒同步一次倒计时
+                if (votingTimeLeft % 60 == 0) {
                     shouldSync = true;
                 }
             }
         }
+    }
+
+    @Overwrite
+    public boolean shouldSyncWith(ServerPlayer serverPlayer) {
+        return this.world != serverPlayer.level();
     }
 
     public void sync() {
@@ -142,7 +147,7 @@ public class MapVotingComponent implements AutoSyncedComponent, CommonTickingCom
         if (!votingActive) {
             return false;
         }
-        
+
         // 如果玩家之前投过票，撤销之前的投票
         String previousVote = playerVotes.get(playerId);
         if (previousVote != null) {
@@ -151,12 +156,12 @@ public class MapVotingComponent implements AutoSyncedComponent, CommonTickingCom
                 votes.put(previousVote, currentCount - 1);
             }
         }
-        
+
         // 记录新投票
         playerVotes.put(playerId, mapId);
         votes.put(mapId, votes.getOrDefault(mapId, 0) + 1);
         this.shouldSync = true;
-        
+
         return true;
     }
 
@@ -164,7 +169,7 @@ public class MapVotingComponent implements AutoSyncedComponent, CommonTickingCom
         if (votes.isEmpty()) {
             return "random"; // 默认返回随机地图
         }
-        
+
         int maxVotes = 0;
         String topMap = "random";
         for (Map.Entry<String, Integer> entry : votes.entrySet()) {
@@ -178,7 +183,7 @@ public class MapVotingComponent implements AutoSyncedComponent, CommonTickingCom
                 }
             }
         }
-        
+
         return topMap;
     }
 
@@ -192,30 +197,30 @@ public class MapVotingComponent implements AutoSyncedComponent, CommonTickingCom
 
     private void finishVoting() {
         votingActive = false;
-        
+
         // 获取得票最多地图
         String winningMap = getMostVotedMap();
-        
+
         // 在服务器上执行函数
         MinecraftServer server = TMM.SERVER;
         if (server != null) {
-            Level level = server.overworld();
-            //GameWorldComponent gameComponent = GameWorldComponent.KEY.get(level);
+            // Level level = server.overworld();
+            // GameWorldComponent gameComponent = GameWorldComponent.KEY.get(level);
 
             if (!winningMap.equals("random")) {
                 // 加载对应地图
                 server.getCommands().performPrefixedCommand(server.createCommandSourceStack(),
                         "tmm:switchmap load " + winningMap);
-            }else {
+            } else {
                 server.getCommands().performPrefixedCommand(server.createCommandSourceStack(),
                         "tmm:switchmap random");
             }
             // 执行投票结束函数
             server.getCommands().performPrefixedCommand(server.createCommandSourceStack(),
-                "function harpymodloader:vote_over");
-                
+                    "function harpymodloader:vote_over");
+
             // 开始游戏
-//            GameFunctions.startGame(server.overworld(), gameComponent.getGameMode());
+            // GameFunctions.startGame(server.overworld(), gameComponent.getGameMode());
         }
 
         // 发送投票结果给所有玩家
@@ -223,7 +228,7 @@ public class MapVotingComponent implements AutoSyncedComponent, CommonTickingCom
         for (var player : server.getPlayerList().getPlayers()) {
             ServerPlayNetworking.send(player, payload);
         }
-        
+
         this.shouldSync = true;
     }
 
