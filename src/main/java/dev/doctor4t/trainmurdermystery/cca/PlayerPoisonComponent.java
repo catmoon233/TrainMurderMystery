@@ -11,6 +11,7 @@ import org.ladysnake.cca.api.v3.component.ComponentRegistry;
 import org.ladysnake.cca.api.v3.component.tick.ClientTickingComponent;
 import org.ladysnake.cca.api.v3.component.tick.ServerTickingComponent;
 
+import java.util.ArrayList;
 import java.util.UUID;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -30,13 +31,27 @@ public class PlayerPoisonComponent implements RoleComponent, ServerTickingCompon
     public float pulseProgress = 0f;
     public boolean pulsing = false;
     public UUID poisoner;
+    private static GameWorldComponent gameWorldComponent = null;
+    public static ArrayList<String> canSyncedRolePaths = new ArrayList<>();
 
     public PlayerPoisonComponent(Player player) {
         this.player = player;
+        gameWorldComponent = GameWorldComponent.KEY.get(this.player.level());
     }
 
     @Override
     public boolean shouldSyncWith(ServerPlayer player) {
+        if (player == this.player)
+            return true;
+        if (gameWorldComponent == null) {
+            gameWorldComponent = GameWorldComponent.KEY.get(this.player.level());
+        }
+        if (gameWorldComponent != null) {
+            var role = gameWorldComponent.getRole(player);
+            if (role != null) {
+                return canSyncedRolePaths.contains(role.identifier().getPath());
+            }
+        }
         return true;
     }
 

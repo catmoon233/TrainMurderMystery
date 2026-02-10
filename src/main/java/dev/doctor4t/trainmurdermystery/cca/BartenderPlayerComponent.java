@@ -6,6 +6,9 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
+
+import java.util.ArrayList;
+
 import org.jetbrains.annotations.NotNull;
 import org.ladysnake.cca.api.v3.component.ComponentKey;
 import org.ladysnake.cca.api.v3.component.ComponentRegistry;
@@ -21,6 +24,8 @@ public class BartenderPlayerComponent implements RoleComponent, ServerTickingCom
             ResourceLocation.fromNamespaceAndPath(TMM.MOD_ID, "bartender"), BartenderPlayerComponent.class);
     private final Player player;
     public int glowTicks = 0;
+    public static ArrayList<String> canSyncedRolePaths = new ArrayList<>();
+    private static GameWorldComponent gameWorldComponent = null;
 
     public int getArmor() {
         return armor;
@@ -46,6 +51,17 @@ public class BartenderPlayerComponent implements RoleComponent, ServerTickingCom
 
     @Override
     public boolean shouldSyncWith(ServerPlayer player) {
+        if (player == this.player)
+            return true;
+        if (gameWorldComponent == null) {
+            gameWorldComponent = GameWorldComponent.KEY.get(this.player.level());
+        }
+        if (gameWorldComponent != null) {
+            var role = gameWorldComponent.getRole(player);
+            if (role != null) {
+                return canSyncedRolePaths.contains(role.identifier().getPath());
+            }
+        }
         return true;
     }
 
@@ -56,6 +72,9 @@ public class BartenderPlayerComponent implements RoleComponent, ServerTickingCom
 
     public BartenderPlayerComponent(Player player) {
         this.player = player;
+        if (gameWorldComponent == null) {
+            gameWorldComponent = GameWorldComponent.KEY.get(this.player.level());
+        }
     }
 
     public void sync() {
@@ -78,11 +97,6 @@ public class BartenderPlayerComponent implements RoleComponent, ServerTickingCom
             }
         }
 
-    }
-
-    @Override
-    public boolean shouldSyncWith(ServerPlayer player) {
-        return this.player == player;
     }
 
     public boolean giveArmor() {

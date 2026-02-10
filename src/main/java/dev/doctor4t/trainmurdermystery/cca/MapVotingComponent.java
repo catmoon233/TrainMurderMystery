@@ -96,7 +96,8 @@ public class MapVotingComponent implements AutoSyncedComponent, CommonTickingCom
 
     @Overwrite
     public boolean shouldSyncWith(ServerPlayer serverPlayer) {
-        return this.world != serverPlayer.level();
+        // return this.world != serverPlayer.level();
+        return true;
     }
 
     public void sync() {
