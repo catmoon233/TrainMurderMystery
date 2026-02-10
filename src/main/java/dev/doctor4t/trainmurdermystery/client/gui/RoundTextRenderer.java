@@ -10,6 +10,7 @@ import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
 import dev.doctor4t.trainmurdermystery.client.TMMClient;
 import dev.doctor4t.trainmurdermystery.game.GameConstants;
 import dev.doctor4t.trainmurdermystery.game.GameFunctions;
+import dev.doctor4t.trainmurdermystery.game.GameFunctions.WinStatus;
 import dev.doctor4t.trainmurdermystery.index.TMMSounds;
 import org.jetbrains.annotations.NotNull;
 
@@ -100,11 +101,7 @@ public class RoundTextRenderer {
             context.pose().popPose();
             context.pose().pushPose();
             context.pose().scale(1.2f, 1.2f, 1f);
-            MutableComponent winMessage = (winner == null ? Component
-                    .translatable("game.win." + roundEnd.getWinStatus().name().toLowerCase().toLowerCase())
-                    : Component
-                            .translatable("game.win." + roundEnd.getWinStatus().name().toLowerCase().toLowerCase(),
-                                    winner.getDisplayName()));
+            MutableComponent winMessage = getWinMessage(roundEnd, winner);
             context.drawString(renderer, winMessage, -renderer.width(winMessage) / 2, -4, 0xFFFFFF);
             context.pose().popPose();
             if (isLooseEnds) {
@@ -283,6 +280,23 @@ public class RoundTextRenderer {
                 context.pose().popPose();
             }
         }
+
+    }
+
+    private static MutableComponent getWinMessage(GameRoundEndComponent roundEnd, Player winner) {
+        if (roundEnd.getWinStatus().equals(WinStatus.CUSTOM)) {
+            if (winner != null) {
+                return Component.translatable("game.win." + GameFunctions.CustomWinnerID,
+                        winner.getDisplayName());
+            } else {
+                return Component.translatable("game.win." + GameFunctions.CustomWinnerID);
+            }
+        }
+        if (winner != null) {
+            return Component.translatable("game.win." + roundEnd.getWinStatus().name().toLowerCase().toLowerCase(),
+                    winner.getDisplayName());
+        }
+        return Component.translatable("game.win." + roundEnd.getWinStatus().name().toLowerCase().toLowerCase());
 
     }
 
