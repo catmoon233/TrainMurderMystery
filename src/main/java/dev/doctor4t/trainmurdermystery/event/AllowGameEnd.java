@@ -21,8 +21,8 @@ public interface AllowGameEnd {
      * LOOSE_END,
      * GAMBLER,
      * RECORDER,
-     * CUSTOM - 记得修改 GameFunctions.CustomWinnerID 和
-     * GameFunctions.CustomWinnersPredicates（判断是否为获胜者）
+     * CUSTOM - 记得修改 RoundEndComponent.CustomWinnerID 和
+     * RoundEndComponent.CustomWinnersPredicates（判断是否为获胜者）
      * 
      * @see dev.doctor4t.trainmurdermystery.game.GameConstants.DeathReasons
      */
