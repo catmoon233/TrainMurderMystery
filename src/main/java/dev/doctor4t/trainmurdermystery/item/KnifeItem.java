@@ -58,7 +58,8 @@ public class KnifeItem extends Item implements ItemWithSkin {
         DRAGON_BLADE(0xFFFF4444, "Dragon Blade"),
         CHOPPER(0xFF8B4513, "Chopper"),
         NEPTUNE_KNIFE(0xFF1E90FF, "Neptune Knife"),
-        COLORFUL_FOLDING_KNIFE(0xFFFF69B4, "Colorful Folding Knife");
+        COLORFUL_FOLDING_KNIFE(0xFFFF69B4, "Colorful Folding Knife"),
+        EDGE_KNIFE(0xFFC0C0C0, "Edge Knife");
 
         public final int color;
         public final @Nullable String tooltipName;
