@@ -6,6 +6,7 @@ import dev.doctor4t.trainmurdermystery.mod_whitelist.common.utils.MWLogger;
 import dev.doctor4t.trainmurdermystery.mod_whitelist.server.config.MWServerConfig;
 import dev.doctor4t.trainmurdermystery.mod_whitelist.server.config.MismatchType;
 import dev.doctor4t.trainmurdermystery.mod_whitelist.server.storage.PlayerModInfoStorage;
+import dev.doctor4t.trainmurdermystery.mod_whitelist.server.storage.ViolationRecordStorage;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -95,6 +96,15 @@ public class ModWhitelistServerNetworkHandler {
 			List<Pair<String, MismatchType>> mismatches = MWServerConfig.test(clientMods);
 			
 			if (!mismatches.isEmpty()) {
+				// Record violation before disconnecting
+				ViolationRecordStorage.recordViolation(
+						player.getName().getString(),
+						player.getUUID(),
+						playerIP,
+						playerMAC,
+						mismatches
+				);
+				
 				// Disconnect player if mod list doesn't match
 				MutableComponent reason = Component.translatable("模组不匹配");
 				

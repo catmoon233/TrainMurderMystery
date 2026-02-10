@@ -16,10 +16,10 @@ public class EntitySelectorMixin {
     private static void pushableBy(Entity entity, CallbackInfoReturnable<Predicate<Entity>> cir) {
         Predicate<Entity> originalPredicate = cir.getReturnValue();
         Predicate<Entity> additionalPredicate = e -> {
-            if (TMM.canPushableBy.size() > 0)
-                return TMM.canPushableBy.stream()
+            if (!TMM.cantPushableBy.isEmpty())
+                return TMM.cantPushableBy.stream()
                         .anyMatch(predicate -> predicate.test(e));
-            return true;
+            return false;
         };
         cir.setReturnValue(originalPredicate.and(additionalPredicate));
     }
