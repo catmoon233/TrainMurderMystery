@@ -18,17 +18,11 @@ public class EntitySelectorMixin {
         Predicate<Entity> additionalPredicate = e -> {
             if (!TMM.cantPushableBy.isEmpty())
                 return !TMM.cantPushableBy.stream()
-                        .anyMatch(predicate -> predicate.test(e));
+                        .anyMatch(predicate -> predicate.test(e) || predicate.test(entity));
             return true;
         };
-        Predicate<Entity> additionalPredicate2 = e -> {
-            if (!TMM.cantPushableBy.isEmpty())
-                return !TMM.cantPushableBy.stream()
-                        .anyMatch(predicate -> predicate.test(entity));
-            return true;
-        };
-        final var and = additionalPredicate2.and(additionalPredicate);
 
-        cir.setReturnValue(originalPredicate.and(and));
+
+        cir.setReturnValue(originalPredicate.and(additionalPredicate));
     }
 }
