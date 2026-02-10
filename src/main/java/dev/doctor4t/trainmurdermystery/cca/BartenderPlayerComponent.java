@@ -45,6 +45,11 @@ public class BartenderPlayerComponent implements RoleComponent, ServerTickingCom
     }
 
     @Override
+    public boolean shouldSyncWith(ServerPlayer player) {
+        return true;
+    }
+
+    @Override
     public Player getPlayer() {
         return player;
     }
