@@ -1,26 +1,10 @@
 package dev.doctor4t.trainmurdermystery.cca;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.UUID;
 
-import dev.doctor4t.trainmurdermystery.TMM;
-import dev.doctor4t.trainmurdermystery.api.GameMode;
-import dev.doctor4t.trainmurdermystery.api.Role;
-import dev.doctor4t.trainmurdermystery.api.TMMGameModes;
-import dev.doctor4t.trainmurdermystery.api.TMMRoles;
-import dev.doctor4t.trainmurdermystery.game.GameConstants;
-import dev.doctor4t.trainmurdermystery.game.GameFunctions;
-
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.NbtUtils;
-import net.minecraft.nbt.Tag;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Blocks;
-import net.minecraft.core.BlockPos;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.ladysnake.cca.api.v3.component.ComponentKey;
@@ -29,16 +13,32 @@ import org.ladysnake.cca.api.v3.component.sync.AutoSyncedComponent;
 import org.ladysnake.cca.api.v3.component.tick.ClientTickingComponent;
 import org.ladysnake.cca.api.v3.component.tick.ServerTickingComponent;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
-
+import dev.doctor4t.trainmurdermystery.TMM;
+import dev.doctor4t.trainmurdermystery.api.GameMode;
+import dev.doctor4t.trainmurdermystery.api.Role;
+import dev.doctor4t.trainmurdermystery.api.TMMGameModes;
+import dev.doctor4t.trainmurdermystery.api.TMMRoles;
+import dev.doctor4t.trainmurdermystery.event.OnTrainAreaHaveReseted;
+import dev.doctor4t.trainmurdermystery.game.GameConstants;
+import dev.doctor4t.trainmurdermystery.game.GameFunctions;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtUtils;
+import net.minecraft.nbt.Tag;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
 // 导入Mth类
 import net.minecraft.util.Mth;
+import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Blocks;
 
 public class GameWorldComponent implements AutoSyncedComponent, ServerTickingComponent, ClientTickingComponent {
-    public static final ComponentKey<GameWorldComponent> KEY = ComponentRegistry.getOrCreate(TMM.id("game"), GameWorldComponent.class);
+    public static final ComponentKey<GameWorldComponent> KEY = ComponentRegistry.getOrCreate(TMM.id("game"),
+            GameWorldComponent.class);
     private final Level world;
 
     private boolean lockedToSupporters = false;
@@ -54,10 +54,10 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
     }
 
     private boolean syncRole = false;
+
     public void setWeightsEnabled(boolean enabled) {
         this.enableWeights = enabled;
     }
-
 
     public boolean areWeightsEnabled() {
         return enableWeights;
@@ -120,26 +120,27 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
         return gameStatus;
     }
 
-    public boolean canPickUpRevolver(@NotNull Player player){
+    public boolean canPickUpRevolver(@NotNull Player player) {
         return getRole(player) != null && getRole(player).canPickUpRevolver();
     }
+
     public boolean isRunning() {
         return this.gameStatus == GameStatus.ACTIVE || this.gameStatus == GameStatus.STOPPING;
     }
 
     public void addRole(Player player, Role role) {
         this.addRole(player.getUUID(), role);
-        this.setSyncRole( true);
+        this.setSyncRole(true);
         this.sync();
-        this.setSyncRole( false);
+        this.setSyncRole(false);
     }
 
     public void addRole(UUID player, Role role) {
 
         this.roles.put(player, role);
-        this.setSyncRole( true);
+        this.setSyncRole(true);
         this.sync();
-        this.setSyncRole( false);
+        this.setSyncRole(false);
     }
 
     public void resetRole(Role role) {
@@ -147,14 +148,14 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
     }
 
     public void setRoles(List<UUID> players, Role role) {
-        this.setSyncRole( true);
+        this.setSyncRole(true);
         resetRole(role);
 
         for (UUID player : players) {
             addRole(player, role);
         }
         this.sync();
-        this.setSyncRole( false);
+        this.setSyncRole(false);
     }
 
     public HashMap<UUID, Role> getRoles() {
@@ -179,6 +180,7 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
 
         return ret;
     }
+
     public List<UUID> getAllWithRole(Role role) {
         List<UUID> ret = new ArrayList<>();
         roles.forEach((uuid, playerRole) -> {
@@ -201,6 +203,7 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
     public boolean canUseKillerFeatures(@NotNull Player player) {
         return getRole(player) != null && getRole(player).canUseKiller();
     }
+
     public boolean isInnocent(@NotNull Player player) {
         return getRole(player) != null && getRole(player).isInnocent();
     }
@@ -228,7 +231,7 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
     }
 
     public GameMode getGameMode() {
-        return gameMode ==null ? TMMGameModes.MURDER : gameMode;
+        return gameMode == null ? TMMGameModes.MURDER : gameMode;
     }
 
     public void setGameMode(GameMode gameMode) {
@@ -273,36 +276,35 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
 
     @Override
     public void readFromNbt(@NotNull CompoundTag nbtCompound, HolderLookup.Provider wrapperLookup) {
-//        this.lockedToSupporters = nbtCompound.getBoolean("LockedToSupporters");
-        //this.enableWeights = nbtCompound.getBoolean("EnableWeights");
+        // this.lockedToSupporters = nbtCompound.getBoolean("LockedToSupporters");
+        // this.enableWeights = nbtCompound.getBoolean("EnableWeights");
 
         this.syncRole = nbtCompound.getBoolean("SyncRole");
-//        if (!syncRole) {
-            this.gameMode = TMMGameModes.GAME_MODES.get(ResourceLocation.parse(nbtCompound.getString("GameMode")));
-            this.gameStatus = GameStatus.valueOf(nbtCompound.getString("GameStatus"));
+        // if (!syncRole) {
+        this.gameMode = TMMGameModes.GAME_MODES.get(ResourceLocation.parse(nbtCompound.getString("GameMode")));
+        this.gameStatus = GameStatus.valueOf(nbtCompound.getString("GameStatus"));
 
-            this.fade = nbtCompound.getInt("Fade");
-            this.psychosActive = nbtCompound.getInt("PsychosActive");
+        this.fade = nbtCompound.getInt("Fade");
+        this.psychosActive = nbtCompound.getInt("PsychosActive");
 
-            //this.backfireChance = nbtCompound.getFloat("BackfireChance");
-            if (nbtCompound.contains("LooseEndWinner")) {
-                this.looseEndWinner = nbtCompound.getUUID("LooseEndWinner");
-            } else {
-                this.looseEndWinner = null;
-            }
-
-            if (nbtCompound.contains("LastWinStatus")) {
-                this.lastWinStatus = GameFunctions.WinStatus.valueOf(nbtCompound.getString("LastWinStatus"));
-            } else {
-                this.lastWinStatus = GameFunctions.WinStatus.NONE;
-            }
-//        }else {
-            for (Role role : TMMRoles.ROLES.values()) {
-                this.setRoles(uuidListFromNbt(nbtCompound, role.identifier().toString()), role);
-//            }
-            this.setSyncRole(false);
+        // this.backfireChance = nbtCompound.getFloat("BackfireChance");
+        if (nbtCompound.contains("LooseEndWinner")) {
+            this.looseEndWinner = nbtCompound.getUUID("LooseEndWinner");
+        } else {
+            this.looseEndWinner = null;
         }
 
+        if (nbtCompound.contains("LastWinStatus")) {
+            this.lastWinStatus = GameFunctions.WinStatus.valueOf(nbtCompound.getString("LastWinStatus"));
+        } else {
+            this.lastWinStatus = GameFunctions.WinStatus.NONE;
+        }
+        // }else {
+        for (Role role : TMMRoles.ROLES.values()) {
+            this.setRoles(uuidListFromNbt(nbtCompound, role.identifier().toString()), role);
+            // }
+            this.setSyncRole(false);
+        }
 
     }
 
@@ -316,27 +318,27 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
 
     @Override
     public void writeToNbt(@NotNull CompoundTag nbtCompound, HolderLookup.Provider wrapperLookup) {
-//        nbtCompound.putBoolean("LockedToSupporters", lockedToSupporters);
-        //nbtCompound.putBoolean("EnableWeights", enableWeights);
+        // nbtCompound.putBoolean("LockedToSupporters", lockedToSupporters);
+        // nbtCompound.putBoolean("EnableWeights", enableWeights);
         nbtCompound.putBoolean("SyncRole", syncRole);
- //       if (!this.syncRole) {
-            nbtCompound.putString("GameMode", this.gameMode != null ? this.gameMode.identifier.toString() : "");
-            nbtCompound.putString("GameStatus", this.gameStatus.toString());
+        // if (!this.syncRole) {
+        nbtCompound.putString("GameMode", this.gameMode != null ? this.gameMode.identifier.toString() : "");
+        nbtCompound.putString("GameStatus", this.gameStatus.toString());
 
+        nbtCompound.putInt("Fade", fade);
+        nbtCompound.putInt("PsychosActive", psychosActive);
+        if (this.looseEndWinner != null)
+            nbtCompound.putUUID("LooseEndWinner", this.looseEndWinner);
 
-            nbtCompound.putInt("Fade", fade);
-            nbtCompound.putInt("PsychosActive", psychosActive);
-            if (this.looseEndWinner != null) nbtCompound.putUUID("LooseEndWinner", this.looseEndWinner);
-
-            nbtCompound.putString("LastWinStatus", this.lastWinStatus.toString());
-            //nbtCompound.putFloat("BackfireChance", backfireChance);
-//        }
-//        else  {
-            for (Role role : TMMRoles.ROLES.values()) {
-                nbtCompound.put(role.identifier().toString(), nbtFromUuidList(getAllWithRole(role)));
-            }
-            this.setSyncRole(false);
-//        }
+        nbtCompound.putString("LastWinStatus", this.lastWinStatus.toString());
+        // nbtCompound.putFloat("BackfireChance", backfireChance);
+        // }
+        // else {
+        for (Role role : TMMRoles.ROLES.values()) {
+            nbtCompound.put(role.identifier().toString(), nbtFromUuidList(getAllWithRole(role)));
+        }
+        this.setSyncRole(false);
+        // }
 
     }
 
@@ -353,11 +355,11 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
         tickCommon();
 
         if (this.isRunning()) {
-            if (gameMode==null)return;
+            if (gameMode == null)
+                return;
             gameMode.tickClientGameLoop();
         }
     }
-
 
     @Override
     public void serverTick() {
@@ -374,15 +376,19 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
             if (GameFunctions.tryResetTrain(serverWorld)) {
                 queueTrainReset();
             } else {
-                GameFunctions.getAllTaskPoints();
+                // GameFunctions.getAllTaskPoints(serverWorld);
                 ticksUntilNextResetAttempt = -1;
+                OnTrainAreaHaveReseted.EVENT.invoker().onWorldHaveReseted(serverWorld);
             }
         }
 
         // if not running and spectators or not in lobby reset them
         if (serverWorld.getServer().getTickCount() % 20 == 0) {
             for (ServerPlayer player : serverWorld.players()) {
-                if (!isRunning() && (player.isSpectator() && serverWorld.getServer().getProfilePermissions(player.getGameProfile()) < 2 || (GameFunctions.isPlayerAliveAndSurvival(player) && areas.playArea.contains(player.position())))) {
+                if (!isRunning() && (player.isSpectator()
+                        && serverWorld.getServer().getProfilePermissions(player.getGameProfile()) < 2
+                        || (GameFunctions.isPlayerAliveAndSurvival(player)
+                                && areas.playArea.contains(player.position())))) {
                     GameFunctions.resetPlayer(player);
                 }
             }
@@ -394,7 +400,8 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
             // spectator limits
             if (trainComponent.getSpeed() > 0) {
                 for (ServerPlayer player : serverWorld.players()) {
-                    if (!GameFunctions.isPlayerAliveAndSurvival(player) && isBound() && !GameFunctions.isPlayerCreative( player)) {
+                    if (!GameFunctions.isPlayerAliveAndSurvival(player) && isBound()
+                            && !GameFunctions.isPlayerCreative(player)) {
                         GameFunctions.limitPlayerToBox(player, areas.playArea);
                     }
                 }
@@ -407,13 +414,12 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
                         if (GameWorldComponent.KEY.get(world).getRole(player) == null) {
                             player.setGameMode(net.minecraft.world.level.GameType.SPECTATOR);
                         }
-                        if (GameFunctions.isPlayerAliveAndSurvival( player)) {
+                        if (GameFunctions.isPlayerAliveAndSurvival(player)) {
                             isPlayerOutGameAreas(player, areas);
                         }
 
                         // put players with no role in spectator mode
 
-                        
                         // 调用角色的服务器端tick方法
                         dev.doctor4t.trainmurdermystery.api.RoleMethodDispatcher.callServerTick(player);
                     }
@@ -425,27 +431,36 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
                         PlayerStatsComponent.KEY.get(player).addPlayTime(1);
                     }
                 }
-                if (gameMode==null){
+                if (gameMode == null) {
                     gameStatus = GameStatus.STOPPING;
-                    return;}
+                    return;
+                }
 
                 // run game loop logic
                 gameMode.tickServerGameLoop(serverWorld, this);
 
             }
 
-//            if (serverWorld.getGameTime() % 40 == 0) {
-//                this.sync();
-//            }
+            // if (serverWorld.getGameTime() % 40 == 0) {
+            // this.sync();
+            // }
         }
     }
 
     public static void isPlayerOutGameAreas(ServerPlayer player, AreasWorldComponent areas) {
-        final var block = player.level().getBlockState(new BlockPos((int) player.getX(), (int) player.getY(), (int) player.getZ())).getBlock();
-        final var block1 = player.level().getBlockState(new BlockPos((int) player.getX(), (int) (player.getY()-1), (int) player.getZ())).getBlock();
-        final var block2 = player.level().getBlockState(new BlockPos((int) player.getX(), (int) (player.getY()-2), (int) player.getZ())).getBlock();
-        if (player.getY() < areas.playArea.minY || (block == Blocks.WATER && block1 == Blocks.WATER && block2 == Blocks.WATER)) {
-            GameFunctions.killPlayer(player, false, player.getLastAttacker() instanceof Player killerPlayer ? killerPlayer : null, GameConstants.DeathReasons.FELL_OUT_OF_TRAIN);
+        final var block = player.level()
+                .getBlockState(new BlockPos((int) player.getX(), (int) player.getY(), (int) player.getZ())).getBlock();
+        final var block1 = player.level()
+                .getBlockState(new BlockPos((int) player.getX(), (int) (player.getY() - 1), (int) player.getZ()))
+                .getBlock();
+        final var block2 = player.level()
+                .getBlockState(new BlockPos((int) player.getX(), (int) (player.getY() - 2), (int) player.getZ()))
+                .getBlock();
+        if (player.getY() < areas.playArea.minY
+                || (block == Blocks.WATER && block1 == Blocks.WATER && block2 == Blocks.WATER)) {
+            GameFunctions.killPlayer(player, false,
+                    player.getLastAttacker() instanceof Player killerPlayer ? killerPlayer : null,
+                    GameConstants.DeathReasons.FELL_OUT_OF_TRAIN);
         }
     }
 
@@ -467,7 +482,7 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
         }
 
         if (this.isRunning()) {
-            if (gameMode==null){
+            if (gameMode == null) {
 
                 return;
             }

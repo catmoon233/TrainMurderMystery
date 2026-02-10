@@ -1,6 +1,26 @@
 package dev.doctor4t.trainmurdermystery.game;
 
+import static dev.doctor4t.trainmurdermystery.compat.TrainVoicePlugin.isVoiceChatMissing;
+
+import java.awt.Color;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.UUID;
+import java.util.function.Predicate;
+import java.util.function.UnaryOperator;
+
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+
 import com.google.common.collect.Lists;
+
 import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.TMMConfig;
 import dev.doctor4t.trainmurdermystery.api.GameMode;
@@ -18,7 +38,20 @@ import dev.doctor4t.trainmurdermystery.block_entity.BeveragePlateBlockEntity;
 import dev.doctor4t.trainmurdermystery.block_entity.SmallDoorBlockEntity;
 import dev.doctor4t.trainmurdermystery.block_entity.SprinklerBlockEntity;
 import dev.doctor4t.trainmurdermystery.block_entity.TrimmedBedBlockEntity;
-import dev.doctor4t.trainmurdermystery.cca.*;
+import dev.doctor4t.trainmurdermystery.cca.AreasWorldComponent;
+import dev.doctor4t.trainmurdermystery.cca.BartenderPlayerComponent;
+import dev.doctor4t.trainmurdermystery.cca.GameRoundEndComponent;
+import dev.doctor4t.trainmurdermystery.cca.GameScoreboardComponent;
+import dev.doctor4t.trainmurdermystery.cca.GameTimeComponent;
+import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
+import dev.doctor4t.trainmurdermystery.cca.PlayerMoodComponent;
+import dev.doctor4t.trainmurdermystery.cca.PlayerNoteComponent;
+import dev.doctor4t.trainmurdermystery.cca.PlayerPoisonComponent;
+import dev.doctor4t.trainmurdermystery.cca.PlayerPsychoComponent;
+import dev.doctor4t.trainmurdermystery.cca.PlayerShopComponent;
+import dev.doctor4t.trainmurdermystery.cca.PlayerStatsComponent;
+import dev.doctor4t.trainmurdermystery.cca.TrainWorldComponent;
+import dev.doctor4t.trainmurdermystery.cca.WorldBlackoutComponent;
 import dev.doctor4t.trainmurdermystery.compat.TrainVoicePlugin;
 import dev.doctor4t.trainmurdermystery.entity.FirecrackerEntity;
 import dev.doctor4t.trainmurdermystery.entity.NoteEntity;
@@ -34,6 +67,7 @@ import dev.doctor4t.trainmurdermystery.index.TMMDataComponentTypes;
 import dev.doctor4t.trainmurdermystery.index.TMMEntities;
 import dev.doctor4t.trainmurdermystery.index.TMMItems;
 import dev.doctor4t.trainmurdermystery.index.TMMSounds;
+import dev.doctor4t.trainmurdermystery.item.CocktailItem;
 import dev.doctor4t.trainmurdermystery.network.BreakArmorPayload;
 import dev.doctor4t.trainmurdermystery.network.CloseUiPayload;
 import dev.doctor4t.trainmurdermystery.network.TriggerScreenEdgeEffectPayload;
@@ -58,6 +92,7 @@ import net.minecraft.world.Difficulty;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -77,19 +112,9 @@ import net.minecraft.world.level.levelgen.structure.BoundingBox;
 import net.minecraft.world.level.portal.DimensionTransition;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
-
-import java.awt.*;
-import java.util.*;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.function.Predicate;
-import java.util.function.UnaryOperator;
-
-import static dev.doctor4t.trainmurdermystery.compat.TrainVoicePlugin.isVoiceChatMissing;
 
 public class GameFunctions {
+    public static HashMap<BlockPos, Integer> taskBlocks = new HashMap<>();
 
     public static void limitPlayerToBox(ServerPlayer player, AABB box) {
         Vec3 playerPos = player.position();
@@ -294,7 +319,8 @@ public class GameFunctions {
 
     public static long startTime = 0;
     public static Map<UUID, Integer> roomToPlayer = new HashMap<>();
-    public static Map<TaskPointType, List<BlockPos>> taskPoints = new HashMap<>();
+    // public static Map<TaskPointType, List<BlockPos>> taskPoints = new
+    // HashMap<>();
 
     private static void baseInitialize(ServerLevel serverWorld, GameWorldComponent gameComponent,
             List<ServerPlayer> players) {
@@ -1213,12 +1239,7 @@ public class GameFunctions {
         return Math.toIntExact(players.stream().filter(p -> areas.getReadyArea().contains(p.position())).count());
     }
 
-
     public enum WinStatus {
         NOT_MODIFY, NONE, KILLERS, PASSENGERS, TIME, LOOSE_END, GAMBLER, RECORDER, NO_PLAYER, NIAN_SHOU, CUSTOM
     }
-
-    public static void getAllTaskPoints() {
-    }
-
 }
