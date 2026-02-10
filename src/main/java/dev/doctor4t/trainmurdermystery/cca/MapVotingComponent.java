@@ -80,14 +80,16 @@ public class MapVotingComponent implements AutoSyncedComponent, CommonTickingCom
         }
 
         // 处理投票倒计时
-        if (votingActive && world != null && !world.isClientSide) {
+        if (world != null && world.isClientSide && votingActive) {
+            votingTimeLeft--;
+        } else if (world != null && votingActive) {
             votingTimeLeft--;
             if (votingTimeLeft <= 0) {
                 finishVoting();
                 sync();
             } else {
-                // 每3秒同步一次倒计时
-                if (votingTimeLeft % 60 == 0) {
+                // 每5秒同步一次倒计时
+                if (votingTimeLeft % 100 == 0) {
                     shouldSync = true;
                 }
             }
