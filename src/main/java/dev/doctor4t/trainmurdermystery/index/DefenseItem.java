@@ -2,12 +2,15 @@ package dev.doctor4t.trainmurdermystery.index;
 
 import java.util.ArrayList;
 
+import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.cca.BartenderPlayerComponent;
 import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
+import net.minecraft.core.component.DataComponents;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -18,6 +21,11 @@ public class DefenseItem extends Item {
 
     public DefenseItem(Properties properties) {
         super(properties);
+    }
+
+    @Override
+    public int getUseDuration(ItemStack itemStack, LivingEntity livingEntity) {
+        return 20;
     }
 
     @Override
@@ -48,10 +56,12 @@ public class DefenseItem extends Item {
             if (role != null) {
                 if (canUseByRightClickRolePaths.contains(role.identifier().getPath())) {
                     if (livingEntity instanceof Player player) {
+                        TMM.LOGGER.info("Hello, World!");
                         var bartenderComponent = BartenderPlayerComponent.KEY.get(player);
                         if (bartenderComponent != null) {
                             bartenderComponent.giveArmor();
                             itemStack.consume(1, livingEntity);
+                            return itemStack;
                         }
                     }
                 }
