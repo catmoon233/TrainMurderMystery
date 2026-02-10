@@ -3,7 +3,6 @@ package dev.doctor4t.trainmurdermystery.cca;
 import dev.doctor4t.trainmurdermystery.TMM;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.Level;
 import org.ladysnake.cca.api.v3.component.ComponentKey;
@@ -143,7 +142,7 @@ public class TrainWorldComponent implements AutoSyncedComponent, ServerTickingCo
 //        serverWorld.setDayTime(timeOfDay.time);
 
         // 每秒同步一次（减少网络占用）
-        if (this.needsSync && this.world.getGameTime() % 20 == 0) {
+        if (this.needsSync && this.world.getGameTime() % 60 == 0) {
             this.sync();
         }
     }

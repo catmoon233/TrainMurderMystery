@@ -11,6 +11,7 @@ import org.ladysnake.cca.api.v3.component.ComponentRegistry;
 import org.ladysnake.cca.api.v3.component.tick.ClientTickingComponent;
 import org.ladysnake.cca.api.v3.component.tick.ServerTickingComponent;
 
+import java.util.ArrayList;
 import java.util.UUID;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -20,7 +21,8 @@ import net.minecraft.util.Tuple;
 import net.minecraft.world.entity.player.Player;
 
 public class PlayerPoisonComponent implements RoleComponent, ServerTickingComponent, ClientTickingComponent {
-    public static final ComponentKey<PlayerPoisonComponent> KEY = ComponentRegistry.getOrCreate(TMM.id("poison"), PlayerPoisonComponent.class);
+    public static final ComponentKey<PlayerPoisonComponent> KEY = ComponentRegistry.getOrCreate(TMM.id("poison"),
+            PlayerPoisonComponent.class);
     public static final Tuple<Integer, Integer> clampTime = new Tuple<>(800, 1400);
     private final Player player;
     public int poisonTicks = -1;
@@ -29,13 +31,27 @@ public class PlayerPoisonComponent implements RoleComponent, ServerTickingCompon
     public float pulseProgress = 0f;
     public boolean pulsing = false;
     public UUID poisoner;
+    private static GameWorldComponent gameWorldComponent = null;
+    public static ArrayList<String> canSyncedRolePaths = new ArrayList<>();
 
     public PlayerPoisonComponent(Player player) {
         this.player = player;
+        gameWorldComponent = GameWorldComponent.KEY.get(this.player.level());
     }
 
     @Override
     public boolean shouldSyncWith(ServerPlayer player) {
+        if (player == this.player)
+            return true;
+        if (gameWorldComponent == null) {
+            gameWorldComponent = GameWorldComponent.KEY.get(this.player.level());
+        }
+        if (gameWorldComponent != null) {
+            var role = gameWorldComponent.getRole(player);
+            if (role != null) {
+                return canSyncedRolePaths.contains(role.identifier().getPath());
+            }
+        }
         return true;
     }
 
@@ -65,15 +81,18 @@ public class PlayerPoisonComponent implements RoleComponent, ServerTickingCompon
 
     @Override
     public void clientTick() {
-        if (this.poisonTicks > -1) this.poisonTicks--;
+        if (this.poisonTicks > 0)
+            this.poisonTicks--;
         if (this.poisonTicks > 0) {
             int ticksSinceStart = this.initialPoisonTicks - this.poisonTicks;
 
-            if (ticksSinceStart < 100) return;
+            if (ticksSinceStart < 100)
+                return;
 
             int minCooldown = 10;
             int maxCooldown = 60;
-            int dynamicCooldown = minCooldown + (int) ((maxCooldown - minCooldown) * ((float) this.poisonTicks / clampTime.getB()));
+            int dynamicCooldown = minCooldown
+                    + (int) ((maxCooldown - minCooldown) * ((float) this.poisonTicks / clampTime.getB()));
 
             if (this.poisonPulseCooldown <= 0) {
                 this.poisonPulseCooldown = dynamicCooldown;
@@ -82,14 +101,14 @@ public class PlayerPoisonComponent implements RoleComponent, ServerTickingCompon
 
                 float minVolume = 0.5f;
                 float maxVolume = 1f;
-                float volume = minVolume + (maxVolume - minVolume) * (1f - ((float) this.poisonTicks / clampTime.getB()));
+                float volume = minVolume
+                        + (maxVolume - minVolume) * (1f - ((float) this.poisonTicks / clampTime.getB()));
 
                 this.player.playNotifySound(
                         SoundEvents.WARDEN_HEARTBEAT,
                         SoundSource.PLAYERS,
                         volume,
-                        1f
-                );
+                        1f);
             } else {
                 this.poisonPulseCooldown--;
             }
@@ -104,7 +123,9 @@ public class PlayerPoisonComponent implements RoleComponent, ServerTickingCompon
             this.poisonTicks--;
             if (this.poisonTicks == 0) {
                 this.poisonTicks = -1;
-                GameFunctions.killPlayer(this.player, true, this.poisoner == null ? null : this.player.level().getPlayerByUUID(this.poisoner), GameConstants.DeathReasons.POISON);
+                GameFunctions.killPlayer(this.player, true,
+                        this.poisoner == null ? null : this.player.level().getPlayerByUUID(this.poisoner),
+                        GameConstants.DeathReasons.POISON);
                 this.poisoner = null;
                 this.sync();
             }
@@ -114,13 +135,15 @@ public class PlayerPoisonComponent implements RoleComponent, ServerTickingCompon
     public void setPoisonTicks(int ticks, UUID poisoner) {
         this.poisoner = poisoner;
         this.poisonTicks = ticks;
-        if (this.initialPoisonTicks == 0) this.initialPoisonTicks = ticks;
+        if (this.initialPoisonTicks == 0)
+            this.initialPoisonTicks = ticks;
         this.sync();
     }
 
     @Override
     public void writeToNbt(@NotNull CompoundTag tag, HolderLookup.Provider registryLookup) {
-        if (this.poisoner != null) tag.putUUID("poisoner", this.poisoner);
+        if (this.poisoner != null)
+            tag.putUUID("poisoner", this.poisoner);
         tag.putInt("poisonTicks", this.poisonTicks);
         tag.putInt("initialPoisonTicks", this.initialPoisonTicks);
     }

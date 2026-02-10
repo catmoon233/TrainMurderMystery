@@ -11,15 +11,17 @@ import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.NotNull;
 import org.ladysnake.cca.api.v3.component.ComponentKey;
 import org.ladysnake.cca.api.v3.component.ComponentRegistry;
+import org.ladysnake.cca.api.v3.component.tick.ClientTickingComponent;
 import org.ladysnake.cca.api.v3.component.tick.ServerTickingComponent;
 
-public class PlayerAFKComponent implements RoleComponent, ServerTickingComponent {
-    public static final ComponentKey<PlayerAFKComponent> KEY = ComponentRegistry.getOrCreate(TMM.id("afk"), PlayerAFKComponent.class);
+public class PlayerAFKComponent implements RoleComponent, ServerTickingComponent, ClientTickingComponent {
+    public static final ComponentKey<PlayerAFKComponent> KEY = ComponentRegistry.getOrCreate(TMM.id("afk"),
+            PlayerAFKComponent.class);
     private final Player player;
     private int afkTime = 0; // 挂机时间（刻）
     private int lastActionTime = 0; // 最后操作时间（刻）
     private boolean isAFK = false; // 是否挂机
-    
+
     public PlayerAFKComponent(Player player) {
         this.player = player;
         this.lastActionTime = 0;
@@ -31,17 +33,21 @@ public class PlayerAFKComponent implements RoleComponent, ServerTickingComponent
     public Player getPlayer() {
         return this.player;
     }
+
     @Override
     public boolean shouldSyncWith(ServerPlayer player) {
         return player == this.player;
     }
+
     public void sync() {
         KEY.sync(this.player);
     }
+
     @Override
-    public void clear(){
+    public void clear() {
         reset();
     }
+
     @Override
     public void reset() {
         this.resetAFKTimer();
@@ -61,7 +67,7 @@ public class PlayerAFKComponent implements RoleComponent, ServerTickingComponent
             this.afkTime = 0;
             this.sync();
         }
-        if (getAFKProgress()>=0.3){
+        if (getAFKProgress() >= 0.3) {
             this.isAFK = true;
         }
 
@@ -101,12 +107,15 @@ public class PlayerAFKComponent implements RoleComponent, ServerTickingComponent
     }
 
     public static int tickR = 0;
+
     @Override
     public void serverTick() {
         ++tickR;
-        if (!TMM.isPlayerInGame(this.player)) return;
+        if (!TMM.isPlayerInGame(this.player))
+            return;
 
-        if (!GameWorldComponent.KEY.get(this.player.level()).isRunning())return;
+        if (!GameWorldComponent.KEY.get(this.player.level()).isRunning())
+            return;
         this.lastActionTime++;
         this.afkTime = this.lastActionTime;
 
@@ -115,23 +124,23 @@ public class PlayerAFKComponent implements RoleComponent, ServerTickingComponent
         int warningThreshold = TMMConfig.afkWarningSeconds * 20; // 转换为ticks
         int sleepyThreshold = TMMConfig.afkSleepySeconds * 20; // 转换为ticks
         int deathThreshold = TMMConfig.afkDeathSeconds * 20; // 添加死亡阈值，转换为ticks
-        
+
         if (this.lastActionTime >= deathThreshold) {
             // 如果达到死亡阈值，直接杀死玩家
-            GameFunctions.killPlayer(this.player, true, null,TMM.id("death_afk"));
+            GameFunctions.killPlayer(this.player, true, null, TMM.id("death_afk"));
         } else if (this.lastActionTime >= afkThreshold && !this.isAFK) {
             this.isAFK = true;
-            if (tickR % 20 == 0) {
+            if (tickR % 400 == 0) { // 20s同步一次
                 this.sync();
             }
         } else if (this.lastActionTime >= warningThreshold && this.lastActionTime < afkThreshold && !this.isAFK) {
             // 接近挂机阈值但还未达到
-            if (tickR % 20 == 0) {
+            if (tickR % 200 == 0) {// 10s 同步一次
                 this.sync(); // 确保客户端同步进度
             }
         } else if (this.lastActionTime >= sleepyThreshold && this.lastActionTime < warningThreshold && !this.isAFK) {
             // 开始显示困倦效果
-            if (tickR % 20 == 0) {
+            if (tickR % 100 == 0) {// 5s 同步一次
                 this.sync(); // 确保客户端同步进度
             }
         }
@@ -147,5 +156,10 @@ public class PlayerAFKComponent implements RoleComponent, ServerTickingComponent
     public void writeToNbt(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registryLookup) {
         tag.putInt("afkTime", this.afkTime);
         tag.putBoolean("isAFK", this.isAFK);
+    }
+
+    @Override
+    public void clientTick() {
+        ++tickR; // 避免停滞
     }
 }

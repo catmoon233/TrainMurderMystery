@@ -161,7 +161,6 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
     public HashMap<UUID, Role> getRoles() {
         return roles;
     }
-
     public Role getRole(Player player) {
         return getRole(player.getUUID());
     }

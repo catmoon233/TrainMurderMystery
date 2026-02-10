@@ -1,9 +1,7 @@
 package dev.doctor4t.trainmurdermystery.cca;
 
 import dev.doctor4t.trainmurdermystery.TMM;
-import dev.doctor4t.trainmurdermystery.api.Role;
 import dev.doctor4t.trainmurdermystery.api.RoleComponent;
-import dev.doctor4t.trainmurdermystery.client.TMMClient;
 import dev.doctor4t.trainmurdermystery.game.GameConstants;
 import dev.doctor4t.trainmurdermystery.game.ShopContent;
 import dev.doctor4t.trainmurdermystery.index.TMMItems;
@@ -94,7 +92,6 @@ public class PlayerShopComponent implements RoleComponent, ServerTickingComponen
         return player != null && !player.isSpectator() && !player.isCreative();
     }
     private @NotNull List<ShopEntry> getShopEntries() {
-
         final var gameWorldComponent = GameWorldComponent.KEY.get(player.level());
         final var role = gameWorldComponent.getRole(player);
         if (gameWorldComponent!=null && role!=null && isPlayerAliveAndSurvival( player)) {

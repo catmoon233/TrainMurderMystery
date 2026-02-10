@@ -34,7 +34,6 @@ public class DynamicCoinComponent implements RoleComponent, ServerTickingCompone
     @Override
     public boolean shouldSyncWith(ServerPlayer player) {
         return this.player == player;
-
     }
 
     @Override

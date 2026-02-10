@@ -3,7 +3,6 @@ package dev.doctor4t.trainmurdermystery.cca;
 import dev.doctor4t.trainmurdermystery.TMM;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.chat.numbers.NumberFormat;
 import net.minecraft.network.chat.numbers.StyledFormat;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
@@ -13,14 +12,13 @@ import net.minecraft.world.scores.criteria.ObjectiveCriteria;
 import org.jetbrains.annotations.NotNull;
 import org.ladysnake.cca.api.v3.component.ComponentKey;
 import org.ladysnake.cca.api.v3.component.ComponentRegistry;
-import org.ladysnake.cca.api.v3.component.sync.AutoSyncedComponent;
 import org.ladysnake.cca.api.v3.component.tick.CommonTickingComponent;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public class GameScoreboardComponent implements AutoSyncedComponent, CommonTickingComponent {
+public class GameScoreboardComponent implements CommonTickingComponent {
     public static final ComponentKey<GameScoreboardComponent> KEY = ComponentRegistry.getOrCreate(TMM.id("gamescoreboard"), GameScoreboardComponent.class);
     private final Scoreboard scoreboard;
     private final MinecraftServer server;

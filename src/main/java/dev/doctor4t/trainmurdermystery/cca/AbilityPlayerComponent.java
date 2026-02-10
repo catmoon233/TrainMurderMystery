@@ -1,7 +1,6 @@
 package dev.doctor4t.trainmurdermystery.cca;
 
 import dev.doctor4t.trainmurdermystery.TMM;
-import dev.doctor4t.trainmurdermystery.api.Role;
 import dev.doctor4t.trainmurdermystery.api.RoleComponent;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -30,21 +29,23 @@ public class AbilityPlayerComponent implements RoleComponent, ServerTickingCompo
     public boolean shouldSyncWith(ServerPlayer player) {
         return player == this.player;
     }
+
     /** 组件键 - 用于从玩家获取此组件 */
-    public static final ComponentKey<AbilityPlayerComponent> KEY =  ComponentRegistry.getOrCreate(TMM.id("ability"), AbilityPlayerComponent.class);
-    
+    public static final ComponentKey<AbilityPlayerComponent> KEY = ComponentRegistry.getOrCreate(TMM.id("ability"),
+            AbilityPlayerComponent.class);
+
     // 持有该组件的玩家
     private final Player player;
-    
+
     // 技能冷却时间（tick）
     public int cooldown = 0;
-    
+
     // 技能剩余使用次数（-1 表示无限制）
     public int charges = -1;
-    
+
     // 最大使用次数（用于 HUD 显示）
     public int maxCharges = -1;
-    
+
     /**
      * 构造函数
      */
@@ -73,6 +74,7 @@ public class AbilityPlayerComponent implements RoleComponent, ServerTickingCompo
     public void clear() {
         this.reset();
     }
+
     /**
      * 设置冷却时间
      * 
@@ -82,7 +84,7 @@ public class AbilityPlayerComponent implements RoleComponent, ServerTickingCompo
         this.cooldown = ticks;
         this.sync();
     }
-    
+
     /**
      * 设置技能使用次数
      * 
@@ -93,20 +95,21 @@ public class AbilityPlayerComponent implements RoleComponent, ServerTickingCompo
         this.maxCharges = charges;
         this.sync();
     }
-    
+
     /**
      * 使用一次技能
      * 
      * @return 是否成功使用
      */
     static int TICK_R;
+
     public boolean useAbility() {
         if (canUseAbility()) {
             final var gameWorldComponent = GameWorldComponent.KEY.get(this.player);
             final var role = gameWorldComponent.getRole(this.player);
             if (role == null) {
                 return false;
-            }else {
+            } else {
                 role.onAbilityUse(this.player);
             }
             charges--;
@@ -114,60 +117,60 @@ public class AbilityPlayerComponent implements RoleComponent, ServerTickingCompo
 
         return true;
     }
-    
+
     /**
      * 检查技能是否可用
      */
     public boolean canUseAbility() {
         return cooldown <= 0 && (charges == -1 || charges > 0);
     }
-    
+
     /**
      * 获取冷却时间（秒）
      */
     public float getCooldownSeconds() {
         return cooldown / 20.0f;
     }
-    
+
     /**
      * 同步到客户端
      */
     public void sync() {
         KEY.sync(this.player);
     }
-    
+
     // ==================== Tick 处理 ====================
-    
+
     @Override
     public void serverTick() {
         // 服务端每 tick 减少冷却时间
         if (this.cooldown > 0) {
             this.cooldown--;
             // 每秒同步一次（而不是每 tick），减少网络压力
-            if (++TICK_R%20 == 0|| this.cooldown == 0){
+            if (++TICK_R % 60 == 0 || this.cooldown == 0) {
                 sync();
 
             }
         }
     }
-    
+
     @Override
     public void clientTick() {
         // 客户端也进行冷却计算（用于预测显示）
-        if (this.cooldown > 0) {
+        if (this.cooldown > 1) {
             this.cooldown--;
         }
     }
-    
+
     // ==================== NBT 序列化 ====================
-    
+
     @Override
     public void writeToNbt(@NotNull CompoundTag tag, HolderLookup.Provider registryLookup) {
         tag.putInt("cooldown", this.cooldown);
         tag.putInt("charges", this.charges);
         tag.putInt("maxCharges", this.maxCharges);
     }
-    
+
     @Override
     public void readFromNbt(@NotNull CompoundTag tag, HolderLookup.Provider registryLookup) {
         this.cooldown = tag.contains("cooldown") ? tag.getInt("cooldown") : 0;

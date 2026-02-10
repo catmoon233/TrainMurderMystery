@@ -1,7 +1,6 @@
 package dev.doctor4t.trainmurdermystery.cca;
 
 import dev.doctor4t.trainmurdermystery.TMM;
-import dev.doctor4t.trainmurdermystery.api.Role;
 import dev.doctor4t.trainmurdermystery.game.GameConstants;
 import dev.doctor4t.trainmurdermystery.game.GameFunctions;
 import dev.doctor4t.trainmurdermystery.index.TMMProperties;
@@ -32,7 +31,8 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.AABB;
 
 public class WorldBlackoutComponent implements AutoSyncedComponent, ServerTickingComponent {
-    public static final ComponentKey<WorldBlackoutComponent> KEY = ComponentRegistry.getOrCreate(TMM.id("blackout"), WorldBlackoutComponent.class);
+    public static final ComponentKey<WorldBlackoutComponent> KEY = ComponentRegistry.getOrCreate(TMM.id("blackout"),
+            WorldBlackoutComponent.class);
     private final Level world;
     private final List<BlackoutDetails> blackouts = new ArrayList<>();
     private int ticks = 0;
@@ -42,7 +42,8 @@ public class WorldBlackoutComponent implements AutoSyncedComponent, ServerTickin
     }
 
     public void reset() {
-        for (BlackoutDetails detail : this.blackouts) detail.end(this.world);
+        for (BlackoutDetails detail : this.blackouts)
+            detail.end(this.world);
         this.blackouts.clear();
     }
 
@@ -57,7 +58,8 @@ public class WorldBlackoutComponent implements AutoSyncedComponent, ServerTickin
                 i--;
             }
         }
-        if (this.ticks > 0) this.ticks--;
+        if (this.ticks > 0)
+            this.ticks--;
     }
 
     public boolean isBlackoutActive() {
@@ -68,16 +70,21 @@ public class WorldBlackoutComponent implements AutoSyncedComponent, ServerTickin
         AreasWorldComponent areas = AreasWorldComponent.KEY.get(world);
 
         AABB area = areas.getPlayArea();
-        if (this.ticks > 0) return false;
+        if (this.ticks > 0)
+            return false;
         for (int x = (int) area.minX; x <= (int) area.maxX; x++) {
             for (int y = (int) area.minY; y <= (int) area.maxY; y++) {
                 for (int z = (int) area.minZ; z <= (int) area.maxZ; z++) {
                     BlockPos pos = new BlockPos(x, y, z);
                     BlockState state = this.world.getBlockState(pos);
-                    if (!state.hasProperty(BlockStateProperties.LIT) || !state.hasProperty(TMMProperties.ACTIVE)) continue;
-                    int duration = GameConstants.getBlackoutMinDuration() + this.world.random.nextInt(GameConstants.getBlackoutMaxDuration() - GameConstants.getBlackoutMinDuration());
-                    if (duration > this.ticks) this.ticks = duration;
-                    BlackoutDetails detail = new BlackoutDetails(pos, duration, state.getValue(BlockStateProperties.LIT));
+                    if (!state.hasProperty(BlockStateProperties.LIT) || !state.hasProperty(TMMProperties.ACTIVE))
+                        continue;
+                    int duration = GameConstants.getBlackoutMinDuration() + this.world.random
+                            .nextInt(GameConstants.getBlackoutMaxDuration() - GameConstants.getBlackoutMinDuration());
+                    if (duration > this.ticks)
+                        this.ticks = duration;
+                    BlackoutDetails detail = new BlackoutDetails(pos, duration,
+                            state.getValue(BlockStateProperties.LIT));
                     detail.init(this.world);
                     this.blackouts.add(detail);
                 }
@@ -93,7 +100,9 @@ public class WorldBlackoutComponent implements AutoSyncedComponent, ServerTickin
                             player.addEffect(new MobEffectInstance(MobEffects.DARKNESS, 200, 0, false, false, false));
                         }
                     }
-                    player.connection.send(new ClientboundSoundPacket(BuiltInRegistries.SOUND_EVENT.wrapAsHolder(TMMSounds.AMBIENT_BLACKOUT), SoundSource.PLAYERS, player.getX(), player.getY(), player.getZ(), 100f, 1f, player.getRandom().nextLong()));
+                    player.connection.send(new ClientboundSoundPacket(
+                            BuiltInRegistries.SOUND_EVENT.wrapAsHolder(TMMSounds.AMBIENT_BLACKOUT), SoundSource.PLAYERS,
+                            player.getX(), player.getY(), player.getZ(), 100f, 1f, player.getRandom().nextLong()));
                 }
             }
         }
@@ -103,7 +112,8 @@ public class WorldBlackoutComponent implements AutoSyncedComponent, ServerTickin
     @Override
     public void writeToNbt(@NotNull CompoundTag tag, HolderLookup.Provider registryLookup) {
         ListTag list = new ListTag();
-        for (BlackoutDetails detail : this.blackouts) list.add(detail.writeToNbt());
+        for (BlackoutDetails detail : this.blackouts)
+            list.add(detail.writeToNbt());
         tag.put("blackouts", list);
     }
 
@@ -136,32 +146,41 @@ public class WorldBlackoutComponent implements AutoSyncedComponent, ServerTickin
 
         public void init(@NotNull Level world) {
             BlockState state = world.getBlockState(this.pos);
-            if (!state.hasProperty(BlockStateProperties.LIT) || !state.hasProperty(TMMProperties.ACTIVE)) return;
-            world.setBlockAndUpdate(this.pos, state.setValue(BlockStateProperties.LIT, false).setValue(TMMProperties.ACTIVE, false));
+            if (!state.hasProperty(BlockStateProperties.LIT) || !state.hasProperty(TMMProperties.ACTIVE))
+                return;
+            world.setBlockAndUpdate(this.pos,
+                    state.setValue(BlockStateProperties.LIT, false).setValue(TMMProperties.ACTIVE, false));
             world.playSound(null, this.pos, TMMSounds.BLOCK_LIGHT_TOGGLE, SoundSource.BLOCKS, 0.5f, 1f);
         }
 
         public void end(@NotNull Level world) {
             BlockState state = world.getBlockState(this.pos);
-            if (!state.hasProperty(BlockStateProperties.LIT) || !state.hasProperty(TMMProperties.ACTIVE)) return;
-            world.setBlockAndUpdate(this.pos, state.setValue(BlockStateProperties.LIT, this.original).setValue(TMMProperties.ACTIVE, true));
+            if (!state.hasProperty(BlockStateProperties.LIT) || !state.hasProperty(TMMProperties.ACTIVE))
+                return;
+            world.setBlockAndUpdate(this.pos,
+                    state.setValue(BlockStateProperties.LIT, this.original).setValue(TMMProperties.ACTIVE, true));
             world.playSound(null, this.pos, TMMSounds.BLOCK_LIGHT_TOGGLE, SoundSource.BLOCKS, 0.5f, 0.5f);
         }
 
         public void tick(Level world) {
-            if (this.time > 0) this.time--;
-            if (this.time > 4) return;
+            if (this.time > 0)
+                this.time--;
+            if (this.time > 4)
+                return;
             BlockState state = world.getBlockState(this.pos);
-            if (!state.hasProperty(BlockStateProperties.LIT) || !state.hasProperty(TMMProperties.ACTIVE)) return;
+            if (!state.hasProperty(BlockStateProperties.LIT) || !state.hasProperty(TMMProperties.ACTIVE))
+                return;
             switch (this.time) {
                 case 0 -> this.end(world);
                 case 1, 3 -> {
                     world.setBlockAndUpdate(this.pos, state.setValue(BlockStateProperties.LIT, false));
-                    world.playSound(null, this.pos, TMMSounds.BLOCK_BUTTON_TOGGLE_NO_POWER, SoundSource.BLOCKS, 0.1f, 1f);
+                    world.playSound(null, this.pos, TMMSounds.BLOCK_BUTTON_TOGGLE_NO_POWER, SoundSource.BLOCKS, 0.1f,
+                            1f);
                 }
                 case 2, 5 -> {
                     world.setBlockAndUpdate(this.pos, state.setValue(BlockStateProperties.LIT, true));
-                    world.playSound(null, this.pos, TMMSounds.BLOCK_BUTTON_TOGGLE_NO_POWER, SoundSource.BLOCKS, 0.1f, 1f);
+                    world.playSound(null, this.pos, TMMSounds.BLOCK_BUTTON_TOGGLE_NO_POWER, SoundSource.BLOCKS, 0.1f,
+                            1f);
                 }
             }
         }
@@ -175,5 +194,10 @@ public class WorldBlackoutComponent implements AutoSyncedComponent, ServerTickin
             tag.putBoolean("original", this.original);
             return tag;
         }
+    }
+
+    @Override
+    public boolean shouldSyncWith(ServerPlayer sp) {
+        return false;
     }
 }

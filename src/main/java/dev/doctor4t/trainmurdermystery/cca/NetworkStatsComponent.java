@@ -1,29 +1,16 @@
 package dev.doctor4t.trainmurdermystery.cca;
 
-import dev.doctor4t.trainmurdermystery.TMM;
-
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.NotNull;
-import org.ladysnake.cca.api.v3.component.ComponentKey;
-import org.ladysnake.cca.api.v3.component.ComponentRegistry;
-import org.ladysnake.cca.api.v3.component.sync.AutoSyncedComponent;
-import org.ladysnake.cca.api.v3.component.tick.ClientTickingComponent;
-import org.ladysnake.cca.api.v3.component.tick.ServerTickingComponent;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class NetworkStatsComponent  {
-
-
-
-
+public class NetworkStatsComponent {
     private final Player player;
     private final Map<String, PacketStats> packetStats = new ConcurrentHashMap<>();
     private final Map<String, PlayerPacketStats> playerPacketStats = new ConcurrentHashMap<>(); // 新增：按玩家统计
@@ -47,8 +34,10 @@ public class NetworkStatsComponent  {
         public void update(long size) {
             count++;
             totalSize += size;
-            if (size > maxSize) maxSize = size;
-            if (size < minSize) minSize = size;
+            if (size > maxSize)
+                maxSize = size;
+            if (size < minSize)
+                minSize = size;
         }
 
         public double getAverageSize() {
@@ -237,6 +226,5 @@ public class NetworkStatsComponent  {
         }
         tag.put("PlayerPacketStats", playerStatsList);
     }
-
 
 }

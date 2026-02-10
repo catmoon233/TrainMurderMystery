@@ -25,13 +25,19 @@ import org.ladysnake.cca.api.v3.component.sync.AutoSyncedComponent;
 import java.util.*;
 
 public class ScoreboardRoleSelectorComponent implements AutoSyncedComponent {
-    public static final ComponentKey<ScoreboardRoleSelectorComponent> KEY = ComponentRegistry.getOrCreate(TMM.id("rolecounter"), ScoreboardRoleSelectorComponent.class);
+    public static final ComponentKey<ScoreboardRoleSelectorComponent> KEY = ComponentRegistry
+            .getOrCreate(TMM.id("rolecounter"), ScoreboardRoleSelectorComponent.class);
     public final Scoreboard scoreboard;
     public final MinecraftServer server;
     public final Map<UUID, Integer> killerRounds = new HashMap<>();
     public final Map<UUID, Integer> vigilanteRounds = new HashMap<>();
     public final List<UUID> forcedKillers = new ArrayList<>();
     public final List<UUID> forcedVigilantes = new ArrayList<>();
+
+    @Override
+    public boolean shouldSyncWith(ServerPlayer sp) {
+        return false;
+    }
 
     public ScoreboardRoleSelectorComponent(Scoreboard scoreboard, @Nullable MinecraftServer server) {
         this.scoreboard = scoreboard;
@@ -64,23 +70,24 @@ public class ScoreboardRoleSelectorComponent implements AutoSyncedComponent {
                     Component.literal("\n  Killer (").withColor(RoleAnnouncementTexts.KILLER.colour)
                             .append(Component.literal("%d".formatted(killerRounds)).withColor(0x808080))
                             .append(Component.literal("): ").withColor(RoleAnnouncementTexts.KILLER.colour))
-                            .append(Component.literal("%.2f%%".formatted(killerPercent)).withColor(0x808080))
-            );
+                            .append(Component.literal("%.2f%%".formatted(killerPercent)).withColor(0x808080)));
             text.append(
                     Component.literal("\n  Vigilante (").withColor(RoleAnnouncementTexts.VIGILANTE.colour)
                             .append(Component.literal("%d".formatted(vigilanteRounds)).withColor(0x808080))
                             .append(Component.literal("): ").withColor(RoleAnnouncementTexts.VIGILANTE.colour))
-                            .append(Component.literal("%.2f%%".formatted(vigilantePercent)).withColor(0x808080))
-            );
+                            .append(Component.literal("%.2f%%".formatted(vigilantePercent)).withColor(0x808080)));
         }
         var finalText = text;
         source.sendSuccess(() -> finalText, false);
     }
 
     public void setKillerRounds(@NotNull CommandSourceStack source, @NotNull ServerPlayer player, int times) {
-        if (times < 0) times = 0;
-        if (times == 0) this.killerRounds.remove(player.getUUID());
-        else this.killerRounds.put(player.getUUID(), times);
+        if (times < 0)
+            times = 0;
+        if (times == 0)
+            this.killerRounds.remove(player.getUUID());
+        else
+            this.killerRounds.put(player.getUUID(), times);
         var finalTimes = times;
         source.sendSuccess(() -> Component.literal("Set ").withStyle(ChatFormatting.GRAY)
                 .append(player.getDisplayName().copy().withStyle(ChatFormatting.YELLOW))
@@ -90,9 +97,12 @@ public class ScoreboardRoleSelectorComponent implements AutoSyncedComponent {
     }
 
     public void setVigilanteRounds(@NotNull CommandSourceStack source, @NotNull ServerPlayer player, int times) {
-        if (times < 0) times = 0;
-        if (times == 0) this.vigilanteRounds.remove(player.getUUID());
-        else this.vigilanteRounds.put(player.getUUID(), times);
+        if (times < 0)
+            times = 0;
+        if (times == 0)
+            this.vigilanteRounds.remove(player.getUUID());
+        else
+            this.vigilanteRounds.put(player.getUUID(), times);
         var finalTimes = times;
         source.sendSuccess(() -> Component.literal("Set ").withStyle(ChatFormatting.GRAY)
                 .append(player.getDisplayName().copy().withStyle(ChatFormatting.YELLOW))
@@ -101,7 +111,8 @@ public class ScoreboardRoleSelectorComponent implements AutoSyncedComponent {
                 .append(Component.literal(".").withStyle(ChatFormatting.GRAY)), false);
     }
 
-    public int assignKillers(ServerLevel world, GameWorldComponent gameComponent, @NotNull List<ServerPlayer> players, int killerCount) {
+    public int assignKillers(ServerLevel world, GameWorldComponent gameComponent, @NotNull List<ServerPlayer> players,
+            int killerCount) {
         this.reduceKillers();
         var killers = new ArrayList<UUID>();
         for (var uuid : this.forcedKillers) {
@@ -114,7 +125,8 @@ public class ScoreboardRoleSelectorComponent implements AutoSyncedComponent {
         var total = 0f;
         for (var player : players) {
             var weight = (float) Math.exp(-this.killerRounds.getOrDefault(player.getUUID(), 0) * 4);
-            if (!GameWorldComponent.KEY.get(world).areWeightsEnabled()) weight = 1;
+            if (!GameWorldComponent.KEY.get(world).areWeightsEnabled())
+                weight = 1;
             map.put(player, weight);
             total += weight;
         }
@@ -126,7 +138,8 @@ public class ScoreboardRoleSelectorComponent implements AutoSyncedComponent {
                     killers.add(entry.getKey().getUUID());
                     total -= entry.getValue();
                     map.remove(entry.getKey());
-                    this.killerRounds.put(entry.getKey().getUUID(), this.killerRounds.getOrDefault(entry.getKey().getUUID(), 1) + 1);
+                    this.killerRounds.put(entry.getKey().getUUID(),
+                            this.killerRounds.getOrDefault(entry.getKey().getUUID(), 1) + 1);
                     break;
                 }
             }
@@ -143,17 +156,20 @@ public class ScoreboardRoleSelectorComponent implements AutoSyncedComponent {
 
     private void reduceKillers() {
         var minimum = Integer.MAX_VALUE;
-        for (var times : this.killerRounds.values()) minimum = Math.min(minimum, times);
+        for (var times : this.killerRounds.values())
+            minimum = Math.min(minimum, times);
         for (var times : this.killerRounds.keySet())
             this.killerRounds.put(times, this.killerRounds.get(times) - minimum);
     }
 
-    public void assignVigilantes(ServerLevel world, GameWorldComponent gameComponent, @NotNull List<ServerPlayer> players, int vigilanteCount) {
+    public void assignVigilantes(ServerLevel world, GameWorldComponent gameComponent,
+            @NotNull List<ServerPlayer> players, int vigilanteCount) {
         this.reduceVigilantes();
         var vigilantes = new ArrayList<ServerPlayer>();
         for (var uuid : this.forcedVigilantes) {
             var player = world.getPlayerByUUID(uuid);
-            if (player instanceof ServerPlayer serverPlayer && players.contains(serverPlayer) && !gameComponent.canUseKillerFeatures(player)) {
+            if (player instanceof ServerPlayer serverPlayer && players.contains(serverPlayer)
+                    && !gameComponent.canUseKillerFeatures(player)) {
                 player.addItem(new ItemStack(TMMItems.REVOLVER));
                 gameComponent.addRole(player, TMMRoles.VIGILANTE);
                 vigilanteCount--;
@@ -164,9 +180,11 @@ public class ScoreboardRoleSelectorComponent implements AutoSyncedComponent {
         var map = new HashMap<ServerPlayer, Float>();
         var total = 0f;
         for (var player : players) {
-            if (gameComponent.isRole(player, TMMRoles.KILLER)) continue;
+            if (gameComponent.isRole(player, TMMRoles.KILLER))
+                continue;
             var weight = (float) Math.exp(-this.vigilanteRounds.getOrDefault(player.getUUID(), 0) * 4);
-            if (!GameWorldComponent.KEY.get(world).areWeightsEnabled()) weight = 1;
+            if (!GameWorldComponent.KEY.get(world).areWeightsEnabled())
+                weight = 1;
             map.put(player, weight);
             total += weight;
         }
@@ -178,7 +196,8 @@ public class ScoreboardRoleSelectorComponent implements AutoSyncedComponent {
                     vigilantes.add(entry.getKey());
                     total -= entry.getValue();
                     map.remove(entry.getKey());
-                    this.vigilanteRounds.put(entry.getKey().getUUID(), this.vigilanteRounds.getOrDefault(entry.getKey().getUUID(), 1) + 1);
+                    this.vigilanteRounds.put(entry.getKey().getUUID(),
+                            this.vigilanteRounds.getOrDefault(entry.getKey().getUUID(), 1) + 1);
                     break;
                 }
             }
@@ -191,7 +210,8 @@ public class ScoreboardRoleSelectorComponent implements AutoSyncedComponent {
 
     private void reduceVigilantes() {
         var minimum = Integer.MAX_VALUE;
-        for (var times : this.vigilanteRounds.values()) minimum = Math.min(minimum, times);
+        for (var times : this.vigilanteRounds.values())
+            minimum = Math.min(minimum, times);
         for (var times : this.vigilanteRounds.keySet())
             this.vigilanteRounds.put(times, this.vigilanteRounds.get(times) - minimum);
     }
@@ -221,13 +241,15 @@ public class ScoreboardRoleSelectorComponent implements AutoSyncedComponent {
         this.killerRounds.clear();
         for (var element : tag.getList("killerRounds", 10)) {
             var compound = (CompoundTag) element;
-            if (!compound.contains("uuid") || !compound.contains("times")) continue;
+            if (!compound.contains("uuid") || !compound.contains("times"))
+                continue;
             this.killerRounds.put(compound.getUUID("uuid"), compound.getInt("times"));
         }
         this.vigilanteRounds.clear();
         for (var element : tag.getList("vigilanteRounds", 10)) {
             var compound = (CompoundTag) element;
-            if (!compound.contains("uuid") || !compound.contains("times")) continue;
+            if (!compound.contains("uuid") || !compound.contains("times"))
+                continue;
             this.vigilanteRounds.put(compound.getUUID("uuid"), compound.getInt("times"));
         }
     }

@@ -4,13 +4,11 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import dev.doctor4t.trainmurdermystery.network.cy.client.DataAccessClient;
 import dev.doctor4t.trainmurdermystery.network.cy.model.PlayerData;
-import dev.doctor4t.trainmurdermystery.network.cy.protocol.DataPacket;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -39,7 +37,7 @@ public class SkinsNetworkSyncManager {
     private AtomicBoolean isSyncing = new AtomicBoolean(false);
     
     // 本地缓存，用于追踪已同步的版本
-    private Map<String, Long> syncedVersions = new ConcurrentHashMap<>();
+    // private Map<String, Long> syncedVersions = new ConcurrentHashMap<>();
     private long localVersion = System.currentTimeMillis();
     
     // 回调函数

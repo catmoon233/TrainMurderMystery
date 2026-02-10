@@ -7,7 +7,6 @@ import dev.doctor4t.trainmurdermystery.game.GameFunctions;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.nbt.NbtUtils;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.ComponentUtils;
@@ -99,8 +98,8 @@ public class GameRoundEndComponent implements AutoSyncedComponent {
     public void readFromNbt(@NotNull CompoundTag tag, HolderLookup.Provider registryLookup) {
         this.players.clear();
         this.CustomWinnerPlayers.clear();
-        for (Tag element : tag.getList("winners", 10))
-            this.CustomWinnerPlayers.add(NbtUtils.loadUUID((CompoundTag) element));
+        // for (Tag element : tag.getList("winners", 10))
+            // this.CustomWinnerPlayers.add(NbtUtils.loadUUID((CompoundTag) element));
         for (Tag element : tag.getList("players", 10))
             this.players.add(new RoundEndData((CompoundTag) element));
         this.winStatus = GameFunctions.WinStatus.values()[tag.getInt("winstatus")];
@@ -128,11 +127,11 @@ public class GameRoundEndComponent implements AutoSyncedComponent {
         ListTag list = new ListTag();
         for (RoundEndData detail : this.players)
             list.add(detail.writeToNbt());
-        ListTag clist = new ListTag();
-        for (var detail : this.CustomWinnerPlayers)
-            clist.add(NbtUtils.createUUID(detail));
+        // ListTag clist = new ListTag();
+        // for (var detail : this.CustomWinnerPlayers)
+            // clist.add(NbtUtils.createUUID(detail));
         tag.put("players", list);
-        tag.put("winners", clist);
+        // tag.put("winners", clist);
         tag.putString("winner_id", CustomWinnerID);
         tag.putInt("winner_color", CustomWinnerColor);
         tag.putInt("winstatus", this.winStatus.ordinal());

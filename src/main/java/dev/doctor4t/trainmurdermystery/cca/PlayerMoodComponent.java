@@ -102,8 +102,9 @@ public class PlayerMoodComponent implements RoleComponent, ServerTickingComponen
     public void clientTick() {
         if (!GameWorldComponent.KEY.get(this.player.level()).isRunning() || !TMMClient.isPlayerAliveAndInSurvival())
             return;
-        if (!this.tasks.isEmpty())
-            this.setMood(this.mood - this.tasks.size() * GameConstants.MOOD_DRAIN);
+        if (!this.tasks.isEmpty()) {
+            this.mood = this.mood - this.tasks.size() * GameConstants.MOOD_DRAIN;
+        }
 
         if (this.isLowerThanMid()) {
             // imagine random items for players
@@ -139,9 +140,13 @@ public class PlayerMoodComponent implements RoleComponent, ServerTickingComponen
         GameWorldComponent gameWorldComponent = GameWorldComponent.KEY.get(this.player.level());
         if (!gameWorldComponent.isRunning() || !GameFunctions.isPlayerAliveAndSurvival(this.player))
             return;
-        if (!this.tasks.isEmpty())
-            this.setMood(this.mood - this.tasks.size() * GameConstants.MOOD_DRAIN);
         boolean shouldSync = false;
+        if (!this.tasks.isEmpty()) {
+            this.mood = this.mood - this.tasks.size() * GameConstants.MOOD_DRAIN;// 替换setMood避免高频率同步
+            if (this.nextTaskTimer % 40 == 0) { // 2s一次同步
+                shouldSync = true;
+            }
+        }
         this.nextTaskTimer--;
         if (this.nextTaskTimer <= 0) {
             TrainTask task = this.generateTask();
@@ -154,7 +159,9 @@ public class PlayerMoodComponent implements RoleComponent, ServerTickingComponen
                     * (GameConstants.MAX_TASK_COOLDOWN - GameConstants.MIN_TASK_COOLDOWN)
                     + GameConstants.MIN_TASK_COOLDOWN);
             this.nextTaskTimer = Math.max(this.nextTaskTimer, 2);
-            shouldSync = true;
+            if (nextTaskTimer % 40 == 0) { // 2秒一次
+                shouldSync = true;
+            }
         }
         ArrayList<TrainTask> removals = new ArrayList<>();
         for (TrainTask task : this.tasks.values()) {

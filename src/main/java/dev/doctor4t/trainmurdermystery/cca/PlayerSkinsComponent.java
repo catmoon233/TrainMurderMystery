@@ -9,9 +9,8 @@ import org.ladysnake.cca.api.v3.component.ComponentKey;
 import org.ladysnake.cca.api.v3.component.ComponentRegistry;
 import org.ladysnake.cca.api.v3.component.sync.AutoSyncedComponent;
 import org.ladysnake.cca.api.v3.component.tick.ServerTickingComponent;
-import dev.upcraft.datasync.api.DataSyncAPI;
-import dev.upcraft.datasync.api.SyncToken;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import org.slf4j.Logger;
@@ -19,7 +18,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 public class PlayerSkinsComponent implements AutoSyncedComponent, ServerTickingComponent {
     private static final Logger logger = LoggerFactory.getLogger(PlayerSkinsComponent.class);
@@ -46,7 +44,11 @@ public class PlayerSkinsComponent implements AutoSyncedComponent, ServerTickingC
     public void sync() {
         KEY.sync(this.player);
     }
-    
+    @Override
+    public boolean shouldSyncWith(ServerPlayer serverPlayer){
+        return this.player == serverPlayer;
+    }
+
     /**
      * 初始化网络同步
      * @param host 服务器主机地址
