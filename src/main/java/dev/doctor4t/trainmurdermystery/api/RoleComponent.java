@@ -1,5 +1,6 @@
 package dev.doctor4t.trainmurdermystery.api;
 
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 import org.ladysnake.cca.api.v3.component.sync.AutoSyncedComponent;
 
@@ -11,4 +12,8 @@ public interface RoleComponent extends AutoSyncedComponent {
     void reset();
     void clear();
 
+    @Override
+    default boolean shouldSyncWith(ServerPlayer player) {
+        return this.getPlayer() == player;
+    }
 }

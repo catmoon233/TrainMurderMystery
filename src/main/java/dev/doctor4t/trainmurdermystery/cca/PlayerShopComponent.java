@@ -54,6 +54,12 @@ public class PlayerShopComponent implements RoleComponent, ServerTickingComponen
     public void clear(){
         reset();
     }
+
+    @Override
+    public boolean shouldSyncWith(ServerPlayer player) {
+        return this.player == player;
+    }
+
     public void addToBalance(int amount) {
         this.setBalance(this.balance + amount);
     }
