@@ -439,7 +439,7 @@ public class GameFunctions {
     }
 
     public static ArrayList<Player> CustomWinnerPlayers = new ArrayList<>();
-    public static ArrayList<Predicate<Entry<Player, String>>> isCustomWinners = new ArrayList<>();
+    public static ArrayList<Predicate<Entry<Player, String>>> CustomWinnersPredicates = new ArrayList<>();
 
     public static void finalizeGame(ServerLevel world) {
         CustomWinnerPlayers.clear();
@@ -474,7 +474,7 @@ public class GameFunctions {
                     && "nianshou".equals(playerRole.getIdentifier().getPath())) {
                 isWinner = true;
             } else if (winStatus == WinStatus.CUSTOM && playerRole != null) {
-                if (isCustomWinners.stream().anyMatch((pred) -> {
+                if (CustomWinnersPredicates.stream().anyMatch((pred) -> {
                     return pred.test(Map.entry(player, CustomWinnerID));
                 })) {
                     isWinner = true;
