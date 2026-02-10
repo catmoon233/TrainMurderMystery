@@ -22,6 +22,6 @@ public interface OnPlayerKilledPlayer {
             listener.playerKilled(victim, killer,reason);
         }
     });
-
+    
     void playerKilled(ServerPlayer victim, ServerPlayer killer, DeathReason reason);
 }

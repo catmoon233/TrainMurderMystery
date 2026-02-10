@@ -21,6 +21,7 @@ import org.jetbrains.annotations.Nullable;
 
 import com.google.common.collect.Lists;
 
+import dev.doctor4t.trainmurdermystery.DeathInfo;
 import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.TMMConfig;
 import dev.doctor4t.trainmurdermystery.api.GameMode;
@@ -60,6 +61,7 @@ import dev.doctor4t.trainmurdermystery.event.AllowPlayerDeath;
 import dev.doctor4t.trainmurdermystery.event.OnGameTrueStarted;
 import dev.doctor4t.trainmurdermystery.event.OnPlayerDeath;
 import dev.doctor4t.trainmurdermystery.event.OnPlayerKilledPlayer;
+import dev.doctor4t.trainmurdermystery.event.OnPlayerKilledPlayerIdentifier;
 import dev.doctor4t.trainmurdermystery.event.OnTeammateKilledTeammate;
 import dev.doctor4t.trainmurdermystery.event.ShouldDropOnDeath;
 import dev.doctor4t.trainmurdermystery.index.TMMBlocks;
@@ -67,7 +69,6 @@ import dev.doctor4t.trainmurdermystery.index.TMMDataComponentTypes;
 import dev.doctor4t.trainmurdermystery.index.TMMEntities;
 import dev.doctor4t.trainmurdermystery.index.TMMItems;
 import dev.doctor4t.trainmurdermystery.index.TMMSounds;
-import dev.doctor4t.trainmurdermystery.item.CocktailItem;
 import dev.doctor4t.trainmurdermystery.network.BreakArmorPayload;
 import dev.doctor4t.trainmurdermystery.network.CloseUiPayload;
 import dev.doctor4t.trainmurdermystery.network.TriggerScreenEdgeEffectPayload;
@@ -92,7 +93,6 @@ import net.minecraft.world.Difficulty;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.food.FoodProperties;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -614,21 +614,8 @@ public class GameFunctions {
             // them
             return;
         }
-
         if (killer != null) {
             if (killer instanceof ServerPlayer spkiller) {
-                BartenderPlayerComponent bartenderPlayerComponent = BartenderPlayerComponent.KEY.get(victim);
-                if (bartenderPlayerComponent != null) {
-                    if (bartenderPlayerComponent.getArmor() > 0) {
-                        victim.level().playSound(victim, victim.blockPosition(), TMMSounds.ITEM_PSYCHO_ARMOUR,
-                                SoundSource.MASTER, 5.0F, 1.0F);
-                        bartenderPlayerComponent.removeArmor();
-                        TMM.REPLAY_MANAGER.breakArmor(spkiller.getUUID());
-                        ServerPlayNetworking.send(spkiller,
-                                new BreakArmorPayload(victim.getX(), victim.getY(), victim.getZ()));
-                        return;
-                    }
-                }
                 if (victim instanceof ServerPlayer spvictim) {
                     OnPlayerKilledPlayer.DeathReason eventDeathReason;
                     switch (deathReason.getPath()) {
@@ -657,12 +644,36 @@ public class GameFunctions {
                     }
                     // LoggerFactory.getLogger("death_Reason").info(deathReason.getPath());
                     OnPlayerKilledPlayer.EVENT.invoker().playerKilled(spvictim, spkiller, eventDeathReason);
+                    OnPlayerKilledPlayerIdentifier.EVENT.invoker().playerKilled(spvictim, spkiller, deathReason);
                 }
             }
         }
 
         if (!AllowPlayerDeath.EVENT.invoker().allowDeath(victim, deathReason))
             return;
+
+        if (killer != null) {
+            if (killer instanceof ServerPlayer spkiller) {
+                BartenderPlayerComponent bartenderPlayerComponent = BartenderPlayerComponent.KEY.get(victim);
+                if (bartenderPlayerComponent != null) {
+                    if (bartenderPlayerComponent.getArmor() > 0) {
+                        boolean cantDefend = TMM.canStickArmor.stream().anyMatch((pre) -> {
+                            return pre.test(new DeathInfo(victim, killer, deathReason));
+                        });
+                        if (!cantDefend) {
+                            victim.level().playSound(victim, victim.blockPosition(), TMMSounds.ITEM_PSYCHO_ARMOUR,
+                                    SoundSource.MASTER, 5.0F, 1.0F);
+                            bartenderPlayerComponent.removeArmor();
+                            TMM.REPLAY_MANAGER.breakArmor(spkiller.getUUID());
+                            ServerPlayNetworking.send(spkiller,
+                                    new BreakArmorPayload(victim.getX(), victim.getY(), victim.getZ()));
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+
         if (component.getPsychoTicks() > 0) {
             if (component.getArmour() > 0) {
                 component.setArmour(component.getArmour() - 1);

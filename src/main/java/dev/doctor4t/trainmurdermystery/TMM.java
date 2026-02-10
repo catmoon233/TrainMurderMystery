@@ -49,6 +49,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
 
@@ -66,6 +67,7 @@ public class TMM implements ModInitializer {
     public static List<Predicate<Player>> canCollide = new ArrayList<>();
     public static List<Predicate<Entity>> cantPushableBy = new ArrayList<>();
     public static List<Predicate<Entity>> canCollideEntity = new ArrayList<>();
+    public static List<Predicate<DeathInfo>> canStickArmor = new ArrayList<>();
     public static ArrayList<String> canDropItem = new ArrayList<>();
 
     public static @NotNull ResourceLocation id(String name) {
