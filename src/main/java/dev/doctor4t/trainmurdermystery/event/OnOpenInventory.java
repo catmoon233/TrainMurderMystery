@@ -3,8 +3,6 @@ package dev.doctor4t.trainmurdermystery.event;
 import net.fabricmc.fabric.api.event.Event;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.server.level.ServerLevel;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 
 import static net.fabricmc.fabric.api.event.EventFactory.createArrayBacked;
