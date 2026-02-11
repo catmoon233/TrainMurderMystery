@@ -1022,6 +1022,8 @@ public class GameFunctions {
 
     @SuppressWarnings("deprecation")
     public static boolean tryResetTrainOnlySomeBlock(ServerLevel serverWorld) {
+        if (TMM.isLobby)
+            return false;
         if (serverWorld.getServer().overworld().equals(serverWorld)) {
             AreasWorldComponent areas = AreasWorldComponent.KEY.get(serverWorld);
             if (TMMConfig.verboseTrainResetLogs) {
@@ -1084,7 +1086,7 @@ public class GameFunctions {
                         for (int m = trainBox.minX(); m <= trainBox.maxX(); m++) {
                             BlockPos blockPos6 = new BlockPos(m, l, k);
                             BlockPos blockPos7 = blockPos6;
-                            BlockInWorld cachedBlockPosition = new BlockInWorld(serverWorld, blockPos6, true);
+                            BlockInWorld cachedBlockPosition = new BlockInWorld(serverWorld, blockPos6, false);
                             BlockState blockState = cachedBlockPosition.getState();
 
                             // Check if the block is one of our door blocks
@@ -1094,10 +1096,10 @@ public class GameFunctions {
                                     entity.setBlasted(false);
                                     entity.setJammed(0);
                                     entity.setOpen(false);
+                                    blockState = blockState.setValue(SmallDoorBlock.OPEN, false);
                                     BlockEntityInfo blockEntityInfo = new BlockEntityInfo(
                                             entity.saveCustomOnly(serverWorld.registryAccess()),
                                             entity.components());
-                                    blockState = blockState.setValue(SmallDoorBlock.OPEN, false);
                                     list2.add(new BlockInfo(blockPos7, blockState, blockEntityInfo));
                                 }
                             } else if (blockState.getBlock() instanceof TrimmedBedBlock
@@ -1218,7 +1220,7 @@ public class GameFunctions {
                 if (TMMConfig.verboseTrainResetLogs) {
                     TMM.LOGGER.info("Train door reset failed: Clone positions not loaded.");
                 }
-                // return false;
+                return true;
             }
 
             // Discard all player bodies and items (keep this part as it cleans up game

@@ -348,23 +348,22 @@ public class GameReplayManager {
                         GameWorldComponent gameWorldComponent = GameWorldComponent.KEY.get(player.level());
                         if (gameWorldComponent != null && gameWorldComponent.isRunning()
                                 && !GameFunctions.isPlayerAliveAndSurvival(player)) {
-                            if (cantSeeEvent.stream().noneMatch(playerPredicate -> playerPredicate.test(player))) {
-                                try {
-                                    var text = currentReplayData.toText(this, currentReplayData, event1);
-                                    if (text != null) {
-                                        // if(TMM.canSendReplay.)
-                                        // player
-                                        var cantSend = TMM.cantSendReplay.stream().anyMatch((pre) -> {
-                                            return pre.test(player);
-                                        });
-                                        if (!cantSend) {
-                                            sendSystemMessage(player, Component.translatable("tmm.replay.event")
-                                                    .append(text));
-                                        }
-                                    }
-                                } catch (Exception e) {
 
+                            try {
+                                var text = currentReplayData.toText(this, currentReplayData, event1);
+                                if (text != null) {
+                                    // if(TMM.canSendReplay.)
+                                    // player
+                                    var cantSend = TMM.cantSendReplay.stream().anyMatch((pre) -> {
+                                        return pre.test(player);
+                                    });
+                                    if (!cantSend) {
+                                        sendSystemMessage(player, Component.translatable("tmm.replay.event")
+                                                .append(text));
+                                    }
                                 }
+                            } catch (Exception e) {
+
                             }
                         }
                     });
@@ -374,7 +373,7 @@ public class GameReplayManager {
 
     }
 
-    public static List<Predicate<Player>> cantSeeEvent = new ArrayList<>();
+    // public static List<Predicate<Player>> cantSeeEvent = new ArrayList<>();
 
     public void recordPlayerKill(UUID killerUuid, UUID victimUuid, ResourceLocation deathReason) {
         String deathReasonStr = deathReason != null ? deathReason.toString() : "unknown";

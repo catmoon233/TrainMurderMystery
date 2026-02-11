@@ -64,6 +64,7 @@ public class TMM implements ModInitializer {
     public static boolean isLobby = false;
     public static List<Predicate<Role>> canUseOtherPerson = new ArrayList<>();
     public static List<Predicate<Role>> canUseChatHud = new ArrayList<>();
+    public static List<Predicate<Player>> cantUseChatHud = new ArrayList<>();
     public static List<Predicate<Player>> canCollide = new ArrayList<>();
     public static List<Predicate<Entity>> cantPushableBy = new ArrayList<>();
     public static List<Predicate<Entity>> canCollideEntity = new ArrayList<>();

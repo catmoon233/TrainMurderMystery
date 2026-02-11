@@ -22,7 +22,8 @@ public class ChatHudMixin {
             original.call(context, currentTick, mouseX, mouseY, focused);
             return;
         }
-        if (TMMClient.gameComponent!=null  && TMMClient.gameComponent.isRunning() && GameReplayManager.cantSeeEvent.stream().anyMatch(p -> p.test(minecraft.player))) {
+        if (TMMClient.gameComponent != null && TMMClient.gameComponent.isRunning()
+                && TMM.cantUseChatHud.stream().anyMatch((pre) -> pre.test(minecraft.player))) {
             return;
         }
         // 如果游戏组件不存在或玩家不在游戏中，直接渲染聊天框
