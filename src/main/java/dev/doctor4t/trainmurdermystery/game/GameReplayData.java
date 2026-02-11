@@ -154,7 +154,7 @@ public class GameReplayData {
         if (itemId.getNamespace() == null)
             return Component.translatable("death_reason.trainmurdermystery." + itemId.getPath());
         else
-            return Component.translatable("death_reason." + itemId.getNamespace() + "." + itemId.getPath());
+            return Component.translatable("death_reason." + itemId.toString());
     }
 
     public static Component getRoleNameWithColor(String path) {
