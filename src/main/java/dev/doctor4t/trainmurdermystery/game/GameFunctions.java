@@ -1208,17 +1208,17 @@ public class GameFunctions {
                     serverWorld.blockUpdated(blockInfo2x.pos, blockInfo2x.state.getBlock());
                 }
 
-                if (mx == 0) {
-                    if (TMMConfig.verboseTrainResetLogs) {
-                        TMM.LOGGER.info("Train door reset failed: No door blocks copied. Queueing another attempt.");
-                    }
-                    return true;
-                }
+                // if (mx == 0) {
+                //     if (TMMConfig.verboseTrainResetLogs) {
+                //         TMM.LOGGER.info("Train door reset failed: No door blocks copied. Queueing another attempt.");
+                //     }
+                //     return true;
+                // }
             } else {
                 if (TMMConfig.verboseTrainResetLogs) {
                     TMM.LOGGER.info("Train door reset failed: Clone positions not loaded.");
                 }
-                return false;
+                // return false;
             }
 
             // Discard all player bodies and items (keep this part as it cleans up game
