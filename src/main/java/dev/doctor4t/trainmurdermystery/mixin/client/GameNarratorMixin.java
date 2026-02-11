@@ -29,14 +29,14 @@ public class GameNarratorMixin {
 
     @Inject(method = "sayChat", at = @At("HEAD"), cancellable = true)
     private void disablesayChat(CallbackInfo cir) {
-        if (!TMMClient.isLobby) {
+        if (!TMMClient.isInLobby) {
             cir.cancel();
         }
     }
 
     @Inject(method = "getStatus", at = @At("HEAD"), cancellable = true)
     private void disableStatus(CallbackInfoReturnable<NarratorStatus> cir) {
-        if (!TMMClient.isLobby) {
+        if (!TMMClient.isInLobby) {
             NarratorStatus status = (NarratorStatus) this.minecraft.options.narrator().get();
 
             if (!status.equals(NarratorStatus.OFF) && !status.equals(NarratorStatus.SYSTEM)) {
