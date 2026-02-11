@@ -143,7 +143,7 @@ public class PlayerMoodComponent implements RoleComponent, ServerTickingComponen
         boolean shouldSync = false;
         if (!this.tasks.isEmpty()) {
             this.mood = this.mood - this.tasks.size() * GameConstants.MOOD_DRAIN;// 替换setMood避免高频率同步
-            if (this.nextTaskTimer % 40 == 0) { // 2s一次同步
+            if (this.nextTaskTimer % 100 == 0) { // 5s一次同步
                 shouldSync = true;
             }
         }

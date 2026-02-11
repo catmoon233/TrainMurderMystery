@@ -2,7 +2,6 @@ package dev.doctor4t.trainmurdermystery.mixin;
 
 import com.kreezcraft.localizedchat.commands.TalkChat;
 import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
-import dev.doctor4t.trainmurdermystery.client.TMMClient;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
 import org.spongepowered.asm.mixin.Mixin;

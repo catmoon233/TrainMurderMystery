@@ -279,6 +279,11 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
     }
 
     @Override
+    public boolean shouldSyncWith(ServerPlayer sp) {
+        return true;
+    }
+
+    @Override
     public void readFromNbt(@NotNull CompoundTag nbtCompound, HolderLookup.Provider wrapperLookup) {
         // this.lockedToSupporters = nbtCompound.getBoolean("LockedToSupporters");
         // this.enableWeights = nbtCompound.getBoolean("EnableWeights");

@@ -3,7 +3,6 @@ package dev.doctor4t.trainmurdermystery.index;
 import dev.doctor4t.ratatouille.util.registrar.EntityTypeRegistrar;
 import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.block.entity.SeatEntity;
-import dev.doctor4t.trainmurdermystery.block_entity.SecurityMonitorBlockEntity;
 import dev.doctor4t.trainmurdermystery.entity.FirecrackerEntity;
 import dev.doctor4t.trainmurdermystery.entity.GrenadeEntity;
 import dev.doctor4t.trainmurdermystery.entity.NoteEntity;

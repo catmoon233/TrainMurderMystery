@@ -1,14 +1,11 @@
 package dev.doctor4t.trainmurdermystery.index;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.component.CustomData;
-
-import java.util.Locale;
 
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;

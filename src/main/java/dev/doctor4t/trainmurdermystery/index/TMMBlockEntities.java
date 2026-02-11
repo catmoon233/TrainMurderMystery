@@ -4,8 +4,6 @@ import dev.doctor4t.ratatouille.util.registrar.BlockEntityTypeRegistrar;
 import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.block.entity.HornBlockEntity;
 import dev.doctor4t.trainmurdermystery.block_entity.*;
-import net.minecraft.world.entity.EntityType;
-import net.minecraft.world.entity.MobCategory;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 
 public interface TMMBlockEntities {

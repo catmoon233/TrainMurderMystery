@@ -151,7 +151,10 @@ public class GameReplayData {
             return stack.getDisplayName();
         }
         // 返回本地化的死亡原因
-        return Component.translatable("death_reason.trainmurdermystery." + itemId.getPath());
+        if (itemId.getNamespace() == null)
+            return Component.translatable("death_reason.trainmurdermystery." + itemId.getPath());
+        else
+            return Component.translatable("death_reason." + itemId.getNamespace() + "." + itemId.getPath());
     }
 
     public static Component getRoleNameWithColor(String path) {
@@ -416,14 +419,14 @@ public class GameReplayData {
     }
 
     public static class ReplayEvent {
-        private final EventType type;
-        private final UUID sourcePlayer;
-        private final UUID targetPlayer;
-        private final String itemUsed;
-        private final String message;
-        private final long timestamp;
-        private final String text_a;
-        private final String text_b;
+        public final EventType type;
+        public final UUID sourcePlayer;
+        public final UUID targetPlayer;
+        public final String itemUsed;
+        public final String message;
+        public final long timestamp;
+        public final String text_a;
+        public final String text_b;
 
         public ReplayEvent(EventType type, UUID sourcePlayer, UUID targetPlayer, String itemUsed, String message) {
             this(type, sourcePlayer, targetPlayer, itemUsed, message, "", "");
