@@ -46,6 +46,7 @@
     "MixinGameRenderer",
     "MouseHandlerMixin",
     "ScreenDrawableGetMixin",
+    "client.GameNarratorMixin",
     "client.AbstractClientPlayerEntityMixin",
     "client.CapeCancleMixin",
     "client.DisconnectedScreenMixin",
