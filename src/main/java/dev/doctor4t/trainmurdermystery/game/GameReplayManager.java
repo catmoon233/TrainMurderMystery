@@ -352,8 +352,15 @@ public class GameReplayManager {
                                 try {
                                     var text = currentReplayData.toText(this, currentReplayData, event1);
                                     if (text != null) {
-                                        sendSystemMessage(player, Component.translatable("tmm.replay.event")
-                                                .append(text));
+                                        // if(TMM.canSendReplay.)
+                                        // player
+                                        var cantSend = TMM.cantSendReplay.stream().anyMatch((pre) -> {
+                                            return pre.test(player);
+                                        });
+                                        if (!cantSend) {
+                                            sendSystemMessage(player, Component.translatable("tmm.replay.event")
+                                                    .append(text));
+                                        }
                                     }
                                 } catch (Exception e) {
 

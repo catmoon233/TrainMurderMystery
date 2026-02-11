@@ -68,6 +68,8 @@ public class TMM implements ModInitializer {
     public static List<Predicate<Entity>> cantPushableBy = new ArrayList<>();
     public static List<Predicate<Entity>> canCollideEntity = new ArrayList<>();
     public static List<Predicate<DeathInfo>> canStickArmor = new ArrayList<>();
+    public static List<Predicate<ServerPlayer>> cantSendReplay = new ArrayList<>();
+    
     public static ArrayList<String> canDropItem = new ArrayList<>();
 
     public static @NotNull ResourceLocation id(String name) {
