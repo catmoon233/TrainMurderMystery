@@ -33,10 +33,7 @@ public class PlayerPsychoComponent implements RoleComponent, ServerTickingCompon
 
     @Override
     public boolean shouldSyncWith(ServerPlayer sp) {
-        if (this.psychoTicks >= 0) {
-            return true;
-        }
-        return this.player == sp;
+        return true;
     }
 
     @Override
@@ -83,11 +80,14 @@ public class PlayerPsychoComponent implements RoleComponent, ServerTickingCompon
             // this.player.sendMessage(Text.translatable("game.psycho_mode.over").withColor(Colors.RED),
             // true);
             this.stopPsycho();
-        } else {
+            this.sync();
 
+        } else {
+            if (this.psychoTicks % 40 == 0) { // 2s一次
+                this.sync();
+            }
         }
 
-        this.sync();
     }
 
     public boolean startPsycho() {
