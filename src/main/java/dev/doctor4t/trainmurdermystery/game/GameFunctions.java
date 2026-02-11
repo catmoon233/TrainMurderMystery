@@ -205,6 +205,7 @@ public class GameFunctions {
 
     public static void stopGame(ServerLevel world) {
         GameWorldComponent component = GameWorldComponent.KEY.get(world);
+        component.ticksUntilNextResetAttempt = 0;
         component.setGameStatus(GameWorldComponent.GameStatus.STOPPING);
     }
 
@@ -991,7 +992,7 @@ public class GameFunctions {
                         if (TMMConfig.verboseTrainResetLogs) {
                             TMM.LOGGER.info("Train reset failed: No blocks copied. Queueing another attempt.");
                         }
-                        return true;
+                        // return true;
                     }
                 } else {
                     if (TMMConfig.verboseTrainResetLogs) {

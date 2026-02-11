@@ -76,7 +76,7 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
 
     private final HashMap<UUID, Role> roles = new HashMap<>();
 
-    private int ticksUntilNextResetAttempt = -1;
+    public int ticksUntilNextResetAttempt = -1;
 
     private int psychosActive = 0;
 
