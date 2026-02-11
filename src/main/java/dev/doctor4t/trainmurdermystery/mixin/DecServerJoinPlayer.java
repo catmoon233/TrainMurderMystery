@@ -7,6 +7,7 @@ import dev.doctor4t.trainmurdermystery.game.GameFunctions;
 import dev.doctor4t.trainmurdermystery.game.GameReplayManager;
 import dev.doctor4t.trainmurdermystery.mod_whitelist.server.command.ModWhitelistCommand;
 import dev.doctor4t.trainmurdermystery.network.SyncMapConfigPayload;
+import net.minecraft.core.BlockPos;
 import net.minecraft.network.Connection;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.ServerPlayer;
@@ -31,26 +32,19 @@ public class DecServerJoinPlayer {
         final var gameWorldComponent = GameWorldComponent.KEY.get(serverPlayer.level());
 
         if (gameWorldComponent.isRunning()) {
-            if (!GameFunctions.isPlayerAliveAndSurvival(serverPlayer)) {
-                // 加群组功能已换成VoiceChat事件监听(trainVoicePlugin.java)
-
-                if (serverPlayer.level() instanceof ServerLevel serverWorld) {
-                    AreasWorldComponent areas = AreasWorldComponent.KEY.get(serverWorld);
-                    AreasWorldComponent.PosWithOrientation spectatorSpawnPos = areas.getSpectatorSpawnPos();
-                    serverPlayer.teleportTo(serverWorld, spectatorSpawnPos.pos.x(), spectatorSpawnPos.pos.y(),
-                            spectatorSpawnPos.pos.z(), spectatorSpawnPos.yaw, spectatorSpawnPos.pitch);
-                    serverPlayer.setGameMode(net.minecraft.world.level.GameType.SPECTATOR);
-                }
-
+            if (serverPlayer.level() instanceof ServerLevel serverWorld) {
+                AreasWorldComponent areas = AreasWorldComponent.KEY.get(serverWorld);
+                AreasWorldComponent.PosWithOrientation spectatorSpawnPos = areas.getSpectatorSpawnPos();
+                serverPlayer.teleportTo(serverWorld, spectatorSpawnPos.pos.x(), spectatorSpawnPos.pos.y(),
+                        spectatorSpawnPos.pos.z(), spectatorSpawnPos.yaw, spectatorSpawnPos.pitch);
+                serverPlayer.setGameMode(net.minecraft.world.level.GameType.SPECTATOR);
             }
         } else {
             if (serverPlayer.level() instanceof ServerLevel serverWorld) {
-                // serverWorld.getSharedSpawnPos();
-
-                AreasWorldComponent areas = AreasWorldComponent.KEY.get(serverWorld);
-                AreasWorldComponent.PosWithOrientation spectatorSpawnPos = areas.getSpawnPos();
-                serverPlayer.teleportTo(serverWorld, spectatorSpawnPos.pos.x(), spectatorSpawnPos.pos.y(),
-                        spectatorSpawnPos.pos.z(), spectatorSpawnPos.yaw, spectatorSpawnPos.pitch);
+                BlockPos spawn = serverWorld.getSharedSpawnPos();
+                float angle = serverWorld.getSharedSpawnAngle();
+                serverPlayer.teleportTo(serverWorld, spawn.getX(), spawn.getY(),
+                        spawn.getZ(), angle, 0);
                 for (int i = 0; i < serverPlayer.getInventory().getContainerSize(); i++) {
                     serverPlayer.getInventory().setItem(i, net.minecraft.world.item.ItemStack.EMPTY);
                     serverPlayer.containerMenu.broadcastChanges();
@@ -66,7 +60,7 @@ public class DecServerJoinPlayer {
         gameWorldComponent.setSyncRole(false);
     }
 
-    @Inject(method = "getMaxPlayers", at = @At("HEAD"), cancellable=true)
+    @Inject(method = "getMaxPlayers", at = @At("HEAD"), cancellable = true)
     private void getMaxPlayers(CallbackInfoReturnable<Integer> cir) {
         final var maxPlayers = ModWhitelistCommand.maxPlayers;
         if (maxPlayers != -404) {
