@@ -674,7 +674,7 @@ public class GameFunctions {
                             victim.level().playSound(victim, victim.blockPosition(), TMMSounds.ITEM_PSYCHO_ARMOUR,
                                     SoundSource.MASTER, 5.0F, 1.0F);
                             bartenderPlayerComponent.removeArmor();
-                            TMM.REPLAY_MANAGER.breakArmor(spkiller.getUUID());
+                            TMM.REPLAY_MANAGER.breakArmor(victim.getUUID());
                             ServerPlayNetworking.send(spkiller,
                                     new BreakArmorPayload(victim.getX(), victim.getY(), victim.getZ()));
                             return;
