@@ -11,6 +11,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import com.mojang.text2speech.Narrator;
 
 import dev.doctor4t.trainmurdermystery.TMM;
+import dev.doctor4t.trainmurdermystery.client.TMMClient;
 import net.minecraft.client.GameNarrator;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.NarratorStatus;
@@ -28,18 +29,17 @@ public class GameNarratorMixin {
 
     @Inject(method = "sayChat", at = @At("HEAD"), cancellable = true)
     private void disablesayChat(CallbackInfo cir) {
-        if (!TMM.isLobby) {
-            String string = Component.translatable("warning.narrator").getString();
-            this.narrator.say(string, false);
+        if (!TMMClient.isLobby) {
             cir.cancel();
         }
     }
 
     @Inject(method = "getStatus", at = @At("HEAD"), cancellable = true)
     private void disableStatus(CallbackInfoReturnable<NarratorStatus> cir) {
-        if (!TMM.isLobby) {
+        if (!TMMClient.isLobby) {
             NarratorStatus status = (NarratorStatus) this.minecraft.options.narrator().get();
-            if (status != NarratorStatus.OFF) {
+
+            if (!status.equals(NarratorStatus.OFF) && !status.equals(NarratorStatus.SYSTEM)) {
                 String string = Component.translatable("warning.narrator").getString();
                 if (this.narrator != null)
                     this.narrator.say(string, false);
