@@ -1030,7 +1030,7 @@ public class GameFunctions {
         if (serverWorld.getServer().overworld().equals(serverWorld)) {
             AreasWorldComponent areas = AreasWorldComponent.KEY.get(serverWorld);
             if (TMMConfig.verboseTrainResetLogs) {
-                TMM.LOGGER.info("Resetting train doors only" + areas.toString());
+                TMM.LOGGER.info("Resetting train" + areas.toString());
             }
             BlockPos backupMinPos = BlockPos.containing(areas.getResetTemplateArea().getMinPosition());
             BlockPos backupMaxPos = BlockPos.containing(areas.getResetTemplateArea().getMaxPosition());
@@ -1038,6 +1038,8 @@ public class GameFunctions {
             BlockPos trainMinPos = BlockPos.containing(areas.getResetPasteArea().getMinPosition());
             BlockPos trainMaxPos = trainMinPos.offset(backupTrainBox.getLength());
             BoundingBox trainBox = BoundingBox.fromCorners(trainMinPos, trainMaxPos);
+
+            // Mode mode = Mode.FORCE;
 
             if (!serverWorld.hasChunksAt(backupMinPos, backupMaxPos)
                     || !serverWorld.hasChunksAt(trainMinPos, trainMaxPos)) {
@@ -1053,16 +1055,16 @@ public class GameFunctions {
 
                 if (TMMConfig.verboseTrainResetLogs) {
                     TMM.LOGGER.info(
-                            "Train door reset: Loading chunks - Template: ({}, {}) to ({}, {}), Paste: ({}, {}) to ({}, {})",
+                            "Train reset: Loading chunks - Template: ({}, {}) to ({}, {}), Paste: ({}, {}) to ({}, {})",
                             backupChunkMinX, backupChunkMinZ, backupChunkMaxX, backupChunkMaxZ,
                             trainChunkMinX, trainChunkMinZ, trainChunkMaxX, trainChunkMaxZ);
                 }
 
                 // Force load the required chunks
                 // for (int x = backupChunkMinX; x <= backupChunkMaxX; x++) {
-                // for (int z = backupChunkMinZ; z <= backupChunkMaxZ; z++) {
-                // serverWorld.getChunk(x, z);
-                // }
+                //     for (int z = backupChunkMinZ; z <= backupChunkMaxZ; z++) {
+                //         // serverWorld.getChunk(x, z);
+                //     }
                 // }
                 for (int x = trainChunkMinX; x <= trainChunkMaxX; x++) {
                     for (int z = trainChunkMinZ; z <= trainChunkMaxZ; z++) {
@@ -1071,13 +1073,12 @@ public class GameFunctions {
                 }
 
                 if (TMMConfig.verboseTrainResetLogs) {
-                    TMM.LOGGER.info("Train door reset: Chunks loaded, attempting reset.");
+                    TMM.LOGGER.info("Train reset: Chunks loaded, attempting reset.");
                 }
                 // Continue with the reset after loading chunks
             }
 
-            if (serverWorld.hasChunksAt(backupMinPos, backupMaxPos)
-                    && serverWorld.hasChunksAt(trainMinPos, trainMaxPos)) {
+            if (serverWorld.hasChunksAt(trainMinPos, trainMaxPos)) {
                 List<BlockInfo> list3 = Lists.newArrayList(); // 仅更新方块状态
 
                 List<BlockInfo> list2 = Lists.newArrayList(); // Only store block entities (doors have block entities)
