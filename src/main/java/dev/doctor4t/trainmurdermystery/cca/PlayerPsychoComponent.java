@@ -21,13 +21,22 @@ import org.ladysnake.cca.api.v3.component.tick.ClientTickingComponent;
 import org.ladysnake.cca.api.v3.component.tick.ServerTickingComponent;
 
 public class PlayerPsychoComponent implements RoleComponent, ServerTickingComponent, ClientTickingComponent {
-    public static final ComponentKey<PlayerPsychoComponent> KEY = ComponentRegistry.getOrCreate(TMM.id("psycho"), PlayerPsychoComponent.class);
+    public static final ComponentKey<PlayerPsychoComponent> KEY = ComponentRegistry.getOrCreate(TMM.id("psycho"),
+            PlayerPsychoComponent.class);
     private final Player player;
-    public int psychoTicks = 0;
+    public int psychoTicks = -1;
     public int armour = 1;
 
     public PlayerPsychoComponent(Player player) {
         this.player = player;
+    }
+
+    @Override
+    public boolean shouldSyncWith(ServerPlayer sp) {
+        if (this.psychoTicks >= 0) {
+            return true;
+        }
+        return this.player == sp;
     }
 
     @Override
@@ -47,12 +56,15 @@ public class PlayerPsychoComponent implements RoleComponent, ServerTickingCompon
 
     @Override
     public void clientTick() {
-        if (this.psychoTicks <= 0) return;
+        if (this.psychoTicks <= 0)
+            return;
         this.psychoTicks--;
-        if (this.player.getMainHandItem().is(TMMItems.BAT)) return;
+        if (this.player.getMainHandItem().is(TMMItems.BAT))
+            return;
         if (GameFunctions.isPlayerAliveAndSurvival(player)) {
             for (int i = 0; i < 9; i++) {
-                if (!this.player.getInventory().getItem(i).is(TMMItems.BAT)) continue;
+                if (!this.player.getInventory().getItem(i).is(TMMItems.BAT))
+                    continue;
                 this.player.getInventory().selected = i;
                 break;
             }
@@ -61,12 +73,16 @@ public class PlayerPsychoComponent implements RoleComponent, ServerTickingCompon
 
     @Override
     public void serverTick() {
-        if (this.psychoTicks <= 0) return;
-//        if (this.psychoTicks % 20 == 0) this.player.sendMessage(Text.translatable("game.psycho_mode.time", this.psychoTicks / 20).withColor(Colors.RED), true);
+        if (this.psychoTicks <= 0)
+            return;
+        // if (this.psychoTicks % 20 == 0)
+        // this.player.sendMessage(Text.translatable("game.psycho_mode.time",
+        // this.psychoTicks / 20).withColor(Colors.RED), true);
         if (--this.psychoTicks == 0) {
-//            this.player.sendMessage(Text.translatable("game.psycho_mode.over").withColor(Colors.RED), true);
+            // this.player.sendMessage(Text.translatable("game.psycho_mode.over").withColor(Colors.RED),
+            // true);
             this.stopPsycho();
-        }else {
+        } else {
 
         }
 
@@ -79,26 +95,29 @@ public class PlayerPsychoComponent implements RoleComponent, ServerTickingCompon
             this.setArmour(GameConstants.getPsychoModeArmour());
             GameWorldComponent gameWorldComponent = GameWorldComponent.KEY.get(this.player.level());
             gameWorldComponent.setPsychosActive(gameWorldComponent.getPsychosActive() + 1);
-            if (player instanceof ServerPlayer serverPlayer){
+            if (player instanceof ServerPlayer serverPlayer) {
                 ServerPlayNetworking.send(serverPlayer, new TriggerStatusBarPayload("Psycho"));
             }
             return true;
         }
         return false;
     }
+
     @Override
-    public void clear(){
+    public void clear() {
         reset();
     }
+
     public void stopPsycho() {
         GameWorldComponent gameWorldComponent = GameWorldComponent.KEY.get(this.player.level());
         gameWorldComponent.setPsychosActive(gameWorldComponent.getPsychosActive() - 1);
-        this.psychoTicks = 0;
-        if (this.player instanceof ServerPlayer serverPlayer){
+        this.psychoTicks = -1;
+        if (this.player instanceof ServerPlayer serverPlayer) {
             ServerPlayNetworking.send(serverPlayer, new RemoveStatusBarPayload("Psycho"));
 
         }
-        this.player.getInventory().clearOrCountMatchingItems(itemStack -> itemStack.is(TMMItems.BAT), Integer.MAX_VALUE, this.player.inventoryMenu.getCraftSlots());
+        this.player.getInventory().clearOrCountMatchingItems(itemStack -> itemStack.is(TMMItems.BAT), Integer.MAX_VALUE,
+                this.player.inventoryMenu.getCraftSlots());
     }
 
     public int getArmour() {
