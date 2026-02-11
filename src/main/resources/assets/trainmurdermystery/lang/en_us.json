@@ -2,6 +2,7 @@
   "language": "English",
   "language.code": "en_us",
   "language.region": "United States",
+  "warning.narrator": "Please do not attempt to cheat by using the repetition feature! This feature has been disabled!",
 
   "multiplayer.disconnect.mod_whitelist.modlist_mismatch": "Client modlist does not match server requirements.\nPlease take the following action, or ask a server admin for help:\n",
   "multiplayer.disconnect.mod_whitelist.misc.to_install": "\nInstall mod \"%s\".",

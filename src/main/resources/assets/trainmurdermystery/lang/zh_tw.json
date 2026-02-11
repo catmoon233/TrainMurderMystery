@@ -2,6 +2,7 @@
   "language": "繁體中文",
   "language.code": "zh_tw",
   "language.region": "Taiwan",
+  "warning.narrator": "請不要嘗試使用複述功能作弊！此功能已被禁用！",
 
   "multiplayer.disconnect.mod_whitelist.modlist_mismatch": "客戶端模組列表與與服務端要求不匹配。\n請您執行以下操作，或向服務器管理員求助：\n",
   "multiplayer.disconnect.mod_whitelist.misc.to_install": "\n安裝模組\"%s\"。",
