@@ -860,6 +860,8 @@ public class GameFunctions {
     public static boolean tryResetTrain(ServerLevel serverWorld) {
         if (TMM.isLobby)
             return false;
+        if (!GameWorldComponent.KEY.get(serverWorld).isRunning())
+            return false;
         if (TMMConfig.enableAutoTrainReset) {
             if (serverWorld.getServer().overworld().equals(serverWorld)) {
                 AreasWorldComponent areas = AreasWorldComponent.KEY.get(serverWorld);
@@ -1220,7 +1222,7 @@ public class GameFunctions {
                 if (TMMConfig.verboseTrainResetLogs) {
                     TMM.LOGGER.info("Train door reset failed: Clone positions not loaded.");
                 }
-                return true;
+                return false;
             }
 
             // Discard all player bodies and items (keep this part as it cleans up game
