@@ -1098,8 +1098,6 @@ public class GameFunctions {
                                             entity.components());
                                     blockState = blockState.setValue(SmallDoorBlock.OPEN, false);
                                     list2.add(new BlockInfo(blockPos7, blockState, blockEntityInfo));
-                                    // SmallDoorBlock.
-                                    // deque.addLast(blockPos6); // Add to end to process last
                                 }
                             } else if (blockState.getBlock() instanceof TrimmedBedBlock
                                     && blockState.getValue(TrimmedBedBlock.PART).equals(BedPart.HEAD)) {
