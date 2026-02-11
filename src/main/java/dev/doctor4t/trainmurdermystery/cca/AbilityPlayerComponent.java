@@ -105,7 +105,7 @@ public class AbilityPlayerComponent implements RoleComponent, ServerTickingCompo
 
     public boolean useAbility() {
         if (canUseAbility()) {
-            final var gameWorldComponent = GameWorldComponent.KEY.get(this.player);
+            final var gameWorldComponent = GameWorldComponent.KEY.get(this.player.level());
             final var role = gameWorldComponent.getRole(this.player);
             if (role == null) {
                 return false;
