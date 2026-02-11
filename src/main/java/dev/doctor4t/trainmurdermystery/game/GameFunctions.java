@@ -1093,6 +1093,7 @@ public class GameFunctions {
                                 if (serverWorld.getBlockEntity(blockPos6) instanceof SmallDoorBlockEntity entity) {
                                     entity.setBlasted(false);
                                     entity.setJammed(0);
+                                    entity.setOpen(false);
                                     BlockEntityInfo blockEntityInfo = new BlockEntityInfo(
                                             entity.saveCustomOnly(serverWorld.registryAccess()),
                                             entity.components());
@@ -1207,10 +1208,11 @@ public class GameFunctions {
                 }
 
                 // if (mx == 0) {
-                //     if (TMMConfig.verboseTrainResetLogs) {
-                //         TMM.LOGGER.info("Train door reset failed: No door blocks copied. Queueing another attempt.");
-                //     }
-                //     return true;
+                // if (TMMConfig.verboseTrainResetLogs) {
+                // TMM.LOGGER.info("Train door reset failed: No door blocks copied. Queueing
+                // another attempt.");
+                // }
+                // return true;
                 // }
             } else {
                 if (TMMConfig.verboseTrainResetLogs) {
