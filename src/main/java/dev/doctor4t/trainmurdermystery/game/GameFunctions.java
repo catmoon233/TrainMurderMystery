@@ -172,8 +172,11 @@ public class GameFunctions {
     }
 
     public static void startGame(ServerLevel world, GameMode gameMode, int time) {
+        if (TMM.isLobby)
+            return;
         executeFunction(world.getServer().createCommandSourceStack(), "harpymodloader:early_start_game");
-        executeFunction(world.getServer().createCommandSourceStack(), "harpymodloader:early_start_game_"+MapManager.last_start_map);
+        executeFunction(world.getServer().createCommandSourceStack(),
+                "harpymodloader:early_start_game_" + MapManager.last_start_map);
         for (ServerPlayer player : world.players()) {
             ServerPlayNetworking.send(player, new CloseUiPayload());
         }
@@ -183,7 +186,6 @@ public class GameFunctions {
                 .filter(serverPlayerEntity -> (areas.getReadyArea().contains(serverPlayerEntity.position()))).count());
         game.setGameMode(gameMode);
         GameTimeComponent.KEY.get(world).setResetTime(time);
-
 
         if (playerCount >= gameMode.minPlayerCount) {
             game.setGameStatus(GameWorldComponent.GameStatus.STARTING);
@@ -271,7 +273,8 @@ public class GameFunctions {
         }
         OnGameTrueStarted.EVENT.invoker().onGameTrueStarted(serverWorld);
         // --- 结束新增统计数据更新逻辑 ---
-        executeFunction(serverWorld.getServer().createCommandSourceStack(), "harpymodloader:start_game_"+MapManager.last_start_map);
+        executeFunction(serverWorld.getServer().createCommandSourceStack(),
+                "harpymodloader:start_game_" + MapManager.last_start_map);
 
     }
 
@@ -329,6 +332,8 @@ public class GameFunctions {
 
     private static void baseInitialize(ServerLevel serverWorld, GameWorldComponent gameComponent,
             List<ServerPlayer> players) {
+        if (TMM.isLobby)
+            return;
         AreasWorldComponent areas = AreasWorldComponent.KEY.get(serverWorld);
         startTime = System.currentTimeMillis();
 
@@ -853,7 +858,8 @@ public class GameFunctions {
     // returns whether another reset should be attempted
     @SuppressWarnings("deprecation")
     public static boolean tryResetTrain(ServerLevel serverWorld) {
-
+        if (TMM.isLobby)
+            return false;
         if (TMMConfig.enableAutoTrainReset) {
             if (serverWorld.getServer().overworld().equals(serverWorld)) {
                 AreasWorldComponent areas = AreasWorldComponent.KEY.get(serverWorld);
@@ -1210,9 +1216,9 @@ public class GameFunctions {
                 }
             } else {
                 if (TMMConfig.verboseTrainResetLogs) {
-                    TMM.LOGGER.info("Train door reset failed: Clone positions not loaded. Queueing another attempt.");
+                    TMM.LOGGER.info("Train door reset failed: Clone positions not loaded.");
                 }
-                return true;
+                return false;
             }
 
             // Discard all player bodies and items (keep this part as it cleans up game

@@ -161,6 +161,7 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
     public HashMap<UUID, Role> getRoles() {
         return roles;
     }
+
     public Role getRole(Player player) {
         return getRole(player.getUUID());
     }
@@ -213,6 +214,10 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
     }
 
     public void queueTrainReset() {
+        if (TMM.isLobby) {
+            ticksUntilNextResetAttempt = -1;
+            return;
+        }
         ticksUntilNextResetAttempt = 10;
     }
 
