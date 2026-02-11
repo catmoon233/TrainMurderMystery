@@ -1084,7 +1084,7 @@ public class GameFunctions {
                         for (int m = trainBox.minX(); m <= trainBox.maxX(); m++) {
                             BlockPos blockPos6 = new BlockPos(m, l, k);
                             BlockPos blockPos7 = blockPos6;
-                            BlockInWorld cachedBlockPosition = new BlockInWorld(serverWorld, blockPos6, false);
+                            BlockInWorld cachedBlockPosition = new BlockInWorld(serverWorld, blockPos6, true);
                             BlockState blockState = cachedBlockPosition.getState();
 
                             // Check if the block is one of our door blocks
