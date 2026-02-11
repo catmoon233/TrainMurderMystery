@@ -610,7 +610,7 @@
   "info.screen.roleid.civilian": "Civilian Faction\nYou have no special abilities, try to survive this journey.",
   "info.screen.roleid.killer": "Killer Faction\nYou are a normal killer.\nHave basic killer shop.\nYour goal is to kill all civilians.",
   "info.screen.roleid.loose_end": "Neutral Faction\nYou get 1 Knife, 1 Derringer, 1 Crowbar, 1 Defense Vial.\nYou have Jester vision, knife has no cooldown on hit.\nKill everyone with your weapons!!!",
-  "info.screen.roleid.vigilante": "Sheriff Faction\nStart with a Revolver\nIf you kill a civilian, you die too",
+  "info.screen.roleid.vigilante": "Sheriff Faction\nStart with a Revolver\nYou can buy a body bag in the store to dispose of the body.\nIf you kill a civilian, you die too",
   "commands.tmm.entitydata.set.success": "Successfully set custom data for %s entities: %s",
   "block.trainmurdermystery.camera": "Security Camera",
   "block.trainmurdermystery.security_monitor": "Security Monitor",
