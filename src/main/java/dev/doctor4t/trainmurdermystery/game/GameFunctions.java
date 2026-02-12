@@ -1101,7 +1101,16 @@ public class GameFunctions {
                                     entity.setJammed(0);
                                     entity.setOpen(false);
                                     String keyName = entity.getKeyName();
-                                    keyName = ResourceLocation.tryParse(keyName).getPath();
+                                    var res = ResourceLocation.tryParse(keyName);
+                                    if (res != null) {
+                                        keyName = res.getPath();
+                                    } else {
+                                        if (keyName.isBlank()) {
+                                            keyName = "";
+                                        } else if (keyName.endsWith(":")) {
+                                            keyName = "";
+                                        }
+                                    }
                                     entity.setKeyName(keyName);
                                     blockState = blockState.setValue(SmallDoorBlock.OPEN, false);
                                     BlockEntityInfo blockEntityInfo = new BlockEntityInfo(
