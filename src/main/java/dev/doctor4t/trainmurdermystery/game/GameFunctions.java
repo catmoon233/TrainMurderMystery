@@ -1101,9 +1101,7 @@ public class GameFunctions {
                                     entity.setJammed(0);
                                     entity.setOpen(false);
                                     String keyName = entity.getKeyName();
-                                    if (keyName.startsWith("reinforced:")) {
-                                        keyName = keyName.substring("reinforced:".length());
-                                    }
+                                    keyName = ResourceLocation.tryParse(keyName).getPath();
                                     entity.setKeyName(keyName);
                                     blockState = blockState.setValue(SmallDoorBlock.OPEN, false);
                                     BlockEntityInfo blockEntityInfo = new BlockEntityInfo(
