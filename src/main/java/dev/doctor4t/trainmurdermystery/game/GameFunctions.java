@@ -1062,9 +1062,9 @@ public class GameFunctions {
 
                 // Force load the required chunks
                 // for (int x = backupChunkMinX; x <= backupChunkMaxX; x++) {
-                //     for (int z = backupChunkMinZ; z <= backupChunkMaxZ; z++) {
-                //         // serverWorld.getChunk(x, z);
-                //     }
+                // for (int z = backupChunkMinZ; z <= backupChunkMaxZ; z++) {
+                // // serverWorld.getChunk(x, z);
+                // }
                 // }
                 for (int x = trainChunkMinX; x <= trainChunkMaxX; x++) {
                     for (int z = trainChunkMinZ; z <= trainChunkMaxZ; z++) {
@@ -1100,6 +1100,11 @@ public class GameFunctions {
                                     entity.setBlasted(false);
                                     entity.setJammed(0);
                                     entity.setOpen(false);
+                                    String keyName = entity.getKeyName();
+                                    if (keyName.startsWith("reinforced:")) {
+                                        keyName = keyName.substring("reinforced:".length());
+                                    }
+                                    entity.setKeyName(keyName);
                                     blockState = blockState.setValue(SmallDoorBlock.OPEN, false);
                                     BlockEntityInfo blockEntityInfo = new BlockEntityInfo(
                                             entity.saveCustomOnly(serverWorld.registryAccess()),
