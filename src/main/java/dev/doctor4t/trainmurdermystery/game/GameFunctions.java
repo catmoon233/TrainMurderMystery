@@ -1101,14 +1101,10 @@ public class GameFunctions {
                                     entity.setJammed(0);
                                     entity.setOpen(false);
                                     String keyName = entity.getKeyName();
-                                    var res = ResourceLocation.tryParse(keyName);
-                                    if (res != null) {
-                                        keyName = res.getPath();
-                                    } else {
-                                        if (keyName.isBlank()) {
-                                            keyName = "";
-                                        } else if (keyName.endsWith(":")) {
-                                            keyName = "";
+                                    if (keyName.contains(":")) {
+                                        var arr = keyName.split(":");
+                                        if (arr.length > 0) {
+                                            keyName = arr[arr.length - 1];
                                         }
                                     }
                                     entity.setKeyName(keyName);
