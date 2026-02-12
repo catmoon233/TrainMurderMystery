@@ -1101,7 +1101,9 @@ public class GameFunctions {
                                     entity.setJammed(0);
                                     entity.setOpen(false);
                                     String keyName = entity.getKeyName();
-                                    if (keyName.contains(":")) {
+                                    if (keyName == null)
+                                        keyName = "";
+                                    else if (keyName.contains(":")) {
                                         var arr = keyName.split(":");
                                         if (arr.length > 0) {
                                             keyName = arr[arr.length - 1];
