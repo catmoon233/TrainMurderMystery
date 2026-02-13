@@ -728,5 +728,6 @@
   "skin.knife.chopper": "砍刀",
   "skin.knife.neptune_knife": "海神之刃",
   "skin.knife.colorful_folding_knife": "多彩折叠刀",
-  "skin.knife.edge_knife": "锋刃刀"
+  "skin.knife.edge_knife": "锋刃刀",
+  "message.kick.outdated_client":"你的客户端版本已经过时了！服务端版本%s，你的版本%s"
 }

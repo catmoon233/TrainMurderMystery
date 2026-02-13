@@ -38,6 +38,7 @@ import dev.doctor4t.trainmurdermystery.item.GrenadeItem;
 import dev.doctor4t.trainmurdermystery.item.KnifeItem;
 import dev.doctor4t.trainmurdermystery.mod_whitelist.client.ModWhitelistClient;
 import dev.doctor4t.trainmurdermystery.network.*;
+import dev.doctor4t.trainmurdermystery.network.packet.ModVersionPacket;
 import dev.doctor4t.trainmurdermystery.network.packet.SyncRoomToPlayerPayload;
 import dev.doctor4t.trainmurdermystery.network.packet.SyncSpecificWaypointVisibilityPacket;
 import dev.doctor4t.trainmurdermystery.network.packet.SyncWaypointVisibilityPacket;
@@ -50,13 +51,13 @@ import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.fabricmc.fabric.api.client.model.loading.v1.ModelLoadingPlugin;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
 import net.minecraft.client.CameraType;
 import net.minecraft.client.CloudStatus;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.client.multiplayer.PlayerInfo;
 import net.minecraft.client.player.AbstractClientPlayer;
@@ -119,6 +120,8 @@ public class TMMClient implements ClientModInitializer {
         // Load config
         // TMMConfig.init(TMM.MOD_ID, TMMConfig.class);
         ModWhitelistClient.onInitializeClient();
+        // ModVersionPacket
+
         // Initialize ScreenParticle
         handParticleManager = new HandParticleManager();
         particleMap = new HashMap<>();
@@ -264,6 +267,11 @@ public class TMMClient implements ClientModInitializer {
             TMM.isLobby = payload.isLobby();
             LoggerFactory.getLogger(this.getClass())
                     .info("Is Lobby status: " + (TMMClient.isInLobby ? "Yes" : "No"));
+        });
+        ClientPlayConnectionEvents.JOIN.register((clientPacketListener, packetSender, minecraft) -> {
+            packetSender.sendPacket(new ModVersionPacket(TMM.modPacketVersion));
+            TMM.LOGGER.info("Send client version {} to verify.", TMM.modPacketVersion);
+
         });
         // Item tooltips
         TMMItemTooltips.addTooltips();

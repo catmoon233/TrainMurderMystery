@@ -20,6 +20,7 @@ import dev.doctor4t.trainmurdermystery.event.PlayerInteractionHandler;
 import dev.doctor4t.trainmurdermystery.game.*;
 import dev.doctor4t.trainmurdermystery.index.*;
 import dev.doctor4t.trainmurdermystery.network.*;
+import dev.doctor4t.trainmurdermystery.network.packet.ModVersionPacket;
 import dev.doctor4t.trainmurdermystery.network.packet.SyncRoomToPlayerPayload;
 import dev.doctor4t.trainmurdermystery.util.*;
 import dev.upcraft.datasync.api.util.Entitlements;
@@ -49,11 +50,11 @@ import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
 
 public class TMM implements ModInitializer {
+    public static final String modPacketVersion = "0.1.0";
     public static final String MOD_ID = "trainmurdermystery";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
     public static MinecraftServer SERVER;
@@ -70,7 +71,7 @@ public class TMM implements ModInitializer {
     public static List<Predicate<Entity>> canCollideEntity = new ArrayList<>();
     public static List<Predicate<DeathInfo>> canStickArmor = new ArrayList<>();
     public static List<Predicate<ServerPlayer>> cantSendReplay = new ArrayList<>();
-    
+
     public static ArrayList<String> canDropItem = new ArrayList<>();
 
     public static @NotNull ResourceLocation id(String name) {
@@ -229,9 +230,13 @@ public class TMM implements ModInitializer {
 
     private void registerPayloadTypes() {
         // Mod Whitelist Payload
-        PayloadTypeRegistry.playC2S().register(dev.doctor4t.trainmurdermystery.mod_whitelist.common.network.ModWhitelistPayload.ID,
+        PayloadTypeRegistry.playC2S().register(
+                dev.doctor4t.trainmurdermystery.mod_whitelist.common.network.ModWhitelistPayload.ID,
                 dev.doctor4t.trainmurdermystery.mod_whitelist.common.network.ModWhitelistPayload.CODEC);
-        
+
+        PayloadTypeRegistry.playS2C().register(ModVersionPacket.ID, ModVersionPacket.CODEC);
+        PayloadTypeRegistry.playC2S().register(ModVersionPacket.ID, ModVersionPacket.CODEC);
+
         PayloadTypeRegistry.playS2C().register(SyncRoomToPlayerPayload.ID, SyncRoomToPlayerPayload.CODEC);
         PayloadTypeRegistry.playC2S().register(SyncRoomToPlayerPayload.ID, SyncRoomToPlayerPayload.CODEC);
 
@@ -281,6 +286,7 @@ public class TMM implements ModInitializer {
 
     private void registerGlobalReceivers() {
         ServerPlayNetworking.registerGlobalReceiver(KnifeStabPayload.ID, new KnifeStabPayload.Receiver());
+        ServerPlayNetworking.registerGlobalReceiver(ModVersionPacket.ID, new ModVersionPacket.Receiver());
         ServerPlayNetworking.registerGlobalReceiver(GunShootPayload.ID, new GunShootPayload.Receiver());
         ServerPlayNetworking.registerGlobalReceiver(StoreBuyPayload.ID, new StoreBuyPayload.Receiver());
         ServerPlayNetworking.registerGlobalReceiver(NoteEditPayload.ID, new NoteEditPayload.Receiver());
