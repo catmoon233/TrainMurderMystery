@@ -3,6 +3,7 @@ package dev.doctor4t.trainmurdermystery.mixin;
 import dev.doctor4t.trainmurdermystery.block.MountableBlock;
 import dev.doctor4t.trainmurdermystery.block.entity.SeatEntity;
 import dev.doctor4t.trainmurdermystery.index.TMMBlocks;
+import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -17,7 +18,14 @@ public class SeatPosFixMixin {
         var lastPos = MountableBlock.lastPos.get(player.getUUID());
         if (lastPos != null) {
             if (lastPos.distanceTo(player.position()) < 5) {
-                player.teleportTo(lastPos.x, lastPos.y + 0.75, lastPos.z);
+                int lx = (int) lastPos.x();
+                int ly = (int) lastPos.y();
+                int lz = (int) lastPos.z();
+                if (player.level().getBlockState(new BlockPos(lx, ly + 1, lz)).getBlock() instanceof MountableBlock) {
+                    player.teleportTo(lastPos.x, lastPos.y + 1.75, lastPos.z);
+                } else {
+                    player.teleportTo(lastPos.x, lastPos.y + 0.75, lastPos.z);
+                }
                 // 移除记录,防止连续坐椅子时累积高度
                 MountableBlock.lastPos.remove(player.getUUID());
 

@@ -11,13 +11,12 @@ import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 
-public record SecurityCameraModePayload(boolean enable, BlockPos cameraPos, float yaw, float pitch) implements CustomPacketPayload {
+public record SecurityCameraModePayload(boolean enable, BlockPos cameraPos, float yaw) implements CustomPacketPayload {
     public static final Type<SecurityCameraModePayload> ID = new Type<>(ResourceLocation.fromNamespaceAndPath("trainmurdermystery", "security_camera_mode"));
     public static final StreamCodec<FriendlyByteBuf, SecurityCameraModePayload> CODEC = StreamCodec.composite(
             ByteBufCodecs.BOOL, SecurityCameraModePayload::enable,
             BlockPos.STREAM_CODEC, SecurityCameraModePayload::cameraPos,
             ByteBufCodecs.FLOAT, SecurityCameraModePayload::yaw,
-            ByteBufCodecs.FLOAT, SecurityCameraModePayload::pitch,
             SecurityCameraModePayload::new
     );
 
@@ -39,7 +38,6 @@ public record SecurityCameraModePayload(boolean enable, BlockPos cameraPos, floa
                     SecurityMonitorBlock.setSecurityMode(true);
                     // 设置初始视角角度
                     SecurityMonitorBlock.currentYaw = payload.yaw();
-                    SecurityMonitorBlock.currentPitch = payload.pitch();
                     Minecraft.getInstance().options.setCameraType(CameraType.THIRD_PERSON_BACK);
                 } else {
                     // 退出监控模式
@@ -48,7 +46,6 @@ public record SecurityCameraModePayload(boolean enable, BlockPos cameraPos, floa
                     SecurityMonitorBlock.setCurrentCameraPos(null);
                     // 重置视角角度
                     SecurityMonitorBlock.currentYaw = 0.0f;
-                    SecurityMonitorBlock.currentPitch = 0.0f;
                 }
             });
         }

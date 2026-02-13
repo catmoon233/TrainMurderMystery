@@ -40,7 +40,8 @@ public abstract class MountableBlock extends Block {
             BlockHitResult hit) {
         float radius = 1;
         if (!player.isShiftKeyDown()
-                && player.position().subtract(pos.getCenter()).length() <= 1.4f
+                && (player.position().subtract(pos.getCenter()).length() <= 1.4f
+                        || player.position().add(0, 1d, 0).subtract(pos.getCenter()).length() <= 1.4f)
                 && !(player.getMainHandItem().getItem() instanceof BlockItem blockItem
                         && blockItem.getBlock() instanceof MountableBlock)
                 && world.getEntitiesOfClass(SeatEntity.class, AABB.ofSize(pos.getCenter(), radius, radius, radius),
@@ -56,10 +57,10 @@ public abstract class MountableBlock extends Block {
                     return InteractionResult.FAIL;
                     // player.stopRiding();
                     // if (lastPos != null) {
-                    //     var ppos = lastPos.get(player.getUUID());
-                    //     if (ppos != null) {
-                    //         player.setPos(ppos);
-                    //     }
+                    // var ppos = lastPos.get(player.getUUID());
+                    // if (ppos != null) {
+                    // player.setPos(ppos);
+                    // }
                     // }
                 }
 
