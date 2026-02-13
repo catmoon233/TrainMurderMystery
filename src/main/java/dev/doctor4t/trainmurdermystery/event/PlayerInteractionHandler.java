@@ -1,11 +1,13 @@
 package dev.doctor4t.trainmurdermystery.event;
 
 import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
+import dev.doctor4t.trainmurdermystery.cca.PlayerMoodComponent;
 import net.fabricmc.fabric.api.event.player.UseBlockCallback;
 
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.level.block.AnvilBlock;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.BrewingStandBlock;
 import net.minecraft.world.level.block.CartographyTableBlock;
 import net.minecraft.world.level.block.CraftingTableBlock;
@@ -27,7 +29,12 @@ public class PlayerInteractionHandler {
                 if (game.isRunning() && !player.isCreative() && !player.isSpectator()) {
                     BlockState state = world.getBlockState(hitResult.getBlockPos());
                     Block block = state.getBlock();
-
+                    if(state.is(Blocks.NOTE_BLOCK)){
+                        var moodC = PlayerMoodComponent.KEY.get(player);
+                        if(moodC!=null){
+                            moodC.playNoteBlock();
+                        }
+                    }
                     if (isVanillaWorkstation(block)) {
                         return InteractionResult.FAIL;
                     }

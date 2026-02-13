@@ -3,9 +3,14 @@ package dev.doctor4t.trainmurdermystery.cca;
 import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.api.Role;
 import dev.doctor4t.trainmurdermystery.api.RoleComponent;
+import dev.doctor4t.trainmurdermystery.block.MountableBlock;
+import dev.doctor4t.trainmurdermystery.block.ToiletBlock;
+import dev.doctor4t.trainmurdermystery.block.entity.SeatEntity;
+import dev.doctor4t.trainmurdermystery.cca.PlayerMoodComponent.TrainTask;
 import dev.doctor4t.trainmurdermystery.client.TMMClient;
 import dev.doctor4t.trainmurdermystery.game.GameConstants;
 import dev.doctor4t.trainmurdermystery.game.GameFunctions;
+import dev.doctor4t.trainmurdermystery.index.TMMBlocks;
 import dev.doctor4t.trainmurdermystery.index.tag.TMMBlockTags;
 import dev.doctor4t.trainmurdermystery.index.tag.TMMItemTags;
 import dev.doctor4t.trainmurdermystery.util.TaskCompletePayload;
@@ -26,6 +31,8 @@ import net.minecraft.world.inventory.LecternMenu;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.ladysnake.cca.api.v3.component.ComponentKey;
@@ -198,15 +205,18 @@ public class PlayerMoodComponent implements RoleComponent, ServerTickingComponen
             return null;
         HashMap<Task, Float> map = new HashMap<>();
         float total = 0f;
-        for (Task task : Task.values()) {
+        for (Task task : Task.getAvailableTasksList()) {
             if (this.tasks.containsKey(task))
                 continue;
             float weight = 1f / this.timesGotten.getOrDefault(task, 1);
             map.put(task, weight);
             total += weight;
         }
+
         float random = this.player.getRandom().nextFloat() * total;
-        for (Map.Entry<Task, Float> entry : map.entrySet()) {
+        var entries = new ArrayList<>(map.entrySet());
+        Collections.shuffle(entries);
+        for (Map.Entry<Task, Float> entry : entries) {
             random -= entry.getValue();
             if (random <= 0) {
                 return switch (entry.getKey()) {
@@ -218,7 +228,10 @@ public class PlayerMoodComponent implements RoleComponent, ServerTickingComponen
                     case EXERCISE -> new ExerciseTask(GameConstants.EXERCISE_TASK_DURATION);
                     case MEDITATE -> new MeditateTask(GameConstants.MEDITATE_TASK_DURATION); // 添加冥想任务生成
                     case BATHE -> new BatheTask(GameConstants.BATHE_TASK_DURATION); // 添加洗澡任务生成
-
+                    case NOTE_BLOCK ->new NoteBlockTask(GameConstants.NOTE_BLOCK_TASK_CLICK_COUNTS);
+                    case TOILET -> new ToiletTask(GameConstants.TOILET_TASK_DURATION);
+                    case CHAIR -> new ChairTask(GameConstants.CHAIR_TASK_DURATION);
+                    default -> null;
                 };
             }
         }
@@ -258,6 +271,11 @@ public class PlayerMoodComponent implements RoleComponent, ServerTickingComponen
     public void eatFood() {
         if (this.tasks.get(Task.EAT) instanceof EatTask eatTask)
             eatTask.fulfilled = true;
+    }
+
+    public void playNoteBlock() {
+        if (this.tasks.get(Task.EAT) instanceof NoteBlockTask noteBlockTask)
+            noteBlockTask.trigger();
     }
 
     public void drinkCocktail() {
@@ -309,18 +327,28 @@ public class PlayerMoodComponent implements RoleComponent, ServerTickingComponen
 
     public enum Task {
         SLEEP(nbt -> new SleepTask(nbt.getInt("timer"))),
-        OUTSIDE(nbt -> new OutsideTask(nbt.getInt("timer"))),
+        OUTSIDE(nbt -> new OutsideTask(nbt.getInt("timer"))), // 不要OUTSIDE
         RAED_BOOK(nbt -> new ReadBookTask(nbt.getInt("timer"))),
         EAT(nbt -> new EatTask()),
         DRINK(nbt -> new DrinkTask()),
         EXERCISE(nbt -> new ExerciseTask(nbt.getInt("timer"))),
         MEDITATE(nbt -> new MeditateTask(nbt.getInt("timer"))), // 添加冥想任务
-        BATHE(nbt -> new BatheTask(nbt.getInt("timer"))); // 添加洗澡任务
+        BATHE(nbt -> new BatheTask(nbt.getInt("timer"))), // 添加洗澡任务
+        TOILET(nbt -> new ToiletTask(nbt.getInt("timer"))), // 添加厕所任务
+        CHAIR(nbt -> new ChairTask(nbt.getInt("timer"))), // 添加座椅休息任务
+        NOTE_BLOCK(nbt -> new NoteBlockTask(nbt.getInt("timer"))); // 添加音符盒任务
 
+        private static List<Task> availableTasksList = List.of(SLEEP, RAED_BOOK, EAT, DRINK, EXERCISE, MEDITATE, BATHE,
+                CHAIR,
+                NOTE_BLOCK, TOILET);
         public final @NotNull Function<CompoundTag, TrainTask> setFunction;
 
         Task(@NotNull Function<CompoundTag, TrainTask> function) {
             this.setFunction = function;
+        }
+
+        public static List<Task> getAvailableTasksList() {
+            return availableTasksList;
         }
     }
 
@@ -574,6 +602,150 @@ public class PlayerMoodComponent implements RoleComponent, ServerTickingComponen
     }
 
     /**
+     * 音符盒任务类
+     * 玩家需要站在水中或雨中完成洗澡
+     */
+    public static class NoteBlockTask implements TrainTask {
+        private int timer;
+
+        public NoteBlockTask(int time) {
+            this.timer = time;
+        }
+
+        public void trigger() {
+            if (this.timer > 0)
+                this.timer--;
+        }
+
+        @Override
+        public void tick(@NotNull Player player) {
+        }
+
+        @Override
+        public boolean isFulfilled(@NotNull Player player) {
+            return this.timer <= 0;
+        }
+
+        @Override
+        public String getName() {
+            return "note_block";
+        }
+
+        @Override
+        public Task getType() {
+            return Task.NOTE_BLOCK;
+        }
+
+        @Override
+        public CompoundTag toNbt() {
+            CompoundTag nbt = new CompoundTag();
+            nbt.putInt("type", Task.NOTE_BLOCK.ordinal());
+            nbt.putInt("timer", this.timer);
+            return nbt;
+        }
+    }
+
+    /**
+     * 座椅休息任务类
+     * 玩家需要在座椅（包括马桶）上坐着完成
+     */
+    public static class ChairTask implements TrainTask {
+        private int timer;
+
+        public ChairTask(int time) {
+            this.timer = time;
+        }
+
+        @Override
+        public void tick(@NotNull Player player) {
+            if (this.timer > 0) {
+                var vehicleE = player.getVehicle();
+                if (vehicleE != null) {
+                    if (vehicleE instanceof SeatEntity) {
+                        this.timer--;
+                    }
+                }
+            }
+        }
+
+        @Override
+        public boolean isFulfilled(@NotNull Player player) {
+            return this.timer <= 0;
+        }
+
+        @Override
+        public String getName() {
+            return "chair";
+        }
+
+        @Override
+        public Task getType() {
+            return Task.CHAIR;
+        }
+
+        @Override
+        public CompoundTag toNbt() {
+            CompoundTag nbt = new CompoundTag();
+            nbt.putInt("type", Task.CHAIR.ordinal());
+            nbt.putInt("timer", this.timer);
+            return nbt;
+        }
+    }
+
+    /**
+     * 厕所任务类
+     * 玩家需要在马桶上坐着完成
+     */
+    public static class ToiletTask implements TrainTask {
+        private int timer;
+
+        public ToiletTask(int time) {
+            this.timer = time;
+        }
+
+        @Override
+        public void tick(@NotNull Player player) {
+            if (this.timer > 0) {
+                var vehicleE = player.getVehicle();
+                if (vehicleE != null) {
+                    if (vehicleE instanceof SeatEntity entity) {
+                        var seatPos = entity.getSeatPos();
+                        if (seatPos != null) {
+                            BlockState seatBlockState = player.level().getBlockState(seatPos);
+                            if (seatBlockState.getBlock() instanceof ToiletBlock) {
+                                this.timer--;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        @Override
+        public boolean isFulfilled(@NotNull Player player) {
+            return this.timer <= 0;
+        }
+
+        @Override
+        public String getName() {
+            return "toilet";
+        }
+
+        @Override
+        public Task getType() {
+            return Task.BATHE;
+        }
+
+        @Override
+        public CompoundTag toNbt() {
+            CompoundTag nbt = new CompoundTag();
+            nbt.putInt("type", Task.TOILET.ordinal());
+            nbt.putInt("timer", this.timer);
+            return nbt;
+        }
+    }
+
+    /**
      * 洗澡任务类
      * 玩家需要站在水中或雨中完成洗澡
      */
@@ -674,4 +846,5 @@ public class PlayerMoodComponent implements RoleComponent, ServerTickingComponen
             }
         }
     }
+
 }

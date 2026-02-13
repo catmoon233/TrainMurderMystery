@@ -337,7 +337,6 @@ public class TMM implements ModInitializer {
         BlockPos playerPos = BlockPos.containing(player.getEyePosition());
         for (int x = -1; x <= 1; x += 2) {
             for (int z = -1; z <= 1; z += 2) {
-
                 mutable.set(playerPos.getX() + x, playerPos.getY(), playerPos.getZ() + z);
                 final var chunkPos = player.chunkPosition();
                 final var chunk = player.level().getChunk(chunkPos.x, chunkPos.z);

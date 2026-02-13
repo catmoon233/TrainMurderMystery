@@ -2,15 +2,8 @@ package dev.doctor4t.trainmurdermystery.game;
 
 import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.TMMConfig;
-import dev.doctor4t.trainmurdermystery.api.Role;
-import dev.doctor4t.trainmurdermystery.cca.PlayerShopComponent;
 import dev.doctor4t.trainmurdermystery.index.TMMItems;
-import dev.doctor4t.trainmurdermystery.util.ShopEntry;
-import org.jetbrains.annotations.NotNull;
-
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import net.minecraft.resources.ResourceLocation;
@@ -27,6 +20,7 @@ public interface GameConstants {
         }
         return 0;
     };
+
     // Role Configuration (Server-side, mutable via command)
     class RoleConfig {
         public static int killerCount = 1;
@@ -46,7 +40,7 @@ public interface GameConstants {
     static void init() {
         reloadItemCooldowns();
     }
-    
+
     /**
      * 重新加载物品冷却时间
      * 可以在运行时调用以应用配置更改
@@ -62,9 +56,9 @@ public interface GameConstants {
         ITEM_COOLDOWNS.put(TMMItems.BODY_BAG, TMMConfig.bodyBagCooldown * 20);
         ITEM_COOLDOWNS.put(TMMItems.PSYCHO_MODE, TMMConfig.psychoModeCooldown * 20);
         ITEM_COOLDOWNS.put(TMMItems.BLACKOUT, TMMConfig.blackoutCooldown * 20);
-        
-        TMM.LOGGER.debug("物品冷却时间已重载: 小刀={}秒, 左轮={}秒", 
-            TMMConfig.knifeCooldown, TMMConfig.revolverCooldown);
+
+        TMM.LOGGER.debug("物品冷却时间已重载: 小刀={}秒, 左轮={}秒",
+                TMMConfig.knifeCooldown, TMMConfig.revolverCooldown);
     }
 
     int JAMMED_DOOR_TIME = getInTicks(1, 0);
@@ -82,8 +76,11 @@ public interface GameConstants {
     int SLEEP_TASK_DURATION = getInTicks(0, 8);
     int OUTSIDE_TASK_DURATION = getInTicks(0, 8);
     int READ_BOOK_TASK_DURATION = getInTicks(0, 8);
-    int EXERCISE_TASK_DURATION = getInTicks(0, 7);
-    int MEDITATE_TASK_DURATION = getInTicks(0, 10); // 冥想任务持续时间
+    int EXERCISE_TASK_DURATION = getInTicks(0, 6);
+    int MEDITATE_TASK_DURATION = getInTicks(0, 10); // 冥想
+    int NOTE_BLOCK_TASK_CLICK_COUNTS = 10; // 音符盒点击次数
+    int TOILET_TASK_DURATION = getInTicks(0, 8);
+    int CHAIR_TASK_DURATION = getInTicks(0, 8);
     int BATHE_TASK_DURATION = getInTicks(0, 10); // 洗澡任务持续时间
     float MID_MOOD_THRESHOLD = 0.55f;
     float DEPRESSIVE_MOOD_THRESHOLD = 0.2f;
@@ -93,13 +90,10 @@ public interface GameConstants {
 
     // Shop Variables
 
-
-
-
     static int getMoneyStart() {
         return TMMConfig.startingMoney;
     }
-    
+
     static Function<Long, Integer> getPassiveMoneyTicker() {
         return time -> {
             if (time % (TMMConfig.passiveMoneyInterval * 20) == 0) {
@@ -109,13 +103,10 @@ public interface GameConstants {
         };
     }
 
-
-
-
     static int getMoneyPerKill() {
         return TMMConfig.moneyPerKill;
     }
-    
+
     static int getPsychoModeArmour() {
         return TMMConfig.psychoModeArmor;
     }
@@ -124,18 +115,19 @@ public interface GameConstants {
     static int getPsychoTimer() {
         return TMMConfig.psychoModeDuration * 20;
     }
-    
+
     static int getFirecrackerTimer() {
         return TMMConfig.firecrackerDuration * 20;
     }
-    
+
     static int getBlackoutMinDuration() {
         return TMMConfig.blackoutMinDuration * 20;
     }
-    
+
     static int getBlackoutMaxDuration() {
         return TMMConfig.blackoutMaxDuration * 20;
     }
+
     int TIME_ON_CIVILIAN_KILL = getInTicks(0, 30);
 
     static int getInTicks(int minutes, int seconds) {
