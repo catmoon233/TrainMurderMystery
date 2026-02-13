@@ -274,7 +274,7 @@ public class PlayerMoodComponent implements RoleComponent, ServerTickingComponen
     }
 
     public void playNoteBlock() {
-        if (this.tasks.get(Task.EAT) instanceof NoteBlockTask noteBlockTask)
+        if (this.tasks.get(Task.NOTE_BLOCK) instanceof NoteBlockTask noteBlockTask)
             noteBlockTask.trigger();
     }
 
