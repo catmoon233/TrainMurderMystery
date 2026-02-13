@@ -112,6 +112,8 @@ public class PlayerMoodComponent implements RoleComponent, ServerTickingComponen
         if (!this.tasks.isEmpty()) {
             if (this.mood > 0)
                 this.mood = this.mood - this.tasks.size() * GameConstants.MOOD_DRAIN;
+            if (this.mood < 0)
+                this.mood = 0;
         }
 
         if (this.isLowerThanMid()) {
@@ -152,6 +154,8 @@ public class PlayerMoodComponent implements RoleComponent, ServerTickingComponen
         if (!this.tasks.isEmpty()) {
             if (this.mood > 0)
                 this.mood = this.mood - this.tasks.size() * GameConstants.MOOD_DRAIN;// 替换setMood避免高频率同步
+            if (this.mood < 0)
+                this.mood = 0;
             if (this.nextTaskTimer % 100 == 0) { // 5s一次同步
                 shouldSync = true;
             }
