@@ -3,7 +3,6 @@ package dev.doctor4t.trainmurdermystery.util;
 import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.api.TMMGameModes;
 import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
-import dev.doctor4t.trainmurdermystery.event.OnPlayerKilledPlayer;
 import dev.doctor4t.trainmurdermystery.game.GameConstants;
 import dev.doctor4t.trainmurdermystery.game.GameFunctions;
 import dev.doctor4t.trainmurdermystery.index.TMMItems;
