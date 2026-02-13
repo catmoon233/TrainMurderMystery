@@ -148,14 +148,13 @@ public class SecurityMonitorBlock extends BaseEntityBlock {
             return false;
         BlockPos cameraPos = SecurityMonitorBlock.getCurrentCameraPos();
 
-        float targetYRot;
         float targetXRot;
         // currentPitch = 0f;
 
         // 获取监控控制台的位置（用于获取监控方块朝向）
-        BlockPos monitorPos = getCurrentMonitorPos();
+        // BlockPos monitorPos = getCurrentMonitorPos();
 
-        if (level != null && monitorPos != null) {
+        if (level != null) {
             BlockState monitorState = level.getBlockState(cameraPos);
             if (monitorState.getBlock() instanceof CameraBlock) {
                 Direction monitorFacing = monitorState.getValue(FACING);
@@ -165,19 +164,16 @@ public class SecurityMonitorBlock extends BaseEntityBlock {
                 // TMM.LOGGER.info(monitorFacing.getName());
                 // 计算目标视角：基础角度 + 玩家调整的偏移量
                 targetXRot = baseYaw;
-                targetYRot = 0f;
                 currentYaw = baseYaw;
 
             } else {
                 // 如果无法获取监控方块，使用默认值
                 targetXRot = currentYaw;
-                targetYRot = 0;
             }
         } else {
             // 如果无法获取世界或监控方块位置，则使用默认行为
             // TMM.LOGGER.info("default screen");
-            targetYRot = 0;
-            targetXRot = 0;
+            targetXRot = currentYaw;
         }
 
         camera.setRotation(targetXRot, 0);
