@@ -110,7 +110,8 @@ public class PlayerMoodComponent implements RoleComponent, ServerTickingComponen
         if (!GameWorldComponent.KEY.get(this.player.level()).isRunning() || !TMMClient.isPlayerAliveAndInSurvival())
             return;
         if (!this.tasks.isEmpty()) {
-            this.mood = this.mood - this.tasks.size() * GameConstants.MOOD_DRAIN;
+            if (this.mood > 0)
+                this.mood = this.mood - this.tasks.size() * GameConstants.MOOD_DRAIN;
         }
 
         if (this.isLowerThanMid()) {
@@ -149,7 +150,8 @@ public class PlayerMoodComponent implements RoleComponent, ServerTickingComponen
             return;
         boolean shouldSync = false;
         if (!this.tasks.isEmpty()) {
-            this.mood = this.mood - this.tasks.size() * GameConstants.MOOD_DRAIN;// 替换setMood避免高频率同步
+            if (this.mood > 0)
+                this.mood = this.mood - this.tasks.size() * GameConstants.MOOD_DRAIN;// 替换setMood避免高频率同步
             if (this.nextTaskTimer % 100 == 0) { // 5s一次同步
                 shouldSync = true;
             }
@@ -228,7 +230,7 @@ public class PlayerMoodComponent implements RoleComponent, ServerTickingComponen
                     case EXERCISE -> new ExerciseTask(GameConstants.EXERCISE_TASK_DURATION);
                     case MEDITATE -> new MeditateTask(GameConstants.MEDITATE_TASK_DURATION); // 添加冥想任务生成
                     case BATHE -> new BatheTask(GameConstants.BATHE_TASK_DURATION); // 添加洗澡任务生成
-                    case NOTE_BLOCK ->new NoteBlockTask(GameConstants.NOTE_BLOCK_TASK_CLICK_COUNTS);
+                    case NOTE_BLOCK -> new NoteBlockTask(GameConstants.NOTE_BLOCK_TASK_CLICK_COUNTS);
                     case TOILET -> new ToiletTask(GameConstants.TOILET_TASK_DURATION);
                     case CHAIR -> new ChairTask(GameConstants.CHAIR_TASK_DURATION);
                     default -> null;
