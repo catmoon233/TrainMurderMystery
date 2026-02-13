@@ -360,7 +360,7 @@ public class MapDetailsRenderer {
         context.pose().translate(authorX, y, 0);
         context.pose().scale(AUTHOR_SCALE, AUTHOR_SCALE, 1.0f);
 
-        String author = "allinYOKYO canyuesama haiman wifi_left guanzheqwq biantwin";
+        String author = "allinTOKYO canyuesama haiman wifi_left guanzheqwq biantwin";
 
         // 作者阴影
         int shadowColor = (alpha << 24) | 0x000000;
@@ -488,7 +488,7 @@ public class MapDetailsRenderer {
                 .ifPresent(map -> {
                     displayName.set(map.displayName);
                     description.set(map.description);
-                    author.set("allinYOKYO canyuesama haiman wifi_left guanzheqwq biantwin");
+                    author.set("allinTOKYO canyuesama haiman wifi_left guanzheqwq biantwin");
                 });
 
         setMapDetails(mapId, description.get(), author.get());
