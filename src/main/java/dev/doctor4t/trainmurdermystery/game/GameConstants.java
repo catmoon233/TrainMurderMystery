@@ -79,7 +79,7 @@ public interface GameConstants {
     int EXERCISE_TASK_DURATION = getInTicks(0, 6);
     int MEDITATE_TASK_DURATION = getInTicks(0, 10); // 冥想
     int NOTE_BLOCK_TASK_CLICK_COUNTS = 10; // 音符盒点击次数
-    int TOILET_TASK_DURATION = getInTicks(0, 8);
+    int TOILET_TASK_DURATION = getInTicks(0, 6);
     int CHAIR_TASK_DURATION = getInTicks(0, 8);
     int BATHE_TASK_DURATION = getInTicks(0, 10); // 洗澡任务持续时间
     float MID_MOOD_THRESHOLD = 0.55f;
