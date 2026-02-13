@@ -44,4 +44,5 @@ public abstract class HorizontalFacingMountableBlock extends MountableBlock {
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(FACING);
     }
+
 }

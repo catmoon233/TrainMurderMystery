@@ -32,6 +32,7 @@ public class CouchBlock extends HorizontalFacingMountableBlock {
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
         builder.add(ARMS, BlockStateProperties.HORIZONTAL_FACING);
     }
+    
 
     @Override
     public VoxelShape getShape(BlockState state, BlockGetter world, BlockPos pos, CollisionContext context) {
