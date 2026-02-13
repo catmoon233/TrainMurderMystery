@@ -26,9 +26,6 @@ import net.minecraft.world.phys.HitResult;
 import org.jetbrains.annotations.NotNull;
 
 
-import java.util.Map;
-import java.util.function.Supplier;
-
 public class RevolverItem extends Item {
     public RevolverItem(Properties settings) {
         super(settings.durability(4)); // 设置最大耐久度为4

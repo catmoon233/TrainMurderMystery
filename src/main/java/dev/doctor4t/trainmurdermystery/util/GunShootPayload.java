@@ -51,7 +51,7 @@ public record GunShootPayload(int target) implements CustomPacketPayload {
                     1f + player.getRandom().nextFloat() * .1f - .05f);
 
             // cancel if derringer has been shot
-            Boolean isUsed = mainHandStack.get(TMMDataComponentTypes.USED);
+            Boolean isUsed = mainHandStack.getOrDefault(TMMDataComponentTypes.USED, false);
             if (mainHandStack.is(TMMItems.DERRINGER)) {
                 if (isUsed == null) {
                     isUsed = false;
@@ -105,6 +105,7 @@ public record GunShootPayload(int target) implements CustomPacketPayload {
                 }
 
                 if (!backfire) {
+                    mainHandStack.set(TMMDataComponentTypes.USED, false);
                     GameFunctions.killPlayer(target, true, player, deathReason);
                 }
             }
