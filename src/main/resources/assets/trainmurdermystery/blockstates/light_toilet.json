@@ -1,17 +1,17 @@
 {
   "variants": {
-    "arms=noarms,facing=north": {
+    "arms=no_arms,facing=north": {
       "model": "trainmurdermystery:block/light_toilet"
     },
-    "arms=noarms,facing=east": {
+    "arms=no_arms,facing=east": {
       "model": "trainmurdermystery:block/light_toilet",
       "y": 90
     },
-    "arms=noarms,facing=south": {
+    "arms=no_arms,facing=south": {
       "model": "trainmurdermystery:block/light_toilet",
       "y": 180
     },
-    "arms=noarms,facing=west": {
+    "arms=no_arms,facing=west": {
       "model": "trainmurdermystery:block/light_toilet",
       "y": 270
     },
