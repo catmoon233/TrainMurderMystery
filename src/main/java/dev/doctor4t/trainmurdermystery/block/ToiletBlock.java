@@ -18,7 +18,7 @@ public class ToiletBlock extends CouchBlock {
 
     @Override
     public Vec3 getNorthFacingSitPos(Level world, BlockState state, BlockPos pos) {
-        return new Vec3(0.5f, 0.4f, 0.5f);
+        return new Vec3(0.5f, -0.15f, 0.5f);
     }
 
     @Override
