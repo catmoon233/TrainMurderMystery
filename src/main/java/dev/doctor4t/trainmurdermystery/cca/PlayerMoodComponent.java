@@ -733,7 +733,7 @@ public class PlayerMoodComponent implements RoleComponent, ServerTickingComponen
 
         @Override
         public Task getType() {
-            return Task.BATHE;
+            return Task.TOILET;
         }
 
         @Override
