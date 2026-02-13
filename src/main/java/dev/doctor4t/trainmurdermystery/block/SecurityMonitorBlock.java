@@ -1,9 +1,6 @@
 package dev.doctor4t.trainmurdermystery.block;
 
 import com.mojang.serialization.MapCodec;
-
-import dev.doctor4t.trainmurdermystery.TMM;
-import dev.doctor4t.trainmurdermystery.block_entity.CameraBlockEntity;
 import dev.doctor4t.trainmurdermystery.block_entity.SecurityMonitorBlockEntity;
 import dev.doctor4t.trainmurdermystery.network.PacketTracker;
 import dev.doctor4t.trainmurdermystery.network.SecurityCameraExitRequestPayload;
@@ -17,7 +14,6 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.Mth;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
@@ -304,19 +300,23 @@ public class SecurityMonitorBlock extends BaseEntityBlock {
         // currentPitch = 0.0f;
 
         // 获取摄像头的朝向信息
-        if (player.level() != null
-                && player.level().getBlockEntity(currentCameraPos) instanceof CameraBlockEntity cameraBlockEntity) {
-            Direction cameraFacing = cameraBlockEntity.getFacing();
-            player.displayClientMessage(Component.literal("切换到摄像头 " + (nextIndex + 1) +
-                    ": X=" + currentCameraPos.getX() + ", Y=" + currentCameraPos.getY() +
-                    ", Z=" + currentCameraPos.getZ() + ", 方向=" + cameraFacing.getName()).withStyle(ChatFormatting.AQUA),
-                    true);
-            currentYaw = getBaseYawFromDirection(cameraFacing);
-        } else {
-            player.displayClientMessage(Component.literal("切换到摄像头 " + (nextIndex + 1) +
-                    ": X=" + currentCameraPos.getX() + ", Y=" + currentCameraPos.getY() +
-                    ", Z=" + currentCameraPos.getZ()).withStyle(ChatFormatting.AQUA), true);
+        if (player.level() != null) {
+            var blockState = player.level().getBlockState(currentCameraPos);
+            if (blockState.getBlock() instanceof CameraBlock) {
+                Direction cameraFacing = blockState.getValue(CameraBlock.FACING);
+                player.displayClientMessage(Component.literal("切换到摄像头 " + (nextIndex + 1) +
+                        ": X=" + currentCameraPos.getX() + ", Y=" + currentCameraPos.getY() +
+                        ", Z=" + currentCameraPos.getZ() + ", 方向=" + cameraFacing.getName())
+                        .withStyle(ChatFormatting.AQUA),
+                        true);
+                currentYaw = getBaseYawFromDirection(cameraFacing);
+            } else {
+                player.displayClientMessage(Component.literal("切换到摄像头 " + (nextIndex + 1) +
+                        ": X=" + currentCameraPos.getX() + ", Y=" + currentCameraPos.getY() +
+                        ", Z=" + currentCameraPos.getZ()).withStyle(ChatFormatting.AQUA), true);
+            }
         }
+
     }
 
     private static BlockPos AddBlockPosOffset(BlockPos pos, BlockPos add) {
