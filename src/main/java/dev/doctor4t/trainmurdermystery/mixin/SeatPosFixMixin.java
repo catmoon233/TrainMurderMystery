@@ -22,7 +22,7 @@ public class SeatPosFixMixin {
                 int ly = (int) lastPos.y();
                 int lz = (int) lastPos.z();
                 if (player.level().getBlockState(new BlockPos(lx, ly + 1, lz)).getBlock() instanceof MountableBlock) {
-                    player.teleportTo(lastPos.x, lastPos.y + 1.75, lastPos.z);
+                    player.teleportTo(lastPos.x, lastPos.y + 2.25, lastPos.z);
                 } else {
                     player.teleportTo(lastPos.x, lastPos.y + 0.75, lastPos.z);
                 }
