@@ -34,11 +34,6 @@ public class PlayerAFKComponent implements RoleComponent, ServerTickingComponent
         return this.player;
     }
 
-    @Override
-    public boolean shouldSyncWith(ServerPlayer player) {
-        return player == this.player;
-    }
-
     public void sync() {
         KEY.sync(this.player);
     }
@@ -106,7 +101,7 @@ public class PlayerAFKComponent implements RoleComponent, ServerTickingComponent
         return (float) this.afkTime / afkThreshold;
     }
 
-    public static int tickR = 0;
+    public int tickR = 0;
 
     @Override
     public void serverTick() {
@@ -117,14 +112,15 @@ public class PlayerAFKComponent implements RoleComponent, ServerTickingComponent
         if (!GameWorldComponent.KEY.get(this.player.level()).isRunning())
             return;
         this.lastActionTime++;
-        this.afkTime = this.lastActionTime;
+        this.afkTime = lastActionTime;
 
         // 检查是否达到挂机阈值
         int afkThreshold = TMMConfig.afkThresholdSeconds * 20; // 转换为ticks
         int warningThreshold = TMMConfig.afkWarningSeconds * 20; // 转换为ticks
         int sleepyThreshold = TMMConfig.afkSleepySeconds * 20; // 转换为ticks
         int deathThreshold = TMMConfig.afkDeathSeconds * 20; // 添加死亡阈值，转换为ticks
-        if (tickR % 200 == 0) {// 10s 同步一次
+        if (tickR % 400 == 0) {// 20s 同步一次
+            // TMM.LOGGER.info("SYNC:" + tickR);
             this.sync(); // 确保客户端同步进度
         }
         if (this.lastActionTime >= deathThreshold) {
@@ -137,12 +133,12 @@ public class PlayerAFKComponent implements RoleComponent, ServerTickingComponent
             }
         } else if (this.lastActionTime >= warningThreshold && this.lastActionTime < afkThreshold && !this.isAFK) {
             // 接近挂机阈值但还未达到
-            if (tickR % 200 == 0) {// 10s 同步一次
+            if (tickR % 400 == 0) {// 10s 同步一次
                 this.sync(); // 确保客户端同步进度
             }
         } else if (this.lastActionTime >= sleepyThreshold && this.lastActionTime < warningThreshold && !this.isAFK) {
             // 开始显示困倦效果
-            if (tickR % 100 == 0) {// 5s 同步一次
+            if (tickR % 400 == 0) {// 5s 同步一次
                 this.sync(); // 确保客户端同步进度
             }
         }
@@ -151,6 +147,7 @@ public class PlayerAFKComponent implements RoleComponent, ServerTickingComponent
     @Override
     public void readFromNbt(@NotNull CompoundTag tag, HolderLookup.@NotNull Provider registryLookup) {
         this.afkTime = tag.getInt("afkTime");
+        this.lastActionTime = tag.getInt("afkTime");
         this.isAFK = tag.getBoolean("isAFK");
     }
 
@@ -162,6 +159,9 @@ public class PlayerAFKComponent implements RoleComponent, ServerTickingComponent
 
     @Override
     public void clientTick() {
-        ++tickR; // 避免停滞
+        this.lastActionTime++;
+        this.afkTime = this.lastActionTime;
+        // TMM.LOGGER.info("SYNC:" + this.afkTime);
+
     }
 }

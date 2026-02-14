@@ -90,17 +90,21 @@ public class AFKRenderer {
     }
 
     public static void renderAFKEffects(GuiGraphics guiGraphics, float tickDelta) {
-        if (mc.player == null || mc.level == null) return;
-        if (!TMMClient.isPlayerAliveAndInSurvival()) return;
-        if (!TMMClient.isTrainMoving()) return;
+        if (mc.player == null || mc.level == null)
+            return;
+        if (!TMMClient.isPlayerAliveAndInSurvival())
+            return;
+        if (!TMMClient.isTrainMoving())
+            return;
 
         LocalPlayer player = mc.player;
         PlayerAFKComponent afkComponent = PlayerAFKComponent.KEY.maybeGet(player).orElse(null);
 
-        if (afkComponent == null) return;
+        if (afkComponent == null)
+            return;
 
         float afkProgress = afkComponent.getAFKProgress();
-
+        // TMM.LOGGER.info("afk" + afkProgress);
         // 只有当挂机进度超过一定阈值时才显示效果
         if (afkProgress > 0.3f) {
             // 性能优化：减少粒子更新频率
@@ -169,20 +173,20 @@ public class AFKRenderer {
     }
 
     private static void renderSleepParticles(GuiGraphics guiGraphics, float tickDelta) {
-        if (sleepParticles.isEmpty()) return;
+        if (sleepParticles.isEmpty())
+            return;
 
         // 简化粒子渲染：直接绘制矩形，避免矩阵变换
         for (SleepParticle particle : sleepParticles) {
-            int alpha = (int)(particle.alpha * 255);
+            int alpha = (int) (particle.alpha * 255);
             int color = (alpha << 24) | (particle.color & 0xFFFFFF);
 
             // 绘制简单的矩形粒子
-            int size = (int)particle.size;
+            int size = (int) particle.size;
             guiGraphics.fill(
-                    (int)particle.x - size, (int)particle.y - size,
-                    (int)particle.x + size, (int)particle.y + size,
-                    color
-            );
+                    (int) particle.x - size, (int) particle.y - size,
+                    (int) particle.x + size, (int) particle.y + size,
+                    color);
         }
     }
 
@@ -202,7 +206,7 @@ public class AFKRenderer {
             blinkAnim.isClosing = true;
             blinkAnim.progress = 0.0f;
             blinkAnim.startTime = currentTime;
-            blinkAnim.holdTime = (long)(100 + blinkIntensity * 50); // 保持闭合时间
+            blinkAnim.holdTime = (long) (100 + blinkIntensity * 50); // 保持闭合时间
         }
 
         if (blinkAnim.isBlinking) {
@@ -251,8 +255,8 @@ public class AFKRenderer {
 
         // 预计算曲线值
         for (int i = 0; i < EYELID_SEGMENTS; i++) {
-            float normalizedX = (float)i / (EYELID_SEGMENTS - 1) * 2.0f - 1.0f;
-            eyelidCurveCache[i] = (float)Math.cos(normalizedX * Math.PI * 0.5f);
+            float normalizedX = (float) i / (EYELID_SEGMENTS - 1) * 2.0f - 1.0f;
+            eyelidCurveCache[i] = (float) Math.cos(normalizedX * Math.PI * 0.5f);
         }
 
         lastCacheUpdate = System.currentTimeMillis();
@@ -277,11 +281,11 @@ public class AFKRenderer {
     }
 
     private static void renderUpperEyelidOptimized(GuiGraphics guiGraphics, int screenWidth, int screenHeight,
-                                                   float closedAmount, float intensity) {
+            float closedAmount, float intensity) {
         // 性能优化：减少分段数，使用整数运算
         int segmentWidth = screenWidth / EYELID_SEGMENTS;
         float maxHeight = screenHeight * 0.25f * intensity;
-        int currentHeight = (int)(maxHeight * closedAmount);
+        int currentHeight = (int) (maxHeight * closedAmount);
 
         // 使用缓存计算高度
         for (int i = 0; i < EYELID_SEGMENTS; i++) {
@@ -289,44 +293,44 @@ public class AFKRenderer {
             int nextX = (i == EYELID_SEGMENTS - 1) ? screenWidth : (i + 1) * segmentWidth;
 
             float curve = eyelidCurveCache[i];
-            int pointHeight = (int)(currentHeight * (0.7f + 0.3f * curve));
+            int pointHeight = (int) (currentHeight * (0.7f + 0.3f * curve));
 
             // 简化渲染：绘制矩形区域而不是逐像素
             if (pointHeight > 0) {
-                int alpha = 255 - (int)(100 * (1.0f - closedAmount));
+                int alpha = 255 - (int) (100 * (1.0f - closedAmount));
 
                 // 顶部渐变（简化版：只绘制一个矩形）
                 guiGraphics.fill(x, 0, nextX, pointHeight, (alpha << 24) | 0x000000);
 
                 // 边缘渐变（简化版：只绘制一条线）
-                int edgeAlpha = (int)(alpha * 0.7f);
+                int edgeAlpha = (int) (alpha * 0.7f);
                 guiGraphics.fill(x, pointHeight, nextX, pointHeight + 1, (edgeAlpha << 24) | 0x000000);
             }
         }
     }
 
     private static void renderLowerEyelidOptimized(GuiGraphics guiGraphics, int screenWidth, int screenHeight,
-                                                   float closedAmount, float intensity) {
+            float closedAmount, float intensity) {
         int segmentWidth = screenWidth / EYELID_SEGMENTS;
         float maxHeight = screenHeight * 0.25f * intensity;
-        int currentHeight = (int)(maxHeight * closedAmount);
+        int currentHeight = (int) (maxHeight * closedAmount);
 
         for (int i = 0; i < EYELID_SEGMENTS; i++) {
             int x = i * segmentWidth;
             int nextX = (i == EYELID_SEGMENTS - 1) ? screenWidth : (i + 1) * segmentWidth;
 
             float curve = eyelidCurveCache[i];
-            int pointHeight = (int)(currentHeight * (0.7f + 0.3f * curve));
+            int pointHeight = (int) (currentHeight * (0.7f + 0.3f * curve));
 
             if (pointHeight > 0) {
-                int alpha = 255 - (int)(100 * (1.0f - closedAmount));
+                int alpha = 255 - (int) (100 * (1.0f - closedAmount));
                 int bottomY = screenHeight - pointHeight;
 
                 // 底部渐变（简化版）
                 guiGraphics.fill(x, bottomY, nextX, screenHeight, (alpha << 24) | 0x000000);
 
                 // 边缘渐变
-                int edgeAlpha = (int)(alpha * 0.7f);
+                int edgeAlpha = (int) (alpha * 0.7f);
                 guiGraphics.fill(x, bottomY - 1, nextX, bottomY, (edgeAlpha << 24) | 0x000000);
             }
         }
@@ -346,7 +350,7 @@ public class AFKRenderer {
             int screenHeight = mc.getWindow().getGuiScaledHeight();
 
             // 性能优化：使用简单的全屏半透明矩形代替复杂的径向渐变
-            int alpha = (int)(darkeningAlpha * 200); // 降低最大透明度
+            int alpha = (int) (darkeningAlpha * 200); // 降低最大透明度
             guiGraphics.fill(0, 0, screenWidth, screenHeight, (alpha << 24) | 0x000000);
 
             // 添加简单的边缘变暗效果（优化版）
@@ -356,10 +360,11 @@ public class AFKRenderer {
         }
     }
 
-    private static void renderSimpleEdgeDarkening(GuiGraphics guiGraphics, int screenWidth, int screenHeight, float alpha) {
+    private static void renderSimpleEdgeDarkening(GuiGraphics guiGraphics, int screenWidth, int screenHeight,
+            float alpha) {
         // 性能优化：简化的边缘变暗效果
-        int edgeSize = (int)(screenHeight * 0.1f);
-        int edgeAlpha = (int)(alpha * 150);
+        int edgeSize = (int) (screenHeight * 0.1f);
+        int edgeAlpha = (int) (alpha * 150);
 
         // 顶部边缘
         guiGraphics.fill(0, 0, screenWidth, edgeSize, (edgeAlpha << 24) | 0x000000);
@@ -368,14 +373,15 @@ public class AFKRenderer {
         guiGraphics.fill(0, screenHeight - edgeSize, screenWidth, screenHeight, (edgeAlpha << 24) | 0x000000);
 
         // 侧边边缘（较窄）
-        int sideEdgeSize = (int)(screenWidth * 0.05f);
-        int sideAlpha = (int)(alpha * 100);
+        int sideEdgeSize = (int) (screenWidth * 0.05f);
+        int sideAlpha = (int) (alpha * 100);
         guiGraphics.fill(0, 0, sideEdgeSize, screenHeight, (sideAlpha << 24) | 0x000000);
         guiGraphics.fill(screenWidth - sideEdgeSize, 0, screenWidth, screenHeight, (sideAlpha << 24) | 0x000000);
     }
 
     private static void renderAFKWarning(GuiGraphics guiGraphics, float afkProgress) {
-        if (mc.player == null) return;
+        if (mc.player == null)
+            return;
 
         String warningText = "";
         int textColor;
@@ -406,7 +412,7 @@ public class AFKRenderer {
             Component textComponent = Component.literal(warningText).withStyle(ChatFormatting.BOLD);
 
             int screenWidth = mc.getWindow().getGuiScaledWidth();
-            int textWidth = (int)(mc.font.width(textComponent) * scale);
+            int textWidth = (int) (mc.font.width(textComponent) * scale);
             int x = screenWidth / 2 - textWidth / 2;
             int y = 30;
 
@@ -414,7 +420,7 @@ public class AFKRenderer {
             if (shouldPulse) {
                 float pulse = (Mth.sin(System.currentTimeMillis() * 0.002f) + 1.0f) * 0.5f;
                 scale = 1.2f + pulse * 0.2f;
-                textWidth = (int)(mc.font.width(textComponent) * scale);
+                textWidth = (int) (mc.font.width(textComponent) * scale);
                 x = screenWidth / 2 - textWidth / 2;
             }
 
@@ -440,7 +446,7 @@ public class AFKRenderer {
             if (shouldPulse) {
                 float flashAlpha = (Mth.sin(System.currentTimeMillis() * 0.005f) + 1.0f) * 0.5f * 0.2f;
                 guiGraphics.fill(x - 5, y - 3, x + textWidth + 5, y + mc.font.lineHeight + 3,
-                        ((int)(flashAlpha * 255) << 24) | 0xFF0000);
+                        ((int) (flashAlpha * 255) << 24) | 0xFF0000);
             }
         }
     }
@@ -481,17 +487,17 @@ public class AFKRenderer {
     }
 
     // 性能监控：检查是否需要降低效果质量
-//    public static boolean shouldReduceQuality() {
-//        // 如果FPS低于30，减少效果质量
-//        if (mc.getFps() < 30) {
-//            return true;
-//        }
-//
-//        // 如果有很多实体，减少效果质量
-//        if (mc.level != null && mc.level.getEntities().count() > 50) {
-//            return true;
-//        }
-//
-//        return false;
-//    }
+    // public static boolean shouldReduceQuality() {
+    // // 如果FPS低于30，减少效果质量
+    // if (mc.getFps() < 30) {
+    // return true;
+    // }
+    //
+    // // 如果有很多实体，减少效果质量
+    // if (mc.level != null && mc.level.getEntities().count() > 50) {
+    // return true;
+    // }
+    //
+    // return false;
+    // }
 }
