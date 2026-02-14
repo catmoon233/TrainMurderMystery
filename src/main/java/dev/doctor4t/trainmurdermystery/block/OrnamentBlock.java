@@ -3,7 +3,8 @@ package dev.doctor4t.trainmurdermystery.block;
 import com.mojang.serialization.MapCodec;
 import dev.doctor4t.trainmurdermystery.block.property.OrnamentShape;
 import dev.doctor4t.trainmurdermystery.index.TMMProperties;
-import dev.doctor4t.trainmurdermystery.mixin.AbstractBlockInvoker;
+
+import dev.doctor4t.trainmurdermystery.mixin.block.AbstractBlockInvoker;
 import dev.doctor4t.trainmurdermystery.util.BlockUtils;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
