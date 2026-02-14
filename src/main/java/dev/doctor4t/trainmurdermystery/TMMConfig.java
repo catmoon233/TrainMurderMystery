@@ -172,9 +172,9 @@ public class TMMConfig extends MidnightConfig {
 
     @Comment(category = "afk", centered = true)
     public static Comment afkConfigComment;
-    @Entry(category = "afk", min = 60, max = 24000, isSlider = true) // 3秒到20分钟
+    @Entry(category = "afk", min = 60, max = 12000, isSlider = true) // 3秒到20分钟
     public static int afkThresholdSeconds = (int) (4.5 * 60); // 5分钟
-    // @Entry(category = "afk", min = 60, max = 12000, isSlider = true) // 3秒到10分钟
+    @Entry(category = "afk", min = 60, max = 24000, isSlider = true) // 3秒到10分钟
     public static int afkDeathSeconds = (int) (5 * 60); // 5分钟
     @Entry(category = "afk", min = 30, max = 2400, isSlider = true) // 1.5秒到120秒
     public static int afkWarningSeconds = 4 * 60; // 4分钟时开始警告
