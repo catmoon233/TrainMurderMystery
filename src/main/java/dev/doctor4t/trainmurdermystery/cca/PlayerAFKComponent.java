@@ -124,7 +124,9 @@ public class PlayerAFKComponent implements RoleComponent, ServerTickingComponent
         int warningThreshold = TMMConfig.afkWarningSeconds * 20; // 转换为ticks
         int sleepyThreshold = TMMConfig.afkSleepySeconds * 20; // 转换为ticks
         int deathThreshold = TMMConfig.afkDeathSeconds * 20; // 添加死亡阈值，转换为ticks
-
+        if (tickR % 200 == 0) {// 10s 同步一次
+            this.sync(); // 确保客户端同步进度
+        }
         if (this.lastActionTime >= deathThreshold) {
             // 如果达到死亡阈值，直接杀死玩家
             GameFunctions.killPlayer(this.player, true, null, TMM.id("death_afk"));
