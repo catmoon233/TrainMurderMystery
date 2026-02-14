@@ -133,12 +133,12 @@ public class PlayerAFKComponent implements RoleComponent, ServerTickingComponent
             }
         } else if (this.lastActionTime >= warningThreshold && this.lastActionTime < afkThreshold && !this.isAFK) {
             // 接近挂机阈值但还未达到
-            if (tickR % 400 == 0) {// 10s 同步一次
+            if (tickR % 400 == 0) {// 20s 同步一次
                 this.sync(); // 确保客户端同步进度
             }
         } else if (this.lastActionTime >= sleepyThreshold && this.lastActionTime < warningThreshold && !this.isAFK) {
             // 开始显示困倦效果
-            if (tickR % 400 == 0) {// 5s 同步一次
+            if (tickR % 400 == 0) {// 20s 同步一次
                 this.sync(); // 确保客户端同步进度
             }
         }
