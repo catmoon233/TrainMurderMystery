@@ -25,6 +25,8 @@ public class NoteItemMixin {
         if (!user.isShiftKeyDown()) {
             return;
         }
-        Minecraft.getInstance().setScreen(new NoteScreen());
+        Minecraft.getInstance().execute(() -> {
+            Minecraft.getInstance().setScreen(new NoteScreen());
+        });
     }
 }

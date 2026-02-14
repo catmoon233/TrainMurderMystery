@@ -1,2 +1,0 @@
-tmm_maps.json
-该文件需要放在run/world下
