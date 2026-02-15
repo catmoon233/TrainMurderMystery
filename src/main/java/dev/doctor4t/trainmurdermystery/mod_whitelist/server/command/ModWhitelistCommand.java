@@ -13,6 +13,7 @@ import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.players.PlayerList;
 
 import java.util.List;
 import java.util.UUID;
@@ -116,6 +117,18 @@ public class ModWhitelistCommand {
 
 		try {
 			maxPlayers = newMaxPlayers;
+			PlayerList playerList = server.getPlayerList();
+			// 使用反射修改PlayerList中的maxPlayers字段
+			try {
+				java.lang.reflect.Field maxPlayersField = PlayerList.class.getDeclaredField("maxPlayers");
+				maxPlayersField.setAccessible(true);
+				maxPlayersField.set(playerList, newMaxPlayers);
+			} catch (Exception e) {
+				MWLogger.LOGGER.error("Failed to modify PlayerList maxPlayers via reflection", e);
+				source.sendFailure(Component.literal("§cFailed to update player list max players: " + e.getMessage()));
+				return 0;
+			}
+
 
 			source.sendSuccess(
 				() -> Component.literal("§aMax players changed from §f" + oldMaxPlayers + "§a to §f" + newMaxPlayers),
