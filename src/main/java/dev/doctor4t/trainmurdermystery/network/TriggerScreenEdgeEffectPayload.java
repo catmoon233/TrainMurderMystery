@@ -36,7 +36,6 @@ public record TriggerScreenEdgeEffectPayload(int color, long durationMs, float i
         ClientPlayNetworking.registerGlobalReceiver(ID, (payload, context) -> {
             context.client().execute(() -> {
                 StaminaRenderer.triggerScreenEdgeEffect(payload.color, payload.durationMs, payload.intensity);
-
             });
         });
     }

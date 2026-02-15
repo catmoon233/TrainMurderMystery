@@ -89,7 +89,6 @@
 		],
 		"subtitle": "subtitles.block.door.locked"
 	},
-
 	"item.key.door": {
 		"sounds": [
 			"trainmurdermystery:item/key_door"
@@ -165,7 +164,6 @@
 		],
 		"subtitle": "subtitles.item.psycho.armour"
 	},
-
 	"ambient.train.inside": {
 		"sounds": [
 			"trainmurdermystery:ambient/train_inside"
@@ -180,7 +178,10 @@
 	},
 	"ambient.psycho_drone": {
 		"sounds": [
-			"trainmurdermystery:ambient/psycho_drone"
+			{
+				"name": "trainmurdermystery:ambient/psycho_drone",
+				"stream": true
+			}
 		],
 		"subtitle": "subtitles.ambient.psycho_drone"
 	},
@@ -196,7 +197,6 @@
 		],
 		"subtitle": "subtitles.ambient.train.horn"
 	},
-
 	"ui.shop.buy": {
 		"sounds": [
 			"trainmurdermystery:ui/shop_buy"
