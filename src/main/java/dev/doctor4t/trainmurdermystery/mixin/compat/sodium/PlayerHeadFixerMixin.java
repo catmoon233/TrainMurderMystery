@@ -1,29 +1,48 @@
 package dev.doctor4t.trainmurdermystery.mixin.compat.sodium;
 
-import com.mojang.authlib.GameProfile;
-import dev.doctor4t.trainmurdermystery.client.TMMClient;
-import net.minecraft.client.multiplayer.PlayerInfo;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.SkullBlockRenderer;
 import net.minecraft.client.resources.DefaultPlayerSkin;
 import net.minecraft.client.resources.PlayerSkin;
 import net.minecraft.client.resources.SkinManager;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.component.ResolvableProfile;
+import net.minecraft.world.level.block.SkullBlock;
+import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.injection.At;
-import org.spongepowered.asm.mixin.injection.Redirect;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+
+import java.util.Map;
+
+import static net.minecraft.client.renderer.RenderType.entityCutoutNoCullZOffset;
 
 @Mixin(SkullBlockRenderer.class)
 public class PlayerHeadFixerMixin {
-    @Redirect(method = "getRenderType",at= @At(value = "INVOKE", target = "Lnet/minecraft/client/resources/SkinManager;getInsecureSkin(Lcom/mojang/authlib/GameProfile;)Lnet/minecraft/client/resources/PlayerSkin;"))
-    private static PlayerSkin getRenderType(SkinManager instance, GameProfile gameProfile){
+
+
+    @Shadow
+    @Final
+    private static Map<SkullBlock.Type, ResourceLocation> SKIN_BY_TYPE;
+
+    @Inject(method = "getRenderType",at= @At(value = "HEAD"),cancellable = true)
+    private static void getRenderType(SkullBlock.Type type, ResolvableProfile resolvableProfile, CallbackInfoReturnable<RenderType> cir){
         try {
-
-
-            PlayerSkin playerSkin = (PlayerSkin) instance.getOrLoad(gameProfile).getNow((PlayerSkin) null);
-            return playerSkin != null ? playerSkin : DefaultPlayerSkin.get(gameProfile);
+            ResourceLocation resourceLocation = (ResourceLocation)SKIN_BY_TYPE.get(type);
+            if (type == SkullBlock.Types.PLAYER && resolvableProfile != null) {
+                SkinManager skinManager = Minecraft.getInstance().getSkinManager();
+                cir.setReturnValue(RenderType.entityTranslucent(skinManager.getInsecureSkin(resolvableProfile.gameProfile()).texture()));
+            } else {
+                cir.setReturnValue(entityCutoutNoCullZOffset(resourceLocation));
+            }
+            cir.cancel();
         }catch (Exception ignored){
 
         }
-        return DefaultPlayerSkin.get(gameProfile);
+
 //        return playerInfo.getSkin();
     }
 }
