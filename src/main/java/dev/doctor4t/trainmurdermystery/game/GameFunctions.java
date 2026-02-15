@@ -672,7 +672,7 @@ public class GameFunctions {
                             return pre.test(new DeathInfo(victim, killer, deathReason));
                         });
                         if (!cantDefend) {
-                            victim.level().playSound(victim, victim.blockPosition(), TMMSounds.ITEM_PSYCHO_ARMOUR,
+                            victim.playNotifySound(TMMSounds.ITEM_PSYCHO_ARMOUR,
                                     SoundSource.MASTER, 5.0F, 1.0F);
                             bartenderPlayerComponent.removeArmor();
                             TMM.REPLAY_MANAGER.breakArmor(victim.getUUID());
@@ -695,7 +695,6 @@ public class GameFunctions {
                 if (killer instanceof ServerPlayer serverPlayer) {
                     ServerPlayNetworking.send(serverPlayer,
                             new BreakArmorPayload(victim.getX(), victim.getY(), victim.getZ()
-
                             ));
                 }
                 component.sync();
