@@ -8,6 +8,7 @@ import dev.doctor4t.trainmurdermystery.api.TMMRoles;
 import dev.doctor4t.trainmurdermystery.cca.GameRoundEndComponent;
 import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
 import dev.doctor4t.trainmurdermystery.client.TMMClient;
+import dev.doctor4t.trainmurdermystery.event.OnRoundStartWelcomeTimmer;
 import dev.doctor4t.trainmurdermystery.game.GameConstants;
 import dev.doctor4t.trainmurdermystery.game.GameFunctions;
 import dev.doctor4t.trainmurdermystery.game.GameFunctions.WinStatus;
@@ -90,7 +91,7 @@ public class RoundTextRenderer {
             if (game.getLooseEndWinner() != null)
                 winner = player.level().getPlayerByUUID(game.getLooseEndWinner());
             Component endText = role.getEndText(roundEnd.getWinStatus(),
-                    winner == null ? roundEnd.getCustomWinners() : winner.getDisplayName(),roundEnd);
+                    winner == null ? roundEnd.getCustomWinners() : winner.getDisplayName(), roundEnd);
             if (endText == null)
                 return;
             context.pose().pushPose();
@@ -334,6 +335,7 @@ public class RoundTextRenderer {
                                     player.getRandom().nextLong());
                     }
                 }
+                OnRoundStartWelcomeTimmer.EVENT.invoker().onWelcome(player, welcomeTime);
                 welcomeTime--;
             }
             if (endTime > 0) {
