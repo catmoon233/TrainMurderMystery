@@ -612,8 +612,9 @@ public class GameFunctions {
             killer = trueKiller;
         else
             killer = _killer;
+        _killer = killer;
         PlayerPsychoComponent component = PlayerPsychoComponent.KEY.get(victim);
-        if (killer instanceof ServerPlayer serverPlayer) {
+        if (killer != null && killer instanceof ServerPlayer serverPlayer) {
             final var triggerScreenEdgeEffectPayload = new TriggerScreenEdgeEffectPayload(Color.WHITE.getRGB(), 600,
                     0.6f);
             ServerPlayNetworking.send(serverPlayer, triggerScreenEdgeEffectPayload);
