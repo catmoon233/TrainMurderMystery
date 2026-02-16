@@ -763,6 +763,19 @@ public class GameFunctions {
             if (victim instanceof ServerPlayer serverPlayerEntity && isPlayerAliveAndSurvival(serverPlayerEntity)) {
                 serverPlayerEntity.setGameMode(net.minecraft.world.level.GameType.SPECTATOR);
                 OnPlayerDeath.EVENT.invoker().onPlayerDeath(victim, deathReason);
+                PlayerPoisonComponent poisonComponent = PlayerPoisonComponent.KEY.maybeGet(serverPlayerEntity)
+                        .orElse(null);
+                BartenderPlayerComponent bartenderPlayerComponent = BartenderPlayerComponent.KEY
+                        .maybeGet(serverPlayerEntity)
+                        .orElse(null);
+                // 删除玩家死后中毒
+                if (poisonComponent != null) {
+                    poisonComponent.clear();
+                }
+                // 删除玩家死后盾
+                if (bartenderPlayerComponent != null) {
+                    bartenderPlayerComponent.clear();
+                }
             } else {
                 return;
             }
