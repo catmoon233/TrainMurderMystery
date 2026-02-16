@@ -60,6 +60,7 @@ import dev.doctor4t.trainmurdermystery.entity.PlayerBodyEntity;
 import dev.doctor4t.trainmurdermystery.event.AllowPlayerDeath;
 import dev.doctor4t.trainmurdermystery.event.EarlyKillPlayer;
 import dev.doctor4t.trainmurdermystery.event.OnGameTrueStarted;
+import dev.doctor4t.trainmurdermystery.event.OnGiveKillerBalance;
 import dev.doctor4t.trainmurdermystery.event.OnPlayerDeath;
 import dev.doctor4t.trainmurdermystery.event.OnPlayerKilledPlayer;
 import dev.doctor4t.trainmurdermystery.event.OnPlayerKilledPlayerIdentifier;
@@ -768,7 +769,9 @@ public class GameFunctions {
 
             // 杀手击杀获得金钱奖励
             if (killer != null && GameWorldComponent.KEY.get(killer.level()).canUseKillerFeatures(killer)) {
-                PlayerShopComponent.KEY.get(killer).addToBalance(GameConstants.getMoneyPerKill());
+                int gift = OnGiveKillerBalance.EVENT.invoker().onGiveKillerBalance(victim, killer, deathReason);
+                gift += GameConstants.getMoneyPerKill();
+                PlayerShopComponent.KEY.get(killer).addToBalance(gift);
             }
             if (killer != null) {
                 inventory_label: for (List<ItemStack> list : killer.getInventory().compartments) {
