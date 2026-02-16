@@ -58,6 +58,7 @@ import dev.doctor4t.trainmurdermystery.entity.FirecrackerEntity;
 import dev.doctor4t.trainmurdermystery.entity.NoteEntity;
 import dev.doctor4t.trainmurdermystery.entity.PlayerBodyEntity;
 import dev.doctor4t.trainmurdermystery.event.AllowPlayerDeath;
+import dev.doctor4t.trainmurdermystery.event.EarlyKillPlayer;
 import dev.doctor4t.trainmurdermystery.event.OnGameTrueStarted;
 import dev.doctor4t.trainmurdermystery.event.OnPlayerDeath;
 import dev.doctor4t.trainmurdermystery.event.OnPlayerKilledPlayer;
@@ -603,8 +604,14 @@ public class GameFunctions {
         killPlayer(victim, spawnBody, killer, GameConstants.DeathReasons.GENERIC);
     }
 
-    public static void killPlayer(Player victim, boolean spawnBody, @Nullable Player killer,
+    public static void killPlayer(Player victim, boolean spawnBody, @Nullable Player _killer,
             ResourceLocation deathReason) {
+        Player trueKiller = EarlyKillPlayer.FIND_KILLER_EVENT.invoker().findTrueKiller(victim, _killer, deathReason);
+        Player killer;
+        if (trueKiller != null)
+            killer = trueKiller;
+        else
+            killer = _killer;
         PlayerPsychoComponent component = PlayerPsychoComponent.KEY.get(victim);
         if (killer instanceof ServerPlayer serverPlayer) {
             final var triggerScreenEdgeEffectPayload = new TriggerScreenEdgeEffectPayload(Color.WHITE.getRGB(), 600,
@@ -694,8 +701,7 @@ public class GameFunctions {
 
                 if (killer instanceof ServerPlayer serverPlayer) {
                     ServerPlayNetworking.send(serverPlayer,
-                            new BreakArmorPayload(victim.getX(), victim.getY(), victim.getZ()
-                            ));
+                            new BreakArmorPayload(victim.getX(), victim.getY(), victim.getZ()));
                 }
                 component.sync();
                 victim.playNotifySound(TMMSounds.ITEM_PSYCHO_ARMOUR, SoundSource.MASTER, 5F, 1F);
