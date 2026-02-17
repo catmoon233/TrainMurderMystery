@@ -331,7 +331,7 @@ public class GameReplayManager {
         }
     }
 
-    public void addEvent(GameReplayData.EventType type, UUID sourcePlayer, UUID targetPlayer, String itemUsed,
+    public Component addEvent(GameReplayData.EventType type, UUID sourcePlayer, UUID targetPlayer, String itemUsed,
             String message) {
         // 对可能为null的字符串参数进行处理
         String safeItemUsed = itemUsed != null ? itemUsed : "minecraft:air";
@@ -342,15 +342,16 @@ public class GameReplayManager {
                 .addEvent(event);
         ReplayEvent event1 = convertReplayEvent(event);
         try {
-
+            var text = currentReplayData.toText(this, currentReplayData, event1);
+            GameWorldComponent gameWorldComponent = GameWorldComponent.KEY.get(TMM.SERVER.overworld());
             TMM.SERVER.getPlayerList().getPlayers().forEach(
                     player -> {
-                        GameWorldComponent gameWorldComponent = GameWorldComponent.KEY.get(player.level());
+
                         if (gameWorldComponent != null && gameWorldComponent.isRunning()
                                 && !GameFunctions.isPlayerAliveAndSurvival(player)) {
 
                             try {
-                                var text = currentReplayData.toText(this, currentReplayData, event1);
+
                                 if (text != null) {
                                     // if(TMM.canSendReplay.)
                                     // player
@@ -367,17 +368,18 @@ public class GameReplayManager {
                             }
                         }
                     });
+            return text;
         } catch (Exception ignored) {
 
         }
-
+        return null;
     }
 
     // public static List<Predicate<Player>> cantSeeEvent = new ArrayList<>();
 
-    public void recordPlayerKill(UUID killerUuid, UUID victimUuid, ResourceLocation deathReason) {
+    public Component recordPlayerKill(UUID killerUuid, UUID victimUuid, ResourceLocation deathReason) {
         String deathReasonStr = deathReason != null ? deathReason.toString() : "unknown";
-        addEvent(GameReplayData.EventType.PLAYER_KILL, killerUuid, victimUuid, deathReasonStr, null);
+        return addEvent(GameReplayData.EventType.PLAYER_KILL, killerUuid, victimUuid, deathReasonStr, null);
     }
 
     public void recordPlayerRevival(UUID player, Role role) {

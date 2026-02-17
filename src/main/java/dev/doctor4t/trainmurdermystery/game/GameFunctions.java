@@ -79,6 +79,7 @@ import dev.doctor4t.trainmurdermystery.util.ReplayPayload;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.impl.util.log.Log;
 import net.fabricmc.loader.impl.util.log.LogCategory;
+import net.minecraft.ChatFormatting;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponentMap;
@@ -622,8 +623,10 @@ public class GameFunctions {
         }
 
         boolean canDeath = true;
+        Component deathMessageComponent = Component.translatable("message.death_reason.null");
         if (victim instanceof ServerPlayer serverVictim) {
-            TMM.REPLAY_MANAGER.recordPlayerKill(killer != null ? killer.getUUID() : null, serverVictim.getUUID(),
+            deathMessageComponent = TMM.REPLAY_MANAGER.recordPlayerKill(killer != null ? killer.getUUID() : null,
+                    serverVictim.getUUID(),
                     deathReason);
         }
 
@@ -776,6 +779,13 @@ public class GameFunctions {
                 if (bartenderPlayerComponent != null) {
                     bartenderPlayerComponent.clear();
                 }
+                serverPlayerEntity
+                        .sendSystemMessage(
+                                Component
+                                        .translatable("message.death_reason.prefix",
+                                                Component.literal("").withStyle(ChatFormatting.RESET)
+                                                        .append(deathMessageComponent))
+                                        .withStyle(ChatFormatting.DARK_RED));
             } else {
                 return;
             }
