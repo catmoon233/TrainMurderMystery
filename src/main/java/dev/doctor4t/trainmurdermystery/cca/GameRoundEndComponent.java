@@ -99,11 +99,13 @@ public class GameRoundEndComponent implements AutoSyncedComponent {
         this.players.clear();
         this.CustomWinnerPlayers.clear();
         // for (Tag element : tag.getList("winners", 10))
-            // this.CustomWinnerPlayers.add(NbtUtils.loadUUID((CompoundTag) element));
+        // this.CustomWinnerPlayers.add(NbtUtils.loadUUID((CompoundTag) element));
         for (Tag element : tag.getList("players", 10))
             this.players.add(new RoundEndData((CompoundTag) element));
         this.winStatus = GameFunctions.WinStatus.values()[tag.getInt("winstatus")];
         CustomWinnerID = tag.getString("winner_id");
+        if (CustomWinnerID.isEmpty())
+            CustomWinnerID = null;
         CustomWinnerColor = tag.getInt("winner_color");
     }
 
@@ -129,10 +131,14 @@ public class GameRoundEndComponent implements AutoSyncedComponent {
             list.add(detail.writeToNbt());
         // ListTag clist = new ListTag();
         // for (var detail : this.CustomWinnerPlayers)
-            // clist.add(NbtUtils.createUUID(detail));
+        // clist.add(NbtUtils.createUUID(detail));
         tag.put("players", list);
         // tag.put("winners", clist);
-        tag.putString("winner_id", CustomWinnerID);
+        if (CustomWinnerID == null) {
+            tag.putString("winner_id", "");
+        } else {
+            tag.putString("winner_id", CustomWinnerID);
+        }
         tag.putInt("winner_color", CustomWinnerColor);
         tag.putInt("winstatus", this.winStatus.ordinal());
     }
