@@ -783,7 +783,7 @@ public class GameFunctions {
                         .sendSystemMessage(
                                 Component
                                         .translatable("message.death_reason.prefix",
-                                                Component.literal("").withStyle(ChatFormatting.RESET)
+                                                Component.literal("").withStyle(ChatFormatting.LIGHT_PURPLE)
                                                         .append(deathMessageComponent))
                                         .withStyle(ChatFormatting.DARK_RED));
             } else {
