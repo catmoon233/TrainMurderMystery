@@ -43,11 +43,11 @@ public class GrenadeEntity extends ThrowableItemProjectile {
             world.sendParticles(new ItemParticleOption(ParticleTypes.ITEM, this.getDefaultItem().getDefaultInstance()), this.getX(), this.getY() + .1f, this.getZ(), 100, 0, 0, 0, 1f);
 
             for (ServerPlayer player : world.getPlayers(serverPlayerEntity ->
-                    this.getBoundingBox().inflate(3f).contains(serverPlayerEntity.position()) &&
+                    this.getBoundingBox().inflate(4.5f).contains(serverPlayerEntity.position()) &&
                             GameFunctions.isPlayerAliveAndSurvival(serverPlayerEntity))) {
 
                 // 检查玩家与爆炸点之间是否有视线（无障碍物）
-                if (hasLineOfSight(world, this.position(), player)) {
+                if (hasLineOfSight(world, this.position().add(0,0.5,0), player)) {
                     GameFunctions.killPlayer(player, true, this.getOwner() instanceof Player playerEntity ? playerEntity : null, GameConstants.DeathReasons.GRENADE);
                 }
             }
