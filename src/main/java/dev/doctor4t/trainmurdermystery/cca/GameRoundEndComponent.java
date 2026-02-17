@@ -30,7 +30,7 @@ public class GameRoundEndComponent implements AutoSyncedComponent {
     private GameFunctions.WinStatus winStatus = GameFunctions.WinStatus.NONE;
     public ArrayList<UUID> CustomWinnerPlayers = new ArrayList<>();
 
-    public String CustomWinnerID = null;
+    public String CustomWinnerID = "";
     public int CustomWinnerColor = 0;
 
     public GameRoundEndComponent(Level world) {
@@ -104,8 +104,6 @@ public class GameRoundEndComponent implements AutoSyncedComponent {
             this.players.add(new RoundEndData((CompoundTag) element));
         this.winStatus = GameFunctions.WinStatus.values()[tag.getInt("winstatus")];
         CustomWinnerID = tag.getString("winner_id");
-        if (CustomWinnerID.isEmpty())
-            CustomWinnerID = null;
         CustomWinnerColor = tag.getInt("winner_color");
     }
 
