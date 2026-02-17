@@ -57,6 +57,7 @@ import dev.doctor4t.trainmurdermystery.compat.TrainVoicePlugin;
 import dev.doctor4t.trainmurdermystery.entity.FirecrackerEntity;
 import dev.doctor4t.trainmurdermystery.entity.NoteEntity;
 import dev.doctor4t.trainmurdermystery.entity.PlayerBodyEntity;
+import dev.doctor4t.trainmurdermystery.event.AfterShieldAllowPlayerDeath;
 import dev.doctor4t.trainmurdermystery.event.AllowPlayerDeath;
 import dev.doctor4t.trainmurdermystery.event.EarlyKillPlayer;
 import dev.doctor4t.trainmurdermystery.event.OnGameTrueStarted;
@@ -715,7 +716,8 @@ public class GameFunctions {
                 component.stopPsycho();
             }
         }
-
+        if (!AfterShieldAllowPlayerDeath.EVENT.invoker().allowDeath(victim, deathReason))
+            return;
         // --- 新增统计数据更新逻辑 (击杀者) ---
         if (killer instanceof ServerPlayer serverKiller) {
             PlayerStatsComponent killerStats = PlayerStatsComponent.KEY.get(serverKiller);
