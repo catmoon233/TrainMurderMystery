@@ -61,7 +61,7 @@ public class DefenseItem extends Item {
             if (role != null) {
                 if (canUseByRightClickRolePaths.contains(role.identifier().getPath())) {
                     if (livingEntity instanceof Player player) {
-                        TMM.LOGGER.info("Hello, World!");
+                        // TMM.LOGGER.info("Hello, World!");
                         var bartenderComponent = BartenderPlayerComponent.KEY.get(player);
                         if (bartenderComponent != null) {
                             bartenderComponent.giveArmor();
