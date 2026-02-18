@@ -26,7 +26,7 @@ public class MoneyCommand {
                                                         EntityArgument.getEntities(context, "targets"),
                                                         IntegerArgumentType.getInteger(context, "amount"))))))
                         .then(Commands.literal("add").then(Commands.argument("amount", IntegerArgumentType.integer(0))
-                                .executes(context -> executeSet(context.getSource(),
+                                .executes(context -> executeAdd(context.getSource(),
                                         ImmutableList.of(context.getSource().getEntityOrException()),
                                         IntegerArgumentType.getInteger(context, "amount")))
                                 .then(
@@ -76,12 +76,12 @@ public class MoneyCommand {
             Entity target = targets.iterator().next();
             source.sendSuccess(
                     () -> Component
-                            .translatable("commands.tmm.setmoney", target.getName().getString(), amount)
+                            .translatable("commands.tmm.addmoney", target.getName().getString(), amount)
                             .withStyle(style -> style.withColor(0x00FF00)),
                     true);
         } else {
             source.sendSuccess(
-                    () -> Component.translatable("commands.tmm.setmoney.multiple", targets.size(), amount)
+                    () -> Component.translatable("commands.tmm.addmoney.multiple", targets.size(), amount)
                             .withStyle(style -> style.withColor(0x00FF00)),
                     true);
         }
