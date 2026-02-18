@@ -7,7 +7,6 @@ import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.cca.MapVotingComponent;
 import dev.doctor4t.trainmurdermystery.client.TMMClient;
 import dev.doctor4t.trainmurdermystery.data.MapConfig;
-import dev.doctor4t.trainmurdermystery.voting.MapVotingManager;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
@@ -289,7 +288,14 @@ public class MapSelectorScreen extends Screen {
     }
 
     private void renderMapOptions(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
-        int startX = 40 - scrollOffset; // 水平滚动
+        // width;
+        int totalWidth = mapOptions.size() * (MAP_BOX_WIDTH + MAP_SPACING);
+        int startX = 0;// 水平滚动
+        if (totalWidth + 40 >= width) {
+            startX = 40 - scrollOffset;
+        } else {
+            startX = MAP_SPACING / 2 + width / 2 - totalWidth / 2;
+        }
         int startY = (height - MAP_BOX_HEIGHT) / 2; // 垂直居中
 
         hoveredMap = null;

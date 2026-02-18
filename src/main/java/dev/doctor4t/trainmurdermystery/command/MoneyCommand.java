@@ -74,9 +74,11 @@ public class MoneyCommand {
 
         if (targets.size() == 1) {
             Entity target = targets.iterator().next();
+            int money = PlayerShopComponent.KEY.get(target).balance;
+            
             source.sendSuccess(
                     () -> Component
-                            .translatable("commands.tmm.addmoney", target.getName().getString(), amount)
+                            .translatable("commands.tmm.addmoney", target.getName().getString(), amount, money)
                             .withStyle(style -> style.withColor(0x00FF00)),
                     true);
         } else {
