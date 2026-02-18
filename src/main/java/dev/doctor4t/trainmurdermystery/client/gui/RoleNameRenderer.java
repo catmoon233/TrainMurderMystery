@@ -57,7 +57,7 @@ public class RoleNameRenderer {
         if (ProjectileUtil.getHitResultOnViewVector(player, entity -> entity instanceof Player player1,
                 range) instanceof EntityHitResult entityHitResult
                 && entityHitResult.getEntity() instanceof Player target) {
-            if (!AllowNameRender.EVENT.invoker().allowRenderName(player)) {
+            if (!AllowNameRender.EVENT.invoker().allowRenderName(target)) {
                 targetRole = TrainRole.BYSTANDER;
                 targetRole2 = null;
                 nametagAlpha = 0;
