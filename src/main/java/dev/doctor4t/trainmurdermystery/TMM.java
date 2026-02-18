@@ -189,7 +189,7 @@ public class TMM implements ModInitializer {
             SetVisualCommand.register(dispatcher);
             ForceRoleCommand.register(dispatcher);
             SetTimerCommand.register(dispatcher);
-            SetMoneyCommand.register(dispatcher);
+            MoneyCommand.register(dispatcher);
             SetAutoTrainResetCommand.register(dispatcher);
             SetBoundCommand.register(dispatcher);
             AutoStartCommand.register(dispatcher);
