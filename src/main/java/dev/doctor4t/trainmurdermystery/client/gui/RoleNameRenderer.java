@@ -5,6 +5,7 @@ import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
 import dev.doctor4t.trainmurdermystery.cca.PlayerPsychoComponent;
 import dev.doctor4t.trainmurdermystery.client.TMMClient;
 import dev.doctor4t.trainmurdermystery.entity.NoteEntity;
+import dev.doctor4t.trainmurdermystery.event.AllowNameRender;
 import dev.doctor4t.trainmurdermystery.game.GameFunctions;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.DeltaTracker;
@@ -56,6 +57,13 @@ public class RoleNameRenderer {
         if (ProjectileUtil.getHitResultOnViewVector(player, entity -> entity instanceof Player player1,
                 range) instanceof EntityHitResult entityHitResult
                 && entityHitResult.getEntity() instanceof Player target) {
+            if (!AllowNameRender.EVENT.invoker().allowRenderName(player)) {
+                targetRole = TrainRole.BYSTANDER;
+                targetRole2 = null;
+                nametagAlpha = 0;
+                nametag = Component.literal("");
+                return;
+            }
             nametagAlpha = Mth.lerp(tickCounter.getGameTimeDeltaPartialTick(true) / 4, nametagAlpha, 1f);
             nametag = target.getDisplayName();
             if (component.canUseKillerFeatures(target)) {
