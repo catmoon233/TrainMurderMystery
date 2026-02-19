@@ -110,6 +110,9 @@ public class PlayerAFKComponent implements RoleComponent, ServerTickingComponent
 
         if (!GameWorldComponent.KEY.get(this.player.level()).isRunning())
             return;
+        if (player.isSpectator()) {
+            this.lastActionTime = 0;
+        }
         this.lastActionTime++;
         this.afkTime = lastActionTime;
 
