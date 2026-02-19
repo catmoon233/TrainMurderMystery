@@ -1,7 +1,6 @@
 package dev.doctor4t.trainmurdermystery.client;
 
 import com.google.common.collect.Maps;
-import com.mojang.authlib.minecraft.client.MinecraftClient;
 import com.mojang.blaze3d.platform.InputConstants;
 import dev.doctor4t.ratatouille.client.util.OptionLocker;
 import dev.doctor4t.ratatouille.client.util.ambience.AmbienceUtil;
