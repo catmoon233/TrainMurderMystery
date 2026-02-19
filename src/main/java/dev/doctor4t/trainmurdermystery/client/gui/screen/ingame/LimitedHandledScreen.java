@@ -605,5 +605,6 @@ public abstract class LimitedHandledScreen<T extends AbstractContainerMenu> exte
     public void onClose() {
         this.minecraft.player.closeContainer();
         super.onClose();
+        this.handler.setCarried(ItemStack.EMPTY);
     }
 }

@@ -24,6 +24,10 @@ public abstract class CreativeInventoryScreenMixin extends EffectRenderingInvent
             original.call();
             return;
         }
+        if (TMMClient.gameComponent == null) {
+            original.call();
+            return;
+        }
         if (TMMClient.isPlayerAliveAndInSurvival()) {
             this.minecraft.setScreen(new LimitedInventoryScreen(this.minecraft.player));
         } else {

@@ -233,7 +233,7 @@ public class GameFunctions {
         // serverWorld.setWeatherParameters(0,-1, true, true);
         baseInitialize(serverWorld, gameComponent, readyPlayerList);
 
-        // 在分配角色前将所有玩家设置为冒险模式
+        // 在分配角色前将所有玩家设置为冒险模式，并且resetPlayer
         for (ServerPlayer player : serverWorld.players()) {
             player.setGameMode(net.minecraft.world.level.GameType.ADVENTURE);
         }
@@ -359,6 +359,7 @@ public class GameFunctions {
         // dismount all players as it can cause issues
         for (ServerPlayer player : serverWorld.players()) {
             player.removeVehicle();
+            resetPlayer(player);
         }
 
         // teleport players to play area
