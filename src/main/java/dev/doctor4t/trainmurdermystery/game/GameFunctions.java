@@ -1128,29 +1128,33 @@ public class GameFunctions {
                             BlockState blockState = cachedBlockPosition.getState();
 
                             // Check if the block is one of our door blocks
-                            if (blockState.getBlock() instanceof SmallDoorBlock
-                                    && blockState.getValue(SmallDoorBlock.HALF).equals(DoubleBlockHalf.LOWER)) {
-                                if (serverWorld.getBlockEntity(blockPos6) instanceof SmallDoorBlockEntity entity) {
-                                    entity.setBlasted(false);
-                                    entity.setJammed(0);
-                                    entity.setOpen(false);
-                                    String keyName = entity.getKeyName();
-                                    if (keyName == null)
-                                        keyName = "";
-                                    else if (keyName.endsWith(":")) {
-                                        keyName = "";
-                                    } else if (keyName.contains(":")) {
-                                        var arr = keyName.split(":");
-                                        if (arr.length > 0) {
-                                            keyName = arr[arr.length - 1];
+                            if (blockState.getBlock() instanceof SmallDoorBlock) {
+                                if (blockState.getValue(SmallDoorBlock.HALF).equals(DoubleBlockHalf.LOWER)) {
+                                    if (serverWorld.getBlockEntity(blockPos6) instanceof SmallDoorBlockEntity entity) {
+                                        entity.setBlasted(false);
+                                        entity.setJammed(0);
+                                        entity.setOpen(false);
+                                        String keyName = entity.getKeyName();
+                                        if (keyName == null)
+                                            keyName = "";
+                                        else if (keyName.endsWith(":")) {
+                                            keyName = "";
+                                        } else if (keyName.contains(":")) {
+                                            var arr = keyName.split(":");
+                                            if (arr.length > 0) {
+                                                keyName = arr[arr.length - 1];
+                                            }
                                         }
+                                        entity.setKeyName(keyName);
+                                        blockState = blockState.setValue(SmallDoorBlock.OPEN, false);
+                                        BlockEntityInfo blockEntityInfo = new BlockEntityInfo(
+                                                entity.saveCustomOnly(serverWorld.registryAccess()),
+                                                entity.components());
+                                        list2.add(new BlockInfo(blockPos7, blockState, blockEntityInfo));
                                     }
-                                    entity.setKeyName(keyName);
+                                } else if (blockState.getValue(SmallDoorBlock.HALF).equals(DoubleBlockHalf.UPPER)) {
                                     blockState = blockState.setValue(SmallDoorBlock.OPEN, false);
-                                    BlockEntityInfo blockEntityInfo = new BlockEntityInfo(
-                                            entity.saveCustomOnly(serverWorld.registryAccess()),
-                                            entity.components());
-                                    list2.add(new BlockInfo(blockPos7, blockState, blockEntityInfo));
+                                    list2.add(new BlockInfo(blockPos7, blockState, null));
                                 }
                             } else if (blockState.getBlock() instanceof TrimmedBedBlock
                                     && blockState.getValue(TrimmedBedBlock.PART).equals(BedPart.HEAD)) {
