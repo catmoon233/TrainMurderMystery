@@ -31,13 +31,19 @@ public abstract class ItemEntityMixin {
 
     @WrapMethod(method = "playerTouch")
     public void tmm$preventGunPickup(Player player, Operation<Void> original) {
-        if (TMM.isLobby) {
+        if (player.isCreative() || TMM.isLobby) {
             original.call(player);
             return;
         }
-        if (player.isCreative() || !this.getItem().is(TMMItemTags.GUNS)
-                || (GameWorldComponent.KEY.get(player.level()).canPickUpRevolver(player)
-                        && !player.equals(this.getOwner()))) {
+        if (!this.getItem().is(TMMItemTags.GUNS)) {
+            if (dev.doctor4t.trainmurdermystery.api.RoleMethodDispatcher.callOnPickupItem(player,
+                    this.getItem().getItem())) {
+                original.call(player);
+            }
+            return;
+        }
+        if ((GameWorldComponent.KEY.get(player.level()).canPickUpRevolver(player)
+                && !player.equals(this.getOwner()))) {
             // 在拾取物品之前调用角色的onPickupItem方法
             if (TMMItemUtils.hasItem(player, TMMItemTags.GUNS) > 0) {
                 return;
