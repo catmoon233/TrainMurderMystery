@@ -1,12 +1,15 @@
 package dev.doctor4t.trainmurdermystery.client;
 
 import com.google.common.collect.Maps;
+import com.mojang.authlib.minecraft.client.MinecraftClient;
 import com.mojang.blaze3d.platform.InputConstants;
 import dev.doctor4t.ratatouille.client.util.OptionLocker;
 import dev.doctor4t.ratatouille.client.util.ambience.AmbienceUtil;
 import dev.doctor4t.ratatouille.client.util.ambience.BackgroundAmbience;
 import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.TMMConfig;
+import dev.doctor4t.trainmurdermystery.api.Role;
+import dev.doctor4t.trainmurdermystery.api.TMMRoles;
 import dev.doctor4t.trainmurdermystery.block.SecurityMonitorBlock;
 import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
 import dev.doctor4t.trainmurdermystery.cca.PlayerMoodComponent;
@@ -596,22 +599,22 @@ public class TMMClient implements ClientModInitializer {
         }
         if (!isInstinctEnabled())
             return -1;
+        GameWorldComponent gameWorldComponent = (GameWorldComponent) GameWorldComponent.KEY
+                .get(Minecraft.getInstance().player.level());
         // if (target instanceof PlayerBodyEntity) return 0x606060;
         if (target instanceof ItemEntity || target instanceof NoteEntity || target instanceof FirecrackerEntity)
             return 0xDB9D00;
         if (target instanceof Player player) {
             if (GameFunctions.isPlayerSpectatingOrCreative(player))
                 return -1;
-            if (isKiller() && gameComponent.canUseKillerFeatures(player))
-                return Mth.hsvToRgb(0F, 1.0F, 0.6F);
-            if (gameComponent.isInnocent(player)) {
-                float mood = PlayerMoodComponent.KEY.get(target).getMood();
-                if (mood < GameConstants.DEPRESSIVE_MOOD_THRESHOLD) {
-                    return 0x171DC6;
-                } else if (mood < GameConstants.MID_MOOD_THRESHOLD) {
-                    return 0x1FAFAF;
-                } else {
-                    return 0x4EDD35;
+            if (!(target).isSpectator()) {
+                if (GameFunctions.isPlayerSpectatingOrCreative(Minecraft.getInstance().player)) {
+                    Role role = gameWorldComponent.getRole(player);
+                    if (role == null) {
+                        return (TMMRoles.CIVILIAN.color());
+                    } else {
+                        return (role.color());
+                    }
                 }
             }
             if (isPlayerSpectatingOrCreative())
