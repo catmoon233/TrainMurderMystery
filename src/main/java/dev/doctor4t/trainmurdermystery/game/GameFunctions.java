@@ -560,7 +560,7 @@ public class GameFunctions {
 
         // reset all players
         for (ServerPlayer player : world.players()) {
-            resetPlayer(player);
+            resetPlayerAfterGame(player);
         }
 
         // reset game component
@@ -578,12 +578,6 @@ public class GameFunctions {
     }
 
     public static void resetPlayer(ServerPlayer player) {
-        ServerPlayNetworking.send(player, new AnnounceEndingPayload());
-        GameReplay replay = TMM.REPLAY_MANAGER.getCurrentReplay();
-        if (replay != null) {
-            ServerPlayNetworking.send(player, new ReplayPayload(replay));
-        }
-        player.removeVehicle();
         TMMItemUtils.clearItem(player, (item) -> true, -1);
         PlayerMoodComponent.KEY.get(player).reset();
         PlayerShopComponent.KEY.get(player).reset();
@@ -597,6 +591,17 @@ public class GameFunctions {
 
         player.setGameMode(net.minecraft.world.level.GameType.ADVENTURE);
         player.stopSleeping();
+    }
+
+    public static void resetPlayerAfterGame(ServerPlayer player) {
+        resetPlayer(player);
+        ServerPlayNetworking.send(player, new AnnounceEndingPayload());
+        GameReplay replay = TMM.REPLAY_MANAGER.getCurrentReplay();
+        if (replay != null) {
+            ServerPlayNetworking.send(player, new ReplayPayload(replay));
+        }
+        player.removeVehicle();
+
         AreasWorldComponent.PosWithOrientation spawnPos = AreasWorldComponent.KEY.get(player.level()).getSpawnPos();
         DimensionTransition teleportTarget = new DimensionTransition(player.serverLevel(), spawnPos.pos, Vec3.ZERO,
                 spawnPos.yaw, spawnPos.pitch, DimensionTransition.DO_NOTHING);

@@ -409,7 +409,7 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
                         && serverWorld.getServer().getProfilePermissions(player.getGameProfile()) < 2
                         || (GameFunctions.isPlayerAliveAndSurvival(player)
                                 && areas.playArea.contains(player.position())))) {
-                    GameFunctions.resetPlayer(player);
+                    GameFunctions.resetPlayerAfterGame(player);
                 }
             }
         }
