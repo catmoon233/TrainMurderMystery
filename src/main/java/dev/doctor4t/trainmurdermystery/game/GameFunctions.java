@@ -229,7 +229,6 @@ public class GameFunctions {
 
         RoleMethodDispatcher.onStartGame(serverWorld);
         List<ServerPlayer> readyPlayerList = getReadyPlayerList(serverWorld);
-
         // serverWorld.setWeatherParameters(0,-1, true, true);
         baseInitialize(serverWorld, gameComponent, readyPlayerList);
 
@@ -341,6 +340,7 @@ public class GameFunctions {
             return;
         AreasWorldComponent areas = AreasWorldComponent.KEY.get(serverWorld);
         startTime = System.currentTimeMillis();
+        gameComponent.setJumpAvailable(areas.canJump);
 
         TrainWorldComponent.KEY.get(serverWorld).reset();
         WorldBlackoutComponent.KEY.get(serverWorld).reset();

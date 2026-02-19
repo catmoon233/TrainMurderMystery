@@ -40,9 +40,17 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
     public static final ComponentKey<GameWorldComponent> KEY = ComponentRegistry.getOrCreate(TMM.id("game"),
             GameWorldComponent.class);
     private final Level world;
-
+    private boolean canJump = false;
     private boolean lockedToSupporters = false;
     private boolean enableWeights = false;
+
+    public boolean isJumpAvailable() {
+        return canJump;
+    }
+
+    public void setJumpAvailable(boolean available) {
+        this.canJump = available;
+    }
 
     public boolean isSyncRole() {
         return syncRole;
@@ -288,7 +296,7 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
     public void readFromNbt(@NotNull CompoundTag nbtCompound, HolderLookup.Provider wrapperLookup) {
         // this.lockedToSupporters = nbtCompound.getBoolean("LockedToSupporters");
         // this.enableWeights = nbtCompound.getBoolean("EnableWeights");
-
+        this.canJump = nbtCompound.getBoolean("canJump");
         this.syncRole = nbtCompound.getBoolean("SyncRole");
         // if (!syncRole) {
         this.gameMode = TMMGameModes.GAME_MODES.get(ResourceLocation.parse(nbtCompound.getString("GameMode")));
@@ -331,6 +339,7 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
         // nbtCompound.putBoolean("LockedToSupporters", lockedToSupporters);
         // nbtCompound.putBoolean("EnableWeights", enableWeights);
         nbtCompound.putBoolean("SyncRole", syncRole);
+        nbtCompound.putBoolean("canJump", canJump);
         // if (!this.syncRole) {
         nbtCompound.putString("GameMode", this.gameMode != null ? this.gameMode.identifier.toString() : "");
         nbtCompound.putString("GameStatus", this.gameStatus.toString());

@@ -39,8 +39,12 @@ public abstract class KeyBindingMixin {
         }
         if (TMMClient.gameComponent != null && TMMClient.gameComponent.isRunning()
                 && TMMClient.isPlayerAliveAndInSurvival()) {
+            if (this.same(instance.options.keyJump)) {
+                if (TMMClient.gameComponent.isJumpAvailable())
+                    return false;
+                return true;
+            }
             return this.same(instance.options.keySwapOffhand) ||
-                    this.same(instance.options.keyJump) ||
                     this.same(instance.options.keyTogglePerspective) ||
 
                     this.same(instance.options.keyAdvancements);
