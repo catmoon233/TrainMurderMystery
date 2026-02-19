@@ -65,6 +65,7 @@ import dev.doctor4t.trainmurdermystery.event.OnGiveKillerBalance;
 import dev.doctor4t.trainmurdermystery.event.OnPlayerDeath;
 import dev.doctor4t.trainmurdermystery.event.OnPlayerKilledPlayer;
 import dev.doctor4t.trainmurdermystery.event.OnPlayerKilledPlayerIdentifier;
+import dev.doctor4t.trainmurdermystery.event.OnShieldBroken;
 import dev.doctor4t.trainmurdermystery.event.OnTeammateKilledTeammate;
 import dev.doctor4t.trainmurdermystery.event.ShouldDropOnDeath;
 import dev.doctor4t.trainmurdermystery.index.TMMBlocks;
@@ -700,6 +701,7 @@ public class GameFunctions {
                             TMM.REPLAY_MANAGER.breakArmor(victim.getUUID());
                             ServerPlayNetworking.send(spkiller,
                                     new BreakArmorPayload(victim.getX(), victim.getY(), victim.getZ()));
+                            OnShieldBroken.EVENT.invoker().onShieldBroken(victim, killer);
                             return;
                         }
                     }
