@@ -161,6 +161,14 @@ public class PlayerAFKComponent implements RoleComponent, ServerTickingComponent
 
     @Override
     public void clientTick() {
+        if (!TMM.isPlayerInGame(this.player))
+            return;
+
+        if (!GameWorldComponent.KEY.get(this.player.level()).isRunning())
+            return;
+        if (player.isSpectator()) {
+            this.lastActionTime = 0;
+        }
         this.lastActionTime++;
         this.afkTime = this.lastActionTime;
         // TMM.LOGGER.info("SYNC:" + this.afkTime);
