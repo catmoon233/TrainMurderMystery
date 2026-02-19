@@ -179,6 +179,11 @@ public class MapManager {
             } else {
                 areas.canJump = false;
             }
+            if (jsonObject.has("canSwim")) {
+                areas.canSwim = jsonObject.get("canSwim").getAsBoolean();
+            } else {
+                areas.canSwim = false;
+            }
             // 应用配置到AreasWorldComponent，使用新的嵌套结构
             if (jsonObject.has("spawnPos")) {
                 JsonObject spawnPosObj = jsonObject.getAsJsonObject("spawnPos");

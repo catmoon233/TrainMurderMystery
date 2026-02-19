@@ -477,7 +477,7 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
                 .getBlockState(new BlockPos((int) player.getX(), (int) (player.getY() - 2), (int) player.getZ()))
                 .getBlock();
         if (player.getY() < areas.playArea.minY
-                || (block == Blocks.WATER && block1 == Blocks.WATER && block2 == Blocks.WATER)) {
+                || !areas.canSwim && (block == Blocks.WATER && block1 == Blocks.WATER && block2 == Blocks.WATER)) {
             GameFunctions.killPlayer(player, false,
                     player.getLastAttacker() instanceof Player killerPlayer ? killerPlayer : null,
                     GameConstants.DeathReasons.FELL_OUT_OF_TRAIN);

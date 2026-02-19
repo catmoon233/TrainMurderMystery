@@ -112,6 +112,7 @@ public class AreasWorldComponent implements AutoSyncedComponent {
     // Room positions map
     Map<Integer, Vec3> roomPositions = new HashMap<>();
     public boolean canJump = false;
+    public boolean canSwim = false;
 
     public PosWithOrientation getSpawnPos() {
         return spawnPos;
