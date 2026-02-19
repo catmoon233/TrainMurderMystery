@@ -9,8 +9,9 @@ import static net.fabricmc.fabric.api.event.EventFactory.createArrayBacked;
 public interface OnGetInstinctHighlight {
 
     /**
-     * Callback for determining whether an {@link ItemStack} should drop when player
-     * died
+     * Callback for highlight color.
+     * -1 for no change (default),
+     * -2 for no instinct.
      */
     Event<OnGetInstinctHighlight> EVENT = createArrayBacked(OnGetInstinctHighlight.class,
             listeners -> (stack, isInstinctEnabled) -> {
