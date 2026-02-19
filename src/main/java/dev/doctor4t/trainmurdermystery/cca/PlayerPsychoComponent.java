@@ -49,6 +49,9 @@ public class PlayerPsychoComponent implements RoleComponent, ServerTickingCompon
     public void reset() {
         if (this.psychoTicks >= 1)
             this.stopPsycho();
+        if (this.player instanceof ServerPlayer serverPlayer) {
+            ServerPlayNetworking.send(serverPlayer, new RemoveStatusBarPayload("Psycho"));
+        }
         this.sync();
         this.psychoTicks = -1;
     }
@@ -116,7 +119,6 @@ public class PlayerPsychoComponent implements RoleComponent, ServerTickingCompon
         this.psychoTicks = -1;
         if (this.player instanceof ServerPlayer serverPlayer) {
             ServerPlayNetworking.send(serverPlayer, new RemoveStatusBarPayload("Psycho"));
-
         }
         this.player.getInventory().clearOrCountMatchingItems(itemStack -> itemStack.is(TMMItems.BAT), Integer.MAX_VALUE,
                 this.player.inventoryMenu.getCraftSlots());
