@@ -47,11 +47,7 @@ public class PlayerPsychoComponent implements RoleComponent, ServerTickingCompon
 
     @Override
     public void reset() {
-        if (this.psychoTicks >= 1)
-            this.stopPsycho();
-        if (this.player instanceof ServerPlayer serverPlayer) {
-            ServerPlayNetworking.send(serverPlayer, new RemoveStatusBarPayload("Psycho"));
-        }
+        this.stopPsychoAndRefreshPsychoCount();
         this.sync();
         this.psychoTicks = -1;
     }
@@ -113,15 +109,37 @@ public class PlayerPsychoComponent implements RoleComponent, ServerTickingCompon
         reset();
     }
 
-    public void stopPsycho() {
+    public int stopPsycho() {
         GameWorldComponent gameWorldComponent = GameWorldComponent.KEY.get(this.player.level());
-        gameWorldComponent.setPsychosActive(gameWorldComponent.getPsychosActive() - 1);
+        int result = gameWorldComponent.getPsychosActive();
+        gameWorldComponent.setPsychosActive(result - 1);
         this.psychoTicks = -1;
         if (this.player instanceof ServerPlayer serverPlayer) {
             ServerPlayNetworking.send(serverPlayer, new RemoveStatusBarPayload("Psycho"));
         }
         this.player.getInventory().clearOrCountMatchingItems(itemStack -> itemStack.is(TMMItems.BAT), Integer.MAX_VALUE,
                 this.player.inventoryMenu.getCraftSlots());
+        return result;
+    }
+
+    public void stopPsychoAndRefreshPsychoCount() {
+        if (this.stopPsycho() > 0) {
+            int count = 0;
+            if (this.player instanceof ServerPlayer sp) {
+                var players = sp.level().players();
+                for (var pl : players) {
+                    var ppc = PlayerPsychoComponent.KEY.maybeGet(pl).orElse(null);
+                    if (ppc != null) {
+                        if (ppc.psychoTicks > 0) {
+                            count++;
+                        }
+                    }
+                }
+            }
+            GameWorldComponent gameWorldComponent = GameWorldComponent.KEY.get(this.player.level());
+            gameWorldComponent.setPsychosActive(count);
+        }
+
     }
 
     public int getArmour() {

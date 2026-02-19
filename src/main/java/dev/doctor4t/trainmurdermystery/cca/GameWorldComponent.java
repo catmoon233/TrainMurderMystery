@@ -229,9 +229,10 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
         return psychosActive > 0;
     }
 
-    public void setPsychosActive(int psychosActive) {
+    public int setPsychosActive(int psychosActive) {
         this.psychosActive = Math.max(0, psychosActive);
         this.sync();
+        return this.psychosActive;
     }
 
     public GameMode getGameMode() {
