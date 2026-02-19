@@ -207,131 +207,131 @@ public class AreasWorldComponent implements AutoSyncedComponent {
         KEY.sync(this.world);
     }
 
-    public void loadFromFile() {
-        try {
-            Path areasFilePath = Paths.get(world.getServer().getServerDirectory().toString(), "world", "areas.json");
-            File areasFile = areasFilePath.toFile();
+    // public void loadFromFile() {
+    //     try {
+    //         Path areasFilePath = Paths.get(world.getServer().getServerDirectory().toString(), "world", "areas.json");
+    //         File areasFile = areasFilePath.toFile();
 
-            if (areasFile.exists()) {
-                FileReader reader = new FileReader(areasFile);
-                JsonObject jsonObject = JsonParser.parseReader(reader).getAsJsonObject();
-                reader.close();
+    //         if (areasFile.exists()) {
+    //             FileReader reader = new FileReader(areasFile);
+    //             JsonObject jsonObject = JsonParser.parseReader(reader).getAsJsonObject();
+    //             reader.close();
 
-                if (jsonObject.has("spawnPos")) {
-                    JsonObject spawnPosObj = jsonObject.getAsJsonObject("spawnPos");
-                    this.spawnPos = new PosWithOrientation(
-                            spawnPosObj.get("x").getAsDouble(),
-                            spawnPosObj.get("y").getAsDouble(),
-                            spawnPosObj.get("z").getAsDouble(),
-                            spawnPosObj.get("yaw").getAsFloat(),
-                            spawnPosObj.get("pitch").getAsFloat());
-                }
+    //             if (jsonObject.has("spawnPos")) {
+    //                 JsonObject spawnPosObj = jsonObject.getAsJsonObject("spawnPos");
+    //                 this.spawnPos = new PosWithOrientation(
+    //                         spawnPosObj.get("x").getAsDouble(),
+    //                         spawnPosObj.get("y").getAsDouble(),
+    //                         spawnPosObj.get("z").getAsDouble(),
+    //                         spawnPosObj.get("yaw").getAsFloat(),
+    //                         spawnPosObj.get("pitch").getAsFloat());
+    //             }
 
-                if (jsonObject.has("spectatorSpawnPos")) {
-                    JsonObject spectatorSpawnPosObj = jsonObject.getAsJsonObject("spectatorSpawnPos");
-                    this.spectatorSpawnPos = new PosWithOrientation(
-                            spectatorSpawnPosObj.get("x").getAsDouble(),
-                            spectatorSpawnPosObj.get("y").getAsDouble(),
-                            spectatorSpawnPosObj.get("z").getAsDouble(),
-                            spectatorSpawnPosObj.get("yaw").getAsFloat(),
-                            spectatorSpawnPosObj.get("pitch").getAsFloat());
-                }
-                if (jsonObject.has("canJump")) {
-                    this.canJump = jsonObject.get("canJump").getAsBoolean();
-                } else {
-                    this.canJump = false;
-                }
-                if (jsonObject.has("readyArea")) {
-                    JsonObject readyAreaObj = jsonObject.getAsJsonObject("readyArea");
-                    this.readyArea = new AABB(
-                            readyAreaObj.get("minX").getAsDouble(),
-                            readyAreaObj.get("minY").getAsDouble(),
-                            readyAreaObj.get("minZ").getAsDouble(),
-                            readyAreaObj.get("maxX").getAsDouble(),
-                            readyAreaObj.get("maxY").getAsDouble(),
-                            readyAreaObj.get("maxZ").getAsDouble());
-                } else {
-                    // 尝试从单独的readyArea.json加载
-                    loadReadyAreaFromFile();
-                }
+    //             if (jsonObject.has("spectatorSpawnPos")) {
+    //                 JsonObject spectatorSpawnPosObj = jsonObject.getAsJsonObject("spectatorSpawnPos");
+    //                 this.spectatorSpawnPos = new PosWithOrientation(
+    //                         spectatorSpawnPosObj.get("x").getAsDouble(),
+    //                         spectatorSpawnPosObj.get("y").getAsDouble(),
+    //                         spectatorSpawnPosObj.get("z").getAsDouble(),
+    //                         spectatorSpawnPosObj.get("yaw").getAsFloat(),
+    //                         spectatorSpawnPosObj.get("pitch").getAsFloat());
+    //             }
+    //             if (jsonObject.has("canJump")) {
+    //                 this.canJump = jsonObject.get("canJump").getAsBoolean();
+    //             } else {
+    //                 this.canJump = false;
+    //             }
+    //             if (jsonObject.has("readyArea")) {
+    //                 JsonObject readyAreaObj = jsonObject.getAsJsonObject("readyArea");
+    //                 this.readyArea = new AABB(
+    //                         readyAreaObj.get("minX").getAsDouble(),
+    //                         readyAreaObj.get("minY").getAsDouble(),
+    //                         readyAreaObj.get("minZ").getAsDouble(),
+    //                         readyAreaObj.get("maxX").getAsDouble(),
+    //                         readyAreaObj.get("maxY").getAsDouble(),
+    //                         readyAreaObj.get("maxZ").getAsDouble());
+    //             } else {
+    //                 // 尝试从单独的readyArea.json加载
+    //                 loadReadyAreaFromFile();
+    //             }
 
-                if (jsonObject.has("playAreaOffset")) {
-                    JsonObject playAreaOffsetObj = jsonObject.getAsJsonObject("playAreaOffset");
-                    this.playAreaOffset = new Vec3(
-                            playAreaOffsetObj.get("x").getAsDouble(),
-                            playAreaOffsetObj.get("y").getAsDouble(),
-                            playAreaOffsetObj.get("z").getAsDouble());
-                }
+    //             if (jsonObject.has("playAreaOffset")) {
+    //                 JsonObject playAreaOffsetObj = jsonObject.getAsJsonObject("playAreaOffset");
+    //                 this.playAreaOffset = new Vec3(
+    //                         playAreaOffsetObj.get("x").getAsDouble(),
+    //                         playAreaOffsetObj.get("y").getAsDouble(),
+    //                         playAreaOffsetObj.get("z").getAsDouble());
+    //             }
 
-                if (jsonObject.has("playArea")) {
-                    JsonObject playAreaObj = jsonObject.getAsJsonObject("playArea");
-                    this.playArea = new AABB(
-                            playAreaObj.get("minX").getAsDouble(),
-                            playAreaObj.get("minY").getAsDouble(),
-                            playAreaObj.get("minZ").getAsDouble(),
-                            playAreaObj.get("maxX").getAsDouble(),
-                            playAreaObj.get("maxY").getAsDouble(),
-                            playAreaObj.get("maxZ").getAsDouble());
-                }
+    //             if (jsonObject.has("playArea")) {
+    //                 JsonObject playAreaObj = jsonObject.getAsJsonObject("playArea");
+    //                 this.playArea = new AABB(
+    //                         playAreaObj.get("minX").getAsDouble(),
+    //                         playAreaObj.get("minY").getAsDouble(),
+    //                         playAreaObj.get("minZ").getAsDouble(),
+    //                         playAreaObj.get("maxX").getAsDouble(),
+    //                         playAreaObj.get("maxY").getAsDouble(),
+    //                         playAreaObj.get("maxZ").getAsDouble());
+    //             }
 
-                if (jsonObject.has("resetTemplateArea")) {
-                    JsonObject resetTemplateAreaObj = jsonObject.getAsJsonObject("resetTemplateArea");
-                    this.resetTemplateArea = new AABB(
-                            resetTemplateAreaObj.get("minX").getAsDouble(),
-                            resetTemplateAreaObj.get("minY").getAsDouble(),
-                            resetTemplateAreaObj.get("minZ").getAsDouble(),
-                            resetTemplateAreaObj.get("maxX").getAsDouble(),
-                            resetTemplateAreaObj.get("maxY").getAsDouble(),
-                            resetTemplateAreaObj.get("maxZ").getAsDouble());
-                }
+    //             if (jsonObject.has("resetTemplateArea")) {
+    //                 JsonObject resetTemplateAreaObj = jsonObject.getAsJsonObject("resetTemplateArea");
+    //                 this.resetTemplateArea = new AABB(
+    //                         resetTemplateAreaObj.get("minX").getAsDouble(),
+    //                         resetTemplateAreaObj.get("minY").getAsDouble(),
+    //                         resetTemplateAreaObj.get("minZ").getAsDouble(),
+    //                         resetTemplateAreaObj.get("maxX").getAsDouble(),
+    //                         resetTemplateAreaObj.get("maxY").getAsDouble(),
+    //                         resetTemplateAreaObj.get("maxZ").getAsDouble());
+    //             }
 
-                // Load resetPasteArea if present, otherwise derive from resetTemplateArea
-                if (jsonObject.has("resetPasteArea")) {
-                    JsonObject resetPasteAreaObj = jsonObject.getAsJsonObject("resetPasteArea");
-                    this.resetPasteArea = new AABB(
-                            resetPasteAreaObj.get("minX").getAsDouble(),
-                            resetPasteAreaObj.get("minY").getAsDouble(),
-                            resetPasteAreaObj.get("minZ").getAsDouble(),
-                            resetPasteAreaObj.get("maxX").getAsDouble(),
-                            resetPasteAreaObj.get("maxY").getAsDouble(),
-                            resetPasteAreaObj.get("maxZ").getAsDouble());
-                } else {
-                    // Default behavior: offset resetTemplateArea by (0, 55, 0)
-                    this.resetPasteArea = this.resetTemplateArea.move(0, 55, 0);
-                }
+    //             // Load resetPasteArea if present, otherwise derive from resetTemplateArea
+    //             if (jsonObject.has("resetPasteArea")) {
+    //                 JsonObject resetPasteAreaObj = jsonObject.getAsJsonObject("resetPasteArea");
+    //                 this.resetPasteArea = new AABB(
+    //                         resetPasteAreaObj.get("minX").getAsDouble(),
+    //                         resetPasteAreaObj.get("minY").getAsDouble(),
+    //                         resetPasteAreaObj.get("minZ").getAsDouble(),
+    //                         resetPasteAreaObj.get("maxX").getAsDouble(),
+    //                         resetPasteAreaObj.get("maxY").getAsDouble(),
+    //                         resetPasteAreaObj.get("maxZ").getAsDouble());
+    //             } else {
+    //                 // Default behavior: offset resetTemplateArea by (0, 55, 0)
+    //                 this.resetPasteArea = this.resetTemplateArea.move(0, 55, 0);
+    //             }
 
-                // Load room count
-                if (jsonObject.has("roomCount")) {
-                    this.roomCount = jsonObject.get("roomCount").getAsInt();
-                }
+    //             // Load room count
+    //             if (jsonObject.has("roomCount")) {
+    //                 this.roomCount = jsonObject.get("roomCount").getAsInt();
+    //             }
 
-                // Load room positions
-                if (jsonObject.has("roomPositions")) {
-                    JsonObject roomPositionsObj = jsonObject.getAsJsonObject("roomPositions");
-                    this.roomPositions.clear();
-                    for (String key : roomPositionsObj.keySet()) {
-                        try {
-                            int roomNumber = Integer.parseInt(key);
-                            JsonObject posObj = roomPositionsObj.getAsJsonObject(key);
-                            Vec3 position = new Vec3(
-                                    posObj.get("x").getAsDouble(),
-                                    posObj.get("y").getAsDouble(),
-                                    posObj.get("z").getAsDouble());
-                            this.roomPositions.put(roomNumber, position);
-                        } catch (NumberFormatException e) {
-                            TMM.LOGGER.warn("Invalid room number in areas.json: " + key);
-                        }
-                    }
-                }
+    //             // Load room positions
+    //             if (jsonObject.has("roomPositions")) {
+    //                 JsonObject roomPositionsObj = jsonObject.getAsJsonObject("roomPositions");
+    //                 this.roomPositions.clear();
+    //                 for (String key : roomPositionsObj.keySet()) {
+    //                     try {
+    //                         int roomNumber = Integer.parseInt(key);
+    //                         JsonObject posObj = roomPositionsObj.getAsJsonObject(key);
+    //                         Vec3 position = new Vec3(
+    //                                 posObj.get("x").getAsDouble(),
+    //                                 posObj.get("y").getAsDouble(),
+    //                                 posObj.get("z").getAsDouble());
+    //                         this.roomPositions.put(roomNumber, position);
+    //                     } catch (NumberFormatException e) {
+    //                         TMM.LOGGER.warn("Invalid room number in areas.json: " + key);
+    //                     }
+    //                 }
+    //             }
 
-            } else {
-                // 如果 areas.json 不存在，尝试加载单独的配置文件
-                loadReadyAreaFromFile();
-            }
-        } catch (Exception e) {
-            TMM.LOGGER.error("Failed to load areas from file", e);
-        }
-    }
+    //         } else {
+    //             // 如果 areas.json 不存在，尝试加载单独的配置文件
+    //             loadReadyAreaFromFile();
+    //         }
+    //     } catch (Exception e) {
+    //         TMM.LOGGER.error("Failed to load areas from file", e);
+    //     }
+    // }
 
     // 新增方法：从单独的 readyArea.json 文件加载准备区域
     public void loadReadyAreaFromFile() {
@@ -489,7 +489,7 @@ public class AreasWorldComponent implements AutoSyncedComponent {
 
             // Save room count
             jsonObject.addProperty("roomCount", this.roomCount);
-
+            jsonObject.addProperty("canJump", false);
             // Save room positions
             JsonObject roomPositionsObj = new JsonObject();
             for (Map.Entry<Integer, Vec3> entry : this.roomPositions.entrySet()) {
@@ -517,6 +517,7 @@ public class AreasWorldComponent implements AutoSyncedComponent {
         // "spectatorSpawnPos");
 
         this.readyArea = getBoxFromNbt(tag, "readyArea");
+        this.canJump = tag.getBoolean("canJump");
         // this.playAreaOffset = getVec3dFromNbt(tag, "playAreaOffset");
         // this.playArea = getBoxFromNbt(tag, "playArea");
         //
@@ -547,6 +548,7 @@ public class AreasWorldComponent implements AutoSyncedComponent {
         //
         // 将房间数量写入NBT
         tag.putInt("roomCount", this.roomCount);
+        tag.putBoolean("canJump", this.canJump);
 
         // 房间位置需要写入NBT（如果实现此功能）
         // 这里暂时不实现，因为NBT格式可能需要专门处理Map类型

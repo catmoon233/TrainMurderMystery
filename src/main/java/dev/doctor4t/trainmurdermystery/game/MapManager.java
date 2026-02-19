@@ -25,8 +25,9 @@ public class MapManager {
 
     /**
      * 保存当前地图配置到指定的地图文件
+     * 
      * @param serverWorld 服务器世界
-     * @param mapName 地图名称
+     * @param mapName     地图名称
      * @return 是否成功保存
      */
     public static boolean saveCurrentMap(ServerLevel serverWorld, String mapName) {
@@ -35,7 +36,8 @@ public class MapManager {
             AreasWorldComponent areas = AreasWorldComponent.KEY.get(serverWorld);
 
             // 创建地图目录
-            Path mapsDirPath = Paths.get(serverWorld.getServer().getWorldPath(LevelResource.ROOT).toString(), "train_maps");
+            Path mapsDirPath = Paths.get(serverWorld.getServer().getWorldPath(LevelResource.ROOT).toString(),
+                    "train_maps");
             File mapsDir = mapsDirPath.toFile();
             if (!mapsDir.exists()) {
                 mapsDir.mkdirs();
@@ -143,18 +145,20 @@ public class MapManager {
         }
     }
 
-    public static String last_start_map =  "";
+    public static String last_start_map = "";
 
     /**
      * 加载指定的地图配置
+     * 
      * @param serverWorld 服务器世界
-     * @param mapName 地图名称
+     * @param mapName     地图名称
      * @return 是否成功加载
      */
     public static boolean loadMap(ServerLevel serverWorld, String mapName) {
         try {
             // 构建地图配置文件路径
-            Path mapConfigPath = Paths.get(serverWorld.getServer().getWorldPath(LevelResource.ROOT).toString(), "train_maps", mapName + ".json");
+            Path mapConfigPath = Paths.get(serverWorld.getServer().getWorldPath(LevelResource.ROOT).toString(),
+                    "train_maps", mapName + ".json");
             File mapConfigFile = mapConfigPath.toFile();
 
             // 检查地图配置文件是否存在
@@ -170,7 +174,11 @@ public class MapManager {
             FileReader reader = new FileReader(mapConfigFile);
             JsonObject jsonObject = JsonParser.parseReader(reader).getAsJsonObject();
             reader.close();
-
+            if (jsonObject.has("canJump")) {
+                areas.canJump = jsonObject.get("canJump").getAsBoolean();
+            } else {
+                areas.canJump = false;
+            }
             // 应用配置到AreasWorldComponent，使用新的嵌套结构
             if (jsonObject.has("spawnPos")) {
                 JsonObject spawnPosObj = jsonObject.getAsJsonObject("spawnPos");
@@ -181,8 +189,7 @@ public class MapManager {
                         spawnPosObj.get("y").getAsDouble(),
                         spawnPosObj.get("z").getAsDouble(),
                         spawnYaw,
-                        spawnPitch
-                ));
+                        spawnPitch));
                 TMM.LOGGER.info("Loaded spawn position: " + spawnPosObj.get("x").getAsDouble() + ", " +
                         spawnPosObj.get("y").getAsDouble() + ", " + spawnPosObj.get("z").getAsDouble());
             } else {
@@ -191,17 +198,21 @@ public class MapManager {
 
             if (jsonObject.has("spectatorSpawnPos")) {
                 JsonObject spectatorSpawnPosObj = jsonObject.getAsJsonObject("spectatorSpawnPos");
-                float spectatorSpawnYaw = spectatorSpawnPosObj.has("yaw") ? spectatorSpawnPosObj.get("yaw").getAsFloat() : 0f;
-                float spectatorSpawnPitch = spectatorSpawnPosObj.has("pitch") ? spectatorSpawnPosObj.get("pitch").getAsFloat() : 0f;
+                float spectatorSpawnYaw = spectatorSpawnPosObj.has("yaw") ? spectatorSpawnPosObj.get("yaw").getAsFloat()
+                        : 0f;
+                float spectatorSpawnPitch = spectatorSpawnPosObj.has("pitch")
+                        ? spectatorSpawnPosObj.get("pitch").getAsFloat()
+                        : 0f;
                 areas.setSpectatorSpawnPos(new AreasWorldComponent.PosWithOrientation(
                         spectatorSpawnPosObj.get("x").getAsDouble(),
                         spectatorSpawnPosObj.get("y").getAsDouble(),
                         spectatorSpawnPosObj.get("z").getAsDouble(),
                         spectatorSpawnYaw,
-                        spectatorSpawnPitch
-                ));
-                TMM.LOGGER.info("Loaded spectator spawn position: " + spectatorSpawnPosObj.get("x").getAsDouble() + ", " +
-                        spectatorSpawnPosObj.get("y").getAsDouble() + ", " + spectatorSpawnPosObj.get("z").getAsDouble());
+                        spectatorSpawnPitch));
+                TMM.LOGGER
+                        .info("Loaded spectator spawn position: " + spectatorSpawnPosObj.get("x").getAsDouble() + ", " +
+                                spectatorSpawnPosObj.get("y").getAsDouble() + ", "
+                                + spectatorSpawnPosObj.get("z").getAsDouble());
             } else {
                 TMM.LOGGER.warn("Missing spectator spawn position data in map config: " + mapName);
             }
@@ -214,8 +225,7 @@ public class MapManager {
                         readyAreaObj.get("minZ").getAsDouble(),
                         readyAreaObj.get("maxX").getAsDouble(),
                         readyAreaObj.get("maxY").getAsDouble(),
-                        readyAreaObj.get("maxZ").getAsDouble()
-                ));
+                        readyAreaObj.get("maxZ").getAsDouble()));
                 TMM.LOGGER.info("Loaded ready area: " + readyAreaObj.get("minX").getAsDouble() + "," +
                         readyAreaObj.get("minY").getAsDouble() + "," + readyAreaObj.get("minZ").getAsDouble() + " to " +
                         readyAreaObj.get("maxX").getAsDouble() + "," + readyAreaObj.get("maxY").getAsDouble() + "," +
@@ -229,8 +239,7 @@ public class MapManager {
                 areas.setPlayAreaOffset(new Vec3(
                         playAreaOffsetObj.get("x").getAsDouble(),
                         playAreaOffsetObj.get("y").getAsDouble(),
-                        playAreaOffsetObj.get("z").getAsDouble()
-                ));
+                        playAreaOffsetObj.get("z").getAsDouble()));
                 TMM.LOGGER.info("Loaded play area offset: " + playAreaOffsetObj.get("x").getAsDouble() + ", " +
                         playAreaOffsetObj.get("y").getAsDouble() + ", " + playAreaOffsetObj.get("z").getAsDouble());
             } else {
@@ -246,8 +255,7 @@ public class MapManager {
                         playAreaObj.get("minZ").getAsDouble(),
                         playAreaObj.get("maxX").getAsDouble(),
                         playAreaObj.get("maxY").getAsDouble(),
-                        playAreaObj.get("maxZ").getAsDouble()
-                ));
+                        playAreaObj.get("maxZ").getAsDouble()));
                 TMM.LOGGER.info("Loaded play area: " + playAreaObj.get("minX").getAsDouble() + "," +
                         playAreaObj.get("minY").getAsDouble() + "," + playAreaObj.get("minZ").getAsDouble() + " to " +
                         playAreaObj.get("maxX").getAsDouble() + "," + playAreaObj.get("maxY").getAsDouble() + "," +
@@ -264,11 +272,12 @@ public class MapManager {
                         resetTemplateAreaObj.get("minZ").getAsDouble(),
                         resetTemplateAreaObj.get("maxX").getAsDouble(),
                         resetTemplateAreaObj.get("maxY").getAsDouble(),
-                        resetTemplateAreaObj.get("maxZ").getAsDouble()
-                ));
+                        resetTemplateAreaObj.get("maxZ").getAsDouble()));
                 TMM.LOGGER.info("Loaded reset template area: " + resetTemplateAreaObj.get("minX").getAsDouble() + "," +
-                        resetTemplateAreaObj.get("minY").getAsDouble() + "," + resetTemplateAreaObj.get("minZ").getAsDouble() + " to " +
-                        resetTemplateAreaObj.get("maxX").getAsDouble() + "," + resetTemplateAreaObj.get("maxY").getAsDouble() + "," +
+                        resetTemplateAreaObj.get("minY").getAsDouble() + ","
+                        + resetTemplateAreaObj.get("minZ").getAsDouble() + " to " +
+                        resetTemplateAreaObj.get("maxX").getAsDouble() + ","
+                        + resetTemplateAreaObj.get("maxY").getAsDouble() + "," +
                         resetTemplateAreaObj.get("maxZ").getAsDouble());
             } else {
                 TMM.LOGGER.warn("Missing reset template area data in map config: " + mapName);
@@ -282,11 +291,12 @@ public class MapManager {
                         resetPasteAreaObj.get("minZ").getAsDouble(),
                         resetPasteAreaObj.get("maxX").getAsDouble(),
                         resetPasteAreaObj.get("maxY").getAsDouble(),
-                        resetPasteAreaObj.get("maxZ").getAsDouble()
-                ));
+                        resetPasteAreaObj.get("maxZ").getAsDouble()));
                 TMM.LOGGER.info("Loaded reset paste area: " + resetPasteAreaObj.get("minX").getAsDouble() + "," +
-                        resetPasteAreaObj.get("minY").getAsDouble() + "," + resetPasteAreaObj.get("minZ").getAsDouble() + " to " +
-                        resetPasteAreaObj.get("maxX").getAsDouble() + "," + resetPasteAreaObj.get("maxY").getAsDouble() + "," +
+                        resetPasteAreaObj.get("minY").getAsDouble() + "," + resetPasteAreaObj.get("minZ").getAsDouble()
+                        + " to " +
+                        resetPasteAreaObj.get("maxX").getAsDouble() + "," + resetPasteAreaObj.get("maxY").getAsDouble()
+                        + "," +
                         resetPasteAreaObj.get("maxZ").getAsDouble());
             } else {
                 TMM.LOGGER.warn("Missing reset paste area data in map config: " + mapName);
@@ -311,10 +321,10 @@ public class MapManager {
                             Vec3 position = new Vec3(
                                     posObj.get("x").getAsDouble(),
                                     posObj.get("y").getAsDouble(),
-                                    posObj.get("z").getAsDouble()
-                            );
+                                    posObj.get("z").getAsDouble());
                             areas.getRoomPositions().put(roomNumber, position);
-                            TMM.LOGGER.info("Loaded room " + roomNumber + " position: " + position.x() + ", " + position.y() + ", " + position.z());
+                            TMM.LOGGER.info("Loaded room " + roomNumber + " position: " + position.x() + ", "
+                                    + position.y() + ", " + position.z());
                         } else {
                             TMM.LOGGER.warn("Invalid position data for room " + key + " in map config: " + mapName);
                         }
@@ -340,23 +350,23 @@ public class MapManager {
 
     /**
      * 随机加载一个可用的地图配置
+     * 
      * @param serverWorld 服务器世界
      * @return 是否成功加载随机地图
      */
     public static boolean loadRandomMap(ServerLevel serverWorld) {
         List<String> availableMaps = getAvailableMaps(serverWorld);
         availableMaps.removeIf(
-                e-> {
-                    final var first = MapConfig.getInstance().maps.stream().filter(mapEntry -> mapEntry.id.equals(e)).findFirst();
+                e -> {
+                    final var first = MapConfig.getInstance().maps.stream().filter(mapEntry -> mapEntry.id.equals(e))
+                            .findFirst();
                     AtomicBoolean isAvailable = new AtomicBoolean(false);
                     first.ifPresent(
-                    a-> {
-                        isAvailable.set(first.get().maxCount >= serverWorld.players().size());
-                    }
-                    );
+                            a -> {
+                                isAvailable.set(first.get().maxCount >= serverWorld.players().size());
+                            });
                     return isAvailable.get();
-                }
-                );
+                });
 
         if (availableMaps.isEmpty()) {
             TMM.LOGGER.warn("No maps available to load randomly");
@@ -372,6 +382,7 @@ public class MapManager {
 
     /**
      * 获取所有可用的地图列表
+     * 
      * @param serverWorld 服务器世界
      * @return 可用地图名称列表
      */
@@ -379,7 +390,8 @@ public class MapManager {
         List<String> maps = new ArrayList<>();
 
         try {
-            Path mapsDirPath = Paths.get(serverWorld.getServer().getWorldPath(LevelResource.ROOT).toString(), "train_maps");
+            Path mapsDirPath = Paths.get(serverWorld.getServer().getWorldPath(LevelResource.ROOT).toString(),
+                    "train_maps");
             File mapsDir = mapsDirPath.toFile();
 
             if (mapsDir.exists() && mapsDir.isDirectory()) {

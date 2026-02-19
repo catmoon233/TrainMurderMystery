@@ -18,6 +18,7 @@ import org.jetbrains.annotations.NotNull;
 import java.awt.Color;
 import java.util.*;
 
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
 import net.minecraft.client.gui.Font;
@@ -77,6 +78,13 @@ public class RoundTextRenderer {
                 Component goalText = isLooseEnds ? Component.translatable("announcement.loose_ends.goal")
                         : role.goalText.apply(targets);
                 context.drawString(renderer, goalText, -renderer.width(goalText) / 2, 14, color);
+            }
+            if (welcomeTime <= 120) {
+                boolean canJump = TMMClient.gameComponent.isJumpAvailable();
+                MutableComponent canJumpTip = canJump
+                        ? Component.translatable("announcement.tip.can_jump").withStyle(ChatFormatting.GREEN)
+                        : Component.translatable("announcement.tip.cant_jump").withStyle(ChatFormatting.YELLOW);
+                context.drawString(renderer, canJumpTip, -renderer.width(canJumpTip) / 2, 28, color);
             }
             context.pose().popPose();
             context.pose().popPose();

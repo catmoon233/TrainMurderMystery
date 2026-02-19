@@ -77,6 +77,7 @@ import dev.doctor4t.trainmurdermystery.network.CloseUiPayload;
 import dev.doctor4t.trainmurdermystery.network.TriggerScreenEdgeEffectPayload;
 import dev.doctor4t.trainmurdermystery.util.AnnounceEndingPayload;
 import dev.doctor4t.trainmurdermystery.util.ReplayPayload;
+import dev.doctor4t.trainmurdermystery.util.TMMItemUtils;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.impl.util.log.Log;
 import net.fabricmc.loader.impl.util.log.LogCategory;
@@ -340,7 +341,6 @@ public class GameFunctions {
             return;
         AreasWorldComponent areas = AreasWorldComponent.KEY.get(serverWorld);
         startTime = System.currentTimeMillis();
-        gameComponent.setJumpAvailable(areas.canJump);
 
         TrainWorldComponent.KEY.get(serverWorld).reset();
         WorldBlackoutComponent.KEY.get(serverWorld).reset();
@@ -469,6 +469,9 @@ public class GameFunctions {
             }
         });
         entitiesToDiscard.forEach(net.minecraft.world.entity.Entity::discard);
+
+        gameComponent.setJumpAvailable(areas.canJump);
+        TMM.LOGGER.info("Map Can Jump: " + (areas.canJump ? "True" : "False"));
     }
 
     private static List<ServerPlayer> getReadyPlayerList(ServerLevel serverWorld) {
@@ -580,7 +583,7 @@ public class GameFunctions {
             ServerPlayNetworking.send(player, new ReplayPayload(replay));
         }
         player.removeVehicle();
-        player.getInventory().clearContent();
+        TMMItemUtils.clearItem(player, (item) -> true, -1);
         PlayerMoodComponent.KEY.get(player).reset();
         PlayerShopComponent.KEY.get(player).reset();
         PlayerPoisonComponent.KEY.get(player).reset();

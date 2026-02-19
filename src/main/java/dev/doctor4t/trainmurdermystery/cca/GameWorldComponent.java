@@ -50,6 +50,7 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
 
     public void setJumpAvailable(boolean available) {
         this.canJump = available;
+        this.sync();
     }
 
     public boolean isSyncRole() {
