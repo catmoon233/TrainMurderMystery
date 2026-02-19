@@ -47,7 +47,7 @@ public class PlayerPsychoComponent implements RoleComponent, ServerTickingCompon
 
     @Override
     public void reset() {
-        if (this.psychoTicks >= 0)
+        if (this.psychoTicks >= 1)
             this.stopPsycho();
         this.sync();
         this.psychoTicks = -1;
