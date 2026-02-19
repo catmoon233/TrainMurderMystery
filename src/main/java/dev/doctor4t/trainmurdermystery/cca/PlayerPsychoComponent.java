@@ -47,7 +47,8 @@ public class PlayerPsychoComponent implements RoleComponent, ServerTickingCompon
 
     @Override
     public void reset() {
-        this.stopPsycho();
+        if (this.psychoTicks >= 0)
+            this.stopPsycho();
         this.sync();
         this.psychoTicks = -1;
     }
@@ -112,7 +113,7 @@ public class PlayerPsychoComponent implements RoleComponent, ServerTickingCompon
     public void stopPsycho() {
         GameWorldComponent gameWorldComponent = GameWorldComponent.KEY.get(this.player.level());
         gameWorldComponent.setPsychosActive(gameWorldComponent.getPsychosActive() - 1);
-        this.psychoTicks = 0;
+        this.psychoTicks = -1;
         if (this.player instanceof ServerPlayer serverPlayer) {
             ServerPlayNetworking.send(serverPlayer, new RemoveStatusBarPayload("Psycho"));
 
