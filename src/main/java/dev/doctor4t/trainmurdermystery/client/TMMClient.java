@@ -604,7 +604,7 @@ public class TMMClient implements ClientModInitializer {
         if (target instanceof ItemEntity || target instanceof NoteEntity || target instanceof FirecrackerEntity)
             return 0xDB9D00;
         if (target instanceof Player player) {
-            if (GameFunctions.isPlayerSpectatingOrCreative(player))
+            if (GameFunctions.isPlayerAliveAndSurvival(player))
                 return -1;
             if (!(target).isSpectator()) {
                 if (GameFunctions.isPlayerSpectatingOrCreative(Minecraft.getInstance().player)) {
