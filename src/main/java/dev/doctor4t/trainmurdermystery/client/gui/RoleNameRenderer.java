@@ -68,7 +68,7 @@ public class RoleNameRenderer {
             nametag = target.getDisplayName();
             if (component.canUseKillerFeatures(target)) {
                 targetRole = TrainRole.KILLER;
-            } else if (component.isNeutralForKiller(player)) {
+            } else if (component.isNeutralForKiller(target)) {
                 targetRole = TrainRole.KILLER;
             } else {
                 targetRole = TrainRole.BYSTANDER;
