@@ -110,6 +110,7 @@ public abstract class Role {
 
     public Role setNeutralForKiller(boolean forKiller) {
         this.isNeutralForKiller = forKiller;
+        this.isNeutrals = true;
         return this;
     }
 
