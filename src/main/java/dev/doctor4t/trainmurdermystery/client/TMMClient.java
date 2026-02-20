@@ -596,17 +596,17 @@ public class TMMClient implements ClientModInitializer {
                 return -1;
             return invokerColor;
         }
-        if (!isInstinctEnabled())
+        if (!isInstinctEnabled()) {
+            // TMM.LOGGER.info("instinct not enable");
             return -1;
+        }
         GameWorldComponent gameWorldComponent = (GameWorldComponent) GameWorldComponent.KEY
                 .get(Minecraft.getInstance().player.level());
         // if (target instanceof PlayerBodyEntity) return 0x606060;
         if (target instanceof ItemEntity || target instanceof NoteEntity || target instanceof FirecrackerEntity)
             return 0xDB9D00;
         if (target instanceof Player player) {
-            if (GameFunctions.isPlayerAliveAndSurvival(player))
-                return -1;
-            if (!(target).isSpectator()) {
+            if (!(player).isSpectator()) {
                 if (GameFunctions.isPlayerSpectatingOrCreative(Minecraft.getInstance().player)) {
                     Role role = gameWorldComponent.getRole(player);
                     if (role == null) {
@@ -615,9 +615,8 @@ public class TMMClient implements ClientModInitializer {
                         return (role.color());
                     }
                 }
+
             }
-            if (isPlayerSpectatingOrCreative())
-                return 0xFFFFFF;
         }
         return -1;
     }

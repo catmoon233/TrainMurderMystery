@@ -68,6 +68,8 @@ public class RoleNameRenderer {
             nametag = target.getDisplayName();
             if (component.canUseKillerFeatures(target)) {
                 targetRole = TrainRole.KILLER;
+            } else if (component.isNeutralForKiller(player)) {
+                targetRole = TrainRole.KILLER;
             } else {
                 targetRole = TrainRole.BYSTANDER;
             }
@@ -94,6 +96,8 @@ public class RoleNameRenderer {
             if (component.isRunning()) {
                 TrainRole playerRole = TrainRole.BYSTANDER;
                 if (component.canUseKillerFeatures(player))
+                    playerRole = TrainRole.KILLER;
+                if (component.isNeutralForKiller(player))
                     playerRole = TrainRole.KILLER;
                 if (targetRole2 != null) {
                     if (!targetRole2.isInnocent() && playerRole.equals(TrainRole.KILLER)) {

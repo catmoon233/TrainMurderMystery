@@ -209,6 +209,10 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
         return this.roles.get(uuid) == role;
     }
 
+    public boolean isNeutralForKiller(@NotNull Player player) {
+        return getRole(player) != null && getRole(player).isNeutralForKiller();
+    }
+
     public boolean canUseKillerFeatures(@NotNull Player player) {
         return getRole(player) != null && getRole(player).canUseKiller();
     }
