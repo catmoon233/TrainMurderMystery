@@ -100,11 +100,8 @@ public class RoleNameRenderer {
                 if (component.isNeutralForKiller(player))
                     playerRole = TrainRole.KILLER;
                 if (targetRole2 != null) {
-                    if (!targetRole2.isInnocent() && playerRole.equals(TrainRole.KILLER)) {
-                        if (!targetRole2.getIdentifier().getNamespace().equals("stupid_express")
-                                && !targetRole2.getIdentifier().getPath().equals("recorder")
-                                && !targetRole2.getIdentifier().getPath().equals("gambler")
-                                && !targetRole2.getIdentifier().getPath().equals("nianshou")) {
+                    if (component.isKillerTeamRole(targetRole2) && playerRole.equals(TrainRole.KILLER)) {
+                        if (component.canSeeKillerTeammate(player)) {
                             context.pose().translate(0, 20 + renderer.lineHeight, 0);
                             MutableComponent roleText1 = Component
                                     .translatable("announcement.role." + targetRole2.identifier().getPath());
@@ -116,10 +113,12 @@ public class RoleNameRenderer {
                 }
                 if (playerRole == TrainRole.KILLER && targetRole == TrainRole.KILLER) {
                     context.pose().translate(0, 20 + renderer.lineHeight, 0);
-                    MutableComponent roleText = Component.translatable("game.tip.cohort");
-                    int roleWidth = renderer.width(roleText);
-                    context.drawString(renderer, roleText, -roleWidth / 2, 0,
-                            Mth.color(1f, 0f, 0f) | ((int) (nametagAlpha * 255) << 24));
+                    if (component.canSeeKillerTeammate(player)) {
+                        MutableComponent roleText = Component.translatable("game.tip.cohort");
+                        int roleWidth = renderer.width(roleText);
+                        context.drawString(renderer, roleText, -roleWidth / 2, 0,
+                                Mth.color(1f, 0f, 0f) | ((int) (nametagAlpha * 255) << 24));
+                    }
 
                 }
             }

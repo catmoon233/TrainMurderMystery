@@ -91,6 +91,7 @@ public abstract class Role {
     private boolean autoReset = true;
     private boolean ableToPickUpRevolver;
     private boolean isNeutralForKiller = false;
+    private boolean canSeeTeammateKiller = true;
 
     public boolean isNeutrals() {
         return this.isNeutrals;
@@ -106,6 +107,15 @@ public abstract class Role {
 
     public boolean getNeutralForKiller() {
         return this.isNeutralForKiller;
+    }
+
+    public boolean canSeeTeammateKiller() {
+        return this.canSeeTeammateKiller;
+    }
+
+    public Role setCanSeeTeammateKiller(boolean canSeeKiller) {
+        this.canSeeTeammateKiller = canSeeKiller;
+        return this;
     }
 
     public Role setNeutralForKiller(boolean forKiller) {
