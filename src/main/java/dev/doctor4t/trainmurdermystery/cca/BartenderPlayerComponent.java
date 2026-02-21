@@ -95,6 +95,9 @@ public class BartenderPlayerComponent implements RoleComponent, ServerTickingCom
             if (++tick_ % 60 == 0) {
                 this.sync();
             }
+            if (this.glowTicks <= 0) {
+                this.sync();
+            }
         }
 
     }
@@ -107,7 +110,6 @@ public class BartenderPlayerComponent implements RoleComponent, ServerTickingCom
 
     public boolean startGlow() {
         setGlowTicks(GameConstants.getInTicks(0, TMMConfig.bartenderGlowDuration));
-        this.sync();
         return true;
     }
 
