@@ -55,10 +55,11 @@ public class RoleNameRenderer {
             return;
         float range = getPlayerRange(player);
         range = range * (GameFunctions.isPlayerSpectatingOrCreative(player) ? 1f : 1f);
-        Player targetPlayer = null;
+        Player target = null;
         if (ProjectileUtil.getHitResultOnViewVector(player, entity -> entity instanceof Player player1,
                 range) instanceof EntityHitResult entityHitResult
-                && entityHitResult.getEntity() instanceof Player target) {
+                && entityHitResult.getEntity() instanceof Player) {
+            target = (Player) entityHitResult.getEntity();
             if (!AllowNameRender.EVENT.invoker().allowRenderName(target)) {
                 targetRole = TrainRole.BYSTANDER;
                 targetRole2 = null;
@@ -85,7 +86,6 @@ public class RoleNameRenderer {
                     targetRole2 = role;
                 }
             }
-            targetPlayer = target;
 
         } else {
             nametagAlpha = Mth.lerp(tickCounter.getGameTimeDeltaPartialTick(true) / 4, nametagAlpha, 0f);
@@ -109,7 +109,8 @@ public class RoleNameRenderer {
                             context.pose().translate(0, 20 + renderer.lineHeight, 0);
                             MutableComponent roleText1 = Component
                                     .translatable("announcement.role." + targetRole2.identifier().getPath());
-                            MutableComponent roleText2 = OnKillerCohortDisplay.EVENT.invoker().onCohortRender(targetPlayer);
+                            MutableComponent roleText2 = OnKillerCohortDisplay.EVENT.invoker()
+                                    .onCohortRender(target);
                             if (roleText2 != null) {
                                 roleText1 = roleText2;
                             }
