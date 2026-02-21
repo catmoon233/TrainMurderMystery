@@ -6,6 +6,7 @@ import dev.doctor4t.trainmurdermystery.cca.PlayerPsychoComponent;
 import dev.doctor4t.trainmurdermystery.client.TMMClient;
 import dev.doctor4t.trainmurdermystery.entity.NoteEntity;
 import dev.doctor4t.trainmurdermystery.event.AllowNameRender;
+import dev.doctor4t.trainmurdermystery.event.OnKillerCohortDisplay;
 import dev.doctor4t.trainmurdermystery.game.GameFunctions;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.DeltaTracker;
@@ -54,6 +55,7 @@ public class RoleNameRenderer {
             return;
         float range = getPlayerRange(player);
         range = range * (GameFunctions.isPlayerSpectatingOrCreative(player) ? 1f : 1f);
+        Player targetPlayer = null;
         if (ProjectileUtil.getHitResultOnViewVector(player, entity -> entity instanceof Player player1,
                 range) instanceof EntityHitResult entityHitResult
                 && entityHitResult.getEntity() instanceof Player target) {
@@ -83,6 +85,8 @@ public class RoleNameRenderer {
                     targetRole2 = role;
                 }
             }
+            targetPlayer = target;
+
         } else {
             nametagAlpha = Mth.lerp(tickCounter.getGameTimeDeltaPartialTick(true) / 4, nametagAlpha, 0f);
         }
@@ -105,6 +109,10 @@ public class RoleNameRenderer {
                             context.pose().translate(0, 20 + renderer.lineHeight, 0);
                             MutableComponent roleText1 = Component
                                     .translatable("announcement.role." + targetRole2.identifier().getPath());
+                            MutableComponent roleText2 = OnKillerCohortDisplay.EVENT.invoker().onCohortRender(targetPlayer);
+                            if (roleText2 != null) {
+                                roleText1 = roleText2;
+                            }
                             int roleWidth1 = renderer.width(roleText1);
                             context.drawString(renderer, roleText1, -roleWidth1 / 2, 0,
                                     Mth.color(1f, 0f, 0f) | ((int) (nametagAlpha * 255) << 24));
