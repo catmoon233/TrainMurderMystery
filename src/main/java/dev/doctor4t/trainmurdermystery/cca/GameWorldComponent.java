@@ -21,7 +21,6 @@ import dev.doctor4t.trainmurdermystery.api.TMMRoles;
 import dev.doctor4t.trainmurdermystery.event.OnTrainAreaHaveReseted;
 import dev.doctor4t.trainmurdermystery.game.GameConstants;
 import dev.doctor4t.trainmurdermystery.game.GameFunctions;
-import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -515,7 +514,7 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
         }
     }
 
-    public boolean canSeeKillerTeammate(LocalPlayer player) {
+    public boolean canSeeKillerTeammate(Player player) {
         return getRole(player) != null && getRole(player).canSeeTeammateKiller();
     }
 
