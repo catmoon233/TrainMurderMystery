@@ -523,7 +523,7 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
             return false;
         if (role.canUseKiller())
             return true;
-        if (role.canUseInstinct() && role.isNeutralForKiller())
+        if (role.isNeutralForKiller())
             return true;
         return false;
     }
