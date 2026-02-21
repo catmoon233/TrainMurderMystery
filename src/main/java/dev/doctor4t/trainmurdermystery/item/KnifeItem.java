@@ -138,6 +138,7 @@ public class KnifeItem extends Item implements ItemWithSkin {
         return UseAnim.SPEAR;
     }
 
+
     @Override
     public int getUseDuration(ItemStack stack, LivingEntity user) {
         return 110;

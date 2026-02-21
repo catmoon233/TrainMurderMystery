@@ -91,7 +91,7 @@ public class TMMConfig extends MidnightConfig {
     public static Comment shopPricesComment;
 
     @Entry(category = "shop", min = 0, max = 1000, isSlider = true)
-    public static int knifePrice = 120;
+    public static int knifePrice = 130;
     @Entry(category = "shop", min = 0, max = 1000, isSlider = true)
     public static int revolverPrice = 285;
     @Entry(category = "shop", min = 0, max = 1000, isSlider = true)
