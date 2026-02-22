@@ -115,7 +115,7 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerSt
 				if (this.isSprinting()) {
 					sprintingTicks = Math.max(sprintingTicks - 1, 0);
 				} else {
-					sprintingTicks = Math.min(sprintingTicks + 0.4f, role.getMaxSprintTime());
+					sprintingTicks = Math.min(sprintingTicks + 0.4f, maxSprintTime);
 				}
 
 				if (sprintingTicks <= 0) {
