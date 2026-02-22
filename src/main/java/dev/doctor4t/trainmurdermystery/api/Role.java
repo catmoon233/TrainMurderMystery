@@ -383,9 +383,6 @@ public abstract class Role {
     }
 
     public int getMaxSprintTime() {
-        if (this.customSprintTimeGetter != null) {
-            return this.customSprintTimeGetter.applyAsInt(null);
-        }
         return maxSprintTime;
     }
 
