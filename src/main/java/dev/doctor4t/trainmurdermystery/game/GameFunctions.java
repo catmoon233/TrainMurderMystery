@@ -402,10 +402,11 @@ public class GameFunctions {
         // select rooms
         Collections.shuffle(players);
         int roomNumber = 0;
+        int i = 0;
         int roomCount = areas.getRoomCount(); // Get room count from config
         for (ServerPlayer serverPlayerEntity : players) {
             ItemStack itemStack = new ItemStack(TMMItems.KEY);
-            roomNumber = roomNumber % roomCount + 1;
+            roomNumber = i % roomCount + 1;
             int finalRoomNumber = roomNumber;
             itemStack.update(DataComponents.LORE, ItemLore.EMPTY, component -> new ItemLore(Component
                     .nullToEmpty("Room " + finalRoomNumber)
@@ -448,6 +449,7 @@ public class GameFunctions {
             }
 
             serverPlayerEntity.addItem(letter);
+            i++;
         }
         for (ServerPlayer player : players) {
             player.setGameMode(net.minecraft.world.level.GameType.ADVENTURE);
