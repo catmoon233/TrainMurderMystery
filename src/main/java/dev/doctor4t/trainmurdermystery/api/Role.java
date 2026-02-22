@@ -5,6 +5,7 @@ import dev.doctor4t.trainmurdermystery.client.gui.screen.ingame.LimitedInventory
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
+import java.util.function.IntSupplier;
 import java.util.function.Predicate;
 
 import dev.doctor4t.trainmurdermystery.util.ShopEntry;
@@ -60,6 +61,15 @@ public abstract class Role {
 
     public Role setMoodType(MoodType moodType) {
         this.moodType = moodType;
+        return this;
+    }
+
+    public IntSupplier getMaxSprintTimeSupplier() {
+        return this.customSprintTimeGetter;
+    }
+
+    public Role setMaxSprintTime(IntSupplier func) {
+        this.customSprintTimeGetter = func;
         return this;
     }
 
@@ -304,6 +314,7 @@ public abstract class Role {
 
     private ComponentKey<? extends RoleComponent> componentKey;
     private int maxSprintTime;
+    private IntSupplier customSprintTimeGetter = null;
     private boolean canSeeTime;
 
     public Consumer<LimitedInventoryScreen> getAddChild() {
@@ -365,6 +376,9 @@ public abstract class Role {
     }
 
     public int getMaxSprintTime() {
+        if(this.customSprintTimeGetter!=null){
+            return this.customSprintTimeGetter.getAsInt();
+        }
         return maxSprintTime;
     }
 
