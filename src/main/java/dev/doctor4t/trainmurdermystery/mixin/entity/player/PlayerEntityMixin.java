@@ -104,10 +104,14 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerSt
 		final var player = (Player) (Object) this;
 		if (GameFunctions.isPlayerAliveAndSurvival(player) && gameComponent != null && gameComponent.isRunning()) {
 			Role role = gameComponent.getRole(player);
-			if (role != null && (role.isCanUseKiller() || role.getMaxSprintTime() == Integer.MAX_VALUE)) {
+			int maxSprintTime = Integer.MAX_VALUE;
+			if (role != null) {
+				maxSprintTime = role.getMaxSprintTime(player);
+			}
+			if (role != null && (role.isCanUseKiller() || maxSprintTime == Integer.MAX_VALUE)) {
 				return;
 			}
-			if (role != null && role.getMaxSprintTime() >= 0) {
+			if (role != null && maxSprintTime >= 0) {
 				if (this.isSprinting()) {
 					sprintingTicks = Math.max(sprintingTicks - 1, 0);
 				} else {

@@ -6,28 +6,20 @@ import dev.doctor4t.trainmurdermystery.api.Role;
 import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
 import dev.doctor4t.trainmurdermystery.game.GameFunctions;
 import dev.doctor4t.trainmurdermystery.index.TMMItems;
-import dev.doctor4t.trainmurdermystery.index.TMMSounds;
 import dev.doctor4t.trainmurdermystery.util.PlayerStaminaGetter;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.player.LocalPlayer;
-import net.minecraft.sounds.SoundSource;
 import net.minecraft.util.Mth;
 import net.minecraft.world.entity.player.Player;
 import org.jetbrains.annotations.NotNull;
 
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.resources.sounds.SimpleSoundInstance;
 import net.minecraft.sounds.SoundEvents;
-import net.minecraft.util.Mth;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.ItemCooldowns;
-import net.minecraft.client.gui.GuiGraphics;
-
-import org.jetbrains.annotations.NotNull;
 
 public class StaminaRenderer {
 	public static StaminaBarRenderer view = new StaminaBarRenderer();
@@ -78,7 +70,7 @@ public class StaminaRenderer {
 				if (role == null) {
 					return 0;
 				}
-				return role.getMaxSprintTime();
+				return role.getMaxSprintTime(clientPlayerEntity);
 			}
 			return 0;
 		}
@@ -303,7 +295,7 @@ public class StaminaRenderer {
 		int blue = color & 0xFF;
 
 		// 设置颜色（带透明度）
-		int effectColor = (int)(intensity * 255) << 24 | (red << 16) | (green << 8) | blue;
+		// int effectColor = (int)(intensity * 255) << 24 | (red << 16) | (green << 8) | blue;
 
 		// 保存当前的混合状态
 		PoseStack poseStack = context.pose();

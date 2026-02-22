@@ -5,8 +5,8 @@ import dev.doctor4t.trainmurdermystery.client.gui.screen.ingame.LimitedInventory
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
-import java.util.function.IntSupplier;
 import java.util.function.Predicate;
+import java.util.function.ToIntFunction;
 
 import dev.doctor4t.trainmurdermystery.util.ShopEntry;
 import net.minecraft.resources.ResourceLocation;
@@ -64,11 +64,11 @@ public abstract class Role {
         return this;
     }
 
-    public IntSupplier getMaxSprintTimeSupplier() {
+    public ToIntFunction<Player> getMaxSprintTimeSupplier() {
         return this.customSprintTimeGetter;
     }
 
-    public Role setMaxSprintTime(IntSupplier func) {
+    public Role setMaxSprintTime(ToIntFunction<Player> func) {
         this.customSprintTimeGetter = func;
         return this;
     }
@@ -314,7 +314,7 @@ public abstract class Role {
 
     private ComponentKey<? extends RoleComponent> componentKey;
     private int maxSprintTime;
-    private IntSupplier customSprintTimeGetter = null;
+    private ToIntFunction<Player> customSprintTimeGetter = null;
     private boolean canSeeTime;
 
     public Consumer<LimitedInventoryScreen> getAddChild() {
@@ -375,9 +375,16 @@ public abstract class Role {
         return moodType;
     }
 
+    public int getMaxSprintTime(Player player) {
+        if (this.customSprintTimeGetter != null) {
+            return this.customSprintTimeGetter.applyAsInt(player);
+        }
+        return maxSprintTime;
+    }
+
     public int getMaxSprintTime() {
-        if(this.customSprintTimeGetter!=null){
-            return this.customSprintTimeGetter.getAsInt();
+        if (this.customSprintTimeGetter != null) {
+            return this.customSprintTimeGetter.applyAsInt(null);
         }
         return maxSprintTime;
     }
