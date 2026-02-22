@@ -3,11 +3,14 @@ package dev.doctor4t.trainmurdermystery.cca;
 import dev.doctor4t.trainmurdermystery.game.GameConstants;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.entity.player.Player;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import org.jetbrains.annotations.NotNull;
 import org.ladysnake.cca.api.v3.component.ComponentKey;
@@ -23,7 +26,13 @@ public class BartenderPlayerComponent implements RoleComponent, ServerTickingCom
     public static final ComponentKey<BartenderPlayerComponent> KEY = ComponentRegistry.getOrCreate(
             ResourceLocation.fromNamespaceAndPath(TMM.MOD_ID, "bartender"), BartenderPlayerComponent.class);
     private final Player player;
-    public int glowTicks = 0;
+    /**
+     * 0: Drink
+     * 1: Food
+     * ...
+     */
+    public HashMap<Integer, Integer> glowTicks = new HashMap<>();
+    
     public static ArrayList<String> canSyncedRolePaths = new ArrayList<>();
     private static GameWorldComponent gameWorldComponent = null;
 
@@ -44,7 +53,7 @@ public class BartenderPlayerComponent implements RoleComponent, ServerTickingCom
     }
 
     public void reset() {
-        this.glowTicks = 0;
+        this.glowTicks.clear();
         this.armor = 0;
         this.sync();
     }
@@ -82,24 +91,33 @@ public class BartenderPlayerComponent implements RoleComponent, ServerTickingCom
     }
 
     public void clientTick() {
-        if (this.glowTicks > 2) {
-            --this.glowTicks;
+        for (var pair : this.glowTicks.entrySet()) {
+            if (pair.getValue() >= 2) {
+                this.glowTicks.put(pair.getKey(), pair.getValue() - 1);
+            }
         }
     }
 
     public static int tick_ = 0;
 
     public void serverTick() {
-        if (this.glowTicks > 0) {
-            --this.glowTicks;
-            if (++tick_ % 60 == 0) {
-                this.sync();
-            }
-            if (this.glowTicks <= 0) {
-                this.sync();
+        boolean shouldSync = false;
+        for (var pair : this.glowTicks.entrySet()) {
+            int glowtick = pair.getValue();
+            if (glowtick >= 1) {
+                glowtick--;
+                this.glowTicks.put(pair.getKey(), glowtick);
+                if (glowtick <= 0) {
+                    shouldSync = true;
+                }
             }
         }
-
+        if (++tick_ % 60 == 0) {
+            shouldSync = true;
+        }
+        if (shouldSync) {
+            this.sync();
+        }
     }
 
     public boolean giveArmor() {
@@ -109,28 +127,51 @@ public class BartenderPlayerComponent implements RoleComponent, ServerTickingCom
     }
 
     public boolean startGlow() {
-        setGlowTicks(GameConstants.getInTicks(0, TMMConfig.bartenderGlowDuration));
+        return this.startGlow(0);
+    }
+
+    public boolean startGlow(int type) {
+        setGlowTicks(GameConstants.getInTicks(0, TMMConfig.bartenderGlowDuration), type);
         return true;
     }
 
-    public void setGlowTicks(int ticks) {
-        this.glowTicks = ticks;
+    public void setGlowTicks(int ticks, int type) {
+        this.glowTicks.put(type, ticks);
         this.sync();
     }
 
+    public void setGlowTicks(int ticks) {
+        this.setGlowTicks(ticks, 0);
+    }
+
     public void writeToNbt(@NotNull CompoundTag tag, HolderLookup.Provider registryLookup) {
-        tag.putInt("glowTicks", this.glowTicks);
+        ListTag targetListTag = new ListTag();
+        for (var ent : this.glowTicks.entrySet()) {
+            CompoundTag targetTag = new CompoundTag();
+            targetTag.putInt("type", ent.getKey());
+            targetTag.putInt("time", ent.getValue());
+            targetListTag.add(targetTag);
+        }
+        tag.put("glowTicks", targetListTag);
         tag.putInt("armor", this.armor);
     }
 
     public void readFromNbt(@NotNull CompoundTag tag, HolderLookup.Provider registryLookup) {
-        this.glowTicks = tag.contains("glowTicks") ? tag.getInt("glowTicks") : 0;
+        if (tag.contains("glowTicks") && tag.getTagType("glowTicks") == Tag.TAG_COMPOUND) {
+            ListTag targetListTag = tag.getList("glowTicks", Tag.TAG_COMPOUND);
+            for (int i = 0; i < targetListTag.size(); i++) {
+                CompoundTag targetTag = targetListTag.getCompound(i);
+                int type = targetTag.contains("type") ? targetTag.getInt("type") : null;
+                int time = targetTag.contains("time") ? targetTag.getInt("time") : null;
+                this.glowTicks.put(type, time);
+            }
+        }
         this.armor = tag.contains("armor") ? tag.getInt("armor") : 0;
     }
 
     @Override
     public void clear() {
-        this.glowTicks = 0;
+        this.glowTicks.clear();
         this.armor = 0;
         this.sync();
     }

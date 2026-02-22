@@ -31,7 +31,8 @@
     "server.PlayerDiscord",
     "util.EntitySelectorMixin",
     "whitelist.ServerHandshakePacketListenerImplMixin",
-    "world.ChunkSerializerMixin"
+    "world.ChunkSerializerMixin",
+    "item.FoodItemMixin"
   ],
   "injectors": {
     "defaultRequire": 1
