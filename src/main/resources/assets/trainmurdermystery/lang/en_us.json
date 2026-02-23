@@ -423,6 +423,7 @@
   "game.win.loose_end": "They tied up all loose ends!",
   "game.win.passengers": "All killers eliminated: Passengers Win!",
   "game.win.time": "Killers ran out of time: Passengers Win!",
+  "game.win.thief": "Thief escaped with all the gold! Thief Wins!",
   "item.trainmurdermystery.bat": "Bat",
   "item.trainmurdermystery.blackout": "Blackout",
   "item.trainmurdermystery.blackout.tooltip": "Turns off all lights on the train for 15 to 20 seconds\nUse your Instinct [Left-Alt] to see your targets in the dark\nActivates immediately upon purchase, 5 minute cooldown",
