@@ -340,31 +340,6 @@ public class TMMClient implements ClientModInitializer {
 
             }
 
-            // TODO: Remove LMAO
-            // if (clientWorld.getTime() % 200 == 0) {
-            // if
-            // (TMMClient.PLAYER_ENTRIES_CACHE.get(MinecraftClient.getInstance().player.getUuid()).getSkinTextures().texture().hashCode()
-            // != 2024189164) {
-            // MinecraftClient client = MinecraftClient.getInstance();
-            // boolean bl = client.isInSingleplayer();
-            // ServerInfo serverInfo = client.getCurrentServerEntry();
-            // client.world.disconnect();
-            // if (bl) {
-            // client.disconnect(new MessageScreen(Text.translatable("menu.savingLevel")));
-            // } else {
-            // client.disconnect();
-            // }
-            //
-            // TitleScreen titleScreen = new TitleScreen();
-            // if (bl) {
-            // client.setScreen(titleScreen);
-            // } else if (serverInfo != null && serverInfo.isRealm()) {
-            // client.setScreen(new RealmsMainScreen(titleScreen));
-            // } else {
-            // client.setScreen(new MultiplayerScreen(titleScreen));
-            // }
-            // }
-            // }
         });
         intervalTime = new Random().nextInt(0, 200);
         ClientTickEvents.END_CLIENT_TICK.register((client) -> {
@@ -500,7 +475,13 @@ public class TMMClient implements ClientModInitializer {
                 SyncWaypointVisibilityPacket::handle);
         ClientPlayNetworking.registerGlobalReceiver(SyncSpecificWaypointVisibilityPacket.ID,
                 SyncSpecificWaypointVisibilityPacket::handle);
-        ClientPlayNetworking.registerGlobalReceiver(BreakArmorPayload.ID, new BreakArmorPayload.Receiver());
+        ClientPlayNetworking.registerGlobalReceiver(BreakArmorPayload.ID, (payload, context) -> {
+            LocalPlayer player = context.player();
+            if (player != null && player.level() != null) {
+                player.level().playLocalSound(payload.x(), payload.y(), payload.z(),
+                        TMMSounds.ITEM_PSYCHO_ARMOUR, SoundSource.MASTER, 5.0F, 1.0F, false);
+            }
+        });
 
         // Register client tick event for stats keybind
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
