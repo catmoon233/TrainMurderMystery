@@ -203,7 +203,7 @@ public class PlayerMoodComponent implements RoleComponent, ServerTickingComponen
         updatePlayerMovementSpeed();
     }
 
-    private @Nullable TrainTask generateTask() {
+    public @Nullable TrainTask generateTask() {
         if (!this.tasks.isEmpty())
             return null;
         HashMap<Task, Float> map = new HashMap<>();
