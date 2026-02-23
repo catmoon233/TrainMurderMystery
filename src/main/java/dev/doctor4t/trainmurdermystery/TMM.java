@@ -73,6 +73,7 @@ public class TMM implements ModInitializer {
     public static List<Predicate<ServerPlayer>> cantSendReplay = new ArrayList<>();
 
     public static ArrayList<String> canDropItem = new ArrayList<>();
+    public static ArrayList<Predicate<Player>> canDrop = new ArrayList<>();
 
     public static @NotNull ResourceLocation id(String name) {
         return ResourceLocation.fromNamespaceAndPath(MOD_ID, name);

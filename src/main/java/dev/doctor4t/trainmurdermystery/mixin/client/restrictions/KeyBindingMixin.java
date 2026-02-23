@@ -30,7 +30,10 @@ public abstract class KeyBindingMixin {
         }
         if (!TMMClient.isPlayerCreative() && this.same(instance.options.keyDrop)) {
             if (TMM.canDropItem
-                    .contains(BuiltInRegistries.ITEM.getKey(instance.player.getMainHandItem().getItem()).toString())) {
+                    .contains(BuiltInRegistries.ITEM.getKey(instance.player.getMainHandItem().getItem()).toString())
+                    || TMM.canDrop.stream().anyMatch((p) -> {
+                        return p.test(instance.player);
+                    })) {
                 if (instance.screen == null) {
                     return false;
                 }

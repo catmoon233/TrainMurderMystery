@@ -32,7 +32,7 @@ public abstract class CanRightClickMixin extends LivingEntity implements DataSyn
         Collections.addAll(ALLOWED_BLOCKS,
                 Blocks.LECTERN
 
-                // 这里可以添加其他允许的方块
+        // 这里可以添加其他允许的方块
         );
     }
 
@@ -66,27 +66,31 @@ public abstract class CanRightClickMixin extends LivingEntity implements DataSyn
             Blocks.DISPENSER,
             Blocks.DROPPER,
             Blocks.HOPPER,
-            Blocks.COMPOSTER
-    );
+            Blocks.COMPOSTER);
 
     protected CanRightClickMixin(EntityType<? extends LivingEntity> entityType, Level world) {
         super(entityType, world);
     }
 
-@Inject(method = "canInteractWithBlock", at = @At("TAIL"), cancellable = true)
+    @Inject(method = "canInteractWithBlock", at = @At("TAIL"), cancellable = true)
     public void canInteractWithBlockAt(BlockPos pos, double additionalRange,
-                                       CallbackInfoReturnable<Boolean> cir) {
-        if(TMM.isLobby) return;
-        if (!cir.getReturnValue()) return;
+            CallbackInfoReturnable<Boolean> cir) {
+        if (TMM.isLobby)
+            return;
+        if (!cir.getReturnValue())
+            return;
         final var player = (Player) (Object) this;
         final var mainHandItem = player.getMainHandItem();
-        if (TMM.canDropItem.contains(BuiltInRegistries.ITEM.getKey(mainHandItem.getItem()).toString())){
-            if (player.isShiftKeyDown()){
-                final var drop = player.drop(mainHandItem.copy(),true);
+        if (TMM.canDropItem.contains(BuiltInRegistries.ITEM.getKey(mainHandItem.getItem()).toString())
+                || TMM.canDrop.stream().anyMatch((p) -> {
+                    return p.test(player);
+                })) {
+            if (player.isShiftKeyDown()) {
+                final var drop = player.drop(mainHandItem.copy(), true);
                 player.setItemInHand(InteractionHand.MAIN_HAND, ItemStack.EMPTY);
 
                 if (drop != null) {
-                    drop.setGlowingTag( true);
+                    drop.setGlowingTag(true);
                     drop.setPickUpDelay(20);
                 }
             }
@@ -106,14 +110,15 @@ public abstract class CanRightClickMixin extends LivingEntity implements DataSyn
     private static List<String> cantClickItems = List.of(
             "supplementaries:item_shelf",
             "supplementaries:notice_board",
-            "supplementaries:pedestal"
-    );
+            "supplementaries:pedestal");
+
     /**
      * 判断是否应该阻止与方块的交互
      */
     private boolean shouldPreventInteraction(Block block) {
-        if(TMM.isLobby) return false;
-        return !isAllowedBlock(block) || cantClickItems.contains(BuiltInRegistries.BLOCK.getKey(block).toString()) ;
+        if (TMM.isLobby)
+            return false;
+        return !isAllowedBlock(block) || cantClickItems.contains(BuiltInRegistries.BLOCK.getKey(block).toString());
     }
 
     /**
@@ -131,14 +136,14 @@ public abstract class CanRightClickMixin extends LivingEntity implements DataSyn
         }
 
         // 检查是否为TMM模组的方块
-//        ResourceLocation blockId = level().registryAccess()
-//                .registryOrThrow(Registries.BLOCK)
-//                .getKey(block);
-//
-//        String namespace = blockId.getNamespace();
+        // ResourceLocation blockId = level().registryAccess()
+        // .registryOrThrow(Registries.BLOCK)
+        // .getKey(block);
+        //
+        // String namespace = blockId.getNamespace();
 
         return true;
         // 允许TMM模组的方块（除了"minopp"命名空间）
-        //return namespace.equals(TMM.MOD_ID) && !namespace.equals("minopp");
+        // return namespace.equals(TMM.MOD_ID) && !namespace.equals("minopp");
     }
 }
