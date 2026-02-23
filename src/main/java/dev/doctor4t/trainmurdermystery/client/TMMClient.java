@@ -500,6 +500,7 @@ public class TMMClient implements ClientModInitializer {
                 SyncWaypointVisibilityPacket::handle);
         ClientPlayNetworking.registerGlobalReceiver(SyncSpecificWaypointVisibilityPacket.ID,
                 SyncSpecificWaypointVisibilityPacket::handle);
+        ClientPlayNetworking.registerGlobalReceiver(BreakArmorPayload.ID, new BreakArmorPayload.Receiver());
 
         // Register client tick event for stats keybind
         ClientTickEvents.END_CLIENT_TICK.register(client -> {

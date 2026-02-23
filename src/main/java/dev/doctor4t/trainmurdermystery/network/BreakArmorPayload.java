@@ -1,11 +1,19 @@
 package dev.doctor4t.trainmurdermystery.network;
 
 import dev.doctor4t.trainmurdermystery.TMM;
+import dev.doctor4t.trainmurdermystery.index.TMMSounds;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundSource;
+import org.jetbrains.annotations.NotNull;
 
 
 public record BreakArmorPayload(double x, double y, double z) implements CustomPacketPayload {
@@ -37,5 +45,18 @@ public record BreakArmorPayload(double x, double y, double z) implements CustomP
 
     static {
         CODEC = StreamCodec.ofMember(BreakArmorPayload::write, BreakArmorPayload::read);
+    }
+
+    @Environment(EnvType.CLIENT)
+    public static class Receiver implements ClientPlayNetworking.PlayPayloadHandler<BreakArmorPayload> {
+        @Override
+        public void receive(@NotNull BreakArmorPayload payload, @NotNull ClientPlayNetworking.Context context) {
+            Minecraft minecraft = Minecraft.getInstance();
+            LocalPlayer player = minecraft.player;
+            if (player != null && minecraft.level != null) {
+                minecraft.level.playLocalSound(payload.x, payload.y, payload.z,
+                        TMMSounds.ITEM_PSYCHO_ARMOUR, SoundSource.MASTER, 5.0F, 1.0F, false);
+            }
+        }
     }
 }
