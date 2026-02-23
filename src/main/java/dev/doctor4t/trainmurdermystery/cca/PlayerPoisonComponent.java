@@ -71,12 +71,19 @@ public class PlayerPoisonComponent implements RoleComponent, ServerTickingCompon
         this.initialPoisonTicks = 0;
         this.pulseProgress = 0f;
         this.pulsing = false;
-        this.sync();
+        this.sync_with_all();
     }
 
     @Override
     public void clear() {
         this.reset();
+    }
+
+    public void sync_with_all() {
+        for (var p : this.player.getServer().getPlayerList().getPlayers()) {
+            KEY.syncWith(p, this.player.asComponentProvider());
+        }
+        KEY.sync(this.player);
     }
 
     @Override

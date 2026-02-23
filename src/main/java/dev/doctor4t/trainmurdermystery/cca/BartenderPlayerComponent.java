@@ -32,7 +32,7 @@ public class BartenderPlayerComponent implements RoleComponent, ServerTickingCom
      * ...
      */
     public HashMap<Integer, Integer> glowTicks = new HashMap<>();
-    
+
     public static ArrayList<String> canSyncedRolePaths = new ArrayList<>();
     private static GameWorldComponent gameWorldComponent = null;
 
@@ -55,7 +55,7 @@ public class BartenderPlayerComponent implements RoleComponent, ServerTickingCom
     public void reset() {
         this.glowTicks.clear();
         this.armor = 0;
-        this.sync();
+        this.sync_with_all();
     }
 
     @Override
@@ -84,6 +84,13 @@ public class BartenderPlayerComponent implements RoleComponent, ServerTickingCom
         if (gameWorldComponent == null) {
             gameWorldComponent = GameWorldComponent.KEY.get(this.player.level());
         }
+    }
+
+    public void sync_with_all() {
+        for (var p : this.player.getServer().getPlayerList().getPlayers()) {
+            KEY.syncWith(p, this.player.asComponentProvider());
+        }
+        KEY.sync(this.player);
     }
 
     public void sync() {
@@ -173,6 +180,6 @@ public class BartenderPlayerComponent implements RoleComponent, ServerTickingCom
     public void clear() {
         this.glowTicks.clear();
         this.armor = 0;
-        this.sync();
+        this.sync_with_all();
     }
 }
