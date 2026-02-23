@@ -2,7 +2,7 @@
   "providers": [
     {
       "type": "bitmap",
-      "file": "trainmurdermystery:textures/font/coin.png",
+      "file": "trainmurdermystery:font/coin.png",
       "ascent": 8,
       "height": 8,
       "chars": [

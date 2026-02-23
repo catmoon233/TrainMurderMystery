@@ -6,7 +6,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.syncher.EntityDataAccessor;
 import net.minecraft.network.syncher.EntityDataSerializers;
 import net.minecraft.network.syncher.SynchedEntityData;
-import net.minecraft.server.players.OldUsersConverter;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.Entity;
@@ -37,6 +36,8 @@ public class PlayerBodyEntity extends LivingEntity {
     protected void defineSynchedData(SynchedEntityData.Builder builder) {
         super.defineSynchedData(builder);
         builder.define(PLAYER, Optional.empty());
+        builder.define(KILLER, Optional.empty());
+        builder.define(DEATH_REASON, "");
     }
 
     @Override
@@ -114,21 +115,33 @@ public class PlayerBodyEntity extends LivingEntity {
         if (this.getPlayerUuid() != null) {
             nbt.putUUID("Player", this.getPlayerUuid());
         }
+        if (this.getKillerUuid() != null) {
+            nbt.putUUID("Killer", this.getKillerUuid());
+        }
+        if (this.getDeathReason() != null) {
+            nbt.putString("DeathReason", this.getDeathReason());
+        }
     }
 
     @Override
     public void readAdditionalSaveData(CompoundTag nbt) {
         super.readAdditionalSaveData(nbt);
-        UUID uUID;
+        UUID uUID = null;
+        UUID killerUUID = null;
         if (nbt.hasUUID("Player")) {
             uUID = nbt.getUUID("Player");
-        } else {
-            String string = nbt.getString("Player");
-            uUID = OldUsersConverter.convertMobOwnerIfNecessary(this.getServer(), string);
         }
-
+        if (nbt.hasUUID("Killer")) {
+            killerUUID = nbt.getUUID("Killer");
+        }
         if (uUID != null) {
             this.setPlayerUuid(uUID);
+        }
+        if (killerUUID != null) {
+            this.setKillerUuid(killerUUID);
+        }
+        if(nbt.contains("DeathReason")){
+            this.setDeathReason(nbt.getString("DeathReason"));
         }
     }
 
