@@ -58,11 +58,14 @@ import dev.doctor4t.trainmurdermystery.entity.FirecrackerEntity;
 import dev.doctor4t.trainmurdermystery.entity.NoteEntity;
 import dev.doctor4t.trainmurdermystery.entity.PlayerBodyEntity;
 import dev.doctor4t.trainmurdermystery.event.AfterShieldAllowPlayerDeath;
+import dev.doctor4t.trainmurdermystery.event.AfterShieldAllowPlayerDeathWithKiller;
 import dev.doctor4t.trainmurdermystery.event.AllowPlayerDeath;
+import dev.doctor4t.trainmurdermystery.event.AllowPlayerDeathWithKiller;
 import dev.doctor4t.trainmurdermystery.event.EarlyKillPlayer;
 import dev.doctor4t.trainmurdermystery.event.OnGameTrueStarted;
 import dev.doctor4t.trainmurdermystery.event.OnGiveKillerBalance;
 import dev.doctor4t.trainmurdermystery.event.OnPlayerDeath;
+import dev.doctor4t.trainmurdermystery.event.OnPlayerDeathWithKiller;
 import dev.doctor4t.trainmurdermystery.event.OnPlayerKilledPlayer;
 import dev.doctor4t.trainmurdermystery.event.OnPlayerKilledPlayerIdentifier;
 import dev.doctor4t.trainmurdermystery.event.OnShieldBroken;
@@ -687,7 +690,8 @@ public class GameFunctions {
 
         if (!AllowPlayerDeath.EVENT.invoker().allowDeath(victim, deathReason))
             return;
-
+        if (!AllowPlayerDeathWithKiller.EVENT.invoker().allowDeath(victim, killer, deathReason))
+            return;
         if (killer != null) {
             if (killer instanceof ServerPlayer spkiller) {
                 BartenderPlayerComponent bartenderPlayerComponent = BartenderPlayerComponent.KEY.get(victim);
@@ -730,6 +734,8 @@ public class GameFunctions {
             }
         }
         if (!AfterShieldAllowPlayerDeath.EVENT.invoker().allowDeath(victim, deathReason))
+            return;
+        if (!AfterShieldAllowPlayerDeathWithKiller.EVENT.invoker().allowDeath(victim, killer, deathReason))
             return;
         // --- 新增统计数据更新逻辑 (击杀者) ---
         if (killer instanceof ServerPlayer serverKiller) {
@@ -781,6 +787,7 @@ public class GameFunctions {
             if (victim instanceof ServerPlayer serverPlayerEntity && isPlayerAliveAndSurvival(serverPlayerEntity)) {
                 serverPlayerEntity.setGameMode(net.minecraft.world.level.GameType.SPECTATOR);
                 OnPlayerDeath.EVENT.invoker().onPlayerDeath(victim, deathReason);
+                OnPlayerDeathWithKiller.EVENT.invoker().onPlayerDeath(victim, killer, deathReason);
                 PlayerPoisonComponent poisonComponent = PlayerPoisonComponent.KEY.maybeGet(serverPlayerEntity)
                         .orElse(null);
                 BartenderPlayerComponent bartenderPlayerComponent = BartenderPlayerComponent.KEY
@@ -828,6 +835,10 @@ public class GameFunctions {
             if (spawnBody) {
                 PlayerBodyEntity body = TMMEntities.PLAYER_BODY.create(victim.level());
                 if (body != null) {
+                    if (killer != null) {
+                        body.setKillerUuid(killer.getUUID());
+                    }
+                    body.setDeathReason(deathReason.toString());
                     body.setPlayerUuid(victim.getUUID());
                     Vec3 spawnPos = victim.position().add(victim.getLookAngle().normalize().scale(1));
                     body.moveTo(spawnPos.x(), victim.getY(), spawnPos.z(), victim.getYHeadRot(), 0f);

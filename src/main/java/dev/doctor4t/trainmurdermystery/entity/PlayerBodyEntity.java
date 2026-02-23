@@ -21,7 +21,13 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
 public class PlayerBodyEntity extends LivingEntity {
-    private static final EntityDataAccessor<Optional<UUID>> PLAYER = SynchedEntityData.defineId(PlayerBodyEntity.class, EntityDataSerializers.OPTIONAL_UUID);
+    private static final EntityDataAccessor<Optional<UUID>> PLAYER = SynchedEntityData.defineId(PlayerBodyEntity.class,
+            EntityDataSerializers.OPTIONAL_UUID);
+
+    private static final EntityDataAccessor<String> DEATH_REASON = SynchedEntityData.defineId(PlayerBodyEntity.class,
+            EntityDataSerializers.STRING);
+    private static final EntityDataAccessor<Optional<UUID>> KILLER = SynchedEntityData.defineId(PlayerBodyEntity.class,
+            EntityDataSerializers.OPTIONAL_UUID);
 
     public PlayerBodyEntity(EntityType<? extends LivingEntity> entityType, Level world) {
         super(entityType, world);
@@ -53,13 +59,31 @@ public class PlayerBodyEntity extends LivingEntity {
         return HumanoidArm.RIGHT;
     }
 
+    public void setDeathReason(String deathReason) {
+        this.entityData.set(DEATH_REASON, deathReason);
+    }
+
+    public String getDeathReason() {
+        String optional = this.entityData.get(DEATH_REASON);
+        return optional;
+    }
+
+    public void setKillerUuid(UUID playerUuid) {
+        this.entityData.set(KILLER, Optional.of(playerUuid));
+    }
+
+    public UUID getKillerUuid() {
+        Optional<UUID> optional = this.entityData.get(KILLER);
+        return optional.orElse(null);
+    }
+
     public void setPlayerUuid(UUID playerUuid) {
         this.entityData.set(PLAYER, Optional.of(playerUuid));
     }
 
     public UUID getPlayerUuid() {
         Optional<UUID> optional = this.entityData.get(PLAYER);
-        return optional.orElseGet(() -> UUID.fromString("25adae11-cd98-48f4-990b-9fe1b2ee0886")); // Folly default because that's lowkey funny
+        return optional.orElse(null);
     }
 
     @Override
