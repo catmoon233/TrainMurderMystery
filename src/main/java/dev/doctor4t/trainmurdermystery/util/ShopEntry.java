@@ -1,16 +1,15 @@
 package dev.doctor4t.trainmurdermystery.util;
 
 import dev.doctor4t.trainmurdermystery.TMM;
-import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
 public class ShopEntry {
-    private final ItemStack stack;
-    private final int price;
-    private final Type type;
+    public final ItemStack stack;
+    public final int price;
+    public final Type type;
 
     public enum Type {
         WEAPON("gui/shop_slot_weapon"),
