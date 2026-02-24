@@ -929,7 +929,7 @@ public class GameFunctions {
     }
 
     @SuppressWarnings("deprecation")
-    private static boolean tryAutoTrainReset(ServerLevel serverWorld) {
+    public static boolean tryAutoTrainReset(ServerLevel serverWorld) {
         if (TMM.isLobby)
             return false;
         if (serverWorld.getServer().overworld().equals(serverWorld)) {
