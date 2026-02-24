@@ -915,168 +915,175 @@ public class GameFunctions {
     }
 
     // returns whether another reset should be attempted
-    @SuppressWarnings("deprecation")
+
     public static boolean tryResetTrain(ServerLevel serverWorld) {
         if (TMM.isLobby)
             return false;
         if (!GameWorldComponent.KEY.get(serverWorld).isRunning())
             return false;
         if (TMMConfig.enableAutoTrainReset) {
-            if (serverWorld.getServer().overworld().equals(serverWorld)) {
-                AreasWorldComponent areas = AreasWorldComponent.KEY.get(serverWorld);
+            return tryAutoTrainReset(serverWorld);
+        } else {
+            return tryResetTrainOnlySomeBlock(serverWorld);
+        }
+    }
+
+    @SuppressWarnings("deprecation")
+    private static boolean tryAutoTrainReset(ServerLevel serverWorld) {
+        if (TMM.isLobby)
+            return false;
+        if (serverWorld.getServer().overworld().equals(serverWorld)) {
+            AreasWorldComponent areas = AreasWorldComponent.KEY.get(serverWorld);
+            if (TMMConfig.verboseTrainResetLogs) {
+                TMM.LOGGER.info("Resetting train" + areas.toString());
+            }
+            BlockPos backupMinPos = BlockPos.containing(areas.getResetTemplateArea().getMinPosition());
+            BlockPos backupMaxPos = BlockPos.containing(areas.getResetTemplateArea().getMaxPosition());
+            BoundingBox backupTrainBox = BoundingBox.fromCorners(backupMinPos, backupMaxPos);
+            BlockPos trainMinPos = BlockPos.containing(areas.getResetPasteArea().getMinPosition());
+            BlockPos trainMaxPos = trainMinPos.offset(backupTrainBox.getLength());
+            BoundingBox trainBox = BoundingBox.fromCorners(trainMinPos, trainMaxPos);
+
+            // Mode mode = Mode.FORCE;
+
+            if (!serverWorld.hasChunksAt(backupMinPos, backupMaxPos)
+                    || !serverWorld.hasChunksAt(trainMinPos, trainMaxPos)) {
+
+                int backupChunkMinX = backupMinPos.getX() >> 4;
+                int backupChunkMinZ = backupMinPos.getZ() >> 4;
+                int backupChunkMaxX = backupMaxPos.getX() >> 4;
+                int backupChunkMaxZ = backupMaxPos.getZ() >> 4;
+                int trainChunkMinX = trainMinPos.getX() >> 4;
+                int trainChunkMinZ = trainMinPos.getZ() >> 4;
+                int trainChunkMaxX = trainMaxPos.getX() >> 4;
+                int trainChunkMaxZ = trainMaxPos.getZ() >> 4;
+
                 if (TMMConfig.verboseTrainResetLogs) {
-                    TMM.LOGGER.info("Resetting train" + areas.toString());
-                }
-                BlockPos backupMinPos = BlockPos.containing(areas.getResetTemplateArea().getMinPosition());
-                BlockPos backupMaxPos = BlockPos.containing(areas.getResetTemplateArea().getMaxPosition());
-                BoundingBox backupTrainBox = BoundingBox.fromCorners(backupMinPos, backupMaxPos);
-                BlockPos trainMinPos = BlockPos.containing(areas.getResetPasteArea().getMinPosition());
-                BlockPos trainMaxPos = trainMinPos.offset(backupTrainBox.getLength());
-                BoundingBox trainBox = BoundingBox.fromCorners(trainMinPos, trainMaxPos);
-
-                // Mode mode = Mode.FORCE;
-
-                if (!serverWorld.hasChunksAt(backupMinPos, backupMaxPos)
-                        || !serverWorld.hasChunksAt(trainMinPos, trainMaxPos)) {
-
-                    int backupChunkMinX = backupMinPos.getX() >> 4;
-                    int backupChunkMinZ = backupMinPos.getZ() >> 4;
-                    int backupChunkMaxX = backupMaxPos.getX() >> 4;
-                    int backupChunkMaxZ = backupMaxPos.getZ() >> 4;
-                    int trainChunkMinX = trainMinPos.getX() >> 4;
-                    int trainChunkMinZ = trainMinPos.getZ() >> 4;
-                    int trainChunkMaxX = trainMaxPos.getX() >> 4;
-                    int trainChunkMaxZ = trainMaxPos.getZ() >> 4;
-
-                    if (TMMConfig.verboseTrainResetLogs) {
-                        TMM.LOGGER.info(
-                                "Train reset: Loading chunks - Template: ({}, {}) to ({}, {}), Paste: ({}, {}) to ({}, {})",
-                                backupChunkMinX, backupChunkMinZ, backupChunkMaxX, backupChunkMaxZ,
-                                trainChunkMinX, trainChunkMinZ, trainChunkMaxX, trainChunkMaxZ);
-                    }
-
-                    // Force load the required chunks
-                    for (int x = backupChunkMinX; x <= backupChunkMaxX; x++) {
-                        for (int z = backupChunkMinZ; z <= backupChunkMaxZ; z++) {
-                            serverWorld.getChunk(x, z);
-                        }
-                    }
-                    for (int x = trainChunkMinX; x <= trainChunkMaxX; x++) {
-                        for (int z = trainChunkMinZ; z <= trainChunkMaxZ; z++) {
-                            serverWorld.getChunk(x, z);
-                        }
-                    }
-
-                    if (TMMConfig.verboseTrainResetLogs) {
-                        TMM.LOGGER.info("Train reset: Chunks loaded, attempting reset.");
-                    }
-                    // Continue with the reset after loading chunks
+                    TMM.LOGGER.info(
+                            "Train reset: Loading chunks - Template: ({}, {}) to ({}, {}), Paste: ({}, {}) to ({}, {})",
+                            backupChunkMinX, backupChunkMinZ, backupChunkMaxX, backupChunkMaxZ,
+                            trainChunkMinX, trainChunkMinZ, trainChunkMaxX, trainChunkMaxZ);
                 }
 
-                if (serverWorld.hasChunksAt(backupMinPos, backupMaxPos)
-                        && serverWorld.hasChunksAt(trainMinPos, trainMaxPos)) {
-                    List<BlockInfo> list = Lists.newArrayList();
-                    List<BlockInfo> list2 = Lists.newArrayList();
-                    List<BlockInfo> list3 = Lists.newArrayList();
-                    Deque<BlockPos> deque = Lists.newLinkedList();
-                    BlockPos blockPos5 = new BlockPos(
-                            trainBox.minX() - backupTrainBox.minX(), trainBox.minY() - backupTrainBox.minY(),
-                            trainBox.minZ() - backupTrainBox.minZ());
+                // Force load the required chunks
+                for (int x = backupChunkMinX; x <= backupChunkMaxX; x++) {
+                    for (int z = backupChunkMinZ; z <= backupChunkMaxZ; z++) {
+                        serverWorld.getChunk(x, z);
+                    }
+                }
+                for (int x = trainChunkMinX; x <= trainChunkMaxX; x++) {
+                    for (int z = trainChunkMinZ; z <= trainChunkMaxZ; z++) {
+                        serverWorld.getChunk(x, z);
+                    }
+                }
 
-                    for (int k = backupTrainBox.minZ(); k <= backupTrainBox.maxZ(); k++) {
-                        for (int l = backupTrainBox.minY(); l <= backupTrainBox.maxY(); l++) {
-                            for (int m = backupTrainBox.minX(); m <= backupTrainBox.maxX(); m++) {
-                                BlockPos blockPos6 = new BlockPos(m, l, k);
-                                BlockPos blockPos7 = blockPos6.offset(blockPos5);
-                                BlockInWorld cachedBlockPosition = new BlockInWorld(serverWorld, blockPos6, false);
-                                BlockState blockState = cachedBlockPosition.getState();
+                if (TMMConfig.verboseTrainResetLogs) {
+                    TMM.LOGGER.info("Train reset: Chunks loaded, attempting reset.");
+                }
+                // Continue with the reset after loading chunks
+            }
 
-                                BlockEntity blockEntity = serverWorld.getBlockEntity(blockPos6);
-                                if (blockEntity != null) {
-                                    BlockEntityInfo blockEntityInfo = new BlockEntityInfo(
-                                            blockEntity.saveCustomOnly(serverWorld.registryAccess()),
-                                            blockEntity.components());
-                                    list2.add(new BlockInfo(blockPos7, blockState, blockEntityInfo));
-                                    deque.addLast(blockPos6);
-                                } else if (!blockState.isSolidRender(serverWorld, blockPos6)
-                                        && !blockState.isCollisionShapeFullBlock(serverWorld, blockPos6)) {
-                                    list3.add(new BlockInfo(blockPos7, blockState, null));
-                                    deque.addFirst(blockPos6);
-                                } else {
-                                    list.add(new BlockInfo(blockPos7, blockState, null));
-                                    deque.addLast(blockPos6);
-                                }
+            if (serverWorld.hasChunksAt(backupMinPos, backupMaxPos)
+                    && serverWorld.hasChunksAt(trainMinPos, trainMaxPos)) {
+                List<BlockInfo> list = Lists.newArrayList();
+                List<BlockInfo> list2 = Lists.newArrayList();
+                List<BlockInfo> list3 = Lists.newArrayList();
+                Deque<BlockPos> deque = Lists.newLinkedList();
+                BlockPos blockPos5 = new BlockPos(
+                        trainBox.minX() - backupTrainBox.minX(), trainBox.minY() - backupTrainBox.minY(),
+                        trainBox.minZ() - backupTrainBox.minZ());
+
+                for (int k = backupTrainBox.minZ(); k <= backupTrainBox.maxZ(); k++) {
+                    for (int l = backupTrainBox.minY(); l <= backupTrainBox.maxY(); l++) {
+                        for (int m = backupTrainBox.minX(); m <= backupTrainBox.maxX(); m++) {
+                            BlockPos blockPos6 = new BlockPos(m, l, k);
+                            BlockPos blockPos7 = blockPos6.offset(blockPos5);
+                            BlockInWorld cachedBlockPosition = new BlockInWorld(serverWorld, blockPos6, false);
+                            BlockState blockState = cachedBlockPosition.getState();
+
+                            BlockEntity blockEntity = serverWorld.getBlockEntity(blockPos6);
+                            if (blockEntity != null) {
+                                BlockEntityInfo blockEntityInfo = new BlockEntityInfo(
+                                        blockEntity.saveCustomOnly(serverWorld.registryAccess()),
+                                        blockEntity.components());
+                                list2.add(new BlockInfo(blockPos7, blockState, blockEntityInfo));
+                                deque.addLast(blockPos6);
+                            } else if (!blockState.isSolidRender(serverWorld, blockPos6)
+                                    && !blockState.isCollisionShapeFullBlock(serverWorld, blockPos6)) {
+                                list3.add(new BlockInfo(blockPos7, blockState, null));
+                                deque.addFirst(blockPos6);
+                            } else {
+                                list.add(new BlockInfo(blockPos7, blockState, null));
+                                deque.addLast(blockPos6);
                             }
                         }
                     }
+                }
 
-                    List<BlockInfo> list4 = Lists.newArrayList();
-                    list4.addAll(list);
-                    list4.addAll(list2);
-                    list4.addAll(list3);
-                    List<BlockInfo> list5 = Lists.reverse(list4);
+                List<BlockInfo> list4 = Lists.newArrayList();
+                list4.addAll(list);
+                list4.addAll(list2);
+                list4.addAll(list3);
+                List<BlockInfo> list5 = Lists.reverse(list4);
 
-                    for (BlockInfo blockInfo : list5) {
-                        BlockEntity blockEntity3 = serverWorld.getBlockEntity(blockInfo.pos);
-                        Clearable.tryClear(blockEntity3);
-                        serverWorld.setBlock(blockInfo.pos, Blocks.BARRIER.defaultBlockState(), Block.UPDATE_CLIENTS);
+                for (BlockInfo blockInfo : list5) {
+                    BlockEntity blockEntity3 = serverWorld.getBlockEntity(blockInfo.pos);
+                    Clearable.tryClear(blockEntity3);
+                    serverWorld.setBlock(blockInfo.pos, Blocks.BARRIER.defaultBlockState(), Block.UPDATE_CLIENTS);
+                }
+
+                int mx = 0;
+
+                for (BlockInfo blockInfo2 : list4) {
+                    if (serverWorld.setBlock(blockInfo2.pos, blockInfo2.state, Block.UPDATE_CLIENTS)) {
+                        mx++;
+                    }
+                }
+
+                for (BlockInfo blockInfo2x : list2) {
+                    BlockEntity blockEntity4 = serverWorld.getBlockEntity(blockInfo2x.pos);
+                    if (blockInfo2x.blockEntityInfo != null && blockEntity4 != null) {
+                        blockEntity4.loadCustomOnly(blockInfo2x.blockEntityInfo.nbt, serverWorld.registryAccess());
+                        blockEntity4.setComponents(blockInfo2x.blockEntityInfo.components);
+                        blockEntity4.setChanged();
                     }
 
-                    int mx = 0;
+                    serverWorld.setBlock(blockInfo2x.pos, blockInfo2x.state, Block.UPDATE_CLIENTS);
+                }
 
-                    for (BlockInfo blockInfo2 : list4) {
-                        if (serverWorld.setBlock(blockInfo2.pos, blockInfo2.state, Block.UPDATE_CLIENTS)) {
-                            mx++;
-                        }
-                    }
+                for (BlockInfo blockInfo2x : list5) {
+                    serverWorld.blockUpdated(blockInfo2x.pos, blockInfo2x.state.getBlock());
+                }
 
-                    for (BlockInfo blockInfo2x : list2) {
-                        BlockEntity blockEntity4 = serverWorld.getBlockEntity(blockInfo2x.pos);
-                        if (blockInfo2x.blockEntityInfo != null && blockEntity4 != null) {
-                            blockEntity4.loadCustomOnly(blockInfo2x.blockEntityInfo.nbt, serverWorld.registryAccess());
-                            blockEntity4.setComponents(blockInfo2x.blockEntityInfo.components);
-                            blockEntity4.setChanged();
-                        }
-
-                        serverWorld.setBlock(blockInfo2x.pos, blockInfo2x.state, Block.UPDATE_CLIENTS);
-                    }
-
-                    for (BlockInfo blockInfo2x : list5) {
-                        serverWorld.blockUpdated(blockInfo2x.pos, blockInfo2x.state.getBlock());
-                    }
-
-                    serverWorld.getBlockTicks().copyAreaFrom(serverWorld.getBlockTicks(), backupTrainBox, blockPos5);
-                    if (mx == 0) {
-                        if (TMMConfig.verboseTrainResetLogs) {
-                            TMM.LOGGER.info("Train reset failed: No blocks copied. Queueing another attempt.");
-                        }
-                        // return true;
-                    }
-                } else {
+                serverWorld.getBlockTicks().copyAreaFrom(serverWorld.getBlockTicks(), backupTrainBox, blockPos5);
+                if (mx == 0) {
                     if (TMMConfig.verboseTrainResetLogs) {
-                        TMM.LOGGER.info("Train reset failed: Clone positions not loaded. Queueing another attempt.");
+                        TMM.LOGGER.info("Train reset failed: No blocks copied. Queueing another attempt.");
                     }
-                    return true;
+                    // return true;
                 }
-
-                // discard all player bodies and items
-                for (PlayerBodyEntity body : serverWorld.getEntities(TMMEntities.PLAYER_BODY,
-                        playerBodyEntity -> true)) {
-                    body.discard();
+            } else {
+                if (TMMConfig.verboseTrainResetLogs) {
+                    TMM.LOGGER.info("Train reset failed: Clone positions not loaded. Queueing another attempt.");
                 }
-                for (ItemEntity item : serverWorld.getEntities(EntityType.ITEM, playerBodyEntity -> true)) {
-                    item.discard();
-                }
-                for (FirecrackerEntity entity : serverWorld.getEntities(TMMEntities.FIRECRACKER, entity -> true))
-                    entity.discard();
-                for (NoteEntity entity : serverWorld.getEntities(TMMEntities.NOTE, entity -> true))
-                    entity.discard();
-
-                TMM.LOGGER.info("Train reset successful.");
-                return false;
+                return true;
             }
-        } else {
-            return tryResetTrainOnlySomeBlock(serverWorld);
+
+            // discard all player bodies and items
+            for (PlayerBodyEntity body : serverWorld.getEntities(TMMEntities.PLAYER_BODY,
+                    playerBodyEntity -> true)) {
+                body.discard();
+            }
+            for (ItemEntity item : serverWorld.getEntities(EntityType.ITEM, playerBodyEntity -> true)) {
+                item.discard();
+            }
+            for (FirecrackerEntity entity : serverWorld.getEntities(TMMEntities.FIRECRACKER, entity -> true))
+                entity.discard();
+            for (NoteEntity entity : serverWorld.getEntities(TMMEntities.NOTE, entity -> true))
+                entity.discard();
+
+            TMM.LOGGER.info("Train reset successful.");
+            return false;
         }
         return false;
     }
