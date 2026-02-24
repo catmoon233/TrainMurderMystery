@@ -12,7 +12,7 @@ import java.util.*;
  * Disconnects players who don't send their mod list within the timeout period
  */
 public class ModWhitelistTimeoutTracker {
-	private static final long TIMEOUT_MS = 5000; // 5 seconds
+	private static final long TIMEOUT_MS = 7500; // 5 seconds
 	private static final Map<UUID, Long> PLAYER_TIMEOUT_MAP = new HashMap<>();
 
 	/**

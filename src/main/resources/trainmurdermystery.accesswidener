@@ -3,6 +3,7 @@ accessWidener v2 named
 accessible field net/minecraft/world/item/ItemCooldowns cooldowns Ljava/util/Map;
 
 accessible class net/minecraft/client/renderer/FogRenderer$FogData
+accessible class net/minecraft/client/resources/SkinManager$CacheKey
 
 accessible class net/minecraft/client/renderer/texture/SimpleTexture$TextureImage
 accessible field net/minecraft/world/entity/player/Inventory compartments Ljava/util/List;
