@@ -1199,10 +1199,6 @@ public class GameFunctions {
                                         // deque.addLast(blockPos6); // Add to end to process last
                                     }
                                 }
-                                if (blockState.getValue(TrimmedBedBlock.PART).equals(BedPart.FOOT)) {
-                                    blockState = blockState.setValue(TrimmedBedBlock.OCCUPIED, false);
-                                    list2.add(new BlockInfo(blockPos7, blockState, null));
-                                }
                             } else if (blockState.getBlock() instanceof FoodPlatterBlock) {
                                 if (serverWorld.getBlockEntity(blockPos6) instanceof BeveragePlateBlockEntity entity) {
                                     entity.setArmorer(null);
