@@ -7,6 +7,7 @@ import dev.doctor4t.trainmurdermystery.api.TMMRoles;
 import dev.doctor4t.trainmurdermystery.api.replay.GameReplayData;
 import dev.doctor4t.trainmurdermystery.api.replay.GameReplayManager;
 import dev.doctor4t.trainmurdermystery.api.replay.ReplayApiInitializer;
+import dev.doctor4t.trainmurdermystery.api.replay.ReplayPayload;
 import dev.doctor4t.trainmurdermystery.block.DoorPartBlock;
 import dev.doctor4t.trainmurdermystery.cca.*;
 import dev.doctor4t.trainmurdermystery.command.*;

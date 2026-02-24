@@ -1,6 +1,5 @@
-package dev.doctor4t.trainmurdermystery.util;
+package dev.doctor4t.trainmurdermystery.api.replay;
 
-import dev.doctor4t.trainmurdermystery.api.Role;
 import dev.doctor4t.trainmurdermystery.api.TMMRoles;
 
 import java.util.Arrays;
@@ -9,13 +8,10 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import dev.doctor4t.trainmurdermystery.api.replay.GameReplayData;
-import dev.doctor4t.trainmurdermystery.api.replay.GameReplayManager;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.inventory.LecternMenu;
 
 public class ReplayDisplayUtils {
 
