@@ -1187,15 +1187,21 @@ public class GameFunctions {
                                     blockState = blockState.setValue(SmallDoorBlock.OPEN, false);
                                     list2.add(new BlockInfo(blockPos7, blockState, null));
                                 }
-                            } else if (blockState.getBlock() instanceof TrimmedBedBlock
-                                    && blockState.getValue(TrimmedBedBlock.PART).equals(BedPart.HEAD)) {
-                                if (serverWorld.getBlockEntity(blockPos6) instanceof TrimmedBedBlockEntity entity) {
-                                    entity.setHasScorpion(false, null);
-                                    BlockEntityInfo blockEntityInfo = new BlockEntityInfo(
-                                            entity.saveCustomOnly(serverWorld.registryAccess()),
-                                            entity.components());
-                                    list3.add(new BlockInfo(blockPos7, blockState, blockEntityInfo));
-                                    // deque.addLast(blockPos6); // Add to end to process last
+                            } else if (blockState.getBlock() instanceof TrimmedBedBlock) {
+                                if (blockState.getValue(TrimmedBedBlock.PART).equals(BedPart.HEAD)) {
+                                    if (serverWorld.getBlockEntity(blockPos6) instanceof TrimmedBedBlockEntity entity) {
+                                        entity.setHasScorpion(false, null);
+                                        blockState = blockState.setValue(TrimmedBedBlock.OCCUPIED, false);
+                                        BlockEntityInfo blockEntityInfo = new BlockEntityInfo(
+                                                entity.saveCustomOnly(serverWorld.registryAccess()),
+                                                entity.components());
+                                        list3.add(new BlockInfo(blockPos7, blockState, blockEntityInfo));
+                                        // deque.addLast(blockPos6); // Add to end to process last
+                                    }
+                                }
+                                if (blockState.getValue(TrimmedBedBlock.PART).equals(BedPart.FOOT)) {
+                                    blockState = blockState.setValue(TrimmedBedBlock.OCCUPIED, false);
+                                    list2.add(new BlockInfo(blockPos7, blockState, null));
                                 }
                             } else if (blockState.getBlock() instanceof FoodPlatterBlock) {
                                 if (serverWorld.getBlockEntity(blockPos6) instanceof BeveragePlateBlockEntity entity) {
@@ -1220,7 +1226,7 @@ public class GameFunctions {
                                             entity.saveCustomOnly(serverWorld.registryAccess()),
                                             entity.components());
                                     blockState = blockState.setValue(SprinklerBlock.POWERED, false);
-                                    list2.add(new BlockInfo(blockPos7, blockState, blockEntityInfo));
+                                    list3.add(new BlockInfo(blockPos7, blockState, blockEntityInfo));
                                 }
                             } else if (blockState.getBlock() instanceof NeonPillarBlock) {
                                 blockState = blockState.setValue(NeonPillarBlock.ACTIVE, true);
