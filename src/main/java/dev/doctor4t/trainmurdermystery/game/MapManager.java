@@ -368,7 +368,7 @@ public class MapManager {
                     AtomicBoolean isAvailable = new AtomicBoolean(false);
                     first.ifPresent(
                             a -> {
-                                isAvailable.set(first.get().maxCount >= serverWorld.players().size());
+                                isAvailable.set(!a.canSelect ||first.get().maxCount >= serverWorld.players().size());
                             });
                     return isAvailable.get();
                 });

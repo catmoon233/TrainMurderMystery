@@ -1,243 +1,268 @@
-// MapSelectorScreen.java
 package dev.doctor4t.trainmurdermystery.client.gui.screen;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import com.mojang.blaze3d.vertex.*;
+import com.mojang.blaze3d.vertex.BufferUploader;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.Tesselator;
+import com.mojang.blaze3d.vertex.VertexFormat;
 import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.cca.MapVotingComponent;
+import dev.doctor4t.trainmurdermystery.client.InputHandler;
 import dev.doctor4t.trainmurdermystery.client.TMMClient;
 import dev.doctor4t.trainmurdermystery.data.MapConfig;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.renderer.GameRenderer;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.sounds.SoundEvents;
 import net.minecraft.util.Mth;
 import org.joml.Matrix4f;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class MapSelectorScreen extends Screen {
-    private static final ResourceLocation BACKGROUND = ResourceLocation.tryBuild(TMM.MOD_ID,
-            "textures/gui/demo_background.png");
-    private static final int MAP_BOX_WIDTH = 140;
-    private static final int MAP_BOX_HEIGHT = 180;
-    private static final int MAP_SPACING = 20;
+    private static final int CARD_WIDTH = 164;
+    private static final int CARD_HEIGHT = 224;
+    private static final int CARD_SPACING = 18;
+    private static final int SIDE_PADDING = 56;
+    private static final int BOTTOM_PANEL_HEIGHT = 86;
+    private static final int PARTICLE_COUNT = 68;
+
+    private static final int COLOR_BG_TOP = 0xFF060B18;
+    private static final int COLOR_BG_BOTTOM = 0xFF111A32;
+    private static final int COLOR_CARD_TOP = 0xFF16233F;
+    private static final int COLOR_CARD_BOTTOM = 0xFF101A30;
+    private static final int COLOR_PANEL = 0xC0131F37;
+    private static final int COLOR_PANEL_DARK = 0xE00A1122;
+    private static final int COLOR_TEXT = 0xFFEAF1FF;
+    private static final int COLOR_TEXT_DIM = 0xFF97A6CC;
+    private static final int COLOR_ACCENT = 0xFF51D2FF;
+    private static final int COLOR_WARNING = 0xFFFF6D6D;
 
     private final List<MapOption> mapOptions = new ArrayList<>();
-    private MapOption hoveredMap = null;
-    private MapOption selectedMap = null;
-    private float animationProgress = 0.0f;
-    private float selectionAnimation = 0.0f;
-    private int scrollOffset = 0;
-    private boolean isScrolling = false;
-    private float gridOffset = 0.0f;
-    private long startTime = System.currentTimeMillis();
-
-    // 现代化配色方案 - 统一卡片颜色
-    private final int backgroundColor = 0xFF0F0F1A;
-    private final int accentColor = 0xFF4CC9F0;
-    private final int primaryColor = 0xFF2D2D5A;
-    private final int cardColor = 0xFF1E1E3A;
-    private final int hoverCardColor = 0xFF25254D;
-    private final int selectedCardColor = 0xFF3A3A6E;
-    private final int textColor = 0xFFF8F9FA;
-    private final int secondaryTextColor = 0xFFB0B0D0;
-    private final int borderColor = 0xFF4CC9F0;
-
-    // 粒子效果列表
     private final List<Particle> particles = new ArrayList<>();
+    private final Map<String, Integer> voteCounts = new HashMap<>();
 
-    // 投票计数映射
-    private final java.util.Map<String, Integer> voteCounts = new java.util.HashMap<>();
+    private MapOption hoveredMap;
+    private MapOption selectedMap;
+
+    private float introProgress;
+    private float backgroundTick;
+    private float scrollTarget;
+    private float scrollPosition;
+    private long openedAt;
 
     public MapSelectorScreen() {
         super(Component.translatable("gui.tmm.map_selector.title"));
         initMapOptions();
-        initParticles();
     }
 
     private void initMapOptions() {
         mapOptions.clear();
 
-        // 从动态配置加载地图选项
         List<MapConfig.MapEntry> configMaps = MapConfig.getInstance().getMaps();
-        if (configMaps != null) {
-            for (MapConfig.MapEntry entry : configMaps) {
-                mapOptions.add(new MapOption(entry.getId(),
+        if (configMaps != null && !configMaps.isEmpty()) {
+            for (int i = 0; i < configMaps.size(); i++) {
+                MapConfig.MapEntry entry = configMaps.get(i);
+                mapOptions.add(new MapOption(
+                        entry.getId(),
                         Component.translatable(entry.getDisplayName()).getString(),
                         Component.translatable(entry.getDescription()).getString(),
-                        entry.getColor()));
+                        entry.getColor(),
+                        i * 0.07f));
             }
-        } else {
-            // 如果配置为空，使用默认配置
-            mapOptions.add(new MapOption("random", Component.translatable("gui.tmm.map_selector.random").getString(),
-                    Component.translatable("gui.tmm.map_selector.random.desc").getString(), 0xFF4CC9F0));
-            mapOptions.add(new MapOption("areas1", Component.translatable("gui.tmm.map_selector.zeppelin").getString(),
-                    Component.translatable("gui.tmm.map_selector.zeppelin.desc").getString(), 0xFF9D0208));
+            return;
         }
+
+        mapOptions.add(new MapOption(
+                "random",
+                Component.translatable("gui.tmm.map_selector.random").getString(),
+                Component.translatable("gui.tmm.map_selector.random.desc").getString(),
+                0xFF4CC9F0,
+                0.00f));
+        mapOptions.add(new MapOption(
+                "areas1",
+                Component.translatable("gui.tmm.map_selector.zeppelin").getString(),
+                Component.translatable("gui.tmm.map_selector.zeppelin.desc").getString(),
+                0xFF9D0208,
+                0.07f));
     }
 
     private void initParticles() {
         particles.clear();
-        for (int i = 0; i < 50; i++) {
+        int count = Math.max(PARTICLE_COUNT, width / 16);
+        for (int i = 0; i < count; i++) {
             particles.add(new Particle(
                     (float) (Math.random() * width),
                     (float) (Math.random() * height),
-                    (float) (Math.random() * 2 + 1),
-                    (float) (Math.random() * 0.5f + 0.2f)));
+                    (float) ((Math.random() - 0.5f) * 0.28f),
+                    (float) (0.18f + Math.random() * 0.55f),
+                    (float) (1.0f + Math.random() * 1.8f),
+                    (float) (Math.random() * 0.6f + 0.2f),
+                    (float) (Math.random() * Math.PI * 2.0f)));
         }
     }
 
     @Override
     protected void init() {
         super.init();
-        animationProgress = 0.0f;
-        selectionAnimation = 0.0f;
-        gridOffset = 0.0f;
-        startTime = System.currentTimeMillis();
+
+        openedAt = System.currentTimeMillis();
+        introProgress = 0.0f;
+        backgroundTick = 0.0f;
+        scrollTarget = Mth.clamp(scrollTarget, 0.0f, getMaxScroll());
+        scrollPosition = scrollTarget;
+
+        if (mapOptions.size() == 1 && selectedMap == null) {
+            selectedMap = mapOptions.getFirst();
+        }
+
+        initParticles();
+        ensureMapVisible(selectedMap);
     }
 
     @Override
     public void tick() {
         super.tick();
-        // 更新网格偏移，实现向下移动效果
-        gridOffset += 0.5f;
-        if (gridOffset > 50)
-            gridOffset = 0;
 
-        // 更新粒子动画
-        for (Particle particle : particles) {
-            particle.update();
-            if (particle.y > height) {
-                particle.y = 0;
-                particle.x = (float) (Math.random() * width);
-            }
+        introProgress = Mth.lerp(0.09f, introProgress, 1.0f);
+        scrollPosition = Mth.lerp(0.24f, scrollPosition, scrollTarget);
+        backgroundTick += 0.015f;
+
+        for (MapOption option : mapOptions) {
+            option.hoverTime = Mth.lerp(0.2f, option.hoverTime, option == hoveredMap ? 1.0f : 0.0f);
+            option.selectionTime = Mth.lerp(0.18f, option.selectionTime, option == selectedMap ? 1.0f : 0.0f);
         }
 
-        // 更新地图卡片的悬停动画
-        for (MapOption map : mapOptions) {
-            if (map == hoveredMap) {
-                map.hoverTime = Mth.lerp(0.15f, map.hoverTime, 1.0f);
-            } else {
-                map.hoverTime = Mth.lerp(0.15f, map.hoverTime, 0.0f);
-            }
-
-            // 更新选中动画
-            if (map == selectedMap) {
-                map.selectionTime = Mth.lerp(0.1f, map.selectionTime, 1.0f);
-            } else {
-                map.selectionTime = Mth.lerp(0.1f, map.selectionTime, 0.0f);
-            }
+        float elapsedSeconds = (System.currentTimeMillis() - openedAt) / 1000.0f;
+        for (Particle particle : particles) {
+            particle.update(width, height, elapsedSeconds);
         }
     }
 
     @Override
-    public void renderBackground(GuiGraphics guiGraphics, int i, int j, float f) {
-        // 不调用父类的背景渲染，我们自己绘制
+    public void renderBackground(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
+        // Fully custom background.
     }
 
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
-        // 平滑动画更新
-        animationProgress = Mth.lerp(0.1f, animationProgress, 1.0f);
-
-        // 绘制现代化背景
-        renderModernBackground(guiGraphics, partialTicks);
-
-        // 绘制标题
-        float titleAlpha = Mth.clamp((animationProgress - 0.2f) * 5, 0, 1);
-        int titleColor = (int) (titleAlpha * 255) << 24 | textColor;
-        guiGraphics.drawCenteredString(font,
-                Component.translatable("gui.tmm.map_selector.title").withStyle(net.minecraft.ChatFormatting.BOLD),
-                width / 2, 30, titleColor);
-
-        // 绘制副标题
-
-        // 绘制地图选项
-        renderMapOptions(guiGraphics, mouseX, mouseY, partialTicks);
-
-        // 绘制投票倒计时
+        renderModernBackground(guiGraphics);
+        renderHeader(guiGraphics);
+        renderMapOptions(guiGraphics, mouseX, mouseY);
         renderVotingTimer(guiGraphics);
-
-        // 绘制底部信息
-        if (selectedMap != null) {
-            drawSelectionInfo(guiGraphics);
-        }
+        drawSelectionInfo(guiGraphics);
 
         super.render(guiGraphics, mouseX, mouseY, partialTicks);
     }
 
-    private void renderModernBackground(GuiGraphics guiGraphics, float partialTicks) {
-        // 纯色背景
-        guiGraphics.fill(0, 0, width, height, backgroundColor);
+    private void renderModernBackground(GuiGraphics guiGraphics) {
+        guiGraphics.fillGradient(0, 0, width, height, COLOR_BG_TOP, COLOR_BG_BOTTOM);
 
-        // 绘制动态网格背景
+        drawAmbientGlows(guiGraphics);
         drawDynamicGrid(guiGraphics);
-
-        // 绘制粒子效果
         drawParticles(guiGraphics);
 
-        // 绘制顶部渐变条
-        drawTopGradient(guiGraphics);
+        guiGraphics.fillGradient(0, 0, width, 95,
+                withAlpha(0x000000, 160),
+                withAlpha(0x000000, 0));
+        guiGraphics.fillGradient(0, height - 125, width, height,
+                withAlpha(0x000000, 0),
+                withAlpha(0x000000, 180));
+    }
 
-        // 绘制底部渐变条
-        drawBottomGradient(guiGraphics);
+    private void drawAmbientGlows(GuiGraphics guiGraphics) {
+        float t = (System.currentTimeMillis() - openedAt) / 1000.0f;
+
+        drawSoftGlow(guiGraphics,
+                (int) (width * 0.22f + Math.sin(t * 0.7f) * 70.0f),
+                (int) (height * 0.20f + Math.cos(t * 0.45f) * 36.0f),
+                210,
+                0x2A74FF,
+                0.12f);
+
+        drawSoftGlow(guiGraphics,
+                (int) (width * 0.82f + Math.cos(t * 0.55f) * 65.0f),
+                (int) (height * 0.33f + Math.sin(t * 0.65f) * 44.0f),
+                180,
+                0x26CFFF,
+                0.09f);
+
+        drawSoftGlow(guiGraphics,
+                (int) (width * 0.52f + Math.sin(t * 0.33f) * 90.0f),
+                (int) (height * 0.86f + Math.cos(t * 0.29f) * 24.0f),
+                220,
+                0x1EAAE0,
+                0.08f);
+    }
+
+    private void drawSoftGlow(GuiGraphics guiGraphics, int centerX, int centerY, int radius, int rgbColor,
+            float intensity) {
+        int layers = 8;
+        for (int layer = layers; layer >= 1; layer--) {
+            float ratio = layer / (float) layers;
+            int alpha = (int) (255.0f * intensity * ratio * ratio);
+            int currentRadius = (int) (radius * ratio);
+            guiGraphics.fill(
+                    centerX - currentRadius,
+                    centerY - currentRadius,
+                    centerX + currentRadius,
+                    centerY + currentRadius,
+                    withAlpha(rgbColor, alpha));
+        }
     }
 
     private void drawDynamicGrid(GuiGraphics guiGraphics) {
         PoseStack poseStack = guiGraphics.pose();
         poseStack.pushPose();
 
-        Tesselator tessellator = Tesselator.getInstance();
+        Tesselator tesselator = Tesselator.getInstance();
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
 
         Matrix4f matrix = poseStack.last().pose();
-        final var buffer = tessellator.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
+        var buffer = tesselator.begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
 
-        // 网格参数 - 增大范围
-        int gridSize = 50;
-        float gridAlpha = 0.1f;
-        int gridColor = (int) (gridAlpha * 255) << 24 | 0x4CC9F0;
-        int subGridColor = (int) (gridAlpha * 0.5f * 255) << 24 | 0x4CC9F0;
+        int majorStep = 48;
+        int minorStep = majorStep / 2;
+        float drift = (backgroundTick * 18.0f) % majorStep;
+        float skew = 0.22f;
 
-        // 计算超出屏幕的范围，以创建更大范围的网格
-        int extraRange = 200; // 扩大网格范围
-        int extendedWidth = width + extraRange * 2;
-        int extendedHeight = height + extraRange * 2;
+        int majorColor = withAlpha(0x6CA7FF, 30);
+        int minorColor = withAlpha(0x6CA7FF, 16);
 
-        // 主网格线 - 扩大范围
-        for (int x = -extraRange; x <= extendedWidth; x += gridSize) {
-            float yOffset = (gridOffset + x) % gridSize;
-            buffer.addVertex(matrix, x, -extraRange - yOffset, 0).setColor(gridColor);
-            buffer.addVertex(matrix, x, extendedHeight - yOffset, 0).setColor(gridColor);
+        for (int x = -majorStep * 3; x <= width + majorStep * 3; x += majorStep) {
+            float startX = x + drift;
+            float endX = startX + height * skew;
+            buffer.addVertex(matrix, startX, -majorStep, 0).setColor(majorColor);
+            buffer.addVertex(matrix, endX, height + majorStep, 0).setColor(majorColor);
         }
 
-        for (int y = -extraRange; y <= extendedHeight; y += gridSize) {
-            float xOffset = (gridOffset + y) % gridSize;
-            buffer.addVertex(matrix, -extraRange - xOffset, y - gridOffset, 0).setColor(gridColor);
-            buffer.addVertex(matrix, extendedWidth - xOffset, y - gridOffset, 0).setColor(gridColor);
+        for (int x = -majorStep * 3 + minorStep; x <= width + majorStep * 3; x += majorStep) {
+            float startX = x + drift;
+            float endX = startX + height * skew;
+            buffer.addVertex(matrix, startX, -majorStep, 0).setColor(minorColor);
+            buffer.addVertex(matrix, endX, height + majorStep, 0).setColor(minorColor);
         }
 
-        // 子网格线（更细的线）- 扩大范围
-        int subGridSize = gridSize / 2;
-        for (int x = -extraRange + subGridSize; x < extendedWidth; x += gridSize) {
-            float yOffset = (gridOffset + x + subGridSize) % gridSize;
-            buffer.addVertex(matrix, x, -extraRange - yOffset, 0).setColor(subGridColor);
-            buffer.addVertex(matrix, x, extendedHeight - yOffset, 0).setColor(subGridColor);
-        }
-
-        for (int y = -extraRange + subGridSize; y < extendedHeight; y += gridSize) {
-            float xOffset = (gridOffset + y + subGridSize) % gridSize;
-            buffer.addVertex(matrix, -extraRange - xOffset, y - gridOffset, 0).setColor(subGridColor);
-            buffer.addVertex(matrix, extendedWidth - xOffset, y - gridOffset, 0).setColor(subGridColor);
+        float verticalDrift = (backgroundTick * 12.0f) % majorStep;
+        for (int y = -majorStep * 2; y <= height + majorStep * 2; y += majorStep) {
+            float startY = y + verticalDrift;
+            buffer.addVertex(matrix, -majorStep, startY, 0).setColor(majorColor);
+            buffer.addVertex(matrix, width + majorStep, startY, 0).setColor(majorColor);
         }
 
         BufferUploader.drawWithShader(buffer.buildOrThrow());
+        RenderSystem.disableBlend();
         poseStack.popPose();
     }
 
@@ -245,19 +270,19 @@ public class MapSelectorScreen extends Screen {
         PoseStack poseStack = guiGraphics.pose();
         poseStack.pushPose();
 
-        Tesselator tessellator = Tesselator.getInstance();
+        Tesselator tesselator = Tesselator.getInstance();
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
 
         Matrix4f matrix = poseStack.last().pose();
-        final var buffer = tessellator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
+        var buffer = tesselator.begin(VertexFormat.Mode.QUADS, DefaultVertexFormat.POSITION_COLOR);
 
-        // 绘制粒子
+        float time = (System.currentTimeMillis() - openedAt) / 1000.0f;
         for (Particle particle : particles) {
-            float size = particle.size;
-            int alpha = (int) (particle.alpha * 255);
-            int color = (alpha << 24) | 0x4CC9F0;
+            float size = particle.size * (0.8f + 0.2f * (float) Math.sin(time * particle.twinkleSpeed + particle.phase));
+            int alpha = (int) (255.0f * particle.getAlpha(time));
+            int color = withAlpha(0xC7E4FF, alpha);
 
             buffer.addVertex(matrix, particle.x - size, particle.y - size, 0).setColor(color);
             buffer.addVertex(matrix, particle.x + size, particle.y - size, 0).setColor(color);
@@ -266,412 +291,464 @@ public class MapSelectorScreen extends Screen {
         }
 
         BufferUploader.drawWithShader(buffer.buildOrThrow());
+        RenderSystem.disableBlend();
         poseStack.popPose();
     }
 
-    private void drawTopGradient(GuiGraphics guiGraphics) {
-        // 顶部渐变覆盖
-        for (int y = 0; y < 60; y++) {
-            float alpha = (60 - y) / 60.0f * 0.8f;
-            int color = (int) (alpha * 255) << 24 | backgroundColor;
-            guiGraphics.fill(0, y, width, y + 1, color);
-        }
+    private void renderHeader(GuiGraphics guiGraphics) {
+        float show = easeOutCubic(Mth.clamp((introProgress - 0.04f) * 1.3f, 0.0f, 1.0f));
+        int alpha = (int) (show * 255.0f);
+        int yOffset = (int) ((1.0f - show) * 12.0f);
+
+        int titleY = 28 - yOffset;
+        guiGraphics.drawCenteredString(
+                font,
+                Component.translatable("gui.tmm.map_selector.title").withStyle(ChatFormatting.BOLD),
+                width / 2,
+                titleY,
+                withAlpha(COLOR_TEXT, alpha));
+
+        Component keyHint = InputHandler.getOpenVotingScreenKeybind() != null
+                ? InputHandler.getOpenVotingScreenKeybind().getTranslatedKeyMessage()
+                : Component.literal("M");
+        Component subtitle = Component.translatable("gui.tmm.map_selector.subtitle", keyHint);
+        guiGraphics.drawCenteredString(
+                font,
+                subtitle,
+                width / 2,
+                titleY + 16,
+                withAlpha(COLOR_TEXT_DIM, (int) (alpha * 0.92f)));
     }
 
-    private void drawBottomGradient(GuiGraphics guiGraphics) {
-        // 底部渐变覆盖
-        for (int y = height - 80; y < height; y++) {
-            float alpha = (y - (height - 80)) / 80.0f * 0.8f;
-            int color = (int) (alpha * 255) << 24 | backgroundColor;
-            guiGraphics.fill(0, y, width, y + 1, color);
+    private void renderMapOptions(GuiGraphics guiGraphics, int mouseX, int mouseY) {
+        if (mapOptions.isEmpty()) {
+            return;
         }
-    }
-
-    private void renderMapOptions(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTicks) {
-        // width;
-        int totalWidth = mapOptions.size() * (MAP_BOX_WIDTH + MAP_SPACING);
-        int startX = 0;// 水平滚动
-        if (totalWidth + 40 >= width) {
-            startX = 40 - scrollOffset;
-        } else {
-            startX = MAP_SPACING / 2 + width / 2 - totalWidth / 2;
-        }
-        int startY = (height - MAP_BOX_HEIGHT) / 2; // 垂直居中
 
         hoveredMap = null;
 
-        for (int i = 0; i < mapOptions.size(); i++) {
+        int cardCount = mapOptions.size();
+        int totalWidth = cardCount * CARD_WIDTH + Math.max(0, cardCount - 1) * CARD_SPACING;
+        int availableWidth = width - SIDE_PADDING * 2;
+
+        int startX = totalWidth > availableWidth ? SIDE_PADDING : (width - totalWidth) / 2;
+        int startY = Mth.clamp((height - CARD_HEIGHT) / 2, 84, Math.max(84, height - CARD_HEIGHT - 12));
+
+        if (totalWidth > availableWidth) {
+            guiGraphics.fill(0, startY - 10, SIDE_PADDING, startY + CARD_HEIGHT + 10, withAlpha(0x02050E, 115));
+            guiGraphics.fill(width - SIDE_PADDING, startY - 10, width, startY + CARD_HEIGHT + 10, withAlpha(0x02050E, 115));
+
+            int pulseAlpha = (int) (140.0f + Math.sin(backgroundTick * 4.0f) * 55.0f);
+            if (scrollTarget > 1.0f) {
+                guiGraphics.drawString(font, "<", 16, startY + CARD_HEIGHT / 2 - 4, withAlpha(COLOR_TEXT_DIM, pulseAlpha), false);
+            }
+            if (scrollTarget < getMaxScroll() - 1) {
+                guiGraphics.drawString(font, ">", width - 22, startY + CARD_HEIGHT / 2 - 4, withAlpha(COLOR_TEXT_DIM, pulseAlpha), false);
+            }
+        }
+
+        for (int i = 0; i < cardCount; i++) {
             MapOption map = mapOptions.get(i);
 
-            int x = startX + i * (MAP_BOX_WIDTH + MAP_SPACING); // 水平排列
-            int y = startY; // 所有卡片在同一垂直位置
+            float entrance = easeOutCubic(Mth.clamp((introProgress - map.introDelay) * 1.8f, 0.0f, 1.0f));
+            float cardX = startX + i * (CARD_WIDTH + CARD_SPACING) - scrollPosition + (1.0f - entrance) * 10.0f;
+            float cardY = startY + (1.0f - entrance) * (22.0f + i * 1.2f) - map.hoverTime * 8.0f - map.selectionTime * 4.0f;
 
-            // 检查鼠标悬停
-            boolean isHovered = mouseX >= x && mouseX <= x + MAP_BOX_WIDTH &&
-                    mouseY >= y && mouseY <= y + MAP_BOX_HEIGHT;
+            if (cardX + CARD_WIDTH < -24 || cardX > width + 24) {
+                continue;
+            }
 
+            boolean isHovered = mouseX >= cardX && mouseX <= cardX + CARD_WIDTH
+                    && mouseY >= cardY && mouseY <= cardY + CARD_HEIGHT;
             if (isHovered) {
                 hoveredMap = map;
             }
 
-            // 绘制地图卡片
-            drawMapCard(guiGraphics, map, x, y, isHovered, 1.0f);
+            drawMapCard(guiGraphics, map, i, cardX, cardY, entrance, isHovered);
         }
     }
 
-    private void drawMapCard(GuiGraphics guiGraphics, MapOption map, int x, int y, boolean isHovered, float alpha) {
+    private void drawMapCard(GuiGraphics guiGraphics, MapOption map, int index, float x, float y,
+            float entrance, boolean isHovered) {
         PoseStack poseStack = guiGraphics.pose();
         poseStack.pushPose();
 
-        // 悬停动画缩放
-        float hoverScale = 1.0f + map.hoverTime * 0.03f;
-        float selectionScale = 1.0f + map.selectionTime * 0.02f;
-        float totalScale = hoverScale * selectionScale;
+        float scale = 0.92f + entrance * 0.08f + map.hoverTime * 0.025f + map.selectionTime * 0.02f;
+        float centerX = x + CARD_WIDTH / 2.0f;
+        float centerY = y + CARD_HEIGHT / 2.0f;
 
-        float centerX = x + MAP_BOX_WIDTH / 2.0f;
-        float centerY = y + MAP_BOX_HEIGHT / 2.0f;
+        poseStack.translate(centerX, centerY, 0.0f);
+        poseStack.scale(scale, scale, 1.0f);
+        poseStack.translate(-centerX, -centerY, 0.0f);
 
-        poseStack.translate(centerX, centerY, 0);
-        poseStack.scale(totalScale, totalScale, 1.0f);
-        poseStack.translate(-centerX, -centerY, 0);
+        int alpha = (int) (255.0f * entrance);
+        int cardX = Mth.floor(x);
+        int cardY = Mth.floor(y);
 
-        // 计算颜色透明度
-        int cardAlpha = (int) (alpha * 255);
+        int mapAccent = normalizeOpaqueColor(map.color);
+        float accentMix = 0.14f + map.hoverTime * 0.14f + map.selectionTime * 0.38f;
 
-        // 确定卡片背景颜色
-        int cardBgColor;
-        if (map == selectedMap) {
-            float pulse = (float) (Math.sin(System.currentTimeMillis() * 0.003) * 0.2 + 0.8);
-            int pulseAlpha = (int) (cardAlpha * pulse);
-            cardBgColor = (pulseAlpha << 24) | selectedCardColor;
-        } else if (isHovered) {
-            cardBgColor = (cardAlpha << 24) | hoverCardColor;
-        } else {
-            cardBgColor = (cardAlpha << 24) | cardColor;
-        }
+        int topColor = mixColor(COLOR_CARD_TOP, mapAccent, accentMix);
+        int bottomColor = mixColor(COLOR_CARD_BOTTOM, mapAccent, accentMix * 0.62f);
 
-        // 绘制卡片背景（直角矩形）
-        guiGraphics.fill(x, y, x + MAP_BOX_WIDTH, y + MAP_BOX_HEIGHT, cardBgColor);
+        int shadowAlpha = (int) (alpha * (0.30f + map.hoverTime * 0.25f + map.selectionTime * 0.18f));
+        guiGraphics.fill(cardX - 7, cardY + 5, cardX + CARD_WIDTH + 7, cardY + CARD_HEIGHT + 10, withAlpha(0x000000, shadowAlpha));
 
-        // 绘制边框
-        float borderThickness = 1.5f + map.hoverTime * 2f + map.selectionTime * 3f;
-        int borderAlpha = (int) (cardAlpha * (0.5f + map.hoverTime * 0.5f));
-        int borderColor = (borderAlpha << 24) | 0x4CC9F0;
+        guiGraphics.fillGradient(
+                cardX,
+                cardY,
+                cardX + CARD_WIDTH,
+                cardY + CARD_HEIGHT,
+                withAlpha(topColor, alpha),
+                withAlpha(bottomColor, alpha));
 
-        // 绘制四周边框
-        guiGraphics.fill(x, y, x + MAP_BOX_WIDTH, y + (int) borderThickness, borderColor); // 上边框
-        guiGraphics.fill(x, y + MAP_BOX_HEIGHT - (int) borderThickness, x + MAP_BOX_WIDTH, y + MAP_BOX_HEIGHT,
-                borderColor); // 下边框
-        guiGraphics.fill(x, y, x + (int) borderThickness, y + MAP_BOX_HEIGHT, borderColor); // 左边框
-        guiGraphics.fill(x + MAP_BOX_WIDTH - (int) borderThickness, y, x + MAP_BOX_WIDTH, y + MAP_BOX_HEIGHT,
-                borderColor); // 右边框
+        int borderColor = mixColor(0x3D5488, mapAccent, 0.58f);
+        float pulse = 0.62f + 0.38f * (float) Math.sin(backgroundTick * 4.8f + index * 0.8f);
+        int borderAlpha = (int) (alpha * (0.34f + map.hoverTime * 0.26f + map.selectionTime * (0.30f + 0.20f * pulse)));
+        int borderWidth = map == selectedMap ? 2 : 1;
+        drawRectBorder(guiGraphics, cardX, cardY, CARD_WIDTH, CARD_HEIGHT, borderWidth, withAlpha(borderColor, borderAlpha));
 
-        // 绘制顶部颜色条
-        int topBarColor = map.color | 0xFF000000;
-        guiGraphics.fill(x, y, x + MAP_BOX_WIDTH, y + 6, topBarColor);
+        guiGraphics.fillGradient(
+                cardX + 1,
+                cardY + 1,
+                cardX + CARD_WIDTH - 1,
+                cardY + 8,
+                withAlpha(mapAccent, alpha),
+                withAlpha(mixColor(mapAccent, 0x0E172F, 0.42f), alpha));
 
-        // 绘制地图名称（居中）
-        int nameAlphaValue = (int) (cardAlpha * 0.9f);
-        int nameColor = (nameAlphaValue << 24) | textColor;
-        String truncatedName = font.plainSubstrByWidth(map.displayName, MAP_BOX_WIDTH - 20);
-        guiGraphics.drawCenteredString(font, truncatedName,
-                x + MAP_BOX_WIDTH / 2, y + 20, nameColor);
+        int nameColor = withAlpha(COLOR_TEXT, (int) (alpha * (0.90f + map.hoverTime * 0.10f)));
+        guiGraphics.drawCenteredString(
+                font,
+                clipText(map.displayName, CARD_WIDTH - 18),
+                cardX + CARD_WIDTH / 2,
+                cardY + 16,
+                nameColor);
 
-        // 绘制地图ID（居中）- 仅在创造模式下显示
         if (TMMClient.isPlayerSpectatingOrCreative()) {
-            int idAlpha = (int) (cardAlpha * 0.8f);
-            int idColor = (idAlpha << 24) | secondaryTextColor;
-            String truncatedId = font.plainSubstrByWidth(map.id, MAP_BOX_WIDTH - 20);
-            guiGraphics.drawCenteredString(font, truncatedId,
-                    x + MAP_BOX_WIDTH / 2, y + 40, idColor);
+            guiGraphics.drawCenteredString(
+                    font,
+                    clipText(map.id, CARD_WIDTH - 18),
+                    cardX + CARD_WIDTH / 2,
+                    cardY + 30,
+                    withAlpha(COLOR_TEXT_DIM, (int) (alpha * 0.86f)));
         }
 
-        // 绘制地图预览图片区域（放大后的中心框）
-        int imageSize = 100; // 增大图片尺寸
-        int imageX = x + (MAP_BOX_WIDTH - imageSize) / 2;
-        int imageY = y + 60; // 调整位置以适应更大的图片
+        int previewX = cardX + 12;
+        int previewY = cardY + 50;
+        int previewWidth = CARD_WIDTH - 24;
+        int previewHeight = 110;
 
-        // 绘制地图图片背景
-        int imageBgAlpha = (int) (cardAlpha * 0.7f);
-        int imageBgColor = (imageBgAlpha << 24) | 0x2D2D5A;
-        guiGraphics.fill(imageX, imageY, imageX + imageSize, imageY + imageSize, imageBgColor);
+        guiGraphics.fillGradient(
+                previewX,
+                previewY,
+                previewX + previewWidth,
+                previewY + previewHeight,
+                withAlpha(0x1A2647, (int) (alpha * 0.90f)),
+                withAlpha(0x0B1226, (int) (alpha * 0.90f)));
+        drawRectBorder(guiGraphics, previewX, previewY, previewWidth, previewHeight, 1, withAlpha(mapAccent, (int) (alpha * 0.62f)));
 
-        // 绘制地图图片边框
-        int imageBorderColor = (cardAlpha << 24) | borderColor;
-        guiGraphics.fill(imageX, imageY, imageX + imageSize, imageY + 1, imageBorderColor); // 上边框
-        guiGraphics.fill(imageX, imageY + imageSize - 1, imageX + imageSize, imageY + imageSize, imageBorderColor); // 下边框
-        guiGraphics.fill(imageX, imageY, imageX + 1, imageY + imageSize, imageBorderColor); // 左边框
-        guiGraphics.fill(imageX + imageSize - 1, imageY, imageX + imageSize, imageY + imageSize, imageBorderColor); // 右边框
+        drawMapPreviewImage(guiGraphics, map.id, previewX + 1, previewY + 1, previewWidth - 2, previewHeight - 2);
 
-        // 尝试绘制地图预览图片
-        drawMapPreviewImage(guiGraphics, map.id, imageX, imageY, imageSize, imageSize);
+        float scanY = (backgroundTick * 68.0f + index * 17.0f) % (previewHeight + 18.0f) - 8.0f;
+        int scanAlpha = (int) (alpha * (0.08f + map.hoverTime * 0.10f + map.selectionTime * 0.12f));
+        guiGraphics.fill(
+                previewX + 2,
+                (int) (previewY + scanY),
+                previewX + previewWidth - 2,
+                (int) (previewY + scanY + 5),
+                withAlpha(0xFFFFFF, scanAlpha));
 
-        // 绘制地图描述（居中，位于底部）
-        int descAlphaValue = (int) (cardAlpha * 0.7f);
-        int descColor = (descAlphaValue << 24) | secondaryTextColor;
-        String desc = map.description.length() > 25 ? map.description.substring(0, 25) + "..." : map.description;
-        guiGraphics.drawCenteredString(font, desc,
-                x + MAP_BOX_WIDTH / 2, y + MAP_BOX_HEIGHT - 45, descColor);
+        int descriptionY = cardY + CARD_HEIGHT - 46;
+        guiGraphics.drawCenteredString(
+                font,
+                clipText(map.description, CARD_WIDTH - 18),
+                cardX + CARD_WIDTH / 2,
+                descriptionY,
+                withAlpha(COLOR_TEXT_DIM, (int) (alpha * 0.90f)));
 
-        // 绘制投票数量（居中，位于底部）
         int voteCount = getVoteCount(map.id);
         if (voteCount > 0) {
             String voteText = Component.translatable("gui.tmm.map_selector.vote_count", voteCount).getString();
-            int voteAlpha = (int) (cardAlpha * 0.9f);
-            int voteColor = (voteAlpha << 24) | accentColor;
-            guiGraphics.drawCenteredString(font, voteText,
-                    x + MAP_BOX_WIDTH / 2, y + MAP_BOX_HEIGHT - 30, voteColor);
+            int totalVotes = getTotalVoteCount();
+            if (totalVotes > 0) {
+                int percent = Mth.floor(voteCount * 100.0f / totalVotes);
+                voteText = voteText + "  " + percent + "%";
+            }
+
+            int badgeWidth = Math.min(CARD_WIDTH - 18, font.width(voteText) + 12);
+            int badgeX = cardX + (CARD_WIDTH - badgeWidth) / 2;
+            int badgeY = cardY + CARD_HEIGHT - 28;
+            int badgeColor = mixColor(mapAccent, COLOR_ACCENT, 0.45f);
+
+            guiGraphics.fill(
+                    badgeX,
+                    badgeY,
+                    badgeX + badgeWidth,
+                    badgeY + 13,
+                    withAlpha(badgeColor, (int) (alpha * 0.30f)));
+            drawRectBorder(guiGraphics, badgeX, badgeY, badgeWidth, 13, 1, withAlpha(badgeColor, (int) (alpha * 0.75f)));
+            guiGraphics.drawCenteredString(
+                    font,
+                    voteText,
+                    cardX + CARD_WIDTH / 2,
+                    badgeY + 2,
+                    withAlpha(COLOR_TEXT, (int) (alpha * 0.98f)));
         }
 
-        // 绘制选择指示器
         if (map == selectedMap) {
-            drawSelectionIndicator(guiGraphics, x, y, cardAlpha);
+            drawSelectionIndicator(guiGraphics, cardX, cardY, index, mapAccent, map.selectionTime, alpha);
+        } else if (isHovered) {
+            drawRectBorder(
+                    guiGraphics,
+                    cardX - 1,
+                    cardY - 1,
+                    CARD_WIDTH + 2,
+                    CARD_HEIGHT + 2,
+                    1,
+                    withAlpha(COLOR_ACCENT, (int) (alpha * 0.40f)));
         }
 
         poseStack.popPose();
     }
 
-    private void drawMapPreviewImage(GuiGraphics guiGraphics, String id, int imageX, int imageY, int imageSize,
-            int imageSize1) {
-        // 尝试绘制地图预览图片
+    private void drawMapPreviewImage(GuiGraphics guiGraphics, String id, int x, int y, int width, int height) {
         try {
-            // 为每个地图ID创建特定的纹理位置
-            ResourceLocation textureLocation = ResourceLocation.tryBuild(TMM.MOD_ID,
-                    "textures/gui/maps/" + id + ".png");
-
-            // 检查资源是否存在
-            if (textureExists(textureLocation)) {
-                // 绑定纹理并绘制
-                RenderSystem.setShaderTexture(0, textureLocation);
-
-                // 绘制纹理
-                guiGraphics.blit(textureLocation, imageX + 2, imageY + 2, 0, 0,
-                        imageSize - 4, imageSize1 - 4, imageSize - 4, imageSize1 - 4);
-            } else {
-                // 如果没有找到特定地图图片，绘制占位符
-                drawPlaceholderImage(guiGraphics, id, imageX, imageY, imageSize, imageSize1);
+            ResourceLocation textureLocation = ResourceLocation.tryBuild(TMM.MOD_ID, "textures/gui/maps/" + id + ".png");
+            if (textureLocation != null && textureExists(textureLocation)) {
+                guiGraphics.blit(textureLocation, x, y, 0, 0, width, height, width, height);
+                return;
             }
-        } catch (Exception e) {
-            // 发生错误时绘制占位符
-            drawPlaceholderImage(guiGraphics, id, imageX, imageY, imageSize, imageSize1);
+        } catch (Exception ignored) {
+            // Fallback placeholder below.
         }
+
+        drawPlaceholderImage(guiGraphics, id, x, y, width, height);
     }
 
     private boolean textureExists(ResourceLocation resourceLocation) {
         try {
             return Minecraft.getInstance().getResourceManager().getResource(resourceLocation).isPresent();
-        } catch (Exception e) {
+        } catch (Exception ignored) {
             return false;
         }
     }
 
-    private void drawPlaceholderImage(GuiGraphics guiGraphics, String id, int imageX, int imageY, int imageSize,
-            int imageSize1) {
-        // 绘制占位符背景
-        int placeholderColor = 0x40888888;
-        guiGraphics.fill(imageX + 2, imageY + 2, imageX + imageSize - 2, imageY + imageSize - 2, placeholderColor);
+    private void drawPlaceholderImage(GuiGraphics guiGraphics, String mapId, int x, int y, int width, int height) {
+        guiGraphics.fillGradient(
+                x,
+                y,
+                x + width,
+                y + height,
+                withAlpha(0x1B2A4F, 190),
+                withAlpha(0x0C1326, 210));
 
-        // 绘制地图首字母
-        String initial = id.isEmpty() ? "?" : String.valueOf(Character.toUpperCase(id.charAt(0)));
-        int initialColor = 0x80FFFFFF;
-        int textWidth = font.width(initial);
-        int textX = imageX + (imageSize - textWidth) / 2;
-        int textY = imageY + (imageSize - font.lineHeight) / 2;
-        guiGraphics.drawString(font, initial, textX, textY, initialColor, false);
+        String initial = mapId.isEmpty() ? "?" : String.valueOf(Character.toUpperCase(mapId.charAt(0)));
+        int textColor = withAlpha(0xC9DCFF, 175);
+        int textX = x + (width - font.width(initial)) / 2;
+        int textY = y + (height - font.lineHeight) / 2;
+        guiGraphics.drawString(font, initial, textX, textY, textColor, false);
     }
 
-    // 获取投票数量的方法（接口，具体实现由您完成）
-    private int getVoteCount(String mapId) {
-        // 如果投票系统激活，优先返回CCA组件中的数据
-        if (minecraft != null && minecraft.level != null) {
-            dev.doctor4t.trainmurdermystery.cca.MapVotingComponent votingComponent = dev.doctor4t.trainmurdermystery.cca.MapVotingComponent.KEY
-                    .get(minecraft.level);
-            if (votingComponent.isVotingActive()) {
-                return votingComponent.getVoteCount(mapId);
-            }
+    private void drawSelectionIndicator(GuiGraphics guiGraphics, int x, int y, int index, int mapAccent,
+            float selectionAmount, int alpha) {
+        int glowColor = mixColor(mapAccent, COLOR_ACCENT, 0.40f);
+
+        for (int i = 4; i >= 1; i--) {
+            float ratio = i / 4.0f;
+            int inset = i * 2;
+            int borderAlpha = (int) (alpha * selectionAmount * 0.12f * ratio * ratio);
+            drawRectBorder(
+                    guiGraphics,
+                    x - inset,
+                    y - inset,
+                    CARD_WIDTH + inset * 2,
+                    CARD_HEIGHT + inset * 2,
+                    1,
+                    withAlpha(glowColor, borderAlpha));
         }
-        // 返回存储的投票数量，默认为0
+
+        drawRectBorder(guiGraphics, x - 2, y - 2, CARD_WIDTH + 4, CARD_HEIGHT + 4, 2,
+                withAlpha(glowColor, (int) (alpha * selectionAmount * 0.70f)));
+
+        float perimeter = CARD_WIDTH * 2.0f + CARD_HEIGHT * 2.0f;
+        float markerOffset = (backgroundTick * 96.0f + index * 20.0f) % perimeter;
+        int markerColor = withAlpha(0xFFFFFF, (int) (230.0f * selectionAmount));
+        int markerSize = 8;
+
+        if (markerOffset < CARD_WIDTH) {
+            int markerX = x + (int) markerOffset;
+            guiGraphics.fill(markerX, y - 2, markerX + markerSize, y, markerColor);
+        } else if (markerOffset < CARD_WIDTH + CARD_HEIGHT) {
+            int markerY = y + (int) (markerOffset - CARD_WIDTH);
+            guiGraphics.fill(x + CARD_WIDTH + 2, markerY, x + CARD_WIDTH + 4, markerY + markerSize, markerColor);
+        } else if (markerOffset < CARD_WIDTH * 2.0f + CARD_HEIGHT) {
+            int markerX = x + CARD_WIDTH - (int) (markerOffset - CARD_WIDTH - CARD_HEIGHT);
+            guiGraphics.fill(markerX, y + CARD_HEIGHT + 2, markerX + markerSize, y + CARD_HEIGHT + 4, markerColor);
+        } else {
+            int markerY = y + CARD_HEIGHT - (int) (markerOffset - CARD_WIDTH * 2.0f - CARD_HEIGHT);
+            guiGraphics.fill(x - 4, markerY, x - 2, markerY + markerSize, markerColor);
+        }
+
+        String tagText = "PICK";
+        int tagWidth = font.width(tagText) + 10;
+        int tagX = x + CARD_WIDTH - tagWidth - 6;
+        int tagY = y + 10;
+        int tagTextColor = withAlpha(0x081126, (int) (255.0f * selectionAmount));
+
+        guiGraphics.fill(tagX, tagY, tagX + tagWidth, tagY + 12, withAlpha(glowColor, (int) (205.0f * selectionAmount)));
+        guiGraphics.drawString(font, tagText, tagX + 5, tagY + 2, tagTextColor, false);
+    }
+
+    private void drawSelectionInfo(GuiGraphics guiGraphics) {
+        if (selectedMap == null) {
+            return;
+        }
+
+        float reveal = easeOutCubic(selectedMap.selectionTime);
+        if (reveal <= 0.01f) {
+            return;
+        }
+
+        int panelTop = height - BOTTOM_PANEL_HEIGHT + (int) ((1.0f - reveal) * 18.0f);
+        int alpha = (int) (220.0f * reveal);
+
+        guiGraphics.fillGradient(
+                0,
+                panelTop,
+                width,
+                height,
+                withAlpha(COLOR_PANEL, alpha),
+                withAlpha(COLOR_PANEL_DARK, Math.min(255, alpha + 18)));
+        guiGraphics.fill(0, panelTop, width, panelTop + 1, withAlpha(COLOR_ACCENT, (int) (alpha * 0.85f)));
+
+        guiGraphics.drawCenteredString(
+                font,
+                Component.translatable("gui.tmm.map_selector.selected", selectedMap.displayName).withStyle(ChatFormatting.BOLD),
+                width / 2,
+                panelTop + 14,
+                withAlpha(COLOR_TEXT, alpha));
+
+        guiGraphics.drawCenteredString(
+                font,
+                Component.translatable("gui.tmm.map_selector.map_id", selectedMap.id),
+                width / 2,
+                panelTop + 32,
+                withAlpha(COLOR_TEXT_DIM, (int) (alpha * 0.95f)));
+
+        guiGraphics.drawCenteredString(
+                font,
+                Component.translatable("gui.tmm.map_selector.confirm_prompt"),
+                width / 2,
+                panelTop + 51,
+                withAlpha(COLOR_TEXT_DIM, (int) (alpha * 0.82f)));
+    }
+
+    private void renderVotingTimer(GuiGraphics guiGraphics) {
+        MapVotingComponent votingComponent = getVotingComponent();
+        if (votingComponent == null || !votingComponent.isVotingActive()) {
+            return;
+        }
+
+        int timeLeft = Math.max(0, votingComponent.getVotingTimeLeft() / 20);
+        int totalTime = Math.max(1, votingComponent.getTotalVotingTime() / 20);
+        float progress = Mth.clamp(timeLeft / (float) totalTime, 0.0f, 1.0f);
+
+        String timerText = Component.translatable("gui.tmm.map_selector.voting_timer", timeLeft).getString();
+        int panelWidth = font.width(timerText) + 28;
+        int panelX = (width - panelWidth) / 2;
+        int panelY = 56;
+
+        float urgencyPulse = timeLeft <= 10 ? (0.65f + 0.35f * (float) Math.sin(backgroundTick * 8.0f)) : 1.0f;
+        int frameColor = timeLeft <= 10 ? COLOR_WARNING : COLOR_ACCENT;
+
+        guiGraphics.fill(panelX, panelY, panelX + panelWidth, panelY + 18, withAlpha(COLOR_PANEL_DARK, (int) (190.0f * urgencyPulse)));
+        drawRectBorder(guiGraphics, panelX, panelY, panelWidth, 18, 1, withAlpha(frameColor, (int) (220.0f * urgencyPulse)));
+        guiGraphics.drawString(font, timerText, panelX + 12, panelY + 5, withAlpha(COLOR_TEXT, 245), false);
+
+        int progressY = panelY + 18;
+        guiGraphics.fill(panelX, progressY, panelX + panelWidth, progressY + 3, withAlpha(0x23304F, 230));
+        guiGraphics.fill(panelX, progressY, panelX + Math.max(1, (int) (panelWidth * progress)), progressY + 3,
+                withAlpha(frameColor, 245));
+
+        guiGraphics.drawCenteredString(
+                font,
+                Component.translatable("gui.tmm.map_selector.voting_active"),
+                width / 2,
+                panelY + 27,
+                withAlpha(COLOR_TEXT_DIM, 220));
+    }
+
+    private int getVoteCount(String mapId) {
+        MapVotingComponent votingComponent = getVotingComponent();
+        if (votingComponent != null && votingComponent.isVotingActive()) {
+            return votingComponent.getVoteCount(mapId);
+        }
         return voteCounts.getOrDefault(mapId, 0);
     }
 
-    // 设置投票数量的方法（用于外部更新）
+    private int getTotalVoteCount() {
+        MapVotingComponent votingComponent = getVotingComponent();
+        if (votingComponent != null && votingComponent.isVotingActive()) {
+            int sum = 0;
+            for (int value : votingComponent.getAllVotes().values()) {
+                sum += value;
+            }
+            return sum;
+        }
+
+        int sum = 0;
+        for (int value : voteCounts.values()) {
+            sum += value;
+        }
+        return sum;
+    }
+
     public void setVoteCount(String mapId, int count) {
         voteCounts.put(mapId, count);
     }
 
-    // 增加投票数量的方法
     public void addVote(String mapId) {
-        int currentCount = getVoteCount(mapId);
-        voteCounts.put(mapId, currentCount + 1);
-    }
-
-    private void drawSelectionIndicator(GuiGraphics guiGraphics, int x, int y, int alpha) {
-        // 绘制选中动画 - 边框发光效果
-        float pulse = (float) (Math.sin(System.currentTimeMillis() * 0.005) * 0.3 + 0.7); // 更快的脉冲效果
-        int pulseAlpha = (int) (100 + pulse * 155);
-
-        // 绘制顶部边框
-        int borderWidth = 4; // 增加边框宽度
-        int animatedTopColor = (pulseAlpha << 24) | accentColor;
-        guiGraphics.fill(x - borderWidth, y - borderWidth,
-                x + MAP_BOX_WIDTH + borderWidth, y,
-                animatedTopColor);
-
-        // 绘制右侧边框
-        guiGraphics.fill(x + MAP_BOX_WIDTH, y - borderWidth,
-                x + MAP_BOX_WIDTH + borderWidth, y + MAP_BOX_HEIGHT + borderWidth,
-                animatedTopColor);
-
-        // 绘制底部边框
-        guiGraphics.fill(x - borderWidth, y + MAP_BOX_HEIGHT,
-                x + MAP_BOX_WIDTH + borderWidth, y + MAP_BOX_HEIGHT + borderWidth,
-                animatedTopColor);
-
-        // 绘制左侧边框
-        guiGraphics.fill(x - borderWidth, y - borderWidth,
-                x, y + MAP_BOX_HEIGHT + borderWidth,
-                animatedTopColor);
-
-        // 绘制移动的“灯带”效果
-        long time = System.currentTimeMillis();
-        float waveOffset = (time * 0.01f) % (2 * MAP_BOX_WIDTH + 2 * MAP_BOX_HEIGHT);
-
-        // 绘制移动亮点
-        int highlightSize = 6;
-        int highlightAlpha = (int) (255 * (0.8 + 0.2 * Math.sin(time * 0.01))); // 额外亮度脉冲
-        int highlightColor = (highlightAlpha << 24) | 0xFFFFFFFF;
-
-        // 计算亮点位置（沿边框循环移动）
-        if (waveOffset < MAP_BOX_WIDTH) {
-            // 顶部边框
-            int highlightX = (int) (x + waveOffset);
-            guiGraphics.fill(highlightX, y - borderWidth,
-                    highlightX + highlightSize, y,
-                    highlightColor);
-        } else if (waveOffset < MAP_BOX_WIDTH + MAP_BOX_HEIGHT) {
-            // 右侧边框
-            int highlightX = x + MAP_BOX_WIDTH;
-            int highlightY = (int) (y + waveOffset - MAP_BOX_WIDTH);
-            guiGraphics.fill(highlightX, highlightY,
-                    highlightX + borderWidth, highlightY + highlightSize,
-                    highlightColor);
-        } else if (waveOffset < 2 * MAP_BOX_WIDTH + MAP_BOX_HEIGHT) {
-            // 底部边框
-            int highlightX = (int) (x + MAP_BOX_WIDTH - (waveOffset - MAP_BOX_WIDTH - MAP_BOX_HEIGHT));
-            int highlightY = y + MAP_BOX_HEIGHT;
-            guiGraphics.fill(highlightX, highlightY,
-                    highlightX + highlightSize, highlightY + borderWidth,
-                    highlightColor);
-        } else {
-            // 左侧边框
-            int highlightX = x - borderWidth;
-            int highlightY = (int) (y + MAP_BOX_HEIGHT - (waveOffset - 2 * MAP_BOX_WIDTH - MAP_BOX_HEIGHT));
-            if (highlightY > y - borderWidth) {
-                guiGraphics.fill(highlightX, highlightY,
-                        highlightX + borderWidth, highlightY + highlightSize,
-                        highlightColor);
-            }
-        }
-
-        // 绘制选中图标
-        float iconPulse = (float) (Math.sin(System.currentTimeMillis() * 0.005) * 0.3 + 0.7);
-        int iconAlpha = (int) (alpha * iconPulse);
-        int checkColor = (iconAlpha << 24) | accentColor;
-
-        // 绘制选中背景
-        int checkBgSize = 24;
-        int checkBgX = x + MAP_BOX_WIDTH - checkBgSize - 5;
-        int checkBgY = y + 5;
-        int checkBgAlpha = (int) (alpha * 0.8f);
-        int checkBgColor = (checkBgAlpha << 24) | 0xFF000000;
-        guiGraphics.fill(checkBgX, checkBgY, checkBgX + checkBgSize, checkBgY + checkBgSize, checkBgColor);
-
-        // 绘制对勾
-        String checkmark = "✓";
-        int textX = checkBgX + (checkBgSize - font.width(checkmark)) / 2;
-        int textY = checkBgY + (checkBgSize - 9) / 2;
-        guiGraphics.drawString(font, checkmark, textX, textY, checkColor, false);
-    }
-
-    private void drawSelectionInfo(GuiGraphics guiGraphics) {
-        int infoY = height - 80;
-        int infoHeight = 80;
-
-        // 绘制底部信息栏背景
-        for (int y = infoY; y < height; y++) {
-            float alpha = (y - infoY) / (float) infoHeight * 0.7f;
-            int color = (int) (alpha * 255) << 24 | backgroundColor;
-            guiGraphics.fill(0, y, width, y + 1, color);
-        }
-
-        // 绘制选中地图信息
-        guiGraphics.drawCenteredString(font,
-                Component.translatable("gui.tmm.map_selector.selected", selectedMap.displayName)
-                        .withStyle(net.minecraft.ChatFormatting.BOLD),
-                width / 2, infoY + 15, accentColor);
-
-        guiGraphics.drawCenteredString(font,
-                Component.translatable("gui.tmm.map_selector.map_id", selectedMap.id),
-                width / 2, infoY + 35, secondaryTextColor);
-
-        guiGraphics.drawCenteredString(font,
-                Component.translatable("gui.tmm.map_selector.confirm_prompt"),
-                width / 2, infoY + 55, 0xFF8888AA);
+        voteCounts.put(mapId, getVoteCount(mapId) + 1);
     }
 
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (hoveredMap != null && button == 0) {
-            // 如果投票活跃，记录投票
-            if (minecraft.level != null) {
-                dev.doctor4t.trainmurdermystery.cca.MapVotingComponent votingComponent = dev.doctor4t.trainmurdermystery.cca.MapVotingComponent.KEY
-                        .get(minecraft.level);
-                if (votingComponent.isVotingActive()) {
-                    if (minecraft.player != null) {
-                        // 通过网络包发送投票信息到服务器
-                        net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
-                                .send(new dev.doctor4t.trainmurdermystery.network.VoteForMapPayload(hoveredMap.id));
-                        // 显示投票成功的提示
-                        if (minecraft.player != null) {
-                            minecraft.player.displayClientMessage(
-                                    Component.translatable("gui.tmm.map_selector.selected", hoveredMap.displayName)
-                                            .withStyle(net.minecraft.ChatFormatting.GREEN),
-                                    false);
-                        }
-                    }
-                }
-            }
-
-            // 如果点击的是已选择的地图，则取消选择
+        if (button == 0 && hoveredMap != null) {
             if (selectedMap == hoveredMap) {
                 selectedMap = null;
             } else {
                 selectedMap = hoveredMap;
+                ensureMapVisible(selectedMap);
             }
+
+            submitVote(hoveredMap);
             playClickSound();
             return true;
         }
         return super.mouseClicked(mouseX, mouseY, button);
     }
 
+    private void submitVote(MapOption map) {
+        MapVotingComponent votingComponent = getVotingComponent();
+        if (votingComponent == null || !votingComponent.isVotingActive() || minecraft == null || minecraft.player == null) {
+            return;
+        }
+
+        ClientPlayNetworking.send(new dev.doctor4t.trainmurdermystery.network.VoteForMapPayload(map.id));
+        minecraft.player.displayClientMessage(
+                Component.translatable("gui.tmm.map_selector.selected", map.displayName).withStyle(ChatFormatting.GREEN),
+                false);
+    }
+
     @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double deltaX, double deltaY) {
-        scrollOffset = Mth.clamp(scrollOffset + (int) (-deltaY * 20), 0, getMaxScroll());
-        return true;
-    }
-
-    private int getMaxScroll() {
-        int totalWidth = mapOptions.size() * (MAP_BOX_WIDTH + MAP_SPACING);
-        int visibleWidth = width - 80; // 考虑左右边距
-        return Math.max(0, totalWidth - visibleWidth);
-    }
-
-    private void playClickSound() {
-        // 播放选择音效
-        if (minecraft != null && minecraft.player != null) {
-            minecraft.player.playSound(net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK.value(),
-                    0.3f, 1.0f + (float) Math.random() * 0.2f);
+        int maxScroll = getMaxScroll();
+        if (maxScroll <= 0) {
+            return false;
         }
+
+        scrollTarget = Mth.clamp(scrollTarget - (float) deltaY * 42.0f, 0.0f, maxScroll);
+        return true;
     }
 
     @Override
@@ -679,127 +756,234 @@ public class MapSelectorScreen extends Screen {
         if (keyCode == 257) { // Enter
             confirmSelection();
             return true;
-        } else if (keyCode == 256) { // ESC
+        }
+        if (keyCode == 256) { // ESC
             onClose();
             return true;
         }
+        if (keyCode == 263) { // Left
+            moveSelection(-1);
+            return true;
+        }
+        if (keyCode == 262) { // Right
+            moveSelection(1);
+            return true;
+        }
+
         return super.keyPressed(keyCode, scanCode, modifiers);
     }
 
-    private void confirmSelection() {
-        if (selectedMap != null) {
-            // 播放确认音效
-            if (minecraft != null && minecraft.player != null) {
-                minecraft.player.playSound(net.minecraft.sounds.SoundEvents.EXPERIENCE_ORB_PICKUP,
-                        0.5f, 1.0f);
-            }
+    private void moveSelection(int direction) {
+        if (mapOptions.isEmpty()) {
+            return;
+        }
 
-            // 如果投票活跃，玩家不能直接确认选择，只能投票
-            if (minecraft.level != null) {
-                dev.doctor4t.trainmurdermystery.cca.MapVotingComponent votingComponent = dev.doctor4t.trainmurdermystery.cca.MapVotingComponent.KEY
-                        .get(minecraft.level);
-                if (votingComponent.isVotingActive()) {
-                    // 在投票期间，点击地图会增加投票
-                    if (minecraft.player != null) {
-                        // 通过网络包发送投票信息到服务器
-                        net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking
-                                .send(new dev.doctor4t.trainmurdermystery.network.VoteForMapPayload(selectedMap.id));
-                        minecraft.player.displayClientMessage(
-                                Component.translatable("gui.tmm.map_selector.voted_for", selectedMap.displayName)
-                                        .withStyle(net.minecraft.ChatFormatting.GREEN),
-                                false);
-                    }
-                } else {
-                    // 如果不在投票期间，显示普通消息
-                    minecraft.player.displayClientMessage(
-                            Component.translatable("gui.tmm.map_selector.selected", selectedMap.displayName)
-                                    .withStyle(net.minecraft.ChatFormatting.GREEN),
-                            false);
-                }
-            }
+        int currentIndex = selectedMap == null
+                ? (direction > 0 ? -1 : mapOptions.size())
+                : mapOptions.indexOf(selectedMap);
+        int targetIndex = Mth.clamp(currentIndex + direction, 0, mapOptions.size() - 1);
 
-            onClose();
+        if (targetIndex != currentIndex && targetIndex >= 0 && targetIndex < mapOptions.size()) {
+            selectedMap = mapOptions.get(targetIndex);
+            ensureMapVisible(selectedMap);
+            playClickSound();
         }
     }
 
-    private void renderVotingTimer(GuiGraphics guiGraphics) {
-        MapVotingComponent votingManager = dev.doctor4t.trainmurdermystery.cca.MapVotingComponent.KEY
-                .get(minecraft.level);
-        if (votingManager.isVotingActive()) {
-            int timeLeft = votingManager.getVotingTimeLeft() / 20;
-            String timerText = Component.translatable("gui.tmm.map_selector.voting_timer", timeLeft).getString();
-
-            // 计算文本位置 - 屏幕顶部中央，与标题保持相同间隔
-            int textWidth = font.width(timerText);
-            int textX = (width - textWidth) / 2;
-            int textY = 50; // 与标题保持相同间隔
-
-            // 绘制背景矩形
-            int bgColor = 0x80000000; // 半透明黑色背景
-            guiGraphics.fill(textX - 10, textY - 5, textX + textWidth + 10, textY + font.lineHeight + 5, bgColor);
-
-            // 绘制倒计时文本
-            guiGraphics.drawString(font, timerText, textX, textY, 0xFFFFFF);
-
-            // 绘制提示文本
-            String hintText = Component.translatable("gui.tmm.map_selector.voting_active").getString();
-            int hintWidth = font.width(hintText);
-            int hintX = (width - hintWidth) / 2;
-            int hintY = textY + font.lineHeight + 5; // 减少与计时器的间隔
-
-            guiGraphics.drawString(font, hintText, hintX, hintY, 0xFFFF00); // 黄色提示
+    private void ensureMapVisible(MapOption map) {
+        if (map == null) {
+            return;
         }
+
+        int index = mapOptions.indexOf(map);
+        if (index < 0) {
+            return;
+        }
+
+        int maxScroll = getMaxScroll();
+        if (maxScroll <= 0) {
+            scrollTarget = 0.0f;
+            return;
+        }
+
+        float cardLeft = SIDE_PADDING + index * (CARD_WIDTH + CARD_SPACING) - scrollTarget;
+        float cardRight = cardLeft + CARD_WIDTH;
+        float visibleLeft = SIDE_PADDING + 8.0f;
+        float visibleRight = width - SIDE_PADDING - 8.0f;
+
+        if (cardLeft < visibleLeft) {
+            scrollTarget -= (visibleLeft - cardLeft);
+        } else if (cardRight > visibleRight) {
+            scrollTarget += (cardRight - visibleRight);
+        }
+
+        scrollTarget = Mth.clamp(scrollTarget, 0.0f, maxScroll);
+    }
+
+    private int getMaxScroll() {
+        int totalWidth = mapOptions.size() * CARD_WIDTH + Math.max(0, mapOptions.size() - 1) * CARD_SPACING;
+        int visibleWidth = width - SIDE_PADDING * 2;
+        return Math.max(0, totalWidth - visibleWidth);
+    }
+
+    private void confirmSelection() {
+        if (selectedMap == null) {
+            return;
+        }
+
+        if (minecraft != null && minecraft.player != null) {
+            minecraft.player.playSound(SoundEvents.EXPERIENCE_ORB_PICKUP, 0.5f, 1.0f);
+        }
+
+        MapVotingComponent votingComponent = getVotingComponent();
+        if (minecraft != null && minecraft.player != null && votingComponent != null && votingComponent.isVotingActive()) {
+            ClientPlayNetworking.send(new dev.doctor4t.trainmurdermystery.network.VoteForMapPayload(selectedMap.id));
+            minecraft.player.displayClientMessage(
+                    Component.translatable("gui.tmm.map_selector.voted_for", selectedMap.displayName)
+                            .withStyle(ChatFormatting.GREEN),
+                    false);
+        } else if (minecraft != null && minecraft.player != null) {
+            minecraft.player.displayClientMessage(
+                    Component.translatable("gui.tmm.map_selector.selected", selectedMap.displayName)
+                            .withStyle(ChatFormatting.GREEN),
+                    false);
+        }
+
+        onClose();
+    }
+
+    private void playClickSound() {
+        if (minecraft != null && minecraft.player != null) {
+            minecraft.player.playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.3f, 1.0f + (float) Math.random() * 0.15f);
+        }
+    }
+
+    private MapVotingComponent getVotingComponent() {
+        if (minecraft == null || minecraft.level == null) {
+            return null;
+        }
+        return MapVotingComponent.KEY.get(minecraft.level);
     }
 
     @Override
     public void onClose() {
-        // 播放关闭音效
         if (minecraft != null && minecraft.player != null) {
-            minecraft.player.playSound(net.minecraft.sounds.SoundEvents.UI_BUTTON_CLICK.value(),
-                    0.2f, 0.8f);
+            minecraft.player.playSound(SoundEvents.UI_BUTTON_CLICK.value(), 0.2f, 0.8f);
         }
         super.onClose();
     }
 
-    // 地图选项内部类
-    private static class MapOption {
-        final String id;
-        final String displayName;
-        final String description;
-        final int color;
-        float hoverTime = 0.0f;
-        float selectionTime = 0.0f;
+    private void drawRectBorder(GuiGraphics guiGraphics, int x, int y, int width, int height, int thickness, int color) {
+        for (int i = 0; i < thickness; i++) {
+            guiGraphics.fill(x + i, y + i, x + width - i, y + i + 1, color);
+            guiGraphics.fill(x + i, y + height - i - 1, x + width - i, y + height - i, color);
+            guiGraphics.fill(x + i, y + i, x + i + 1, y + height - i, color);
+            guiGraphics.fill(x + width - i - 1, y + i, x + width - i, y + height - i, color);
+        }
+    }
 
-        MapOption(String id, String displayName, String description, int color) {
+    private String clipText(String text, int maxWidth) {
+        if (font.width(text) <= maxWidth) {
+            return text;
+        }
+
+        String ellipsis = "...";
+        String clipped = font.plainSubstrByWidth(text, Math.max(0, maxWidth - font.width(ellipsis)));
+        return clipped + ellipsis;
+    }
+
+    private static float easeOutCubic(float value) {
+        float clamped = Mth.clamp(value, 0.0f, 1.0f);
+        float inverse = 1.0f - clamped;
+        return 1.0f - inverse * inverse * inverse;
+    }
+
+    private static int withAlpha(int color, int alpha) {
+        return (Mth.clamp(alpha, 0, 255) << 24) | (color & 0x00FFFFFF);
+    }
+
+    private static int normalizeOpaqueColor(int color) {
+        return 0xFF000000 | (color & 0x00FFFFFF);
+    }
+
+    private static int mixColor(int from, int to, float factor) {
+        float clamped = Mth.clamp(factor, 0.0f, 1.0f);
+
+        int fromR = (from >> 16) & 0xFF;
+        int fromG = (from >> 8) & 0xFF;
+        int fromB = from & 0xFF;
+
+        int toR = (to >> 16) & 0xFF;
+        int toG = (to >> 8) & 0xFF;
+        int toB = to & 0xFF;
+
+        int r = Mth.floor(Mth.lerp(clamped, fromR, toR));
+        int g = Mth.floor(Mth.lerp(clamped, fromG, toG));
+        int b = Mth.floor(Mth.lerp(clamped, fromB, toB));
+
+        return 0xFF000000 | (r << 16) | (g << 8) | b;
+    }
+
+    private static final class MapOption {
+        private final String id;
+        private final String displayName;
+        private final String description;
+        private final int color;
+        private final float introDelay;
+
+        private float hoverTime;
+        private float selectionTime;
+
+        private MapOption(String id, String displayName, String description, int color, float introDelay) {
             this.id = id;
             this.displayName = displayName;
             this.description = description;
             this.color = color;
+            this.introDelay = introDelay;
         }
     }
 
-    // 粒子效果类
-    private static class Particle {
-        float x;
-        float y;
-        float speed;
-        float size;
-        float alpha;
+    private static final class Particle {
+        private float x;
+        private float y;
+        private final float velocityX;
+        private final float velocityY;
+        private final float size;
+        private final float baseAlpha;
+        private final float twinkleSpeed;
+        private final float phase;
 
-        Particle(float x, float y, float speed, float size) {
+        private Particle(float x, float y, float velocityX, float velocityY, float size,
+                float baseAlpha, float phase) {
             this.x = x;
             this.y = y;
-            this.speed = speed;
+            this.velocityX = velocityX;
+            this.velocityY = velocityY;
             this.size = size;
-            this.alpha = (float) (Math.random() * 0.3 + 0.2);
+            this.baseAlpha = baseAlpha;
+            this.twinkleSpeed = 0.8f + (float) Math.random() * 1.2f;
+            this.phase = phase;
         }
 
-        void update() {
-            y += speed;
-            // 轻微的水平漂移
-            x += (float) (Math.sin(System.currentTimeMillis() * 0.001 + y * 0.01) * 0.2);
-            // 轻微的透明度变化
-            alpha = (float) (0.2 + 0.3 * Math.sin(System.currentTimeMillis() * 0.002 + y * 0.02));
+        private void update(int screenWidth, int screenHeight, float time) {
+            x += velocityX + (float) Math.sin(time * 0.6f + phase) * 0.05f;
+            y += velocityY;
+
+            if (x < -16) {
+                x = screenWidth + 16;
+            } else if (x > screenWidth + 16) {
+                x = -16;
+            }
+
+            if (y > screenHeight + 16) {
+                y = -16;
+                x = (float) (Math.random() * screenWidth);
+            }
+        }
+
+        private float getAlpha(float time) {
+            float twinkle = 0.6f + 0.4f * (float) Math.sin(time * twinkleSpeed + phase);
+            return Mth.clamp(baseAlpha * twinkle, 0.0f, 1.0f);
         }
     }
 }

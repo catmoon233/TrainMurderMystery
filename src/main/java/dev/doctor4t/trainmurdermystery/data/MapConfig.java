@@ -23,7 +23,10 @@ public class MapConfig {
 
         @SerializedName("maxcount")
         public int maxCount;
-        
+
+        @SerializedName("canSelect")
+        public boolean canSelect = true;
+
         @SerializedName("description")
         public String description;
         

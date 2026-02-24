@@ -1,7 +1,7 @@
-package dev.doctor4t.trainmurdermystery.game;
+package dev.doctor4t.trainmurdermystery.api.replay;
 
 import dev.doctor4t.trainmurdermystery.api.Role;
-import dev.doctor4t.trainmurdermystery.api.replay.ReplayEvent;
+import dev.doctor4t.trainmurdermystery.game.GameFunctions;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.ResourceLocation;
 import java.util.List;

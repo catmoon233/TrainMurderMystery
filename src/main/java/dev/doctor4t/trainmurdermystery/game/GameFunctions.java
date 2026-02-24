@@ -16,6 +16,8 @@ import java.util.UUID;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 
+import dev.doctor4t.trainmurdermystery.api.replay.GameReplay;
+import dev.doctor4t.trainmurdermystery.api.replay.GameReplayData;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

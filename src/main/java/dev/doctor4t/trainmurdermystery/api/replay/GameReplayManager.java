@@ -1,13 +1,12 @@
-package dev.doctor4t.trainmurdermystery.game;
+package dev.doctor4t.trainmurdermystery.api.replay;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.api.Role;
 import dev.doctor4t.trainmurdermystery.api.TMMRoles;
-import dev.doctor4t.trainmurdermystery.api.replay.ReplayEvent;
-import dev.doctor4t.trainmurdermystery.api.replay.ReplayEventTypes;
 import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
+import dev.doctor4t.trainmurdermystery.game.GameFunctions;
 import dev.doctor4t.trainmurdermystery.util.ReplayDisplayUtils;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
@@ -22,7 +21,6 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
-import java.util.function.Predicate;
 
 import static net.fabricmc.loader.api.FabricLoader.getInstance;
 

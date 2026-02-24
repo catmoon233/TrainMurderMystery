@@ -1,7 +1,6 @@
-package dev.doctor4t.trainmurdermystery.game;
+package dev.doctor4t.trainmurdermystery.api.replay;
 
 import dev.doctor4t.trainmurdermystery.api.TMMRoles;
-import dev.doctor4t.trainmurdermystery.api.replay.ReplayEventTypes;
 import dev.doctor4t.trainmurdermystery.api.replay.ReplayEventTypes.ArmorBreakDetails;
 import dev.doctor4t.trainmurdermystery.api.replay.ReplayEventTypes.BlackoutEventDetails;
 import dev.doctor4t.trainmurdermystery.api.replay.ReplayEventTypes.ChangeRoleDetails;
@@ -16,6 +15,7 @@ import dev.doctor4t.trainmurdermystery.api.replay.ReplayEventTypes.PlayerRevival
 import dev.doctor4t.trainmurdermystery.api.replay.ReplayEventTypes.PsychoStateChangeDetails;
 import dev.doctor4t.trainmurdermystery.api.replay.ReplayEventTypes.StoreBuyDetails;
 import dev.doctor4t.trainmurdermystery.api.replay.ReplayEventTypes.TaskCompleteDetails;
+import dev.doctor4t.trainmurdermystery.game.GameConstants;
 import dev.doctor4t.trainmurdermystery.index.TMMItems;
 import dev.doctor4t.trainmurdermystery.util.ReplayDisplayUtils;
 import net.minecraft.ChatFormatting;
