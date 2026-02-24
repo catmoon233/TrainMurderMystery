@@ -30,6 +30,8 @@ public class GameRoundEndComponent implements AutoSyncedComponent {
     private GameFunctions.WinStatus winStatus = GameFunctions.WinStatus.NONE;
     public ArrayList<UUID> CustomWinnerPlayers = new ArrayList<>();
 
+    public Component CustomWinnerTitle = null;
+    public Component CustomWinnerSubtitle = null;
     public String CustomWinnerID = "";
     public int CustomWinnerColor = 0;
 
@@ -103,6 +105,24 @@ public class GameRoundEndComponent implements AutoSyncedComponent {
         for (Tag element : tag.getList("players", 10))
             this.players.add(new RoundEndData((CompoundTag) element));
         this.winStatus = GameFunctions.WinStatus.values()[tag.getInt("winstatus")];
+        if (tag.contains("winner_title")) {
+            String winner_title = tag.getString("winner_title");
+            try {
+                this.CustomWinnerTitle = Component.Serializer.fromJson(winner_title, registryLookup);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        if (tag.contains("winner_subtitle")) {
+            String winner_subtitle = tag.getString("winner_subtitle");
+            try {
+                this.CustomWinnerSubtitle = Component.Serializer.fromJson(winner_subtitle, registryLookup);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+
         CustomWinnerID = tag.getString("winner_id");
         CustomWinnerColor = tag.getInt("winner_color");
     }
@@ -136,6 +156,12 @@ public class GameRoundEndComponent implements AutoSyncedComponent {
             tag.putString("winner_id", "");
         } else {
             tag.putString("winner_id", CustomWinnerID);
+        }
+        if (CustomWinnerTitle != null) {
+            tag.putString("winner_title", Component.Serializer.toJson(CustomWinnerTitle, registryLookup));
+        }
+        if (CustomWinnerSubtitle != null) {
+            tag.putString("winner_subtitle", Component.Serializer.toJson(CustomWinnerSubtitle, registryLookup));
         }
         tag.putInt("winner_color", CustomWinnerColor);
         tag.putInt("winstatus", this.winStatus.ordinal());

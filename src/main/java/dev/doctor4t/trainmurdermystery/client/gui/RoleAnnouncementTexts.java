@@ -126,6 +126,7 @@ public class RoleAnnouncementTexts {
                 case CUSTOM ->
                     Component.translatable("announcement.win." + roundEnd.CustomWinnerID, winner)
                             .withColor(roundEnd.CustomWinnerColor);
+                case CUSTOM_COMPONENT -> roundEnd.CustomWinnerTitle;
                 default -> Component.translatable("announcement.win.unknown", winner).withColor(Color.ORANGE.getRGB());
             };
         }

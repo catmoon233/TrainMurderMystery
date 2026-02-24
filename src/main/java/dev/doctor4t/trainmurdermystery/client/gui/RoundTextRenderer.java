@@ -295,6 +295,8 @@ public class RoundTextRenderer {
     private static MutableComponent getWinMessage(GameRoundEndComponent roundEnd, Player winner) {
         if (roundEnd.getWinStatus().equals(WinStatus.CUSTOM)) {
             if (winner != null) {
+                if (roundEnd.CustomWinnerSubtitle != null)
+                    return Component.literal("").append(roundEnd.CustomWinnerSubtitle);
                 return Component.translatable("game.win." + roundEnd.CustomWinnerID,
                         winner.getDisplayName());
             } else {
