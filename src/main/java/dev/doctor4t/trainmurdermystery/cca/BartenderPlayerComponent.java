@@ -73,7 +73,12 @@ public class BartenderPlayerComponent implements RoleComponent, ServerTickingCom
         if (gameWorldComponent != null) {
             var role = gameWorldComponent.getRole(player);
             if (role != null) {
-                return canSyncedRolePaths.contains(role.identifier().getPath());
+                if (canSyncedRolePaths.stream().anyMatch((p) -> p.equals(role.identifier().getPath()))) {
+                    return true;
+                } else {
+                    // TMM.LOGGER.info("1:"+role.identifier());
+                    return false;
+                }
             }
         }
         return true;
@@ -169,7 +174,8 @@ public class BartenderPlayerComponent implements RoleComponent, ServerTickingCom
     }
 
     public void readFromNbt(@NotNull CompoundTag tag, HolderLookup.Provider registryLookup) {
-        if (tag.contains("glowTicks") && tag.getTagType("glowTicks") == Tag.TAG_COMPOUND) {
+        this.glowTicks.clear();
+        if (tag.contains("glowTicks", Tag.TAG_LIST)) {
             ListTag targetListTag = tag.getList("glowTicks", Tag.TAG_COMPOUND);
             for (int i = 0; i < targetListTag.size(); i++) {
                 CompoundTag targetTag = targetListTag.getCompound(i);
