@@ -48,7 +48,6 @@ public abstract class KeyBindingMixin {
                 return true;
             }
             return this.same(instance.options.keySwapOffhand) ||
-                    this.same(instance.options.keyTogglePerspective) ||
 
                     this.same(instance.options.keyAdvancements);
         }
