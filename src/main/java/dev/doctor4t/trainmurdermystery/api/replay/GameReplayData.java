@@ -262,9 +262,8 @@ public class GameReplayData {
                         .append(sourceRoleName.withStyle(ChatFormatting.GRAY))
                         .append(Component.literal("))").withStyle(ChatFormatting.GRAY));
             } else {
-                sourceName = sourceName.copy().withStyle(sourceColor)
-                        .append(Component.literal(" (").withStyle(ChatFormatting.GRAY))
-                        .append(sourceRoleName).append(Component.literal(")").withStyle(ChatFormatting.GRAY));
+                // 新老职业相同，只显示当前职业，不加括号
+                sourceName = sourceName.copy().withStyle(sourceColor);
             }
         }
 
@@ -284,9 +283,8 @@ public class GameReplayData {
                         .append(targetRoleName.withStyle(ChatFormatting.GRAY))
                         .append(Component.literal("))").withStyle(ChatFormatting.GRAY));
             } else {
-                targetName = targetName.copy().withStyle(targetColor)
-                        .append(Component.literal(" (").withStyle(ChatFormatting.GRAY))
-                        .append(targetRoleName).append(Component.literal(")").withStyle(ChatFormatting.GRAY));
+                // 新老职业相同，只显示当前职业，不加括号
+                targetName = targetName.copy().withStyle(targetColor);
             }
         }
 
