@@ -35,11 +35,11 @@ public class DecServerJoinPlayer {
         final var gameWorldComponent = GameWorldComponent.KEY.get(serverPlayer.level());
 
         MapVotingComponent mapVotingComponent = MapVotingComponent.KEY.get(serverPlayer.level());
-        if (mapVotingComponent.isVotingActive()){
-            if (TMMConfig.mapRandomCount!=-1){
-            ServerPlayNetworking.send(serverPlayer, new ShowSelectedMapUIPayload(true));
-        }
-            }
+//        if (mapVotingComponent.isVotingActive()){
+//            if (TMMConfig.mapRandomCount!=-1){
+//            ServerPlayNetworking.send(serverPlayer, new ShowSelectedMapUIPayload(true));
+//        }
+//            }
         if (gameWorldComponent.isRunning()) {
             if (serverPlayer.level() instanceof ServerLevel serverWorld) {
                 AreasWorldComponent areas = AreasWorldComponent.KEY.get(serverWorld);
