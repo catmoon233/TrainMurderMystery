@@ -27,6 +27,7 @@ import org.jetbrains.annotations.NotNull;
 public class RoleNameRenderer {
     private static TrainRole targetRole = TrainRole.BYSTANDER;
     private static Role targetRole2;
+    private static MutableComponent roleText1;
     private static float nametagAlpha = 0f;
     private static float noteAlpha = 0f;
     private static Component nametag = Component.empty();
@@ -107,12 +108,14 @@ public class RoleNameRenderer {
                     if (component.isKillerTeamRole(targetRole2) && playerRole.equals(TrainRole.KILLER)) {
                         if (component.canSeeKillerTeammate(player)) {
                             context.pose().translate(0, 20 + renderer.lineHeight, 0);
-                            MutableComponent roleText1 = Component
-                                    .translatable("announcement.role." + targetRole2.identifier().getPath());
-                            MutableComponent roleText2 = OnKillerCohortDisplay.EVENT.invoker()
-                                    .onCohortRender(target);
-                            if (roleText2 != null) {
-                                roleText1 = roleText2;
+                            if (target != null) {
+                                roleText1 = Component
+                                        .translatable("announcement.role." + targetRole2.identifier().getPath());
+                                MutableComponent roleText2 = OnKillerCohortDisplay.EVENT.invoker()
+                                        .onCohortRender(target);
+                                if (roleText2 != null) {
+                                    roleText1 = roleText2;
+                                }
                             }
                             int roleWidth1 = renderer.width(roleText1);
                             context.drawString(renderer, roleText1, -roleWidth1 / 2, 0,
