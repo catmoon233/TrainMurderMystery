@@ -22,7 +22,7 @@ public interface OnPlayerDeathWithKiller {
     Event<OnPlayerDeathWithKiller> EVENT = createArrayBacked(OnPlayerDeathWithKiller.class,
             listeners -> (player, killer, deathReason) -> {
                 for (OnPlayerDeathWithKiller listener : listeners) {
-                    listener.onPlayerDeath(player, player, deathReason);
+                    listener.onPlayerDeath(player, killer, deathReason);
                 }
                 return;
             });
