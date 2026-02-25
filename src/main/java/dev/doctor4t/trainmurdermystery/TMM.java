@@ -31,6 +31,7 @@ import net.fabricmc.api.ModInitializer;
 
 import net.fabricmc.fabric.api.command.v2.ArgumentTypeRegistry;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.fabricmc.fabric.api.entity.event.v1.EntitySleepEvents;
 import net.fabricmc.fabric.api.entity.event.v1.ServerPlayerEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
@@ -44,6 +45,7 @@ import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.levelgen.Heightmap;
@@ -142,6 +144,11 @@ public class TMM implements ModInitializer {
     }
 
     private void registerServerLifecycleEvents() {
+        EntitySleepEvents.ALLOW_SLEEP_TIME.register((player, pos, isNight) -> {
+            if (GameWorldComponent.KEY.get(player.level()).isRunning())
+                return InteractionResult.SUCCESS;
+            return InteractionResult.PASS;
+        });
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
             SERVER = server;
             GAME = new MurderGameMode(TMM.id("murder"));
