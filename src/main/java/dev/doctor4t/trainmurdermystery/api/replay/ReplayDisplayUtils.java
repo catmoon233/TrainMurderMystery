@@ -2,12 +2,9 @@ package dev.doctor4t.trainmurdermystery.api.replay;
 
 import dev.doctor4t.trainmurdermystery.api.TMMRoles;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
-import java.util.stream.Collectors;
-
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
@@ -37,12 +34,6 @@ public class ReplayDisplayUtils {
         }
         String translationKey = "announcement.role." + id.getPath();
         var translated = Component.translatable(translationKey);
-        if (translated.getString().equals(translationKey)) {
-            String readable = Arrays.stream(id.getPath().split("_"))
-                    .map(s -> s.substring(0, 1).toUpperCase() + s.substring(1))
-                    .collect(Collectors.joining(" "));
-            return Component.literal(readable);
-        }
         return translated;
     }
 

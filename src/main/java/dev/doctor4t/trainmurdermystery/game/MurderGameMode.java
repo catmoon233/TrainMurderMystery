@@ -37,7 +37,7 @@ public class MurderGameMode extends GameMode {
     @Override
     public void initializeGame(ServerLevel serverWorld, GameWorldComponent gameWorldComponent,
             List<ServerPlayer> players) {
-        TrainWorldComponent.KEY.get(serverWorld).setTimeOfDay(TrainWorldComponent.TimeOfDay.NIGHT);
+        TrainWorldComponent.KEY.get(serverWorld).setTimeOfDay(TrainWorldComponent.TimeOfDay.MIDNIGHT);
 
         int killerCount = assignRolesAndGetKillerCount(serverWorld, players, gameWorldComponent);
 
