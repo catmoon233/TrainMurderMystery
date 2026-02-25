@@ -347,7 +347,7 @@ public class GameReplayManager {
 
   public Component addEvent(GameReplayData.EventType type, UUID sourcePlayer, UUID targetPlayer, String itemUsed,
       String message) {
-    return addEvent(type, targetPlayer, targetPlayer, itemUsed, message, null);
+    return addEvent(type, sourcePlayer, targetPlayer, itemUsed, message, null);
   }
 
   public Component addEvent(GameReplayData.EventType type, UUID sourcePlayer, UUID targetPlayer, String itemUsed,
@@ -623,7 +623,6 @@ public class GameReplayManager {
           }
         }
       }
-
       // 显示杀手
       if (!aliveKillers.isEmpty() || !deadKillers.isEmpty()) {
         sendSystemMessage(player,
