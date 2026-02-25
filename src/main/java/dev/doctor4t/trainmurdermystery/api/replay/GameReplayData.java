@@ -236,14 +236,14 @@ public class GameReplayData {
         String sourceRoleIdNow = sourcePlayer != null
                 ? GameWorldComponent.KEY.get(TMM.SERVER.getLevel(Level.OVERWORLD)).getRole(sourcePlayer) == null ? null
                         : GameWorldComponent.KEY.get(TMM.SERVER.getLevel(Level.OVERWORLD)).getRole(sourcePlayer)
-                                .identifier().toString()
+                                .identifier().getPath()
                 : null;
 
         String targetRoleId = targetPlayer != null ? replayData.getPlayerRoles().get(targetPlayer) : null;
         String targetRoleIdNow = targetPlayer != null
                 ? GameWorldComponent.KEY.get(TMM.SERVER.getLevel(Level.OVERWORLD)).getRole(targetPlayer) == null ? null
                         : GameWorldComponent.KEY.get(TMM.SERVER.getLevel(Level.OVERWORLD)).getRole(targetPlayer)
-                                .identifier().toString()
+                                .identifier().getPath()
                 : null;
 
         if (sourceName != null && sourceRoleId != null) {
