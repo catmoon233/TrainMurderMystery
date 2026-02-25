@@ -40,7 +40,12 @@ public class BartenderPlayerComponent implements RoleComponent, ServerTickingCom
         return armor;
     }
 
-    private int armor = 0;
+    public int armor = 0;
+
+    public void addArmor() {
+        ++this.armor;
+        this.sync();
+    }
 
     public void removeArmor() {
         --this.armor;
