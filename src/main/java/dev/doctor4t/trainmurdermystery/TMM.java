@@ -194,6 +194,7 @@ public class TMM implements ModInitializer {
             ForceRoleCommand.register(dispatcher);
             SetTimerCommand.register(dispatcher);
             MoneyCommand.register(dispatcher);
+            CustomReplayEventCommand.register(dispatcher, registryAccess);
             SetAutoTrainResetCommand.register(dispatcher);
             SetBoundCommand.register(dispatcher);
             AutoStartCommand.register(dispatcher);
@@ -226,7 +227,7 @@ public class TMM implements ModInitializer {
                 // not exist
             }
             if (REPLAY_MANAGER != null) {
-                REPLAY_MANAGER.addEvent(GameReplayData.EventType.PLAYER_LEAVE, handler.player.getUUID(),null, null,
+                REPLAY_MANAGER.addEvent(GameReplayData.EventType.PLAYER_LEAVE, handler.player.getUUID(), null, null,
                         null);
             }
         });

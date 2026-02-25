@@ -786,6 +786,21 @@ public class GameFunctions {
         }
         // --- 结束新增统计数据更新逻辑 (受害者) ---
         if (canDeath) {
+            if (spawnBody) {
+                PlayerBodyEntity body = TMMEntities.PLAYER_BODY.create(victim.level());
+                if (body != null) {
+                    if (killer != null) {
+                        body.setKillerUuid(killer.getUUID());
+                    }
+                    body.setDeathReason(deathReason.toString());
+                    body.setPlayerUuid(victim.getUUID());
+                    Vec3 spawnPos = victim.position().add(victim.getLookAngle().normalize().scale(1));
+                    body.moveTo(spawnPos.x(), victim.getY(), spawnPos.z(), victim.getYHeadRot(), 0f);
+                    body.setYRot(victim.getYHeadRot());
+                    body.setYHeadRot(victim.getYHeadRot());
+                    victim.level().addFreshEntity(body);
+                }
+            }
             if (victim instanceof ServerPlayer serverPlayerEntity && isPlayerAliveAndSurvival(serverPlayerEntity)) {
                 serverPlayerEntity.setGameMode(net.minecraft.world.level.GameType.SPECTATOR);
                 OnPlayerDeath.EVENT.invoker().onPlayerDeath(victim, deathReason);
@@ -833,22 +848,6 @@ public class GameFunctions {
             }
 
             PlayerMoodComponent.KEY.get(victim).reset();
-
-            if (spawnBody) {
-                PlayerBodyEntity body = TMMEntities.PLAYER_BODY.create(victim.level());
-                if (body != null) {
-                    if (killer != null) {
-                        body.setKillerUuid(killer.getUUID());
-                    }
-                    body.setDeathReason(deathReason.toString());
-                    body.setPlayerUuid(victim.getUUID());
-                    Vec3 spawnPos = victim.position().add(victim.getLookAngle().normalize().scale(1));
-                    body.moveTo(spawnPos.x(), victim.getY(), spawnPos.z(), victim.getYHeadRot(), 0f);
-                    body.setYRot(victim.getYHeadRot());
-                    body.setYHeadRot(victim.getYHeadRot());
-                    victim.level().addFreshEntity(body);
-                }
-            }
 
             for (List<ItemStack> list : victim.getInventory().compartments) {
                 for (int i = 0; i < list.size(); i++) {

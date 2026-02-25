@@ -8,7 +8,6 @@ import net.minecraft.resources.ResourceLocation;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.function.Supplier;
 
 public class ReplayEventRegistry {
     private static final Map<EventType, Class<? extends EventDetails>> EVENT_TYPE_TO_DETAILS_CLASS = new HashMap<>();

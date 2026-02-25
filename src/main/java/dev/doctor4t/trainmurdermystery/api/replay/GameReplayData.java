@@ -167,6 +167,8 @@ public class GameReplayData {
 
     public Component toText(GameReplayManager manager, GameReplayData replayData,
             dev.doctor4t.trainmurdermystery.api.replay.ReplayEvent event) {
+        if (event == null)
+            return null;
         UUID sourcePlayer = null;
         UUID targetPlayer = null;
         Component itemUsedText = null;
@@ -223,10 +225,6 @@ public class GameReplayData {
         } else if (event.details() instanceof ArmorBreakDetails ambd) {
             sourcePlayer = ambd.playerUuid();
             // message = ;
-        } else if (event.details() instanceof ReplayEventTypes.CustomEventDetails details) {
-            // CustomEventDetails 没有 playerUuid 和 message，只有 eventId 和 data
-            // 暂时不设置 sourcePlayer 和 message
-            message = details.data();
         }
 
         Component sourceName = sourcePlayer != null ? manager.getPlayerName(sourcePlayer) : null;
@@ -235,20 +233,28 @@ public class GameReplayData {
 
         // 获取角色信息并设置颜色
         String sourceRoleId = sourcePlayer != null ? replayData.getPlayerRoles().get(sourcePlayer) : null;
-        String sourceRoleIdNow = sourcePlayer != null ? GameWorldComponent.KEY.get(TMM.SERVER.getLevel(Level.OVERWORLD)).getRole(sourcePlayer) == null ? null: GameWorldComponent.KEY.get(TMM.SERVER.getLevel(Level.OVERWORLD)).getRole(sourcePlayer).identifier().toString() : null;
-        
+        String sourceRoleIdNow = sourcePlayer != null
+                ? GameWorldComponent.KEY.get(TMM.SERVER.getLevel(Level.OVERWORLD)).getRole(sourcePlayer) == null ? null
+                        : GameWorldComponent.KEY.get(TMM.SERVER.getLevel(Level.OVERWORLD)).getRole(sourcePlayer)
+                                .identifier().toString()
+                : null;
+
         String targetRoleId = targetPlayer != null ? replayData.getPlayerRoles().get(targetPlayer) : null;
-        String targetRoleIdNow = targetPlayer != null ? GameWorldComponent.KEY.get(TMM.SERVER.getLevel(Level.OVERWORLD)).getRole(targetPlayer) == null ? null: GameWorldComponent.KEY.get(TMM.SERVER.getLevel(Level.OVERWORLD)).getRole(targetPlayer).identifier().toString() : null;
+        String targetRoleIdNow = targetPlayer != null
+                ? GameWorldComponent.KEY.get(TMM.SERVER.getLevel(Level.OVERWORLD)).getRole(targetPlayer) == null ? null
+                        : GameWorldComponent.KEY.get(TMM.SERVER.getLevel(Level.OVERWORLD)).getRole(targetPlayer)
+                                .identifier().toString()
+                : null;
 
         if (sourceName != null && sourceRoleId != null) {
             MutableComponent sourceRoleName = ReplayDisplayUtils.getRoleDisplayName(sourceRoleId);
             ChatFormatting sourceColor = getRoleColor(sourceRoleId);
-            
+
             // 如果当前角色与记录的角色不同，则显示为(new(old))格式，old为灰色
             if (sourceRoleIdNow != null && !sourceRoleId.equals(sourceRoleIdNow)) {
                 MutableComponent currentRoleName = ReplayDisplayUtils.getRoleDisplayName(sourceRoleIdNow);
                 ChatFormatting currentColor = getRoleColor(sourceRoleIdNow);
-                
+
                 sourceName = sourceName.copy().withStyle(sourceColor)
                         .append(Component.literal(" (").withStyle(ChatFormatting.GRAY))
                         .append(currentRoleName.withStyle(currentColor))
@@ -265,12 +271,12 @@ public class GameReplayData {
         if (targetRoleId != null) {
             MutableComponent targetRoleName = ReplayDisplayUtils.getRoleDisplayName(targetRoleId);
             ChatFormatting targetColor = getRoleColor(targetRoleId);
-            
+
             // 如果当前角色与记录的角色不同，则显示为(new(old))格式，old为灰色
             if (targetRoleIdNow != null && !targetRoleId.equals(targetRoleIdNow)) {
                 MutableComponent currentRoleName = ReplayDisplayUtils.getRoleDisplayName(targetRoleIdNow);
                 ChatFormatting currentColor = getRoleColor(targetRoleIdNow);
-                
+
                 targetName = targetName.copy().withStyle(targetColor)
                         .append(Component.literal(" (").withStyle(ChatFormatting.GRAY))
                         .append(currentRoleName.withStyle(currentColor))
@@ -390,13 +396,14 @@ public class GameReplayData {
              */
             case CUSTOM_EVENT -> {
                 if (event
-                        .details() instanceof ReplayEventTypes.CustomEventDetails(ResourceLocation eventId, String data)) {
-                    // CustomEventDetails 没有 playerUuid，只有 eventId 和 data
+                        .details() instanceof ReplayEventTypes.CustomEventDetails(Component msg)) {
+                    if (msg != null) {
+                        yield msg;
+                    }
                     yield Component.translatable("tmm.replay.event.custom_event",
-                            Component.nullToEmpty(eventId.toString()),
-                            Component.nullToEmpty(data));
+                            Component.nullToEmpty("Unknown Event"));
                 }
-                yield Component.translatable("tmm.replay.event.custom_event", Component.nullToEmpty("未知自定义事件"));
+                yield Component.translatable("tmm.replay.event.custom_event", Component.nullToEmpty("Unknown Event"));
             }
             default -> throw new IllegalArgumentException("Unexpected value: " + event.eventType());
         };

@@ -1,6 +1,7 @@
 package dev.doctor4t.trainmurdermystery.api.replay;
 
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import java.util.UUID;
 
@@ -89,7 +90,7 @@ public class ReplayEventTypes {
     }
 
     // 自定义事件详情，用于第三方模组
-    public record CustomEventDetails(ResourceLocation eventId, String data) implements EventDetails {
+    public record CustomEventDetails(Component Message) implements EventDetails {
     }
 
     // Add more specific EventDetails classes for other event types

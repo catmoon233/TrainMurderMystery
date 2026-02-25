@@ -9,6 +9,7 @@ import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
 import dev.doctor4t.trainmurdermystery.game.GameFunctions;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
@@ -77,11 +78,11 @@ public class GameReplayManager {
             case BLACKOUT_START -> ReplayEventTypes.EventType.BLACKOUT_START;
             case BLACKOUT_END -> ReplayEventTypes.EventType.BLACKOUT_END;
             // 默认映射
-            case CUSTOM_MESSAGE -> ReplayEventTypes.EventType.GAME_START;
+            case CUSTOM_MESSAGE -> ReplayEventTypes.EventType.CUSTOM_EVENT;
         };
     }
 
-    private ReplayEvent convertReplayEvent(GameReplayData.ReplayEvent dataEvent) {
+    private ReplayEvent convertReplayEvent(GameReplayData.ReplayEvent dataEvent, HolderLookup.Provider provider) {
         if (dataEvent == null) {
             return new ReplayEvent(ReplayEventTypes.EventType.GAME_START, 0, new ReplayEventTypes.EventDetails() {
             });
@@ -212,6 +213,18 @@ public class GameReplayManager {
                         yield null;
                 }
             }
+            case CUSTOM_MESSAGE -> {
+                String msg = dataEvent.getMessage();
+                Component result = null;
+                if (provider != null) {
+                    try {
+                        result = Component.Serializer.fromJson(msg, provider);
+                    } catch (Exception e) {
+
+                    }
+                }
+                yield new ReplayEventTypes.CustomEventDetails(result);
+            }
             // 默认空详情
             default -> new ReplayEventTypes.EventDetails() {
             };
@@ -330,6 +343,11 @@ public class GameReplayManager {
 
     public Component addEvent(GameReplayData.EventType type, UUID sourcePlayer, UUID targetPlayer, String itemUsed,
             String message) {
+        return addEvent(type, targetPlayer, targetPlayer, message, message, null);
+    }
+
+    public Component addEvent(GameReplayData.EventType type, UUID sourcePlayer, UUID targetPlayer, String itemUsed,
+            String message, HolderLookup.Provider provider) {
         // 对可能为null的字符串参数进行处理
         String safeItemUsed = itemUsed != null ? itemUsed : "minecraft:air";
         String safeMessage = message != null ? message : "";
@@ -337,7 +355,7 @@ public class GameReplayManager {
                 safeItemUsed, safeMessage);
         currentReplayData
                 .addEvent(event);
-        ReplayEvent event1 = convertReplayEvent(event);
+        ReplayEvent event1 = convertReplayEvent(event, provider);
         try {
             var text = currentReplayData.toText(this, currentReplayData, event1);
             GameWorldComponent gameWorldComponent = GameWorldComponent.KEY.get(TMM.SERVER.overworld());
@@ -373,6 +391,14 @@ public class GameReplayManager {
     }
 
     // public static List<Predicate<Player>> cantSeeEvent = new ArrayList<>();
+    public Component recordCustomEvent(Component msg) {
+        if(TMM.SERVER!=null){
+
+        }
+        var provider = TMM.SERVER.registryAccess();
+        String msgStr = Component.Serializer.toJson(msg, provider);
+        return addEvent(GameReplayData.EventType.CUSTOM_MESSAGE, null, null, msgStr, null, provider);
+    }
 
     public Component recordPlayerKill(UUID killerUuid, UUID victimUuid, ResourceLocation deathReason) {
         String deathReasonStr = deathReason != null ? deathReason.toString() : "unknown";
@@ -643,7 +669,10 @@ public class GameReplayManager {
                     continue; // 跳过空事件
                 long relativeTime = dataEvent.getTimestamp() - gameStartTime;
                 String timePrefix = ReplayDisplayUtils.formatTime(relativeTime) + " ";
-                ReplayEvent event = convertReplayEvent(dataEvent);
+                ReplayEvent event = null;
+                if(TMM.SERVER!=null){
+                     event = convertReplayEvent(dataEvent, TMM.SERVER.registryAccess());
+                }
                 Component eventText = null;
                 try {
                     eventText = replayData.toText(this, replayData, event);
