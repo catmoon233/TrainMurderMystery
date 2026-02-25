@@ -652,7 +652,7 @@
   "death_reason.trainmurdermystery.poison": "中毒",
   "item.trainmurdermystery.limited_inventory.cooldown": "\u00a77冷却: %s 秒",
   "tmm.replay.event": "\u00a76[游戏事件] \u00a7r ",
-  "info.screen.roleid.discovery_civilian": "平民阵营\n游客模式。",
+  "info.screen.roleid.discovery_civilian": "平民阵营\n占位符角色。",
   "info.screen.roleid.civilian": "平民阵营\n你没有任何特殊能力，努力在这趟旅程中活下去。",
   "info.screen.roleid.killer": "杀手阵营\n你是一名普通的杀手。\n拥有最基础的杀手商店。\n你的目标是杀光所有平民。",
   "info.screen.roleid.loose_end": "中立阵营\n拥有独立胜利条件\n你获得1把刀、1把德林加手枪、1个撬棍。\n你拥有小丑透视。\n出生时会根据当前玩家数量给予自身护盾(每6人获得一层护盾，最多3层护盾)。\n通过难民修饰符变成的亡命徒在出生时会关闭场上的所有灯光。\n用你的武器杀掉所有人！！！",
