@@ -34,7 +34,8 @@ public class ChatHudMixin {
         final var playerRole = TMMClient.gameComponent.getRole(minecraft.player);
 
         // 如果玩家有角色且该角色允许使用聊天框，或者游戏未运行，则渲染聊天框
-        if ((playerRole != null && TMM.canUseChatHud.stream().anyMatch(predicate -> predicate.test(playerRole)))
+        if (TMM.canUseChatHudPlayer.stream().anyMatch(predicate -> predicate.test(minecraft.player))
+                || (playerRole != null && TMM.canUseChatHud.stream().anyMatch(predicate -> predicate.test(playerRole)))
                 || !TMMClient.gameComponent.isRunning()) {
             original.call(context, currentTick, mouseX, mouseY, focused);
         }
