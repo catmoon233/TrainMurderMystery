@@ -48,14 +48,20 @@ public class ServerMapConfig {
     public List<MapEntry> getRandomMaps() {
         return getRandomMaps(TMMConfig.mapRandomCount);
     }
+    public static List<MapEntry> cache_maps = new ArrayList<>();
 
     public List<MapEntry> getRandomMaps(int count) {
         if (count < 0) {
             return this.maps;
         }
         var a = new ArrayList<>(this.maps);
+        a.removeIf(
+                mapEntry -> !mapEntry.canSelect
+        );
         Collections.shuffle(a);
-        return a.subList(0, count);
+        List<MapEntry> mapEntries = a.subList(0, count);
+        cache_maps = mapEntries;
+        return mapEntries;
     }
 
     private static ServerMapConfig loadOrCreateConfig(MinecraftServer sl) {

@@ -35,6 +35,7 @@ import dev.doctor4t.trainmurdermystery.event.AllowOtherCameraType;
 import dev.doctor4t.trainmurdermystery.event.OnGetInstinctHighlight;
 import dev.doctor4t.trainmurdermystery.game.GameConstants;
 import dev.doctor4t.trainmurdermystery.game.GameFunctions;
+import dev.doctor4t.trainmurdermystery.game.LooseEndsGameMode;
 import dev.doctor4t.trainmurdermystery.index.*;
 import dev.doctor4t.trainmurdermystery.item.GrenadeItem;
 import dev.doctor4t.trainmurdermystery.item.KnifeItem;
@@ -617,6 +618,9 @@ public class TMMClient implements ClientModInitializer {
         if (TMMClient.gameComponent != null) {
             var role = TMMClient.gameComponent.getRole(player);
             if (role != null) {
+                if (role==TMMRoles.LOOSE_END){
+                    return !(gameComponent.getGameMode() instanceof LooseEndsGameMode);
+                }
                 canUseInstinct = role.canUseInstinct();
             }
         }

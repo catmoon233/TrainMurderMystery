@@ -4,7 +4,10 @@ import com.google.common.reflect.Reflection;
 
 import dev.doctor4t.trainmurdermystery.api.Role;
 import dev.doctor4t.trainmurdermystery.api.TMMRoles;
+import dev.doctor4t.trainmurdermystery.api.replay.GameReplayData;
+import dev.doctor4t.trainmurdermystery.api.replay.GameReplayManager;
 import dev.doctor4t.trainmurdermystery.api.replay.ReplayApiInitializer;
+import dev.doctor4t.trainmurdermystery.api.replay.ReplayPayload;
 import dev.doctor4t.trainmurdermystery.block.DoorPartBlock;
 import dev.doctor4t.trainmurdermystery.cca.*;
 import dev.doctor4t.trainmurdermystery.command.*;
@@ -223,7 +226,7 @@ public class TMM implements ModInitializer {
                 // not exist
             }
             if (REPLAY_MANAGER != null) {
-                REPLAY_MANAGER.addEvent(GameReplayData.EventType.PLAYER_LEAVE, null, handler.player.getUUID(), null,
+                REPLAY_MANAGER.addEvent(GameReplayData.EventType.PLAYER_LEAVE, handler.player.getUUID(),null, null,
                         null);
             }
         });

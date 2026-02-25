@@ -1,12 +1,15 @@
 package dev.doctor4t.trainmurdermystery.mixin.server;
 
 import dev.doctor4t.trainmurdermystery.TMM;
+import dev.doctor4t.trainmurdermystery.TMMConfig;
 import dev.doctor4t.trainmurdermystery.cca.AreasWorldComponent;
 import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
-import dev.doctor4t.trainmurdermystery.game.GameFunctions;
-import dev.doctor4t.trainmurdermystery.game.GameReplayManager;
+import dev.doctor4t.trainmurdermystery.api.replay.GameReplayManager;
+import dev.doctor4t.trainmurdermystery.cca.MapVotingComponent;
 import dev.doctor4t.trainmurdermystery.mod_whitelist.server.command.ModWhitelistCommand;
+import dev.doctor4t.trainmurdermystery.network.ShowSelectedMapUIPayload;
 import dev.doctor4t.trainmurdermystery.network.SyncMapConfigPayload;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.Connection;
 import net.minecraft.server.level.ServerLevel;
@@ -31,6 +34,12 @@ public class DecServerJoinPlayer {
         GameReplayManager.playerNames.put(serverPlayer.getUUID(), serverPlayer.getScoreboardName());
         final var gameWorldComponent = GameWorldComponent.KEY.get(serverPlayer.level());
 
+        MapVotingComponent mapVotingComponent = MapVotingComponent.KEY.get(serverPlayer.level());
+        if (mapVotingComponent.isVotingActive()){
+            if (TMMConfig.mapRandomCount!=-1){
+            ServerPlayNetworking.send(serverPlayer, new ShowSelectedMapUIPayload(true));
+        }
+            }
         if (gameWorldComponent.isRunning()) {
             if (serverPlayer.level() instanceof ServerLevel serverWorld) {
                 AreasWorldComponent areas = AreasWorldComponent.KEY.get(serverWorld);

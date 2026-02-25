@@ -28,12 +28,14 @@ public record SyncMapConfigPayload(List<MapConfig.MapEntry> maps) implements Cus
             String id = buf.readUtf();
             String displayName = buf.readUtf();
             String description = buf.readUtf();
+            boolean canSelect = buf.readBoolean();
             String color = buf.readUtf();
             
             MapConfig.MapEntry entry = new MapConfig.MapEntry();
             entry.id = id;
             entry.displayName = displayName;
             entry.description = description;
+            entry.canSelect = canSelect;
             entry.color = color;
             
             maps.add(entry);
@@ -49,6 +51,7 @@ public record SyncMapConfigPayload(List<MapConfig.MapEntry> maps) implements Cus
             buf.writeUtf(map.getId());
             buf.writeUtf(map.getDisplayName());
             buf.writeUtf(map.getDescription());
+            buf.writeBoolean(map.canSelect);
             buf.writeUtf(map.getColorStr());
         }
     }

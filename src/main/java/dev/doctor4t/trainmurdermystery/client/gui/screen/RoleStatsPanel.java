@@ -7,7 +7,7 @@ import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.api.Role;
 import dev.doctor4t.trainmurdermystery.api.TMMRoles;
 import dev.doctor4t.trainmurdermystery.cca.PlayerStatsComponent;
-import dev.doctor4t.trainmurdermystery.util.ReplayDisplayUtils;
+import dev.doctor4t.trainmurdermystery.api.replay.ReplayDisplayUtils;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
