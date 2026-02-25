@@ -40,8 +40,8 @@ public class CustomReplayEventCommand {
     } else {
     }
     Component result = TMM.REPLAY_MANAGER.recordCustomEvent(res);
-    commandContext.getSource().sendSuccess(() -> Component.literal("Successfully"), true);
-    commandContext.getSource().sendSystemMessage(result);
+    commandContext.getSource().sendSuccess(() -> Component.literal("Successfully record custom event!"), true);
+    commandContext.getSource().sendSystemMessage(Component.literal("[ADD REPLAY] ").append(result));
     return 1;
   }
 }
