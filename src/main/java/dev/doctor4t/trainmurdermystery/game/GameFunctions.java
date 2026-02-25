@@ -350,7 +350,7 @@ public class GameFunctions {
 
         TrainWorldComponent.KEY.get(serverWorld).reset();
         WorldBlackoutComponent.KEY.get(serverWorld).reset();
-        serverWorld.setDayTime(12000);
+        serverWorld.setDayTime(TrainWorldComponent.TimeOfDay.SUNDOWN.time);
         serverWorld.getGameRules().getRule(GameRules.RULE_KEEPINVENTORY).set(true, serverWorld.getServer());
         serverWorld.getGameRules().getRule(GameRules.RULE_WEATHER_CYCLE).set(false, serverWorld.getServer());
         serverWorld.getGameRules().getRule(GameRules.RULE_DAYLIGHT).set(true, serverWorld.getServer());
@@ -557,7 +557,8 @@ public class GameFunctions {
         WorldBlackoutComponent.KEY.get(world).reset();
         TrainWorldComponent trainComponent = TrainWorldComponent.KEY.get(world);
         trainComponent.setSpeed(0);
-        trainComponent.setTimeOfDay(TrainWorldComponent.TimeOfDay.DAY);
+
+        trainComponent.setTimeOfDay(TrainWorldComponent.TimeOfDay.NOON);
 
         // discard all player bodies
         for (PlayerBodyEntity body : world.getEntities(TMMEntities.PLAYER_BODY, playerBodyEntity -> true))

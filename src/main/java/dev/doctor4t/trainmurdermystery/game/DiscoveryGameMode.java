@@ -17,7 +17,7 @@ public class DiscoveryGameMode extends GameMode {
 
     @Override
     public void initializeGame(ServerLevel serverWorld, GameWorldComponent gameWorldComponent, List<ServerPlayer> players) {
-        TrainWorldComponent.KEY.get(serverWorld).setTimeOfDay(TrainWorldComponent.TimeOfDay.DAY);
+        TrainWorldComponent.KEY.get(serverWorld).setTimeOfDay(TrainWorldComponent.TimeOfDay.NOON);
 
         for (ServerPlayer player : players) {
             gameWorldComponent.addRole(player, TMMRoles.DISCOVERY_CIVILIAN);

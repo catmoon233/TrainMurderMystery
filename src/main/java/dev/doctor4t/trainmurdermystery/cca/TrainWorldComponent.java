@@ -3,6 +3,7 @@ package dev.doctor4t.trainmurdermystery.cca;
 import dev.doctor4t.trainmurdermystery.TMM;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.level.Level;
 import org.ladysnake.cca.api.v3.component.ComponentKey;
@@ -12,7 +13,8 @@ import org.ladysnake.cca.api.v3.component.tick.ClientTickingComponent;
 import org.ladysnake.cca.api.v3.component.tick.ServerTickingComponent;
 
 public class TrainWorldComponent implements AutoSyncedComponent, ServerTickingComponent, ClientTickingComponent {
-    public static final ComponentKey<TrainWorldComponent> KEY = ComponentRegistry.getOrCreate(TMM.id("train"), TrainWorldComponent.class);
+    public static final ComponentKey<TrainWorldComponent> KEY = ComponentRegistry.getOrCreate(TMM.id("train"),
+            TrainWorldComponent.class);
 
     private final Level world;
     private int speed = 0; // im km/h
@@ -20,7 +22,7 @@ public class TrainWorldComponent implements AutoSyncedComponent, ServerTickingCo
     private boolean snow = false;
     private boolean fog = true;
     private boolean hud = true;
-    private TimeOfDay timeOfDay = TimeOfDay.NIGHT;
+    private TimeOfDay timeOfDay = TimeOfDay.DAY;
 
     public TrainWorldComponent(Level world) {
         this.world = world;
@@ -64,8 +66,8 @@ public class TrainWorldComponent implements AutoSyncedComponent, ServerTickingCo
     }
 
     public void setSnow(boolean snow) {
-            this.snow = false;
-            this.markDirty();
+        this.snow = false;
+        this.markDirty();
     }
 
     public boolean isFoggy() {
@@ -137,9 +139,10 @@ public class TrainWorldComponent implements AutoSyncedComponent, ServerTickingCo
     @Override
     public void serverTick() {
         tickTime();
-
-//        ServerLevel serverWorld = (ServerLevel) world;
-//        serverWorld.setDayTime(timeOfDay.time);
+        if (this.needsSync) {
+            ServerLevel serverWorld = (ServerLevel) world;
+            serverWorld.setDayTime(timeOfDay.time);
+        }
 
         // 每秒同步一次（减少网络占用）
         if (this.needsSync && this.world.getGameTime() % 60 == 0) {
@@ -157,11 +160,13 @@ public class TrainWorldComponent implements AutoSyncedComponent, ServerTickingCo
     }
 
     public enum TimeOfDay implements StringRepresentable {
-        DAY(6000),
-        NIGHT(18000),
+        DAY(1000),
+        NOON(6000),
+        NIGHT(13000),
+        MIDNIGHT(18000),
         SUNDOWN(12800);
 
-        final int time;
+        public final int time;
 
         TimeOfDay(int time) {
             this.time = time;
