@@ -35,7 +35,7 @@ public abstract class WorldRendererMixin {
     public void tmm$disableSky(LevelRenderer instance, Matrix4f matrix4f, Matrix4f projectionMatrix, float tickDelta,
             Camera camera, boolean thickFog, Runnable fogCallback, Operation<Void> original) {
         if (!TMMClient.isTrainMoving()
-                || TMMClient.trainComponent.getTimeOfDay() == TrainWorldComponent.TimeOfDay.SUNDOWN)
+                )
             original.call(instance, matrix4f, projectionMatrix, tickDelta, camera, thickFog, fogCallback);
     }
 
@@ -48,7 +48,7 @@ public abstract class WorldRendererMixin {
         }
         if (TMMClient.trainComponent != null && TMMClient.trainComponent.isFoggy()) {
             if (TMMClient.isTrainMoving()) {
-                tmm$doFog(0, 130);
+                tmm$doFog(0, 100);
             } else {
                 tmm$doFog(0, 200);
             }

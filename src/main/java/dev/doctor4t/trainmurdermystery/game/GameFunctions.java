@@ -350,10 +350,10 @@ public class GameFunctions {
 
         TrainWorldComponent.KEY.get(serverWorld).reset();
         WorldBlackoutComponent.KEY.get(serverWorld).reset();
-        serverWorld.setDayTime(18000);
+        serverWorld.setDayTime(12000);
         serverWorld.getGameRules().getRule(GameRules.RULE_KEEPINVENTORY).set(true, serverWorld.getServer());
         serverWorld.getGameRules().getRule(GameRules.RULE_WEATHER_CYCLE).set(false, serverWorld.getServer());
-        serverWorld.getGameRules().getRule(GameRules.RULE_DAYLIGHT).set(false, serverWorld.getServer());
+        serverWorld.getGameRules().getRule(GameRules.RULE_DAYLIGHT).set(true, serverWorld.getServer());
         serverWorld.getGameRules().getRule(GameRules.RULE_MOBGRIEFING).set(false, serverWorld.getServer());
         serverWorld.getGameRules().getRule(GameRules.RULE_DOMOBSPAWNING).set(false, serverWorld.getServer());
         serverWorld.getGameRules().getRule(GameRules.RULE_ANNOUNCE_ADVANCEMENTS).set(false, serverWorld.getServer());
@@ -500,6 +500,7 @@ public class GameFunctions {
         // var areasWorldComponent = AreasWorldComponent.KEY.get(world);
 
         world.setDayTime(Level.TICKS_PER_DAY / 2);
+        world.getGameRules().getRule(GameRules.RULE_DAYLIGHT).set(false, world.getServer());
         gameComponent.getGameMode().finalizeGame(world, gameComponent);
         TMM.REPLAY_MANAGER.finalizeReplay(gameComponent.getLastWinStatus());
 
