@@ -131,7 +131,7 @@ public class GameReplayUtils {
             // TMM.LOGGER.info(sourceRoleId, sourceRoleIdNow);
             MutableComponent currentRoleName = ReplayDisplayUtils.getRoleDisplayName(sourceRoleIdNow);
             int currentColor = getRoleColor(sourceRoleIdNow);
-            ChatFormatting currentTMMColor = getTMMRoleColor(sourceRoleId);
+            ChatFormatting currentTMMColor = getTMMRoleColor(sourceRoleIdNow);
             if (UseTMMColor) {
                 // currentTMMColor
                 sourceName = sourceName.copy().withStyle(sourceTMMColor)
