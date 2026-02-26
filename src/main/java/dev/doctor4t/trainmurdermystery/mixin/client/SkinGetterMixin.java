@@ -15,7 +15,7 @@ import net.minecraft.network.protocol.game.ClientboundPlayerInfoUpdatePacket;
 
 @Mixin(ClientPacketListener.class)
 public class SkinGetterMixin {
-    @Inject(method = "handlePlayerInfoUpdate", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/player/PlayerInfo;<init>(Lcom/mojang/authlib/GameProfile;Z)V", shift = At.Shift.AFTER), locals = LocalCapture.CAPTURE_FAILHARD)
+    @Inject(method = "handlePlayerInfoUpdate", at = @At(value = "INVOKE", target = "Lnet/minecraft/client/multiplayer/PlayerInfo;<init>(Lcom/mojang/authlib/GameProfile;Z)V", shift = At.Shift.AFTER), locals = LocalCapture.CAPTURE_FAILHARD)
     private void afterPlayerInfoCreate(ClientboundPlayerInfoUpdatePacket packet,
             CallbackInfo ci,
             ClientboundPlayerInfoUpdatePacket.Entry entry,
