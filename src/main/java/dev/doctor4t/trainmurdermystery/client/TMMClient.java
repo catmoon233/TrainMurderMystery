@@ -342,17 +342,6 @@ public class TMMClient implements ClientModInitializer {
             }
             instinctLightLevel = Mth.clamp(instinctLightLevel, -.04f, 0.75f);
 
-            // // Cache player entries
-            // for (AbstractClientPlayer player : clientWorld.players()) {
-            //     ClientPacketListener networkHandler = Minecraft.getInstance().getConnection();
-                
-            //     if (!PLAYER_ENTRIES_CACHE.containsKey(player.getUUID()) && networkHandler != null) {
-            //         var playerInfo = networkHandler.getPlayerInfo(player.getUUID());
-            //         if (playerInfo != null) {
-            //             PLAYER_ENTRIES_CACHE.put(player.getUUID(), playerInfo);
-            //         }
-            //     }
-            // }
             if (!prevGameRunning && gameComponent.isRunning()) {
                 Minecraft.getInstance().player.getInventory().selected = 8;
             }

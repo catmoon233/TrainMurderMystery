@@ -45,7 +45,7 @@ public class SkinGetterMixin {
                 ClientboundPlayerInfoUpdatePacket.Entry entry2 = entry.get();
                 PlayerInfo playerInfo2 = playerInfo.get();
                 TMMClient.PLAYER_ENTRIES_CACHE.putIfAbsent(entry2.profileId(), playerInfo2);
-                TMM.LOGGER.info("New player: "+entry2.profileId());
+                // TMM.LOGGER.info("New player: "+entry2.profileId());
         // 空实现，只测试注入点是否能找到
     }
 }
