@@ -526,7 +526,7 @@ public class GameFunctions {
             } else if (winStatus == WinStatus.NIAN_SHOU && playerRole != null
                     && "nianshou".equals(playerRole.getIdentifier().getPath())) {
                 isWinner = true;
-            } else if (winStatus == WinStatus.CUSTOM && playerRole != null) {
+            } else if ((winStatus == WinStatus.CUSTOM_COMPONENT||winStatus == WinStatus.CUSTOM) && playerRole != null) {
                 if (CustomWinnersPredicates.stream().anyMatch((pred) -> {
                     return pred.test(Map.entry(player, roundEnd.CustomWinnerID));
                 })) {
