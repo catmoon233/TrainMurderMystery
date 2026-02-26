@@ -1,6 +1,5 @@
 package dev.doctor4t.trainmurdermystery.client;
 
-import com.google.common.collect.Maps;
 import com.mojang.blaze3d.platform.InputConstants;
 import dev.doctor4t.ratatouille.client.util.OptionLocker;
 import dev.doctor4t.ratatouille.client.util.ambience.AmbienceUtil;
@@ -97,7 +96,7 @@ public class TMMClient implements ClientModInitializer {
     public static PlayerMoodComponent moodComponent;
     public static int intervalTime = 0;
     public static boolean isInLobby = false;
-    public static final Map<UUID, PlayerInfo> PLAYER_ENTRIES_CACHE = Maps.newHashMap();
+    public static final Map<UUID, PlayerInfo> PLAYER_ENTRIES_CACHE = new HashMap<>();
 
     public static KeyMapping instinctKeybind;
     public static KeyMapping statsKeybind; // 新增统计面板热键
@@ -314,8 +313,11 @@ public class TMMClient implements ClientModInitializer {
             // Cache player entries
             for (AbstractClientPlayer player : clientWorld.players()) {
                 ClientPacketListener networkHandler = Minecraft.getInstance().getConnection();
-                if (networkHandler != null) {
-                    PLAYER_ENTRIES_CACHE.put(player.getUUID(), networkHandler.getPlayerInfo(player.getUUID()));
+                if (!PLAYER_ENTRIES_CACHE.containsKey(player.getUUID()) && networkHandler != null) {
+                    var playerInfo = networkHandler.getPlayerInfo(player.getUUID());
+                    if (playerInfo != null) {
+                        PLAYER_ENTRIES_CACHE.put(player.getUUID(), playerInfo);
+                    }
                 }
             }
             if (!prevGameRunning && gameComponent.isRunning()) {

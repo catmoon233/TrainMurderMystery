@@ -384,7 +384,12 @@ public class RoundTextRenderer {
     }
 
     public static PlayerSkin getSkinTextures(String disguise) {
-        return Minecraft.getInstance().getSkinManager().getInsecureSkin(getGameProfile(disguise));
+        try {
+            return Minecraft.getInstance().getSkinManager().getOrLoad(getGameProfile(disguise)).get();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public static Optional<GameProfile> failCache(String name) {

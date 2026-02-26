@@ -23,26 +23,26 @@ import static net.minecraft.client.renderer.RenderType.entityCutoutNoCullZOffset
 @Mixin(SkullBlockRenderer.class)
 public class PlayerHeadFixerMixin {
 
-
     @Shadow
     @Final
     private static Map<SkullBlock.Type, ResourceLocation> SKIN_BY_TYPE;
 
-    @Inject(method = "getRenderType",at= @At(value = "HEAD"),cancellable = true)
-    private static void getRenderType(SkullBlock.Type type, ResolvableProfile resolvableProfile, CallbackInfoReturnable<RenderType> cir){
+    @Inject(method = "getRenderType", at = @At(value = "HEAD"), cancellable = true)
+    private static void getRenderType(SkullBlock.Type type, ResolvableProfile resolvableProfile,
+            CallbackInfoReturnable<RenderType> cir) {
         try {
-            ResourceLocation resourceLocation = (ResourceLocation)SKIN_BY_TYPE.get(type);
+            ResourceLocation resourceLocation = (ResourceLocation) SKIN_BY_TYPE.get(type);
             if (type == SkullBlock.Types.PLAYER && resolvableProfile != null) {
                 SkinManager skinManager = Minecraft.getInstance().getSkinManager();
-                cir.setReturnValue(RenderType.entityTranslucent(skinManager.getInsecureSkin(resolvableProfile.gameProfile()).texture()));
+                cir.setReturnValue(RenderType
+                        .entityTranslucent(skinManager.getOrLoad(resolvableProfile.gameProfile()).get().texture()));
             } else {
                 cir.setReturnValue(entityCutoutNoCullZOffset(resourceLocation));
             }
             cir.cancel();
-        }catch (Exception ignored){
-
+        } catch (Exception ignored) {
+            ignored.printStackTrace();
         }
-
-//        return playerInfo.getSkin();
+        // return playerInfo.getSkin();
     }
 }
