@@ -38,10 +38,10 @@ public class RoundTextRenderer {
     private static final int WELCOME_DURATION = 200 + GameConstants.FADE_TIME * 2;
     private static final int END_DURATION = 200;
     private static RoleAnnouncementTexts.RoleAnnouncementText role = RoleAnnouncementTexts.CIVILIAN;
-    private static int welcomeTime = 0;
-    private static int killers = 0;
-    private static int targets = 0;
-    private static int endTime = 0;
+    public static int welcomeTime = 0;
+    public static int killers = 0;
+    public static int targets = 0;
+    public static int endTime = 0;
 
     public static Map<UUID, Role> lastRole = new HashMap<>();
 

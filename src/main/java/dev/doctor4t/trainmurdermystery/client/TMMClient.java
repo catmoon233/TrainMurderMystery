@@ -10,6 +10,7 @@ import dev.doctor4t.trainmurdermystery.api.Role;
 import dev.doctor4t.trainmurdermystery.api.TMMRoles;
 import dev.doctor4t.trainmurdermystery.block.SecurityMonitorBlock;
 import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
+import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent.GameStatus;
 import dev.doctor4t.trainmurdermystery.cca.PlayerMoodComponent;
 import dev.doctor4t.trainmurdermystery.cca.TrainWorldComponent;
 import dev.doctor4t.trainmurdermystery.client.gui.*;
@@ -492,12 +493,21 @@ public class TMMClient implements ClientModInitializer {
             if (player != null && player.level() != null) {
                 dev.doctor4t.trainmurdermystery.api.RoleMethodDispatcher.callClientTick(player);
             }
-            if (statsKeybind.consumeClick()) {
-                if (client.screen instanceof PlayerStatsScreen) {
+            if (TMMClient.gameComponent.fade > 0) {
+                if (client.screen != null) {
                     client.setScreen(null);
-                } else {
-                    client.setScreen(new PlayerStatsScreen(client.player.getUUID()));
                 }
+            }
+            if (statsKeybind.consumeClick()) {
+
+                if (TMMClient.gameComponent.fade <= 0) {
+                    if (client.screen instanceof PlayerStatsScreen) {
+                        client.setScreen(null);
+                    } else {
+                        client.setScreen(new PlayerStatsScreen(client.player.getUUID()));
+                    }
+                }
+
             }
 
             if (skinsKeybind.consumeClick()) {

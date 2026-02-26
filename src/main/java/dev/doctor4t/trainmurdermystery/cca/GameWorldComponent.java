@@ -81,7 +81,7 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
     private boolean bound = true;
 
     private GameStatus gameStatus = GameStatus.INACTIVE;
-    private int fade = 0;
+    public int fade = 0;
 
     private final HashMap<UUID, Role> roles = new HashMap<>();
 
