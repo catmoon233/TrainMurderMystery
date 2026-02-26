@@ -652,7 +652,8 @@ public class GameReplayManager {
       sendSystemMessage(player,
           Component
               .translatable("tmm.replay.winning_team",
-                  Component.literal(winningTeam).withStyle(ChatFormatting.GOLD))
+                  Component.translatable("announcement.win." + replayData.getWinningTeam())
+                      .withStyle(ChatFormatting.GOLD))
               .withStyle(ChatFormatting.WHITE));
     }
 

@@ -534,6 +534,9 @@ public class GameFunctions {
                     }
                     break;
                 case GAMBLER:
+                    if (playerRole.identifier().getPath().equals("gambler")) {
+                        isWinner = true;
+                    }
                     break;
                 case KILLERS:
                     if (GameWorldComponent.isKillerTeamRoleStatic(playerRole)) {
