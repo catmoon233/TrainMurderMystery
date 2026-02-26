@@ -385,11 +385,10 @@ public class TMMClient implements ClientModInitializer {
             UUID targetPlayerUuid = payload.targetPlayerUuid();
             context.client().execute(() -> {
                 if (TMMClient.gameComponent.fade <= 0) {
-
+                    context.client().execute(() -> {
+                        context.client().setScreen(new PlayerStatsScreen(targetPlayerUuid));
+                    });
                 }
-                context.client().execute(() -> {
-                    context.client().setScreen(new PlayerStatsScreen(targetPlayerUuid));
-                });
             });
         });
         ClientPlayNetworking.registerGlobalReceiver(SyncRoomToPlayerPayload.ID, (payload, context) -> {
