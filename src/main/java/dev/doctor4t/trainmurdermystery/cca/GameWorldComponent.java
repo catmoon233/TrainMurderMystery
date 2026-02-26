@@ -296,10 +296,12 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
         this.lockedToSupporters = lockedToSupporters;
     }
 
+    @Deprecated
     public GameFunctions.WinStatus getLastWinStatus() {
         return lastWinStatus;
     }
 
+    @Deprecated
     public void setLastWinStatus(GameFunctions.WinStatus lastWinStatus) {
         this.lastWinStatus = lastWinStatus;
         this.sync();
@@ -338,12 +340,6 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
         } else {
             this.looseEndWinner = null;
         }
-
-        if (nbtCompound.contains("LastWinStatus")) {
-            this.lastWinStatus = GameFunctions.WinStatus.valueOf(nbtCompound.getString("LastWinStatus"));
-        } else {
-            this.lastWinStatus = GameFunctions.WinStatus.NONE;
-        }
         // }else {
         for (Role role : TMMRoles.ROLES.values()) {
             this.setRoles(uuidListFromNbt(nbtCompound, role.identifier().toString()), role);
@@ -376,7 +372,7 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
         if (this.looseEndWinner != null)
             nbtCompound.putUUID("LooseEndWinner", this.looseEndWinner);
 
-        nbtCompound.putString("LastWinStatus", this.lastWinStatus.toString());
+        // nbtCompound.putString("LastWinStatus", this.lastWinStatus.toString());
         // nbtCompound.putFloat("BackfireChance", backfireChance);
         // }
         // else {

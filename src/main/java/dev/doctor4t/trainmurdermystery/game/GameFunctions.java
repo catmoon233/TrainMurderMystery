@@ -505,10 +505,10 @@ public class GameFunctions {
         world.setDayTime(Level.TICKS_PER_DAY / 2);
         world.getGameRules().getRule(GameRules.RULE_DAYLIGHT).set(false, world.getServer());
         gameComponent.getGameMode().finalizeGame(world, gameComponent);
-        TMM.REPLAY_MANAGER.finalizeReplay(gameComponent.getLastWinStatus());
+        TMM.REPLAY_MANAGER.finalizeReplay(roundEnd.getWinStatus());
 
         // --- 新增统计数据更新逻辑 (胜利/失败) ---
-        GameFunctions.WinStatus winStatus = gameComponent.getLastWinStatus();
+        GameFunctions.WinStatus winStatus = roundEnd.getWinStatus();
 
         // 修复4: 检查是否为恋人胜利
         boolean isLoversWin = roundEnd.CustomWinnerID != null && roundEnd.CustomWinnerID.equals("lovers");
@@ -1329,6 +1329,7 @@ public class GameFunctions {
                     serverWorld.setBlock(blockInfo.pos, Blocks.BARRIER.defaultBlockState(), Block.UPDATE_CLIENTS);
                 }
 
+                @SuppressWarnings("unused")
                 int mx = 1;
 
                 // Place the doors back
