@@ -414,6 +414,10 @@ public class GameReplayData {
     }
 
     public void setWinningTitle(Component customWinnerTitle) {
-        this.winningTitle = customWinnerTitle.copy();
+        if (customWinnerTitle != null) {
+            this.winningTitle = customWinnerTitle.copy();
+        } else {
+            this.winningTitle = null;
+        }
     }
 }
