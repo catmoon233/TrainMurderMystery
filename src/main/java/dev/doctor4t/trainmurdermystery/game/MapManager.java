@@ -174,6 +174,11 @@ public class MapManager {
             FileReader reader = new FileReader(mapConfigFile);
             JsonObject jsonObject = JsonParser.parseReader(reader).getAsJsonObject();
             reader.close();
+            if (jsonObject.has("noReset")) {
+                areas.noReset = jsonObject.get("noReset").getAsBoolean();
+            } else {
+                areas.noReset = false;
+            }
             if (jsonObject.has("canJump")) {
                 areas.canJump = jsonObject.get("canJump").getAsBoolean();
             } else {

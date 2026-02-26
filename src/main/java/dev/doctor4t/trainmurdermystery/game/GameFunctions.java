@@ -937,6 +937,8 @@ public class GameFunctions {
             return false;
         if (serverWorld.getServer().overworld().equals(serverWorld)) {
             AreasWorldComponent areas = AreasWorldComponent.KEY.get(serverWorld);
+            if (areas.noReset)
+                return false;
             if (TMMConfig.verboseTrainResetLogs) {
                 TMM.LOGGER.info("Resetting train" + areas.toString());
             }
@@ -1097,6 +1099,8 @@ public class GameFunctions {
             return false;
         if (serverWorld.getServer().overworld().equals(serverWorld)) {
             AreasWorldComponent areas = AreasWorldComponent.KEY.get(serverWorld);
+            if (areas.noReset)
+                return false;
             if (TMMConfig.verboseTrainResetLogs) {
                 TMM.LOGGER.info("Resetting train" + areas.toString());
             }
