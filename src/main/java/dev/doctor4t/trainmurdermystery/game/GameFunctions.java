@@ -518,7 +518,8 @@ public class GameFunctions {
             if (winStatus == WinStatus.KILLERS && playerRole != null && playerRole.canUseKiller()) {
                 isWinner = true;
             } else if (winStatus == WinStatus.KILLERS && playerRole != null) {
-                // 修复: 杀手胜利时，以下中立角色也算胜利：wind_yaose, slippery_ghost, admirer, puppeteer, jester, vulture, commander
+                // 修复: 杀手胜利时，以下中立角色也算胜利：wind_yaose, slippery_ghost, admirer, puppeteer, jester,
+                // vulture, commander
                 String roleIdentifier = playerRole.getIdentifier().getPath();
                 if ("wind_yaose".equals(roleIdentifier) || "slippery_ghost".equals(roleIdentifier)
                         || "admirer".equals(roleIdentifier) || "puppeteer".equals(roleIdentifier)
@@ -572,7 +573,7 @@ public class GameFunctions {
                     && "arsonist".equals(playerRole.getIdentifier().getPath())) {
                 isWinner = true;
             }
-            if (winStatus == WinStatus.CUSTOM && playerRole != null) {
+            if ((winStatus == WinStatus.CUSTOM || winStatus == WinStatus.CUSTOM_COMPONENT) && playerRole != null) {
                 // 修复3: 独立获胜的中立角色算胜利 - 通过 CustomWinnerID 与角色 identifier 绑定
                 String roleIdentifier = playerRole.getIdentifier().getPath();
                 if (roundEnd.CustomWinnerID != null && roundEnd.CustomWinnerID.equals(roleIdentifier)) {
@@ -586,7 +587,8 @@ public class GameFunctions {
                 }
             }
             // 修复4: 恋人获胜时单独统计恋人胜利
-            if (isLoversWin && roundEnd.CustomWinnerPlayers != null && roundEnd.CustomWinnerPlayers.contains(player.getUUID())) {
+            if (isLoversWin && roundEnd.CustomWinnerPlayers != null
+                    && roundEnd.CustomWinnerPlayers.contains(player.getUUID())) {
                 isWinner = true;
             }
 
@@ -597,7 +599,8 @@ public class GameFunctions {
                     stats.getOrCreateRoleStats(playerRole.identifier()).incrementWinsAsRole();
                 }
                 // 修复4: 恋人胜利时额外统计恋人胜利次数
-                if (isLoversWin && roundEnd.CustomWinnerPlayers != null && roundEnd.CustomWinnerPlayers.contains(player.getUUID())) {
+                if (isLoversWin && roundEnd.CustomWinnerPlayers != null
+                        && roundEnd.CustomWinnerPlayers.contains(player.getUUID())) {
                     stats.incrementTotalLoversWins();
                 }
             } else {
