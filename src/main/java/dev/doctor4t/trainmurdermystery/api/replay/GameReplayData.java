@@ -204,7 +204,7 @@ public class GameReplayData {
                         .withStyle(ChatFormatting.GRAY);
 
         // 获取角色信息并设置颜色
-        sourceName = GameReplayUtils.getReplayPlayerDisplayText(sourcePlayer, manager, replayData, true);
+        sourceName = GameReplayUtils.getReplayPlayerDisplayText(sourcePlayer, manager, replayData, false);
         targetName = GameReplayUtils.getReplayPlayerDisplayText(targetPlayer, manager, replayData, true);
 
         return switch (event.eventType()) {

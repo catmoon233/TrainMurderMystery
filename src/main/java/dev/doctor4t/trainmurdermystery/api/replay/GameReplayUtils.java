@@ -46,20 +46,20 @@ public class GameReplayUtils {
         return Component.translatable(translationKey).withStyle(getTMMRoleColor(path));
     }
 
-    public static Component getReplayPlayerDisplayText(Player player, boolean withRole) {
+    public static Component getReplayPlayerDisplayText(Player player, boolean notNull) {
         if (TMM.REPLAY_MANAGER != null) {
             return getReplayPlayerDisplayText(player, TMM.REPLAY_MANAGER, TMM.REPLAY_MANAGER.currentReplayData,
-                    withRole);
+                    notNull);
         }
         return player.getDisplayName();
     }
 
     public static Component getReplayPlayerDisplayText(Player player, GameReplayManager manager,
-            GameReplayData replayData, boolean withRole) {
+            GameReplayData replayData, boolean notNull) {
         if (player == null)
             return Component.translatable("tmm.replay.event.unknown_player").withStyle(ChatFormatting.OBFUSCATED)
                     .withStyle(ChatFormatting.GRAY);
-        return getReplayPlayerDisplayText(player.getUUID(), manager, replayData, withRole);
+        return getReplayPlayerDisplayText(player.getUUID(), manager, replayData, notNull);
     }
 
     public static int getRoleColor(String roleId) {
@@ -107,9 +107,11 @@ public class GameReplayUtils {
     }
 
     public static Component getReplayPlayerDisplayText(UUID playerUid, GameReplayManager manager,
-            GameReplayData replayData, boolean withRole) {
+            GameReplayData replayData, boolean notNull) {
+        if (playerUid == null && !notNull)
+            return null;
         Component sourceName = playerUid != null ? manager.getPlayerName(playerUid)
-                : Component.translatable("tmm.replay.event.unknown_player").withStyle(ChatFormatting.OBFUSCATED)
+                : Component.translatable("tmm.replay.event.unknown_player").withStyle(ChatFormatting.ITALIC)
                         .withStyle(ChatFormatting.GRAY);
         String sourceRoleId = playerUid != null ? replayData.getPlayerRoles().get(playerUid)
                 : TMMRoles.CIVILIAN.identifier().toString();
