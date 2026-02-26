@@ -235,7 +235,8 @@ public class GameReplayData {
             case GAME_START -> Component.translatable("tmm.replay.event.game_start").withStyle(ChatFormatting.GREEN);
             case GAME_END -> Component
                     .translatable("tmm.replay.event.game_end",
-                            Component.literal(replayData.getWinningTeam()).withStyle(ChatFormatting.GOLD))
+                            Component.translatable("announcement.win." + replayData.getWinningTeam())
+                                    .withStyle(ChatFormatting.GOLD))
                     .withStyle(ChatFormatting.GREEN);
             case PLAYER_JOIN -> {
                 if (sourceName != null) {
