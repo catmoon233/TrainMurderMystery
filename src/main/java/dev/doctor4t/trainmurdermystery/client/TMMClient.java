@@ -588,15 +588,17 @@ public class TMMClient implements ClientModInitializer {
         // if (target instanceof PlayerBodyEntity) return 0x606060;
         if (target instanceof ItemEntity || target instanceof NoteEntity || target instanceof FirecrackerEntity)
             return 0xDB9D00;
-        if (target instanceof Player player) {
-            if (!(player).isSpectator()) {
+        if (target instanceof Player targetPlayer) {
+            if (!(targetPlayer).isSpectator()) {
                 if (GameFunctions.isPlayerSpectatingOrCreative(Minecraft.getInstance().player)) {
-                    Role role = gameWorldComponent.getRole(player);
+                    Role role = gameWorldComponent.getRole(targetPlayer);
                     if (role == null) {
                         return (TMMRoles.CIVILIAN.color());
                     } else {
                         return (role.color());
                     }
+                } else {
+                    return (TMMRoles.CIVILIAN.color());
                 }
 
             }
@@ -618,7 +620,7 @@ public class TMMClient implements ClientModInitializer {
         if (TMMClient.gameComponent != null) {
             var role = TMMClient.gameComponent.getRole(player);
             if (role != null) {
-                if (role==TMMRoles.LOOSE_END){
+                if (role == TMMRoles.LOOSE_END) {
                     return !(gameComponent.getGameMode() instanceof LooseEndsGameMode);
                 }
                 canUseInstinct = role.canUseInstinct();

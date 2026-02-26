@@ -138,6 +138,9 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
     }
 
     public void addRole(Player player, Role role) {
+        if (player == null) {
+            return;
+        }
         this.addRole(player.getUUID(), role);
         this.setSyncRole(true);
         this.sync();
@@ -145,7 +148,9 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
     }
 
     public void addRole(UUID player, Role role) {
-
+        if (player == null) {
+            return;
+        }
         this.roles.put(player, role);
         this.setSyncRole(true);
         this.sync();
@@ -157,10 +162,15 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
     }
 
     public void setRoles(List<UUID> players, Role role) {
+        if (players == null) {
+            return;
+        }
         this.setSyncRole(true);
         resetRole(role);
 
         for (UUID player : players) {
+            if (player == null)
+                continue;
             addRole(player, role);
         }
         this.sync();
@@ -172,10 +182,16 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
     }
 
     public Role getRole(Player player) {
+        if (player == null) {
+            return null;
+        }
         return getRole(player.getUUID());
     }
 
     public @Nullable Role getRole(UUID uuid) {
+        if (uuid == null) {
+            return null;
+        }
         return roles.get(uuid);
     }
 
@@ -202,10 +218,16 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
     }
 
     public boolean isRole(@NotNull Player player, Role role) {
+        if (player == null) {
+            return role == null;
+        }
         return isRole(player.getUUID(), role);
     }
 
     public boolean isRole(@NotNull UUID uuid, Role role) {
+        if (uuid == null) {
+            return role == null;
+        }
         return this.roles.get(uuid) == role;
     }
 
@@ -519,6 +541,29 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
     }
 
     public boolean isKillerTeamRole(Role role) {
+        if (role == null)
+            return false;
+        if (role.canUseKiller())
+            return true;
+        if (role.isNeutralForKiller())
+            return true;
+        return false;
+    }
+
+    public boolean isKillerTeam(Player player) {
+        if (player != null) {
+            var role = this.getRole(player);
+            if (role == null)
+                return false;
+            if (role.canUseKiller())
+                return true;
+            if (role.isNeutralForKiller())
+                return true;
+        }
+        return false;
+    }
+
+    public static boolean isKillerTeamRoleStatic(Role role) {
         if (role == null)
             return false;
         if (role.canUseKiller())

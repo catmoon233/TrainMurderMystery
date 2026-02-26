@@ -27,7 +27,19 @@ public class ReplayDisplayUtils {
         return names;
     }
 
+    public static String getRolePath(String roleId) {
+        if (roleId == null)
+            return null;
+        ResourceLocation id = ResourceLocation.tryParse(roleId);
+        if (id == null) {
+            return (roleId);
+        }
+        return id.getPath();
+    }
+
     public static MutableComponent getRoleDisplayName(String roleId) {
+        if (roleId == null)
+            return Component.literal("");
         ResourceLocation id = ResourceLocation.tryParse(roleId);
         if (id == null) {
             return Component.literal(roleId);
@@ -37,7 +49,8 @@ public class ReplayDisplayUtils {
         return translated;
     }
 
-    public static MutableComponent buildTeamPlayerRoles(GameReplayManager replayManager, List<UUID> teamPlayers, Map<UUID, String> playerRoles, String prefix) {
+    public static MutableComponent buildTeamPlayerRoles(GameReplayManager replayManager, List<UUID> teamPlayers,
+            Map<UUID, String> playerRoles, String prefix) {
         if (teamPlayers.isEmpty()) {
             return null;
         }
@@ -59,7 +72,8 @@ public class ReplayDisplayUtils {
     }
 
     // 添加一个新的方法来处理带死亡状态的显示
-    public static MutableComponent buildTeamPlayerRolesWithDeathStatus(GameReplayManager replayManager, List<UUID> teamPlayers, Map<UUID, String> playerRoles, String prefix, boolean isAlive) {
+    public static MutableComponent buildTeamPlayerRolesWithDeathStatus(GameReplayManager replayManager,
+            List<UUID> teamPlayers, Map<UUID, String> playerRoles, String prefix, boolean isAlive) {
         if (teamPlayers.isEmpty()) {
             return null;
         }
@@ -101,16 +115,17 @@ public class ReplayDisplayUtils {
         if (roleId == null) {
             return ChatFormatting.WHITE; // 默认颜色
         }
-        final var first = TMMRoles.ROLES.values().stream().filter(role -> role.identifier().toString().equals(roleId)).findFirst();
-        if (first.isPresent()){
+        final var first = TMMRoles.ROLES.values().stream().filter(role -> role.identifier().toString().equals(roleId))
+                .findFirst();
+        if (first.isPresent()) {
             final var role = first.get();
-            if (role.isInnocent()){
+            if (role.isInnocent()) {
                 return ChatFormatting.GREEN;
             }
-            if (role.canUseKiller()){
+            if (role.canUseKiller()) {
                 return ChatFormatting.RED;
             }
-            if (!role.isInnocent()){
+            if (!role.isInnocent()) {
                 return ChatFormatting.YELLOW;
             }
         }

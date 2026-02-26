@@ -1,7 +1,5 @@
 package dev.doctor4t.trainmurdermystery.api.replay;
 
-import dev.doctor4t.trainmurdermystery.TMM;
-import dev.doctor4t.trainmurdermystery.api.TMMRoles;
 import dev.doctor4t.trainmurdermystery.api.replay.ReplayEventTypes.ArmorBreakDetails;
 import dev.doctor4t.trainmurdermystery.api.replay.ReplayEventTypes.BlackoutEventDetails;
 import dev.doctor4t.trainmurdermystery.api.replay.ReplayEventTypes.ChangeRoleDetails;
@@ -16,19 +14,13 @@ import dev.doctor4t.trainmurdermystery.api.replay.ReplayEventTypes.PlayerRevival
 import dev.doctor4t.trainmurdermystery.api.replay.ReplayEventTypes.PsychoStateChangeDetails;
 import dev.doctor4t.trainmurdermystery.api.replay.ReplayEventTypes.StoreBuyDetails;
 import dev.doctor4t.trainmurdermystery.api.replay.ReplayEventTypes.TaskCompleteDetails;
-import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
 import dev.doctor4t.trainmurdermystery.game.GameConstants;
 import dev.doctor4t.trainmurdermystery.index.TMMItems;
 import net.minecraft.ChatFormatting;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.minecraft.world.level.Level;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -129,7 +121,7 @@ public class GameReplayData {
         this.playerRoles = playerRoles;
     }
 
-    private static final Map<ResourceLocation, Item> DEATH_REASON_TO_ITEM = new HashMap<>();
+    public static final Map<ResourceLocation, Item> DEATH_REASON_TO_ITEM = new HashMap<>();
 
     static {
         DEATH_REASON_TO_ITEM.put(GameConstants.DeathReasons.BAT, TMMItems.BAT);
@@ -140,29 +132,6 @@ public class GameReplayData {
         DEATH_REASON_TO_ITEM.put(GameConstants.DeathReasons.POISON, TMMItems.POISON_VIAL);
         DEATH_REASON_TO_ITEM.put(GameConstants.DeathReasons.ARROW, Items.ARROW);
         // 注意：FELL_OUT_OF_TRAIN 和 GENERIC 没有对应物品
-    }
-
-    private Component getItemDisplayName(ResourceLocation itemId) {
-        Item item = DEATH_REASON_TO_ITEM.get(itemId);
-        if (item != null) {
-            return new ItemStack(item).getDisplayName();
-        }
-        ItemStack stack = BuiltInRegistries.ITEM.getOptional(itemId)
-                .map(ItemStack::new)
-                .orElse(ItemStack.EMPTY);
-        if (!stack.isEmpty()) {
-            return stack.getDisplayName();
-        }
-        // 返回本地化的死亡原因
-        if (itemId.getNamespace() == null)
-            return Component.translatable("death_reason.trainmurdermystery." + itemId.getPath());
-        else
-            return Component.translatable("death_reason." + itemId.getNamespace() + "." + itemId.getPath());
-    }
-
-    public static Component getRoleNameWithColor(String path) {
-        String translationKey = "announcement.role." + path;
-        return Component.translatable(translationKey).withStyle(getRoleColor(path));
     }
 
     public Component toText(GameReplayManager manager, GameReplayData replayData,
@@ -180,17 +149,17 @@ public class GameReplayData {
                 .details() instanceof PlayerKillDetails(UUID killerUuid, UUID victimUuid, ResourceLocation deathReason)) {
             sourcePlayer = killerUuid;
             targetPlayer = victimUuid;
-            itemUsedText = getItemDisplayName(deathReason);
+            itemUsedText = GameReplayUtils.getItemDisplayName(deathReason);
         } else if (event.details() instanceof PlayerPoisonedDetails(UUID poisonerUuid, UUID victimUuid)) {
             sourcePlayer = poisonerUuid;
             targetPlayer = victimUuid;
-            itemUsedText = getItemDisplayName(GameConstants.DeathReasons.POISON); // 假设中毒事件使用毒药物品
+            itemUsedText = GameReplayUtils.getItemDisplayName(GameConstants.DeathReasons.POISON); // 假设中毒事件使用毒药物品
         } else if (event.details() instanceof TaskCompleteDetails(UUID playerUuid, ResourceLocation taskId)) {
             sourcePlayer = playerUuid;
             itemUsedText = Component.translatable("tmm.task." + taskId.getPath());
         } else if (event.details() instanceof StoreBuyDetails(UUID playerUuid, ResourceLocation itemId, int cost)) {
             sourcePlayer = playerUuid;
-            itemUsedText = getItemDisplayName(itemId);
+            itemUsedText = GameReplayUtils.getItemDisplayName(itemId);
             message = String.valueOf(cost);
         } else if (event.details() instanceof DoorActionDetails details) {
             sourcePlayer = details.playerUuid();
@@ -200,7 +169,7 @@ public class GameReplayData {
             message = String.valueOf(details.success());
         } else if (event.details() instanceof ItemUsedDetails(UUID playerUuid, ResourceLocation itemId)) {
             sourcePlayer = playerUuid;
-            itemUsedText = getItemDisplayName(itemId);
+            itemUsedText = GameReplayUtils.getItemDisplayName(itemId);
         } else if (event.details() instanceof MoodChangeDetails(UUID playerUuid, int oldMood, int newMood)) {
             sourcePlayer = playerUuid;
             message = String.format("%d -> %d", oldMood, newMood);
@@ -215,78 +184,28 @@ public class GameReplayData {
             message = String.valueOf(position);
         } else if (event.details() instanceof ChangeRoleDetails roleDetail) {
             sourcePlayer = roleDetail.player();
-            Role_1 = getRoleNameWithColor(roleDetail.oldRole());
-            Role_2 = getRoleNameWithColor(roleDetail.newRole());
+            Role_1 = GameReplayUtils.getRoleNameWithSourceTMMColor(roleDetail.oldRole());
+            Role_2 = GameReplayUtils.getRoleNameWithSourceTMMColor(roleDetail.newRole());
             // message = ;
         } else if (event.details() instanceof PlayerRevivalDetails revivalDetails) {
             sourcePlayer = revivalDetails.player();
-            Role_1 = getRoleNameWithColor(revivalDetails.Role());
+            Role_1 = GameReplayUtils.getRoleNameWithSourceTMMColor(revivalDetails.Role());
             // message = ;
         } else if (event.details() instanceof ArmorBreakDetails ambd) {
             sourcePlayer = ambd.playerUuid();
             // message = ;
         }
 
-        Component sourceName = sourcePlayer != null ? manager.getPlayerName(sourcePlayer) : null;
+        Component sourceName = sourcePlayer != null ? manager.getPlayerName(sourcePlayer)
+                : Component.translatable("tmm.replay.event.unknown_player").withStyle(ChatFormatting.OBFUSCATED)
+                        .withStyle(ChatFormatting.GRAY);
         Component targetName = targetPlayer != null ? manager.getPlayerName(targetPlayer)
-                : Component.literal("未知玩家").withStyle(ChatFormatting.GRAY);
+                : Component.translatable("tmm.replay.event.unknown_player").withStyle(ChatFormatting.OBFUSCATED)
+                        .withStyle(ChatFormatting.GRAY);
 
         // 获取角色信息并设置颜色
-        String sourceRoleId = sourcePlayer != null ? replayData.getPlayerRoles().get(sourcePlayer) : null;
-        String sourceRoleIdNow = sourcePlayer != null
-                ? GameWorldComponent.KEY.get(TMM.SERVER.getLevel(Level.OVERWORLD)).getRole(sourcePlayer) == null ? null
-                        : GameWorldComponent.KEY.get(TMM.SERVER.getLevel(Level.OVERWORLD)).getRole(sourcePlayer)
-                                .identifier().getPath()
-                : null;
-
-        String targetRoleId = targetPlayer != null ? replayData.getPlayerRoles().get(targetPlayer) : null;
-        String targetRoleIdNow = targetPlayer != null
-                ? GameWorldComponent.KEY.get(TMM.SERVER.getLevel(Level.OVERWORLD)).getRole(targetPlayer) == null ? null
-                        : GameWorldComponent.KEY.get(TMM.SERVER.getLevel(Level.OVERWORLD)).getRole(targetPlayer)
-                                .identifier().getPath()
-                : null;
-
-        if (sourceName != null && sourceRoleId != null) {
-            MutableComponent sourceRoleName = ReplayDisplayUtils.getRoleDisplayName(sourceRoleId);
-            ChatFormatting sourceColor = getRoleColor(sourceRoleId);
-
-            // 如果当前角色与记录的角色不同，则显示为(new(old))格式，old为灰色
-            if (sourceRoleIdNow != null && !sourceRoleId.equals(sourceRoleIdNow)) {
-                MutableComponent currentRoleName = ReplayDisplayUtils.getRoleDisplayName(sourceRoleIdNow);
-                ChatFormatting currentColor = getRoleColor(sourceRoleIdNow);
-
-                sourceName = sourceName.copy().withStyle(sourceColor)
-                        .append(Component.literal(" (").withStyle(ChatFormatting.GRAY))
-                        .append(currentRoleName.withStyle(currentColor))
-                        .append(Component.literal("(").withStyle(ChatFormatting.GRAY))
-                        .append(sourceRoleName.withStyle(ChatFormatting.GRAY))
-                        .append(Component.literal("))").withStyle(ChatFormatting.GRAY));
-            } else {
-                // 新老职业相同，只显示当前职业，不加括号
-                sourceName = sourceName.copy().withStyle(sourceColor);
-            }
-        }
-
-        if (targetRoleId != null) {
-            MutableComponent targetRoleName = ReplayDisplayUtils.getRoleDisplayName(targetRoleId);
-            ChatFormatting targetColor = getRoleColor(targetRoleId);
-
-            // 如果当前角色与记录的角色不同，则显示为(new(old))格式，old为灰色
-            if (targetRoleIdNow != null && !targetRoleId.equals(targetRoleIdNow)) {
-                MutableComponent currentRoleName = ReplayDisplayUtils.getRoleDisplayName(targetRoleIdNow);
-                ChatFormatting currentColor = getRoleColor(targetRoleIdNow);
-
-                targetName = targetName.copy().withStyle(targetColor)
-                        .append(Component.literal(" (").withStyle(ChatFormatting.GRAY))
-                        .append(currentRoleName.withStyle(currentColor))
-                        .append(Component.literal("(").withStyle(ChatFormatting.GRAY))
-                        .append(targetRoleName.withStyle(ChatFormatting.GRAY))
-                        .append(Component.literal("))").withStyle(ChatFormatting.GRAY));
-            } else {
-                // 新老职业相同，只显示当前职业，不加括号
-                targetName = targetName.copy().withStyle(targetColor);
-            }
-        }
+        sourceName = GameReplayUtils.getReplayPlayerDisplayText(sourcePlayer, manager, replayData, true);
+        targetName = GameReplayUtils.getReplayPlayerDisplayText(targetPlayer, manager, replayData, true);
 
         return switch (event.eventType()) {
             // 主要事件
@@ -405,30 +324,6 @@ public class GameReplayData {
             }
             default -> throw new IllegalArgumentException("Unexpected value: " + event.eventType());
         };
-    }
-
-    public static ChatFormatting getRoleColor(String roleId) {
-        if (roleId == null) {
-            return ChatFormatting.WHITE; // 默认颜色
-        }
-        final var first = TMMRoles.ROLES.values().stream().filter(
-                role -> role.identifier().toString().equals(roleId) || role.identifier().getPath().equals(roleId))
-                .findFirst();
-        // 根据角色ID分类
-        if (first.isPresent() && first.get().isInnocent()) {
-            return ChatFormatting.GREEN;
-        } else {
-
-            if (first.isPresent() && first.get().canUseKiller()) {
-                return ChatFormatting.RED;
-            } else {
-                if (first.isPresent() && !first.get().isInnocent()) {
-                    return ChatFormatting.YELLOW;
-                }
-
-            }
-        }
-        return ChatFormatting.WHITE;
     }
 
     public enum EventType {
