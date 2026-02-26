@@ -527,7 +527,7 @@ public class GameFunctions {
                     isWinner = true;
                 }
             }
-            } else if (winStatus == WinStatus.PASSENGERS && playerRole != null && playerRole.isInnocent()) {
+            if (winStatus == WinStatus.PASSENGERS && playerRole != null && playerRole.isInnocent()) {
                 // 修复2: 乘客胜利时，所有平民（包括义警）都算胜利
                 isWinner = true;
             } else if (winStatus == WinStatus.PASSENGERS && playerRole != null) {
@@ -537,7 +537,7 @@ public class GameFunctions {
                     isWinner = true;
                 }
             }
-            } else if (winStatus == WinStatus.TIME && playerRole != null && playerRole.isInnocent()) {
+            if (winStatus == WinStatus.TIME && playerRole != null && playerRole.isInnocent()) {
                 // 修复1: 时间耗尽胜利时，所有平民都算胜利
                 isWinner = true;
             } else if (winStatus == WinStatus.TIME && playerRole != null) {
@@ -546,23 +546,29 @@ public class GameFunctions {
                 if ("amnesiac".equals(roleIdentifier) || "initiate".equals(roleIdentifier)) {
                     isWinner = true;
                 }
-            } else if (winStatus == WinStatus.LOOSE_END && player.getUUID().equals(gameComponent.getLooseEndWinner())) {
+            }
+            if (winStatus == WinStatus.LOOSE_END && player.getUUID().equals(gameComponent.getLooseEndWinner())) {
                 isWinner = true;
-            } else if (winStatus == WinStatus.LOOSE_END && playerRole != null
+            }
+            if (winStatus == WinStatus.LOOSE_END && playerRole != null
                     && roundEnd.CustomWinnerID != null
                     && roundEnd.CustomWinnerID.equals(playerRole.getIdentifier().getPath())) {
                 // 修复: 亡命徒也通过 CustomWinnerID 统计
                 isWinner = true;
-            } else if (winStatus == WinStatus.GAMBLER && playerRole != null
+            }
+            if (winStatus == WinStatus.GAMBLER && playerRole != null
                     && "gambler".equals(playerRole.getIdentifier().getPath())) {
                 isWinner = true;
-            } else if (winStatus == WinStatus.RECORDER && playerRole != null
+            }
+            if (winStatus == WinStatus.RECORDER && playerRole != null
                     && "recorder".equals(playerRole.getIdentifier().getPath())) {
                 isWinner = true;
-            } else if (winStatus == WinStatus.NIAN_SHOU && playerRole != null
+            }
+            if (winStatus == WinStatus.NIAN_SHOU && playerRole != null
                     && "nianshou".equals(playerRole.getIdentifier().getPath())) {
                 isWinner = true;
-            } else if (winStatus == WinStatus.CUSTOM && playerRole != null) {
+            }
+            if (winStatus == WinStatus.CUSTOM && playerRole != null) {
                 // 修复3: 独立获胜的中立角色算胜利 - 通过 CustomWinnerID 与角色 identifier 绑定
                 String roleIdentifier = playerRole.getIdentifier().getPath();
                 if (roundEnd.CustomWinnerID != null && roundEnd.CustomWinnerID.equals(roleIdentifier)) {
