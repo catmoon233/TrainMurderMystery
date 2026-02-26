@@ -16,6 +16,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 
 public class GameReplayUtils {
+    public static boolean UseTMMColor = true;
 
     public static Component getItemDisplayName(ResourceLocation itemId) {
         Item item = GameReplayData.DEATH_REASON_TO_ITEM.get(itemId);
@@ -123,23 +124,38 @@ public class GameReplayUtils {
         MutableComponent sourceRoleName = ReplayDisplayUtils.getRoleDisplayName(sourceRoleId);
         int sourceRoleColor = getRoleColor(sourceRoleId);
 
-        ChatFormatting sourceColor = getTMMRoleColor(sourceRoleId);
+        ChatFormatting sourceTMMColor = getTMMRoleColor(sourceRoleId);
 
         // 如果当前角色与记录的角色不同，则显示为(new(old))格式，old为灰色
         if (sourceRoleIdNow != null && !sourceRoleId.equals(sourceRoleIdNow)) {
             // TMM.LOGGER.info(sourceRoleId, sourceRoleIdNow);
             MutableComponent currentRoleName = ReplayDisplayUtils.getRoleDisplayName(sourceRoleIdNow);
             int currentColor = getRoleColor(sourceRoleIdNow);
+            ChatFormatting currentTMMColor = getTMMRoleColor(sourceRoleId);
+            if (UseTMMColor) {
+                // currentTMMColor
+                sourceName = sourceName.copy().withStyle(sourceTMMColor)
+                        .append(Component.translatable(" (%s(%s))", currentRoleName.withStyle(currentTMMColor),
+                                sourceRoleName.withStyle(ChatFormatting.GRAY)).withStyle(ChatFormatting.GRAY));
+            } else {
+                sourceName = sourceName.copy().withStyle(sourceTMMColor)
+                        .append(Component.translatable(" (%s(%s))", currentRoleName.withColor(currentColor),
+                                sourceRoleName.withStyle(ChatFormatting.GRAY)).withStyle(ChatFormatting.GRAY));
+            }
 
-            sourceName = sourceName.copy().withStyle(sourceColor)
-                    .append(Component.translatable(" (%s(%s))", currentRoleName.withColor(currentColor),
-                            sourceRoleName.withStyle(ChatFormatting.GRAY)).withStyle(ChatFormatting.GRAY));
         } else {
             // 新老职业相同，只显示当前职业，不加括号
-            sourceName = sourceName.copy()
-                    .append(Component.translatable(" (%s)", sourceRoleName.withColor(sourceRoleColor))
-                            .withStyle(ChatFormatting.GRAY))
-                    .withStyle(sourceColor);
+            if (UseTMMColor) {
+                sourceName = sourceName.copy()
+                        .append(Component.translatable(" (%s)", sourceRoleName.withStyle(sourceTMMColor))
+                                .withStyle(ChatFormatting.GRAY))
+                        .withStyle(sourceTMMColor);
+            } else {
+                sourceName = sourceName.copy()
+                        .append(Component.translatable(" (%s)", sourceRoleName.withColor(sourceRoleColor))
+                                .withStyle(ChatFormatting.GRAY))
+                        .withStyle(sourceTMMColor);
+            }
         }
         return sourceName;
     }
