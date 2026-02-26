@@ -91,7 +91,7 @@ public class GameReplayUtils {
             if (role != null) {
                 if (role.isVigilanteTeam()) {
                     return ChatFormatting.AQUA;
-                }else if (role.isInnocent()) {
+                } else if (role.isInnocent()) {
                     return ChatFormatting.GREEN;
                 } else if (role.canUseKiller()) {
                     return ChatFormatting.RED;
@@ -129,10 +129,10 @@ public class GameReplayUtils {
         if (sourceRoleIdNow != null && !sourceRoleId.equals(sourceRoleIdNow)) {
             // TMM.LOGGER.info(sourceRoleId, sourceRoleIdNow);
             MutableComponent currentRoleName = ReplayDisplayUtils.getRoleDisplayName(sourceRoleIdNow);
-            ChatFormatting currentColor = getTMMRoleColor(sourceRoleIdNow);
+            int currentColor = getRoleColor(sourceRoleIdNow);
 
             sourceName = sourceName.copy().withStyle(sourceColor)
-                    .append(Component.translatable(" (%s(%s))", currentRoleName.withStyle(currentColor),
+                    .append(Component.translatable(" (%s(%s))", currentRoleName.withColor(currentColor),
                             sourceRoleName.withStyle(ChatFormatting.GRAY)).withStyle(ChatFormatting.GRAY));
         } else {
             // 新老职业相同，只显示当前职业，不加括号
