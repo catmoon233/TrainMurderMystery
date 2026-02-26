@@ -49,7 +49,6 @@
     "client.PlayerEntityRendererMixin",
     "client.ResourceTextureMixin",
     "client.ResourceTextureMixin$TextureDataMixin",
-    "client.SkinManageFixer",
     "client.TrueDarknessLightmapTextureManagerMixin",
     "client.items.BipedEntityModelMixin",
     "client.items.ClientPlayerEntityMixin",
