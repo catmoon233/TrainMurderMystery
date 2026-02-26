@@ -29,6 +29,8 @@ import dev.doctor4t.trainmurdermystery.TMMConfig;
 import dev.doctor4t.trainmurdermystery.api.GameMode;
 import dev.doctor4t.trainmurdermystery.api.Role;
 import dev.doctor4t.trainmurdermystery.api.RoleMethodDispatcher;
+import dev.doctor4t.trainmurdermystery.api.TMMGameModes;
+import dev.doctor4t.trainmurdermystery.api.TMMRoles;
 import dev.doctor4t.trainmurdermystery.block.FoodPlatterBlock;
 import dev.doctor4t.trainmurdermystery.block.NeonPillarBlock;
 import dev.doctor4t.trainmurdermystery.block.NeonTubeBlock;
@@ -514,69 +516,67 @@ public class GameFunctions {
         for (ServerPlayer player : world.players()) {
             PlayerStatsComponent stats = PlayerStatsComponent.KEY.get(player);
             Role playerRole = gameComponent.getRole(player);
-
+            if (playerRole == null)
+                continue;
             boolean isWinner = false;
-            if (winStatus == WinStatus.KILLERS && playerRole != null
-                    && GameWorldComponent.isKillerTeamRoleStatic(playerRole)) {
-                isWinner = true;
-            }
-            if (winStatus == WinStatus.PASSENGERS && playerRole != null && playerRole.isInnocent()) {
-                // 修复2: 乘客胜利时，所有平民（包括义警）都算胜利
-                isWinner = true;
-            } else if (winStatus == WinStatus.PASSENGERS && playerRole != null) {
-                // 修复: 乘客胜利时，以下中立角色也算胜利：amnesiac, initiate
-                String roleIdentifier = playerRole.getIdentifier().getPath();
-                if ("amnesiac".equals(roleIdentifier) || "initiate".equals(roleIdentifier)) {
-                    isWinner = true;
-                }
-            }
-            if (winStatus == WinStatus.TIME && playerRole != null && playerRole.isInnocent()) {
-                // 修复1: 时间耗尽胜利时，所有平民都算胜利
-                isWinner = true;
-            } else if (winStatus == WinStatus.TIME && playerRole != null) {
-                // 修复: 时间耗尽胜利时，以下中立角色也算胜利：amnesiac, initiate
-                String roleIdentifier = playerRole.getIdentifier().getPath();
-                if ("amnesiac".equals(roleIdentifier) || "initiate".equals(roleIdentifier)) {
-                    isWinner = true;
-                }
-            }
-            if (winStatus == WinStatus.LOOSE_END && player.getUUID().equals(gameComponent.getLooseEndWinner())) {
-                isWinner = true;
-            }
-            if (winStatus == WinStatus.LOOSE_END && playerRole != null
-                    && roundEnd.CustomWinnerID != null
-                    && roundEnd.CustomWinnerID.equals(playerRole.getIdentifier().getPath())) {
-                // 修复: 亡命徒也通过 CustomWinnerID 统计
-                isWinner = true;
-            }
-            if (winStatus == WinStatus.GAMBLER && playerRole != null
-                    && "gambler".equals(playerRole.getIdentifier().getPath())) {
-                isWinner = true;
-            }
-            if (winStatus == WinStatus.RECORDER && playerRole != null
-                    && "recorder".equals(playerRole.getIdentifier().getPath())) {
-                isWinner = true;
-            }
-            if (winStatus == WinStatus.NIAN_SHOU && playerRole != null
-                    && "nianshou".equals(playerRole.getIdentifier().getPath())) {
-                isWinner = true;
-            }
-            if (winStatus == WinStatus.ARSONIST && playerRole != null
-                    && "arsonist".equals(playerRole.getIdentifier().getPath())) {
-                isWinner = true;
-            }
-            if ((winStatus == WinStatus.CUSTOM || winStatus == WinStatus.CUSTOM_COMPONENT) && playerRole != null) {
-                // 修复3: 独立获胜的中立角色算胜利 - 通过 CustomWinnerID 与角色 identifier 绑定
-                String roleIdentifier = playerRole.getIdentifier().getPath();
-                if (roundEnd.CustomWinnerID != null && roundEnd.CustomWinnerID.equals(roleIdentifier)) {
-                    isWinner = true;
-                }
-                // 保留原有的 CustomWinnersPredicates 作为备用
-                else if (CustomWinnersPredicates.stream().anyMatch((pred) -> {
-                    return pred.test(Map.entry(player, roundEnd.CustomWinnerID));
-                })) {
-                    isWinner = true;
-                }
+            switch (winStatus) {
+                case CUSTOM:
+                case CUSTOM_COMPONENT:
+                    String roleIdentifier = playerRole.identifier().getPath();
+                    if (roundEnd.CustomWinnerID != null && roundEnd.CustomWinnerID.equals(roleIdentifier)) {
+                        isWinner = true;
+                    }
+                    // 保留原有的 CustomWinnersPredicates 作为备用
+                    else if (CustomWinnersPredicates.stream().anyMatch((pred) -> {
+                        return pred.test(Map.entry(player, roundEnd.CustomWinnerID));
+                    })) {
+                        isWinner = true;
+                    }
+                    break;
+                case GAMBLER:
+                    break;
+                case KILLERS:
+                    if (GameWorldComponent.isKillerTeamRoleStatic(playerRole)) {
+                        isWinner = true;
+                    }
+                    break;
+                case LOOSE_END:
+                    if (winStatus == WinStatus.LOOSE_END) {
+                        if (TMM.GAME.identifier.equals(TMMGameModes.LOOSE_ENDS.identifier)) {
+                            if (player.getUUID().equals(gameComponent.getLooseEndWinner())) {
+                                isWinner = true;
+                            }
+                        } else {
+                            if (playerRole.identifier().equals(TMMRoles.LOOSE_END.identifier())) {
+                                isWinner = true;
+                            }
+                        }
+                    }
+                    break;
+                case NIAN_SHOU:
+                    if (playerRole.identifier().getPath().equals("nianshou")) {
+                        isWinner = true;
+                    }
+                    break;
+                case TIME:
+                case PASSENGERS:
+                    if (playerRole.isInnocent())
+                        isWinner = true;
+                    else {
+                        String roleidentifier = playerRole.identifier().getPath();
+                        if ("amnesiac".equals(roleidentifier) || "initiate".equals(roleidentifier)) {
+                            isWinner = true;
+                        }
+                    }
+                    break;
+                case RECORDER:
+                    if (playerRole.identifier().getPath().equals("recorder")) {
+                        isWinner = true;
+                    }
+                    break;
+                default:
+                    break;
+
             }
             // 修复4: 恋人获胜时单独统计恋人胜利
             if (isLoversWin && roundEnd.CustomWinnerPlayers != null
@@ -1414,6 +1414,6 @@ public class GameFunctions {
 
     public enum WinStatus {
         NOT_MODIFY, NONE, KILLERS, PASSENGERS, TIME, LOOSE_END, GAMBLER, RECORDER, NO_PLAYER, NIAN_SHOU,
-        CUSTOM_COMPONENT, CUSTOM, ARSONIST
+        CUSTOM_COMPONENT, CUSTOM
     }
 }
