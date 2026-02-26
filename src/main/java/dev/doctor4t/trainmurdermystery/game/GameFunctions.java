@@ -353,7 +353,8 @@ public class GameFunctions {
         serverWorld.setDayTime(TrainWorldComponent.TimeOfDay.SUNDOWN.time);
         serverWorld.getGameRules().getRule(GameRules.RULE_KEEPINVENTORY).set(true, serverWorld.getServer());
         serverWorld.getGameRules().getRule(GameRules.RULE_WEATHER_CYCLE).set(false, serverWorld.getServer());
-        // serverWorld.getGameRules().getRule(GameRules.RULE_DAYLIGHT).set(false, serverWorld.getServer());
+        // serverWorld.getGameRules().getRule(GameRules.RULE_DAYLIGHT).set(false,
+        // serverWorld.getServer());
         serverWorld.getGameRules().getRule(GameRules.RULE_MOBGRIEFING).set(false, serverWorld.getServer());
         serverWorld.getGameRules().getRule(GameRules.RULE_DOMOBSPAWNING).set(false, serverWorld.getServer());
         serverWorld.getGameRules().getRule(GameRules.RULE_ANNOUNCE_ADVANCEMENTS).set(false, serverWorld.getServer());
@@ -515,18 +516,9 @@ public class GameFunctions {
             Role playerRole = gameComponent.getRole(player);
 
             boolean isWinner = false;
-            if (winStatus == WinStatus.KILLERS && playerRole != null && playerRole.canUseKiller()) {
+            if (winStatus == WinStatus.KILLERS && playerRole != null
+                    && GameWorldComponent.isKillerTeamRoleStatic(playerRole)) {
                 isWinner = true;
-            } else if (winStatus == WinStatus.KILLERS && playerRole != null) {
-                // 修复: 杀手胜利时，以下中立角色也算胜利：wind_yaose, slippery_ghost, admirer, puppeteer, jester,
-                // vulture, commander
-                String roleIdentifier = playerRole.getIdentifier().getPath();
-                if ("wind_yaose".equals(roleIdentifier) || "slippery_ghost".equals(roleIdentifier)
-                        || "admirer".equals(roleIdentifier) || "puppeteer".equals(roleIdentifier)
-                        || "jester".equals(roleIdentifier) || "vulture".equals(roleIdentifier)
-                        || "commander".equals(roleIdentifier)) {
-                    isWinner = true;
-                }
             }
             if (winStatus == WinStatus.PASSENGERS && playerRole != null && playerRole.isInnocent()) {
                 // 修复2: 乘客胜利时，所有平民（包括义警）都算胜利
