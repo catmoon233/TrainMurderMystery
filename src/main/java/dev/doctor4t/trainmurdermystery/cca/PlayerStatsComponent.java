@@ -39,6 +39,7 @@ public class PlayerStatsComponent implements AutoSyncedComponent, ServerTickingC
     private int totalWins = 0;
     private int totalLosses = 0;
     private int totalTeamKills = 0;
+    private int totalLoversWins = 0;
     private final Map<ResourceLocation, RoleStats> roleStats = new HashMap<>();
 
     // 文件保存相关字段
@@ -107,6 +108,9 @@ public class PlayerStatsComponent implements AutoSyncedComponent, ServerTickingC
         if (tag.contains("TotalTeamKills")) {
             totalTeamKills = tag.getInt("TotalTeamKills");
         }
+        if (tag.contains("TotalLoversWins")) {
+            totalLoversWins = tag.getInt("TotalLoversWins");
+        }
 
         ListTag roleStatsList = tag.getList("RoleStats", Tag.TAG_COMPOUND);
         roleStats.clear();
@@ -156,6 +160,7 @@ public class PlayerStatsComponent implements AutoSyncedComponent, ServerTickingC
         tag.putInt("TotalWins", totalWins);
         tag.putInt("TotalLosses", totalLosses);
         tag.putInt("TotalTeamKills", totalTeamKills);
+        tag.putInt("TotalLoversWins", totalLoversWins);
 
         ListTag roleStatsList = new ListTag();
         for (Map.Entry<ResourceLocation, RoleStats> entry : roleStats.entrySet()) {
@@ -269,6 +274,21 @@ public class PlayerStatsComponent implements AutoSyncedComponent, ServerTickingC
 
     public void incrementTotalTeamKills() {
         this.totalTeamKills++;
+        this.markDirty();
+        this.markNeedsSync();
+    }
+
+    public int getTotalLoversWins() {
+        return totalLoversWins;
+    }
+
+    public void setTotalLoversWins(int totalLoversWins) {
+        this.totalLoversWins = totalLoversWins;
+        this.markDirty();
+    }
+
+    public void incrementTotalLoversWins() {
+        this.totalLoversWins++;
         this.markDirty();
         this.markNeedsSync();
     }
@@ -416,6 +436,7 @@ public class PlayerStatsComponent implements AutoSyncedComponent, ServerTickingC
         setTotalWins(data.getTotalWins());
         setTotalLosses(data.getTotalLosses());
         setTotalTeamKills(data.getTotalTeamKills());
+        setTotalLoversWins(data.getTotalLoversWins());
 
         // 应用角色统计数据
         data.getRoleStats().forEach((roleIdStr, roleData) -> {

@@ -697,6 +697,7 @@
   "screen.trainmurdermystery.player_stats.deaths": "死亡次数: %s",
   "screen.trainmurdermystery.player_stats.total_team_kills": "总队友击杀次数: %s",
   "screen.trainmurdermystery.player_stats.team_kills": "队友击杀次数: %s",
+  "screen.trainmurdermystery.player_stats.total_lovers_wins": "总恋人胜利次数: %s",
   "tmm.ui.command_menu.title": "命令菜单",
   "tmm.ui.advanced.title": "高级命令",
   "tmm.ui.label.set_money": "设置金钱",

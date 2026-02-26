@@ -506,6 +506,10 @@ public class GameFunctions {
 
         // --- 新增统计数据更新逻辑 (胜利/失败) ---
         GameFunctions.WinStatus winStatus = gameComponent.getLastWinStatus();
+
+        // 修复4: 检查是否为恋人胜利
+        boolean isLoversWin = roundEnd.CustomWinnerID != null && roundEnd.CustomWinnerID.equals("lovers");
+
         for (ServerPlayer player : world.players()) {
             PlayerStatsComponent stats = PlayerStatsComponent.KEY.get(player);
             Role playerRole = gameComponent.getRole(player);
@@ -513,9 +517,41 @@ public class GameFunctions {
             boolean isWinner = false;
             if (winStatus == WinStatus.KILLERS && playerRole != null && playerRole.canUseKiller()) {
                 isWinner = true;
+            } else if (winStatus == WinStatus.KILLERS && playerRole != null) {
+                // 修复: 杀手胜利时，以下中立角色也算胜利：wind_yaose, slippery_ghost, admirer, puppeteer, jester, vulture, commander
+                String roleIdentifier = playerRole.getIdentifier().getPath();
+                if ("wind_yaose".equals(roleIdentifier) || "slippery_ghost".equals(roleIdentifier)
+                        || "admirer".equals(roleIdentifier) || "puppeteer".equals(roleIdentifier)
+                        || "jester".equals(roleIdentifier) || "vulture".equals(roleIdentifier)
+                        || "commander".equals(roleIdentifier)) {
+                    isWinner = true;
+                }
+            }
             } else if (winStatus == WinStatus.PASSENGERS && playerRole != null && playerRole.isInnocent()) {
+                // 修复2: 乘客胜利时，所有平民（包括义警）都算胜利
                 isWinner = true;
+            } else if (winStatus == WinStatus.PASSENGERS && playerRole != null) {
+                // 修复: 乘客胜利时，以下中立角色也算胜利：amnesiac, initiate
+                String roleIdentifier = playerRole.getIdentifier().getPath();
+                if ("amnesiac".equals(roleIdentifier) || "initiate".equals(roleIdentifier)) {
+                    isWinner = true;
+                }
+            }
+            } else if (winStatus == WinStatus.TIME && playerRole != null && playerRole.isInnocent()) {
+                // 修复1: 时间耗尽胜利时，所有平民都算胜利
+                isWinner = true;
+            } else if (winStatus == WinStatus.TIME && playerRole != null) {
+                // 修复: 时间耗尽胜利时，以下中立角色也算胜利：amnesiac, initiate
+                String roleIdentifier = playerRole.getIdentifier().getPath();
+                if ("amnesiac".equals(roleIdentifier) || "initiate".equals(roleIdentifier)) {
+                    isWinner = true;
+                }
             } else if (winStatus == WinStatus.LOOSE_END && player.getUUID().equals(gameComponent.getLooseEndWinner())) {
+                isWinner = true;
+            } else if (winStatus == WinStatus.LOOSE_END && playerRole != null
+                    && roundEnd.CustomWinnerID != null
+                    && roundEnd.CustomWinnerID.equals(playerRole.getIdentifier().getPath())) {
+                // 修复: 亡命徒也通过 CustomWinnerID 统计
                 isWinner = true;
             } else if (winStatus == WinStatus.GAMBLER && playerRole != null
                     && "gambler".equals(playerRole.getIdentifier().getPath())) {
@@ -527,11 +563,21 @@ public class GameFunctions {
                     && "nianshou".equals(playerRole.getIdentifier().getPath())) {
                 isWinner = true;
             } else if (winStatus == WinStatus.CUSTOM && playerRole != null) {
-                if (CustomWinnersPredicates.stream().anyMatch((pred) -> {
+                // 修复3: 独立获胜的中立角色算胜利 - 通过 CustomWinnerID 与角色 identifier 绑定
+                String roleIdentifier = playerRole.getIdentifier().getPath();
+                if (roundEnd.CustomWinnerID != null && roundEnd.CustomWinnerID.equals(roleIdentifier)) {
+                    isWinner = true;
+                }
+                // 保留原有的 CustomWinnersPredicates 作为备用
+                else if (CustomWinnersPredicates.stream().anyMatch((pred) -> {
                     return pred.test(Map.entry(player, roundEnd.CustomWinnerID));
                 })) {
                     isWinner = true;
                 }
+            }
+            // 修复4: 恋人获胜时单独统计恋人胜利
+            if (isLoversWin && roundEnd.CustomWinnerPlayers != null && roundEnd.CustomWinnerPlayers.contains(player.getUUID())) {
+                isWinner = true;
             }
 
             if (isWinner) {
@@ -539,6 +585,10 @@ public class GameFunctions {
                 stats.incrementTotalWins();
                 if (playerRole != null) {
                     stats.getOrCreateRoleStats(playerRole.identifier()).incrementWinsAsRole();
+                }
+                // 修复4: 恋人胜利时额外统计恋人胜利次数
+                if (isLoversWin && roundEnd.CustomWinnerPlayers != null && roundEnd.CustomWinnerPlayers.contains(player.getUUID())) {
+                    stats.incrementTotalLoversWins();
                 }
             } else {
                 stats.incrementTotalLosses();
