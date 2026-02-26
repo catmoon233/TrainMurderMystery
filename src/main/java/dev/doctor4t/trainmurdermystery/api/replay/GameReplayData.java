@@ -18,6 +18,7 @@ import dev.doctor4t.trainmurdermystery.game.GameConstants;
 import dev.doctor4t.trainmurdermystery.index.TMMItems;
 import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
@@ -37,6 +38,7 @@ public class GameReplayData {
     private String winningTeam;
     private final List<ReplayEvent> timeline;
     private Map<UUID, String> playerRoles;
+    public MutableComponent winningTitle = null;
 
     public GameReplayData() {
         this.playerCount = 0;
@@ -103,6 +105,13 @@ public class GameReplayData {
 
     public UUID getWinningPlayer() {
         return winningPlayer;
+    }
+
+    public MutableComponent getWinningTitle() {
+        if (winningTitle == null) {
+            return Component.translatable("announcement.win." + getWinningTeam().toLowerCase());
+        }
+        return winningTitle;
     }
 
     public String getWinningTeam() {
@@ -235,7 +244,7 @@ public class GameReplayData {
             case GAME_START -> Component.translatable("tmm.replay.event.game_start").withStyle(ChatFormatting.GREEN);
             case GAME_END -> Component
                     .translatable("tmm.replay.event.game_end",
-                            Component.translatable("announcement.win." + replayData.getWinningTeam().toLowerCase())
+                            replayData.getWinningTitle()
                                     .withStyle(ChatFormatting.GOLD))
                     .withStyle(ChatFormatting.GREEN);
             case PLAYER_JOIN -> {
@@ -402,5 +411,9 @@ public class GameReplayData {
         public long getTimestamp() {
             return timestamp;
         }
+    }
+
+    public void setWinningTitle(Component customWinnerTitle) {
+        this.winningTitle = customWinnerTitle.copy();
     }
 }

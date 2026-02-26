@@ -6,7 +6,10 @@ import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.api.Role;
 import dev.doctor4t.trainmurdermystery.api.TMMRoles;
 import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
+import dev.doctor4t.trainmurdermystery.cca.GameRoundEndComponent;
+import dev.doctor4t.trainmurdermystery.cca.GameRoundEndComponent.RoundEndData;
 import dev.doctor4t.trainmurdermystery.game.GameFunctions;
+import dev.doctor4t.trainmurdermystery.game.GameFunctions.WinStatus;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -301,8 +304,17 @@ public class GameReplayManager {
     currentReplayData.setPlayerRoles(roleMap);
   }
 
-  public void finalizeReplay(GameFunctions.WinStatus winStatus) {
-    currentReplayData.setWinningTeam(winStatus.name()); // Assuming WinStatus enum names can be used as team names
+  public void finalizeReplay(GameFunctions.WinStatus winStatus, GameRoundEndComponent roundEndData) {
+    currentReplayData.setWinningTitle(null);
+    if (winStatus.equals(WinStatus.CUSTOM)) {
+      currentReplayData.setWinningTeam(roundEndData.CustomWinnerID);
+    } else if (winStatus.equals(WinStatus.CUSTOM_COMPONENT)) {
+      currentReplayData.setWinningTeam(roundEndData.CustomWinnerID);
+      currentReplayData.setWinningTitle(roundEndData.CustomWinnerTitle);
+    } else {
+      currentReplayData.setWinningTeam(winStatus.name());
+    }
+
     saveReplay();
   }
 
@@ -652,7 +664,7 @@ public class GameReplayManager {
       sendSystemMessage(player,
           Component
               .translatable("tmm.replay.winning_team",
-                  Component.translatable("announcement.win." + replayData.getWinningTeam().toLowerCase())
+                  replayData.getWinningTitle()
                       .withStyle(ChatFormatting.GOLD))
               .withStyle(ChatFormatting.WHITE));
     }

@@ -505,7 +505,7 @@ public class GameFunctions {
         world.setDayTime(Level.TICKS_PER_DAY / 2);
         world.getGameRules().getRule(GameRules.RULE_DAYLIGHT).set(false, world.getServer());
         gameComponent.getGameMode().finalizeGame(world, gameComponent);
-        TMM.REPLAY_MANAGER.finalizeReplay(roundEnd.getWinStatus());
+        TMM.REPLAY_MANAGER.finalizeReplay(roundEnd.getWinStatus(), roundEnd);
 
         // --- 新增统计数据更新逻辑 (胜利/失败) ---
         GameFunctions.WinStatus winStatus = roundEnd.getWinStatus();
