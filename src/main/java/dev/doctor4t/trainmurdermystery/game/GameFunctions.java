@@ -834,18 +834,18 @@ public class GameFunctions {
         }
         // --- 结束新增统计数据更新逻辑 (击杀者) ---
 
-        // --- 新增统计数据更新逻辑 (受害者) ---
-        if (victim instanceof ServerPlayer serverVictim) {
-            Role victimRole = gameWorldComponent.getRole(serverVictim);
-            canDeath = victimRole.onDeath(victim, spawnBody, killer, deathReason);
-            PlayerStatsComponent victimStats = PlayerStatsComponent.KEY.get(serverVictim);
-            victimStats.incrementTotalDeaths();
-            if (victimRole != null) {
-                victimStats.getOrCreateRoleStats(victimRole.identifier()).incrementDeathsAsRole();
-            }
-        }
         // --- 结束新增统计数据更新逻辑 (受害者) ---
         if (canDeath) {
+            // --- 新增统计数据更新逻辑 (受害者) ---
+            if (victim instanceof ServerPlayer serverVictim) {
+                Role victimRole = gameWorldComponent.getRole(serverVictim);
+                canDeath = victimRole.onDeath(victim, spawnBody, killer, deathReason);
+                PlayerStatsComponent victimStats = PlayerStatsComponent.KEY.get(serverVictim);
+                victimStats.incrementTotalDeaths();
+                if (victimRole != null) {
+                    victimStats.getOrCreateRoleStats(victimRole.identifier()).incrementDeathsAsRole();
+                }
+            }
             if (spawnBody) {
                 PlayerBodyEntity body = TMMEntities.PLAYER_BODY.create(victim.level());
                 if (body != null) {
