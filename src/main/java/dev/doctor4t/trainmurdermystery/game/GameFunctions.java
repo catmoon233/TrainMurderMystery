@@ -568,6 +568,10 @@ public class GameFunctions {
                     && "nianshou".equals(playerRole.getIdentifier().getPath())) {
                 isWinner = true;
             }
+            if (winStatus == WinStatus.ARSONIST && playerRole != null
+                    && "arsonist".equals(playerRole.getIdentifier().getPath())) {
+                isWinner = true;
+            }
             if (winStatus == WinStatus.CUSTOM && playerRole != null) {
                 // 修复3: 独立获胜的中立角色算胜利 - 通过 CustomWinnerID 与角色 identifier 绑定
                 String roleIdentifier = playerRole.getIdentifier().getPath();
@@ -1415,6 +1419,6 @@ public class GameFunctions {
 
     public enum WinStatus {
         NOT_MODIFY, NONE, KILLERS, PASSENGERS, TIME, LOOSE_END, GAMBLER, RECORDER, NO_PLAYER, NIAN_SHOU,
-        CUSTOM_COMPONENT, CUSTOM
+        CUSTOM_COMPONENT, CUSTOM, ARSONIST
     }
 }
