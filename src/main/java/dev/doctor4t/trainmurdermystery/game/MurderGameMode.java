@@ -116,6 +116,10 @@ public class MurderGameMode extends GameMode {
                 }
                 if (!hasOtherAlive) {
                     winStatus = GameFunctions.WinStatus.LOOSE_END;
+                    // 补充 CustomWinnerID: loose_end
+                    var roundEnd = GameRoundEndComponent.KEY.get(serverWorld);
+                    roundEnd.CustomWinnerID = "loose_end";
+                    roundEnd.CustomWinnerPlayers.add(lastLooseEnd.getUUID());
                 } else {
                     // 有其他玩家存活，游戏继续
                     winStatus = GameFunctions.WinStatus.NONE;

@@ -16,6 +16,7 @@ public class PlayerStatsData {
     private int totalWins;
     private int totalLosses;
     private int totalTeamKills;
+    private int totalLoversWins;
     private Map<String, RoleStatsData> roleStats = new HashMap<>();
 
     /**
@@ -148,6 +149,14 @@ public class PlayerStatsData {
 
     public void setTotalTeamKills(int totalTeamKills) {
         this.totalTeamKills = totalTeamKills;
+    }
+
+    public int getTotalLoversWins() {
+        return totalLoversWins;
+    }
+
+    public void setTotalLoversWins(int totalLoversWins) {
+        this.totalLoversWins = totalLoversWins;
     }
 
     public Map<String, RoleStatsData> getRoleStats() {

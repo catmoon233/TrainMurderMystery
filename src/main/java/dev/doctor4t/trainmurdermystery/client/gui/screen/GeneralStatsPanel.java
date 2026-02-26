@@ -160,6 +160,8 @@ public class GeneralStatsPanel extends AbstractWidget {
         columnStartY += 20;
         drawStatLabelCentered(graphics, leftColumnX, columnStartY, "screen." + TMM.MOD_ID + ".player_stats.total_deaths", String.valueOf(stats.getTotalDeaths()), columnWidth);
         columnStartY += 20;
+        drawStatLabelCentered(graphics, leftColumnX, columnStartY, "screen." + TMM.MOD_ID + ".player_stats.total_lovers_wins", String.valueOf(stats.getTotalLoversWins()), columnWidth);
+        columnStartY += 20;
 
         // 右列数据
         columnStartY = currentY;

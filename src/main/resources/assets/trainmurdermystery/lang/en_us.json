@@ -645,6 +645,7 @@
   "screen.trainmurdermystery.player_stats.deaths": "Deaths: %s",
   "screen.trainmurdermystery.player_stats.total_team_kills": "Total Team Kills: %s",
   "screen.trainmurdermystery.player_stats.team_kills": "Team Kills: %s",
+  "screen.trainmurdermystery.player_stats.total_lovers_wins": "Total Lovers Wins: %s",
   "tmm.ui.command_menu.title": "Command Menu",
   "tmm.ui.advanced.title": "Advanced Commands",
   "tmm.ui.label.set_money": "Set Money",

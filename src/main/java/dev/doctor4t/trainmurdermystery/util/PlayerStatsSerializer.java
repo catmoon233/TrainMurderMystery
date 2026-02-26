@@ -54,6 +54,7 @@ public class PlayerStatsSerializer {
         data.setTotalWins(component.getTotalWins());
         data.setTotalLosses(component.getTotalLosses());
         data.setTotalTeamKills(component.getTotalTeamKills());
+        data.setTotalLoversWins(component.getTotalLoversWins());
 
         // 转换角色统计数据
         Map<String, PlayerStatsData.RoleStatsData> roleStatsMap = new java.util.HashMap<>();
@@ -98,6 +99,7 @@ public class PlayerStatsSerializer {
         component.setTotalWins(data.getTotalWins());
         component.setTotalLosses(data.getTotalLosses());
         component.setTotalTeamKills(data.getTotalTeamKills());
+        component.setTotalLoversWins(data.getTotalLoversWins());
 
         // 应用角色统计数据
         data.getRoleStats().forEach((roleIdStr, roleData) -> {
