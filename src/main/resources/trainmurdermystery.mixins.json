@@ -76,6 +76,7 @@
     "client.ui.TooltipBackgroundRendererMixin",
     "compat.sodium.DefaultShaderInterfaceMixin",
     "compat.sodium.OcclusionCullerMixin",
+    "client.SkinGetterMixin",
     "compat.sodium.PlayerHeadFixerMixin",
     "compat.sodium.RenderSectionManagerMixin",
     "compat.sodium.ShaderLoaderMixin",

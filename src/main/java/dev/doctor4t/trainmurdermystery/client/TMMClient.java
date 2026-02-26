@@ -1,6 +1,19 @@
 package dev.doctor4t.trainmurdermystery.client;
 
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
+import java.util.UUID;
+import java.util.function.Predicate;
+
+import org.lwjgl.glfw.GLFW;
+import org.slf4j.LoggerFactory;
+import org.spongepowered.include.com.google.gson.JsonSyntaxException;
+
 import com.mojang.blaze3d.platform.InputConstants;
+
 import dev.doctor4t.ratatouille.client.util.OptionLocker;
 import dev.doctor4t.ratatouille.client.util.ambience.AmbienceUtil;
 import dev.doctor4t.ratatouille.client.util.ambience.BackgroundAmbience;
@@ -12,7 +25,11 @@ import dev.doctor4t.trainmurdermystery.block.SecurityMonitorBlock;
 import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
 import dev.doctor4t.trainmurdermystery.cca.PlayerMoodComponent;
 import dev.doctor4t.trainmurdermystery.cca.TrainWorldComponent;
-import dev.doctor4t.trainmurdermystery.client.gui.*;
+import dev.doctor4t.trainmurdermystery.client.gui.MapDetailsRenderer;
+import dev.doctor4t.trainmurdermystery.client.gui.RoundTextRenderer;
+import dev.doctor4t.trainmurdermystery.client.gui.SecurityCameraHUD;
+import dev.doctor4t.trainmurdermystery.client.gui.StoreRenderer;
+import dev.doctor4t.trainmurdermystery.client.gui.TimeRenderer;
 import dev.doctor4t.trainmurdermystery.client.gui.screen.MapSelectorScreen;
 import dev.doctor4t.trainmurdermystery.client.gui.screen.PlayerStatsScreen;
 import dev.doctor4t.trainmurdermystery.client.gui.screen.SkinManagementScreen;
@@ -35,18 +52,39 @@ import dev.doctor4t.trainmurdermystery.event.OnGetInstinctHighlight;
 import dev.doctor4t.trainmurdermystery.game.GameConstants;
 import dev.doctor4t.trainmurdermystery.game.GameFunctions;
 import dev.doctor4t.trainmurdermystery.game.LooseEndsGameMode;
-import dev.doctor4t.trainmurdermystery.index.*;
+import dev.doctor4t.trainmurdermystery.index.TMMBlockEntities;
+import dev.doctor4t.trainmurdermystery.index.TMMBlocks;
+import dev.doctor4t.trainmurdermystery.index.TMMEntities;
+import dev.doctor4t.trainmurdermystery.index.TMMParticles;
+import dev.doctor4t.trainmurdermystery.index.TMMSounds;
 import dev.doctor4t.trainmurdermystery.item.GrenadeItem;
 import dev.doctor4t.trainmurdermystery.item.KnifeItem;
 import dev.doctor4t.trainmurdermystery.mod_whitelist.client.ModWhitelistClient;
-import dev.doctor4t.trainmurdermystery.network.*;
+import dev.doctor4t.trainmurdermystery.network.BreakArmorPayload;
+import dev.doctor4t.trainmurdermystery.network.CloseUiPayload;
+import dev.doctor4t.trainmurdermystery.network.IsLobbyConfigPayload;
+import dev.doctor4t.trainmurdermystery.network.JoinSpecGroupPayload;
+import dev.doctor4t.trainmurdermystery.network.MapVotingResultsPayload;
+import dev.doctor4t.trainmurdermystery.network.OpenSkinScreenPaylod;
+import dev.doctor4t.trainmurdermystery.network.RemoveStatusBarPayload;
+import dev.doctor4t.trainmurdermystery.network.SecurityCameraModePayload;
+import dev.doctor4t.trainmurdermystery.network.ShowSelectedMapUIPayload;
+import dev.doctor4t.trainmurdermystery.network.ShowStatsPayload;
+import dev.doctor4t.trainmurdermystery.network.SyncMapConfigPayload;
+import dev.doctor4t.trainmurdermystery.network.TriggerScreenEdgeEffectPayload;
+import dev.doctor4t.trainmurdermystery.network.TriggerStatusBarPayload;
 import dev.doctor4t.trainmurdermystery.network.packet.ModVersionPacket;
 import dev.doctor4t.trainmurdermystery.network.packet.SyncRoomToPlayerPayload;
 import dev.doctor4t.trainmurdermystery.network.packet.SyncSpecificWaypointVisibilityPacket;
 import dev.doctor4t.trainmurdermystery.network.packet.SyncWaypointVisibilityPacket;
 import dev.doctor4t.trainmurdermystery.network.packet.SyncWaypointsPacket;
-
-import dev.doctor4t.trainmurdermystery.util.*;
+import dev.doctor4t.trainmurdermystery.util.AnnounceEndingPayload;
+import dev.doctor4t.trainmurdermystery.util.AnnounceWelcomePayload;
+import dev.doctor4t.trainmurdermystery.util.GunDropPayload;
+import dev.doctor4t.trainmurdermystery.util.HandParticleManager;
+import dev.doctor4t.trainmurdermystery.util.PoisonUtils;
+import dev.doctor4t.trainmurdermystery.util.ShootMuzzleS2CPayload;
+import dev.doctor4t.trainmurdermystery.util.TaskCompletePayload;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
@@ -79,12 +117,6 @@ import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.phys.Vec3;
-import org.lwjgl.glfw.GLFW;
-import org.slf4j.LoggerFactory;
-import org.spongepowered.include.com.google.gson.JsonSyntaxException;
-
-import java.util.*;
-import java.util.function.Predicate;
 
 public class TMMClient implements ClientModInitializer {
     private static float soundLevel = 0f;
@@ -310,16 +342,17 @@ public class TMMClient implements ClientModInitializer {
             }
             instinctLightLevel = Mth.clamp(instinctLightLevel, -.04f, 0.75f);
 
-            // Cache player entries
-            for (AbstractClientPlayer player : clientWorld.players()) {
-                ClientPacketListener networkHandler = Minecraft.getInstance().getConnection();
-                if (!PLAYER_ENTRIES_CACHE.containsKey(player.getUUID()) && networkHandler != null) {
-                    var playerInfo = networkHandler.getPlayerInfo(player.getUUID());
-                    if (playerInfo != null) {
-                        PLAYER_ENTRIES_CACHE.put(player.getUUID(), playerInfo);
-                    }
-                }
-            }
+            // // Cache player entries
+            // for (AbstractClientPlayer player : clientWorld.players()) {
+            //     ClientPacketListener networkHandler = Minecraft.getInstance().getConnection();
+                
+            //     if (!PLAYER_ENTRIES_CACHE.containsKey(player.getUUID()) && networkHandler != null) {
+            //         var playerInfo = networkHandler.getPlayerInfo(player.getUUID());
+            //         if (playerInfo != null) {
+            //             PLAYER_ENTRIES_CACHE.put(player.getUUID(), playerInfo);
+            //         }
+            //     }
+            // }
             if (!prevGameRunning && gameComponent.isRunning()) {
                 Minecraft.getInstance().player.getInventory().selected = 8;
             }
