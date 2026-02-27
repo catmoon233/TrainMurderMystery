@@ -249,6 +249,12 @@ public class RoundTextRenderer {
                     if (playerListEntry != null) {
                         GameProfile playerProfile = playerListEntry.getProfile();
                         ResourceLocation texture = playerListEntry.getSkin().texture();
+                        if (entry.hasWin) {
+                            context.pose().pushPose();
+                            context.pose().translate(8, 0, 0);
+                            context.renderOutline(-1, -1, 10, 10, ChatFormatting.GOLD.getColor());
+                            context.pose().popPose();
+                        }
                         if (texture != null) {
                             RenderSystem.enableBlend();
                             context.pose().pushPose();
@@ -277,6 +283,7 @@ public class RoundTextRenderer {
                                     0xffffff);
                             context.pose().popPose();
                         }
+
                         if (entry.wasDead()) {
                             context.pose().translate(13, 0, 0);
                             context.pose().scale(2f, 1f, 1f);

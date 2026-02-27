@@ -588,6 +588,7 @@ public class GameFunctions {
             }
 
             if (isWinner) {
+                roundEnd.setPlayerWin(player.getUUID(), isWinner);
                 roundEnd.CustomWinnerPlayers.add(player.getUUID());
                 stats.incrementTotalWins();
                 if (playerRole != null) {
@@ -606,7 +607,7 @@ public class GameFunctions {
             }
         }
         // --- 结束新增统计数据更新逻辑 (胜利/失败) ---
-
+        // roundEnd.sync();
         // Show replay to all players
         for (ServerPlayer player : world.players()) {
             TMM.REPLAY_MANAGER.showReplayToPlayer(player);

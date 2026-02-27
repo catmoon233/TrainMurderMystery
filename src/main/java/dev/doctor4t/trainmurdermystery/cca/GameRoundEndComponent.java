@@ -43,6 +43,17 @@ public class GameRoundEndComponent implements AutoSyncedComponent {
         KEY.sync(this.world);
     }
 
+    public void setPlayerWin(UUID playerUid, boolean hasWin) {
+        if (playerUid == null)
+            return;
+        for (RoundEndData playerInfo : this.players) {
+            if (playerUid.equals(playerInfo.player.getId())) {
+                playerInfo.setHasWin(hasWin);
+                return;
+            }
+        }
+    }
+
     public void setRoundEndData(@NotNull List<ServerPlayer> players, GameFunctions.WinStatus winStatus) {
         this.players.clear();
         for (ServerPlayer player : players) {
@@ -64,7 +75,7 @@ public class GameRoundEndComponent implements AutoSyncedComponent {
                 // }
             }
             this.players.add(new RoundEndData(player.getGameProfile(), role,
-                    !dev.doctor4t.trainmurdermystery.game.GameFunctions.isPlayerAliveAndSurvival(player)));
+                    !dev.doctor4t.trainmurdermystery.game.GameFunctions.isPlayerAliveAndSurvival(player), false));
         }
         this.winStatus = winStatus;
         this.sync();
@@ -167,11 +178,46 @@ public class GameRoundEndComponent implements AutoSyncedComponent {
         tag.putInt("winstatus", this.winStatus.ordinal());
     }
 
-    public record RoundEndData(GameProfile player, RoleAnnouncementTexts.RoleAnnouncementText role, boolean wasDead) {
+    public class RoundEndData {
+        public GameProfile player;
+        public RoleAnnouncementTexts.RoleAnnouncementText role;
+        public boolean wasDead;
+        public boolean hasWin;
+
+        public boolean hasWin() {
+            return this.hasWin;
+        }
+
+        public boolean wasDead() {
+            return this.wasDead;
+        }
+
+        public RoleAnnouncementTexts.RoleAnnouncementText role() {
+            return this.role;
+        }
+
+        public GameProfile player() {
+            return this.player;
+        }
+
+        public RoundEndData setHasWin(boolean hasWin) {
+            this.hasWin = hasWin;
+            return this;
+        }
+
+        public RoundEndData(GameProfile player, RoleAnnouncementTexts.RoleAnnouncementText role, boolean wasDead,
+                boolean hasWin) {
+            this.player = player;
+            this.role = role;
+            this.wasDead = wasDead;
+            this.hasWin = hasWin;
+        }
+
         public RoundEndData(@NotNull CompoundTag tag) {
             this(new GameProfile(tag.getUUID("uuid"), tag.getString("name")),
                     RoleAnnouncementTexts.getFromName((tag.getString("role"))),
-                    tag.getBoolean("wasDead"));
+                    tag.getBoolean("wasDead"),
+                    tag.getBoolean("hasWin"));
         }
 
         public @NotNull CompoundTag writeToNbt() {
@@ -180,6 +226,7 @@ public class GameRoundEndComponent implements AutoSyncedComponent {
             tag.putString("name", this.player.getName());
             tag.putString("role", this.role != null ? this.role.getId().getPath() : "blank"); // 存储角色名称
             tag.putBoolean("wasDead", this.wasDead);
+            tag.putBoolean("hasWin", this.hasWin);
             return tag;
         }
     }
