@@ -117,6 +117,7 @@ public class RoleNameRenderer {
                                     roleText1 = roleText2;
                                 }
                             }
+                            if (roleText1==null)return;
                             int roleWidth1 = renderer.width(roleText1);
                             context.drawString(renderer, roleText1, -roleWidth1 / 2, 0,
                                     Mth.color(1f, 0f, 0f) | ((int) (nametagAlpha * 255) << 24));
