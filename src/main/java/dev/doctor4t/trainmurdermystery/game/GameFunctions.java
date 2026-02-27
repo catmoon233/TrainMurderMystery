@@ -539,12 +539,10 @@ public class GameFunctions {
                     }
                     break;
                 case KILLERS:
-                    if (GameWorldComponent.isKillerTeamRoleStatic(playerRole)) {
-                        String roleidentifier = playerRole.identifier().getPath();
+                    if (GameWorldComponent.isKillerTeamRoleStatic(playerRole) && !playerRole.isInnocent()) {
+                        // String roleidentifier = playerRole.identifier().getPath();
                         // 魔术师不算胜利
-                        if (!"magician".equals(roleidentifier)) {
                             isWinner = true;
-                        }
                     }
                     break;
                 case LOOSE_END:
@@ -574,10 +572,7 @@ public class GameFunctions {
                         if ("amnesiac".equals(roleidentifier) || "initiate".equals(roleidentifier)) {
                             isWinner = true;
                         }
-                        // 魔术师在乘客胜利或时间耗尽时也算胜利
-                        else if ("magician".equals(roleidentifier)) {
-                            isWinner = true;
-                        }
+                        // 魔术师不需要判断，因为他是innocent
                     }
                     break;
                 case RECORDER:
