@@ -129,7 +129,19 @@ public class GameReplayUtils {
         ChatFormatting sourceTMMColor = getTMMRoleColor(sourceRoleId);
 
         // 如果当前角色与记录的角色不同，则显示为(new(old))格式，old为灰色
-        if (sourceRoleIdNow != null && !sourceRoleId.equals(sourceRoleIdNow)) {
+        if (sourceRoleId == null) {
+            if (sourceRoleIdNow != null) {
+                MutableComponent currentRoleName = ReplayDisplayUtils.getRoleDisplayName(sourceRoleIdNow);
+                int currentColor = getRoleColor(sourceRoleIdNow);
+
+                sourceName = sourceName.copy().withStyle(sourceTMMColor)
+                        .append(Component.translatable(" (%s)", currentRoleName.withColor(currentColor),
+                                sourceRoleName.withStyle(ChatFormatting.GRAY)).withStyle(ChatFormatting.GRAY));
+            } else {
+
+            }
+
+        } else if (sourceRoleIdNow != null && !sourceRoleId.equals(sourceRoleIdNow)) {
             // TMM.LOGGER.info(sourceRoleId, sourceRoleIdNow);
             MutableComponent currentRoleName = ReplayDisplayUtils.getRoleDisplayName(sourceRoleIdNow);
             int currentColor = getRoleColor(sourceRoleIdNow);
