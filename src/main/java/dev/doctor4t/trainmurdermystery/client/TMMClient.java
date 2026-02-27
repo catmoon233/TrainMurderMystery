@@ -520,11 +520,7 @@ public class TMMClient implements ClientModInitializer {
             }
             if (TMMClient.gameComponent == null)
                 return;
-            if (TMMClient.gameComponent.fade > 0) {
-                if (client.screen != null) {
-                    client.setScreen(null);
-                }
-            }
+
             if (statsKeybind.consumeClick()) {
 
                 if (TMMClient.gameComponent.fade <= 0) {

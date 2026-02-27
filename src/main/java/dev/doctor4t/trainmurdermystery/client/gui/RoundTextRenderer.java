@@ -1,7 +1,16 @@
 package dev.doctor4t.trainmurdermystery.client.gui;
 
+import java.awt.Color;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
+
+import org.jetbrains.annotations.NotNull;
+
 import com.mojang.authlib.GameProfile;
 import com.mojang.blaze3d.systems.RenderSystem;
+
 import dev.doctor4t.trainmurdermystery.api.Role;
 import dev.doctor4t.trainmurdermystery.api.TMMGameModes;
 import dev.doctor4t.trainmurdermystery.api.TMMRoles;
@@ -13,11 +22,6 @@ import dev.doctor4t.trainmurdermystery.game.GameConstants;
 import dev.doctor4t.trainmurdermystery.game.GameFunctions;
 import dev.doctor4t.trainmurdermystery.game.GameFunctions.WinStatus;
 import dev.doctor4t.trainmurdermystery.index.TMMSounds;
-import org.jetbrains.annotations.NotNull;
-
-import java.awt.Color;
-import java.util.*;
-
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.Options;
@@ -249,12 +253,7 @@ public class RoundTextRenderer {
                     if (playerListEntry != null) {
                         GameProfile playerProfile = playerListEntry.getProfile();
                         ResourceLocation texture = playerListEntry.getSkin().texture();
-                        if (entry.hasWin) {
-                            context.pose().pushPose();
-                            context.pose().translate(8, 0, 0);
-                            context.renderOutline(-1, -1, 10, 10, ChatFormatting.GOLD.getColor());
-                            context.pose().popPose();
-                        }
+
                         if (texture != null) {
                             RenderSystem.enableBlend();
                             context.pose().pushPose();
@@ -268,6 +267,15 @@ public class RoundTextRenderer {
                                     offColour, offColour, 1f);
                             context.pose().popPose();
 
+                        }
+                        if (entry.hasWin) {
+
+                            context.pose().pushPose();
+                            context.pose().translate(14, -2, 0);
+                            context.pose().scale(0.5f, 0.5f, 1f);
+                            context.drawString(renderer,
+                                    Component.literal("👑").withStyle(ChatFormatting.GOLD), 0, 0, 0);
+                            context.pose().popPose();
                         }
                         if (playerProfile != null) {
                             context.pose().pushPose();
