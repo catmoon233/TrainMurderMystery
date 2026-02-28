@@ -164,20 +164,103 @@ public class GeneralStatsPanel extends AbstractWidget {
         columnStartY += 20;
 
         // 右列数据
-        columnStartY = currentY;
-        drawStatLabelCentered(graphics, rightColumnX, columnStartY, "screen." + TMM.MOD_ID + ".player_stats.total_wins", String.valueOf(stats.getTotalWins()), columnWidth);
-        columnStartY += 20;
-        drawStatLabelCentered(graphics, rightColumnX, columnStartY, "screen." + TMM.MOD_ID + ".player_stats.total_losses", String.valueOf(stats.getTotalLosses()), columnWidth);
-        columnStartY += 20;
-        drawStatLabelCentered(graphics, rightColumnX, columnStartY, "screen." + TMM.MOD_ID + ".player_stats.win_rate", String.format("%.2f%%", getWinRate(stats.getTotalWins(), stats.getTotalGamesPlayed())), columnWidth);
-        columnStartY += 20;
-        drawStatLabelCentered(graphics, rightColumnX, columnStartY, "screen." + TMM.MOD_ID + ".player_stats.kd_ratio", String.format("%.2f", getKdRatio(stats.getTotalKills(), stats.getTotalDeaths())), columnWidth);
-        columnStartY += 20;
+        int rightColumnStartY = currentY;
+        drawStatLabelCentered(graphics, rightColumnX, rightColumnStartY, "screen." + TMM.MOD_ID + ".player_stats.total_wins", String.valueOf(stats.getTotalWins()), columnWidth);
+        rightColumnStartY += 20;
+        drawStatLabelCentered(graphics, rightColumnX, rightColumnStartY, "screen." + TMM.MOD_ID + ".player_stats.total_losses", String.valueOf(stats.getTotalLosses()), columnWidth);
+        rightColumnStartY += 20;
+        drawStatLabelCentered(graphics, rightColumnX, rightColumnStartY, "screen." + TMM.MOD_ID + ".player_stats.win_rate", String.format("%.2f%%", getWinRate(stats.getTotalWins(), stats.getTotalGamesPlayed())), columnWidth);
+        rightColumnStartY += 20;
+        drawStatLabelCentered(graphics, rightColumnX, rightColumnStartY, "screen." + TMM.MOD_ID + ".player_stats.kd_ratio", String.format("%.2f", getKdRatio(stats.getTotalKills(), stats.getTotalDeaths())), columnWidth);
+        rightColumnStartY += 20;
+
+        // 阵营统计部分（从左列结束位置开始）
+        currentY = columnStartY;
+        currentY += 10;
+        drawFactionStats(graphics, leftColumnX, currentY, leftPanelWidth - 20);
 
         // 渲染子组件（头部和底部贴图）
         for (Renderable renderable : renderables) {
             renderable.render(graphics, mouseX, mouseY, delta);
         }
+    }
+
+    private void drawFactionStats(GuiGraphics graphics, int x, int y, int width) {
+        // 平民阵营统计
+        drawFactionSection(graphics, x, y, width,
+                "screen." + TMM.MOD_ID + ".player_stats.civilian_stats",
+                "screen." + TMM.MOD_ID + ".player_stats.total_civilian_games",
+                "screen." + TMM.MOD_ID + ".player_stats.total_civilian_wins",
+                "screen." + TMM.MOD_ID + ".player_stats.civilian_win_rate",
+                "screen." + TMM.MOD_ID + ".player_stats.civilian_kd_ratio",
+                stats.getTotalCivilianGames(), stats.getTotalCivilianWins(),
+                stats.getTotalCivilianKills(), stats.getTotalCivilianDeaths());
+
+        y += 50;
+
+        // 杀手阵营统计
+        drawFactionSection(graphics, x, y, width,
+                "screen." + TMM.MOD_ID + ".player_stats.killer_stats",
+                "screen." + TMM.MOD_ID + ".player_stats.total_killer_games",
+                "screen." + TMM.MOD_ID + ".player_stats.total_killer_wins",
+                "screen." + TMM.MOD_ID + ".player_stats.killer_win_rate",
+                "screen." + TMM.MOD_ID + ".player_stats.killer_kd_ratio",
+                stats.getTotalKillerGames(), stats.getTotalKillerWins(),
+                stats.getTotalKillerKills(), stats.getTotalKillerDeaths());
+
+        y += 50;
+
+        // 中立阵营统计
+        drawFactionSection(graphics, x, y, width,
+                "screen." + TMM.MOD_ID + ".player_stats.neutral_stats",
+                "screen." + TMM.MOD_ID + ".player_stats.total_neutral_games",
+                "screen." + TMM.MOD_ID + ".player_stats.total_neutral_wins",
+                "screen." + TMM.MOD_ID + ".player_stats.neutral_win_rate",
+                "screen." + TMM.MOD_ID + ".player_stats.neutral_kd_ratio",
+                stats.getTotalNeutralGames(), stats.getTotalNeutralWins(),
+                stats.getTotalNeutralKills(), stats.getTotalNeutralDeaths());
+
+        y += 50;
+
+        // 警长阵营统计
+        drawFactionSection(graphics, x, y, width,
+                "screen." + TMM.MOD_ID + ".player_stats.sheriff_stats",
+                "screen." + TMM.MOD_ID + ".player_stats.total_sheriff_games",
+                "screen." + TMM.MOD_ID + ".player_stats.total_sheriff_wins",
+                "screen." + TMM.MOD_ID + ".player_stats.sheriff_win_rate",
+                "screen." + TMM.MOD_ID + ".player_stats.sheriff_kd_ratio",
+                stats.getTotalSheriffGames(), stats.getTotalSheriffWins(),
+                stats.getTotalSheriffKills(), stats.getTotalSheriffDeaths());
+    }
+
+    private void drawFactionSection(GuiGraphics graphics, int x, int y, int width,
+                                       String titleKey, String gamesKey, String winsKey, String winRateKey, String kdRatioKey,
+                                       int games, int wins, int kills, int deaths) {
+        // 绘制标题
+        String title = Component.translatable(titleKey).getString();
+        int titleWidth = Minecraft.getInstance().font.width(title);
+        int titleX = x + (width - titleWidth) / 2;
+        graphics.drawString(Minecraft.getInstance().font,
+                Component.translatable(titleKey).withStyle(style -> style.withColor(0xFFFFFF).withBold(true)),
+                titleX, y, 0xFFFFFF);
+
+        // 两列布局
+        int columnWidth = width / 2 - 5;
+        int rightColumnX = x + columnWidth + 10;
+        int lineY = y + 15;
+
+        // 左列：场次和胜场
+        drawStatLabelCentered(graphics, x, lineY, gamesKey, String.valueOf(games), columnWidth);
+        lineY += 12;
+        drawStatLabelCentered(graphics, x, lineY, winsKey, String.valueOf(wins), columnWidth);
+
+        // 右列：胜率和K/D比
+        lineY = y + 15;
+        drawStatLabelCentered(graphics, rightColumnX, lineY, winRateKey,
+                String.format("%.2f%%", getWinRate(wins, games)), columnWidth);
+        lineY += 12;
+        drawStatLabelCentered(graphics, rightColumnX, lineY, kdRatioKey,
+                String.format("%.2f", getKdRatio(kills, deaths)), columnWidth);
     }
 
     @Override

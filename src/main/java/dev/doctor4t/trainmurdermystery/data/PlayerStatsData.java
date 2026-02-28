@@ -17,6 +17,25 @@ public class PlayerStatsData {
     private int totalLosses;
     private int totalTeamKills;
     private int totalLoversWins;
+
+    // 阵营统计数据
+    private int totalCivilianGames = 0;
+    private int totalCivilianWins = 0;
+    private int totalCivilianKills = 0;
+    private int totalCivilianDeaths = 0;
+    private int totalKillerGames = 0;
+    private int totalKillerWins = 0;
+    private int totalKillerKills = 0;
+    private int totalKillerDeaths = 0;
+    private int totalNeutralGames = 0;
+    private int totalNeutralWins = 0;
+    private int totalNeutralKills = 0;
+    private int totalNeutralDeaths = 0;
+    private int totalSheriffGames = 0;
+    private int totalSheriffWins = 0;
+    private int totalSheriffKills = 0;
+    private int totalSheriffDeaths = 0;
+
     private Map<String, RoleStatsData> roleStats = new HashMap<>();
 
     /**
@@ -157,6 +176,135 @@ public class PlayerStatsData {
 
     public void setTotalLoversWins(int totalLoversWins) {
         this.totalLoversWins = totalLoversWins;
+    }
+
+    // 阵营统计 Getter 和 Setter 方法
+    public int getTotalCivilianGames() {
+        return totalCivilianGames;
+    }
+
+    public void setTotalCivilianGames(int totalCivilianGames) {
+        this.totalCivilianGames = totalCivilianGames;
+    }
+
+    public int getTotalCivilianWins() {
+        return totalCivilianWins;
+    }
+
+    public void setTotalCivilianWins(int totalCivilianWins) {
+        this.totalCivilianWins = totalCivilianWins;
+    }
+
+    public int getTotalCivilianKills() {
+        return totalCivilianKills;
+    }
+
+    public void setTotalCivilianKills(int totalCivilianKills) {
+        this.totalCivilianKills = totalCivilianKills;
+    }
+
+    public int getTotalCivilianDeaths() {
+        return totalCivilianDeaths;
+    }
+
+    public void setTotalCivilianDeaths(int totalCivilianDeaths) {
+        this.totalCivilianDeaths = totalCivilianDeaths;
+    }
+
+    public int getTotalKillerGames() {
+        return totalKillerGames;
+    }
+
+    public void setTotalKillerGames(int totalKillerGames) {
+        this.totalKillerGames = totalKillerGames;
+    }
+
+    public int getTotalKillerWins() {
+        return totalKillerWins;
+    }
+
+    public void setTotalKillerWins(int totalKillerWins) {
+        this.totalKillerWins = totalKillerWins;
+    }
+
+    public int getTotalKillerKills() {
+        return totalKillerKills;
+    }
+
+    public void setTotalKillerKills(int totalKillerKills) {
+        this.totalKillerKills = totalKillerKills;
+    }
+
+    public int getTotalKillerDeaths() {
+        return totalKillerDeaths;
+    }
+
+    public void setTotalKillerDeaths(int totalKillerDeaths) {
+        this.totalKillerDeaths = totalKillerDeaths;
+    }
+
+    public int getTotalNeutralGames() {
+        return totalNeutralGames;
+    }
+
+    public void setTotalNeutralGames(int totalNeutralGames) {
+        this.totalNeutralGames = totalNeutralGames;
+    }
+
+    public int getTotalNeutralWins() {
+        return totalNeutralWins;
+    }
+
+    public void setTotalNeutralWins(int totalNeutralWins) {
+        this.totalNeutralWins = totalNeutralWins;
+    }
+
+    public int getTotalNeutralKills() {
+        return totalNeutralKills;
+    }
+
+    public void setTotalNeutralKills(int totalNeutralKills) {
+        this.totalNeutralKills = totalNeutralKills;
+    }
+
+    public int getTotalNeutralDeaths() {
+        return totalNeutralDeaths;
+    }
+
+    public void setTotalNeutralDeaths(int totalNeutralDeaths) {
+        this.totalNeutralDeaths = totalNeutralDeaths;
+    }
+
+    public int getTotalSheriffGames() {
+        return totalSheriffGames;
+    }
+
+    public void setTotalSheriffGames(int totalSheriffGames) {
+        this.totalSheriffGames = totalSheriffGames;
+    }
+
+    public int getTotalSheriffWins() {
+        return totalSheriffWins;
+    }
+
+    public void setTotalSheriffWins(int totalSheriffWins) {
+        this.totalSheriffWins = totalSheriffWins;
+    }
+
+    public int getTotalSheriffKills() {
+        return totalSheriffKills;
+    }
+
+    public void setTotalSheriffKills(int totalSheriffKills) {
+        this.totalSheriffKills = totalSheriffKills;
+    }
+
+    public int getTotalSheriffDeaths() {
+        return totalSheriffDeaths;
+    }
+
+    public void setTotalSheriffDeaths(int totalSheriffDeaths) {
+        this.totalSheriffDeaths = totalSheriffDeaths;
     }
 
     public Map<String, RoleStatsData> getRoleStats() {

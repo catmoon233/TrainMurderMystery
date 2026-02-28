@@ -282,6 +282,17 @@ public class GameFunctions {
             Role playerRole = gameComponent.getRole(player);
             if (playerRole != null) {
                 stats.getOrCreateRoleStats(playerRole.identifier()).incrementTimesPlayed();
+
+                // 统计阵营场次
+                if (playerRole.isVigilanteTeam()) {
+                    stats.incrementTotalSheriffGames();
+                } else if (playerRole.canUseKiller()) {
+                    stats.incrementTotalKillerGames();
+                } else if (playerRole.isNeutrals()) {
+                    stats.incrementTotalNeutralGames();
+                } else if (playerRole.isInnocent() && !playerRole.isVigilanteTeam()) {
+                    stats.incrementTotalCivilianGames();
+                }
             }
         }
         OnGameTrueStarted.EVENT.invoker().onGameTrueStarted(serverWorld);
@@ -596,6 +607,17 @@ public class GameFunctions {
                 stats.incrementTotalWins();
                 if (playerRole != null) {
                     stats.getOrCreateRoleStats(playerRole.identifier()).incrementWinsAsRole();
+
+                    // 统计阵营胜利
+                    if (playerRole.isVigilanteTeam()) {
+                        stats.incrementTotalSheriffWins();
+                    } else if (playerRole.canUseKiller()) {
+                        stats.incrementTotalKillerWins();
+                    } else if (playerRole.isNeutrals()) {
+                        stats.incrementTotalNeutralWins();
+                    } else if (playerRole.isInnocent() && !playerRole.isVigilanteTeam()) {
+                        stats.incrementTotalCivilianWins();
+                    }
                 }
                 // 修复4: 恋人胜利时额外统计恋人胜利次数
                 if (isLoversWin && roundEnd.CustomWinnerPlayers != null
@@ -811,6 +833,16 @@ public class GameFunctions {
             if (killerRole != null) {
                 canDeath = killerRole.onKill(victim, spawnBody, killer, deathReason);
                 killerStats.getOrCreateRoleStats(killerRole.identifier()).incrementKillsAsRole();
+                // 更新阵营击杀数
+                if (killerRole.isVigilanteTeam()) {
+                    killerStats.incrementTotalSheriffKills();
+                } else if (killerRole.canUseKiller()) {
+                    killerStats.incrementTotalKillerKills();
+                } else if (killerRole.isNeutrals()) {
+                    killerStats.incrementTotalNeutralKills();
+                } else if (killerRole.isInnocent() && !killerRole.isVigilanteTeam()) {
+                    killerStats.incrementTotalCivilianKills();
+                }
                 // 检测是否为友军击杀
                 if (victim instanceof ServerPlayer serverVictim) {
                     Role victimRole = gameWorldComponent.getRole(serverVictim);
@@ -848,6 +880,16 @@ public class GameFunctions {
                 victimStats.incrementTotalDeaths();
                 if (victimRole != null) {
                     victimStats.getOrCreateRoleStats(victimRole.identifier()).incrementDeathsAsRole();
+                    // 更新阵营死亡数
+                    if (victimRole.isVigilanteTeam()) {
+                        victimStats.incrementTotalSheriffDeaths();
+                    } else if (victimRole.canUseKiller()) {
+                        victimStats.incrementTotalKillerDeaths();
+                    } else if (victimRole.isNeutrals()) {
+                        victimStats.incrementTotalNeutralDeaths();
+                    } else if (victimRole.isInnocent() && !victimRole.isVigilanteTeam()) {
+                        victimStats.incrementTotalCivilianDeaths();
+                    }
                 }
             }
             if (spawnBody) {

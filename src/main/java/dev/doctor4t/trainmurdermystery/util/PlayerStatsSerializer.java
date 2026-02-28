@@ -56,6 +56,16 @@ public class PlayerStatsSerializer {
         data.setTotalTeamKills(component.getTotalTeamKills());
         data.setTotalLoversWins(component.getTotalLoversWins());
 
+        // 设置阵营统计数据
+        data.setTotalCivilianGames(component.getTotalCivilianGames());
+        data.setTotalCivilianWins(component.getTotalCivilianWins());
+        data.setTotalKillerGames(component.getTotalKillerGames());
+        data.setTotalKillerWins(component.getTotalKillerWins());
+        data.setTotalNeutralGames(component.getTotalNeutralGames());
+        data.setTotalNeutralWins(component.getTotalNeutralWins());
+        data.setTotalSheriffGames(component.getTotalSheriffGames());
+        data.setTotalSheriffWins(component.getTotalSheriffWins());
+
         // 转换角色统计数据
         Map<String, PlayerStatsData.RoleStatsData> roleStatsMap = new java.util.HashMap<>();
         component.getRoleStats().forEach((roleId, roleStats) -> {
@@ -90,7 +100,7 @@ public class PlayerStatsSerializer {
      */
     public static PlayerStatsComponent fromData(PlayerStatsData data, net.minecraft.world.entity.player.Player player) {
         PlayerStatsComponent component = new PlayerStatsComponent(player);
-        
+
         // 应用基础统计数据
         component.setTotalPlayTime(data.getTotalPlayTime());
         component.setTotalGamesPlayed(data.getTotalGamesPlayed());
@@ -100,6 +110,44 @@ public class PlayerStatsSerializer {
         component.setTotalLosses(data.getTotalLosses());
         component.setTotalTeamKills(data.getTotalTeamKills());
         component.setTotalLoversWins(data.getTotalLoversWins());
+
+        // 阵营统计数据通过 setter 设置 (直接赋值而不增加统计次数)
+        // 注意:这里使用反射直接设置值,因为setter会增加计数
+        try {
+            java.lang.reflect.Field civilianGamesField = PlayerStatsComponent.class.getDeclaredField("totalCivilianGames");
+            civilianGamesField.setAccessible(true);
+            civilianGamesField.setInt(component, data.getTotalCivilianGames());
+
+            java.lang.reflect.Field civilianWinsField = PlayerStatsComponent.class.getDeclaredField("totalCivilianWins");
+            civilianWinsField.setAccessible(true);
+            civilianWinsField.setInt(component, data.getTotalCivilianWins());
+
+            java.lang.reflect.Field killerGamesField = PlayerStatsComponent.class.getDeclaredField("totalKillerGames");
+            killerGamesField.setAccessible(true);
+            killerGamesField.setInt(component, data.getTotalKillerGames());
+
+            java.lang.reflect.Field killerWinsField = PlayerStatsComponent.class.getDeclaredField("totalKillerWins");
+            killerWinsField.setAccessible(true);
+            killerWinsField.setInt(component, data.getTotalKillerWins());
+
+            java.lang.reflect.Field neutralGamesField = PlayerStatsComponent.class.getDeclaredField("totalNeutralGames");
+            neutralGamesField.setAccessible(true);
+            neutralGamesField.setInt(component, data.getTotalNeutralGames());
+
+            java.lang.reflect.Field neutralWinsField = PlayerStatsComponent.class.getDeclaredField("totalNeutralWins");
+            neutralWinsField.setAccessible(true);
+            neutralWinsField.setInt(component, data.getTotalNeutralWins());
+
+            java.lang.reflect.Field sheriffGamesField = PlayerStatsComponent.class.getDeclaredField("totalSheriffGames");
+            sheriffGamesField.setAccessible(true);
+            sheriffGamesField.setInt(component, data.getTotalSheriffGames());
+
+            java.lang.reflect.Field sheriffWinsField = PlayerStatsComponent.class.getDeclaredField("totalSheriffWins");
+            sheriffWinsField.setAccessible(true);
+            sheriffWinsField.setInt(component, data.getTotalSheriffWins());
+        } catch (Exception e) {
+            TMM.LOGGER.error("Failed to set faction stats", e);
+        }
 
         // 应用角色统计数据
         data.getRoleStats().forEach((roleIdStr, roleData) -> {
@@ -113,7 +161,7 @@ public class PlayerStatsSerializer {
             roleStats.setLossesAsRole(roleData.getLossesAsRole());
             roleStats.setTeamKillsAsRole(roleData.getTeamKillsAsRole());
         });
-        
+
         return component;
     }
 }

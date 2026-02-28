@@ -40,6 +40,25 @@ public class PlayerStatsComponent implements AutoSyncedComponent, ServerTickingC
     private int totalLosses = 0;
     private int totalTeamKills = 0;
     private int totalLoversWins = 0;
+
+    // 阵营统计数据
+    private int totalCivilianGames = 0;
+    private int totalCivilianWins = 0;
+    private int totalCivilianKills = 0;
+    private int totalCivilianDeaths = 0;
+    private int totalKillerGames = 0;
+    private int totalKillerWins = 0;
+    private int totalKillerKills = 0;
+    private int totalKillerDeaths = 0;
+    private int totalNeutralGames = 0;
+    private int totalNeutralWins = 0;
+    private int totalNeutralKills = 0;
+    private int totalNeutralDeaths = 0;
+    private int totalSheriffGames = 0;
+    private int totalSheriffWins = 0;
+    private int totalSheriffKills = 0;
+    private int totalSheriffDeaths = 0;
+
     private final Map<ResourceLocation, RoleStats> roleStats = new HashMap<>();
 
     // 文件保存相关字段
@@ -112,6 +131,55 @@ public class PlayerStatsComponent implements AutoSyncedComponent, ServerTickingC
             totalLoversWins = tag.getInt("TotalLoversWins");
         }
 
+        if (tag.contains("TotalCivilianGames")) {
+            totalCivilianGames = tag.getInt("TotalCivilianGames");
+        }
+        if (tag.contains("TotalCivilianWins")) {
+            totalCivilianWins = tag.getInt("TotalCivilianWins");
+        }
+        if (tag.contains("TotalCivilianKills")) {
+            totalCivilianKills = tag.getInt("TotalCivilianKills");
+        }
+        if (tag.contains("TotalCivilianDeaths")) {
+            totalCivilianDeaths = tag.getInt("TotalCivilianDeaths");
+        }
+        if (tag.contains("TotalKillerGames")) {
+            totalKillerGames = tag.getInt("TotalKillerGames");
+        }
+        if (tag.contains("TotalKillerWins")) {
+            totalKillerWins = tag.getInt("TotalKillerWins");
+        }
+        if (tag.contains("TotalKillerKills")) {
+            totalKillerKills = tag.getInt("TotalKillerKills");
+        }
+        if (tag.contains("TotalKillerDeaths")) {
+            totalKillerDeaths = tag.getInt("TotalKillerDeaths");
+        }
+        if (tag.contains("TotalNeutralGames")) {
+            totalNeutralGames = tag.getInt("TotalNeutralGames");
+        }
+        if (tag.contains("TotalNeutralWins")) {
+            totalNeutralWins = tag.getInt("TotalNeutralWins");
+        }
+        if (tag.contains("TotalNeutralKills")) {
+            totalNeutralKills = tag.getInt("TotalNeutralKills");
+        }
+        if (tag.contains("TotalNeutralDeaths")) {
+            totalNeutralDeaths = tag.getInt("TotalNeutralDeaths");
+        }
+        if (tag.contains("TotalSheriffGames")) {
+            totalSheriffGames = tag.getInt("TotalSheriffGames");
+        }
+        if (tag.contains("TotalSheriffWins")) {
+            totalSheriffWins = tag.getInt("TotalSheriffWins");
+        }
+        if (tag.contains("TotalSheriffKills")) {
+            totalSheriffKills = tag.getInt("TotalSheriffKills");
+        }
+        if (tag.contains("TotalSheriffDeaths")) {
+            totalSheriffDeaths = tag.getInt("TotalSheriffDeaths");
+        }
+
         ListTag roleStatsList = tag.getList("RoleStats", Tag.TAG_COMPOUND);
         roleStats.clear();
         for (Tag element : roleStatsList) {
@@ -147,6 +215,25 @@ public class PlayerStatsComponent implements AutoSyncedComponent, ServerTickingC
         tag.putInt("TotalWins", totalWins);
         tag.putInt("TotalLosses", totalLosses);
         tag.putInt("TotalTeamKills", totalTeamKills);
+        tag.putInt("TotalLoversWins", totalLoversWins);
+
+        // 写入阵营统计数据
+        tag.putInt("TotalCivilianGames", totalCivilianGames);
+        tag.putInt("TotalCivilianWins", totalCivilianWins);
+        tag.putInt("TotalCivilianKills", totalCivilianKills);
+        tag.putInt("TotalCivilianDeaths", totalCivilianDeaths);
+        tag.putInt("TotalKillerGames", totalKillerGames);
+        tag.putInt("TotalKillerWins", totalKillerWins);
+        tag.putInt("TotalKillerKills", totalKillerKills);
+        tag.putInt("TotalKillerDeaths", totalKillerDeaths);
+        tag.putInt("TotalNeutralGames", totalNeutralGames);
+        tag.putInt("TotalNeutralWins", totalNeutralWins);
+        tag.putInt("TotalNeutralKills", totalNeutralKills);
+        tag.putInt("TotalNeutralDeaths", totalNeutralDeaths);
+        tag.putInt("TotalSheriffGames", totalSheriffGames);
+        tag.putInt("TotalSheriffWins", totalSheriffWins);
+        tag.putInt("TotalSheriffKills", totalSheriffKills);
+        tag.putInt("TotalSheriffDeaths", totalSheriffDeaths);
     }
 
     /**
@@ -161,6 +248,15 @@ public class PlayerStatsComponent implements AutoSyncedComponent, ServerTickingC
         tag.putInt("TotalLosses", totalLosses);
         tag.putInt("TotalTeamKills", totalTeamKills);
         tag.putInt("TotalLoversWins", totalLoversWins);
+
+        tag.putInt("TotalCivilianGames", totalCivilianGames);
+        tag.putInt("TotalCivilianWins", totalCivilianWins);
+        tag.putInt("TotalKillerGames", totalKillerGames);
+        tag.putInt("TotalKillerWins", totalKillerWins);
+        tag.putInt("TotalNeutralGames", totalNeutralGames);
+        tag.putInt("TotalNeutralWins", totalNeutralWins);
+        tag.putInt("TotalSheriffGames", totalSheriffGames);
+        tag.putInt("TotalSheriffWins", totalSheriffWins);
 
         ListTag roleStatsList = new ListTag();
         for (Map.Entry<ResourceLocation, RoleStats> entry : roleStats.entrySet()) {
@@ -289,6 +385,167 @@ public class PlayerStatsComponent implements AutoSyncedComponent, ServerTickingC
 
     public void incrementTotalLoversWins() {
         this.totalLoversWins++;
+        this.markDirty();
+        this.markNeedsSync();
+    }
+
+    // 阵营统计 Getter 和 Setter 方法
+    public int getTotalCivilianGames() {
+        return totalCivilianGames;
+    }
+
+    public void incrementTotalCivilianGames() {
+        this.totalCivilianGames++;
+        this.markDirty();
+        this.markNeedsSync();
+    }
+
+    public int getTotalCivilianWins() {
+        return totalCivilianWins;
+    }
+
+    public void incrementTotalCivilianWins() {
+        this.totalCivilianWins++;
+        this.markDirty();
+        this.markNeedsSync();
+    }
+
+    public int getTotalCivilianKills() {
+        return totalCivilianKills;
+    }
+
+    public void incrementTotalCivilianKills() {
+        this.totalCivilianKills++;
+        this.markDirty();
+        this.markNeedsSync();
+    }
+
+    public int getTotalCivilianDeaths() {
+        return totalCivilianDeaths;
+    }
+
+    public void incrementTotalCivilianDeaths() {
+        this.totalCivilianDeaths++;
+        this.markDirty();
+        this.markNeedsSync();
+    }
+
+    public int getTotalKillerGames() {
+        return totalKillerGames;
+    }
+
+    public void incrementTotalKillerGames() {
+        this.totalKillerGames++;
+        this.markDirty();
+        this.markNeedsSync();
+    }
+
+    public int getTotalKillerWins() {
+        return totalKillerWins;
+    }
+
+    public void incrementTotalKillerWins() {
+        this.totalKillerWins++;
+        this.markDirty();
+        this.markNeedsSync();
+    }
+
+    public int getTotalKillerKills() {
+        return totalKillerKills;
+    }
+
+    public void incrementTotalKillerKills() {
+        this.totalKillerKills++;
+        this.markDirty();
+        this.markNeedsSync();
+    }
+
+    public int getTotalKillerDeaths() {
+        return totalKillerDeaths;
+    }
+
+    public void incrementTotalKillerDeaths() {
+        this.totalKillerDeaths++;
+        this.markDirty();
+        this.markNeedsSync();
+    }
+
+    public int getTotalNeutralGames() {
+        return totalNeutralGames;
+    }
+
+    public void incrementTotalNeutralGames() {
+        this.totalNeutralGames++;
+        this.markDirty();
+        this.markNeedsSync();
+    }
+
+    public int getTotalNeutralWins() {
+        return totalNeutralWins;
+    }
+
+    public void incrementTotalNeutralWins() {
+        this.totalNeutralWins++;
+        this.markDirty();
+        this.markNeedsSync();
+    }
+
+    public int getTotalNeutralKills() {
+        return totalNeutralKills;
+    }
+
+    public void incrementTotalNeutralKills() {
+        this.totalNeutralKills++;
+        this.markDirty();
+        this.markNeedsSync();
+    }
+
+    public int getTotalNeutralDeaths() {
+        return totalNeutralDeaths;
+    }
+
+    public void incrementTotalNeutralDeaths() {
+        this.totalNeutralDeaths++;
+        this.markDirty();
+        this.markNeedsSync();
+    }
+
+    public int getTotalSheriffGames() {
+        return totalSheriffGames;
+    }
+
+    public void incrementTotalSheriffGames() {
+        this.totalSheriffGames++;
+        this.markDirty();
+        this.markNeedsSync();
+    }
+
+    public int getTotalSheriffWins() {
+        return totalSheriffWins;
+    }
+
+    public void incrementTotalSheriffWins() {
+        this.totalSheriffWins++;
+        this.markDirty();
+        this.markNeedsSync();
+    }
+
+    public int getTotalSheriffKills() {
+        return totalSheriffKills;
+    }
+
+    public void incrementTotalSheriffKills() {
+        this.totalSheriffKills++;
+        this.markDirty();
+        this.markNeedsSync();
+    }
+
+    public int getTotalSheriffDeaths() {
+        return totalSheriffDeaths;
+    }
+
+    public void incrementTotalSheriffDeaths() {
+        this.totalSheriffDeaths++;
         this.markDirty();
         this.markNeedsSync();
     }
@@ -437,6 +694,24 @@ public class PlayerStatsComponent implements AutoSyncedComponent, ServerTickingC
         setTotalLosses(data.getTotalLosses());
         setTotalTeamKills(data.getTotalTeamKills());
         setTotalLoversWins(data.getTotalLoversWins());
+
+        // 应用阵营统计数据
+        totalCivilianGames = data.getTotalCivilianGames();
+        totalCivilianWins = data.getTotalCivilianWins();
+        totalCivilianKills = data.getTotalCivilianKills();
+        totalCivilianDeaths = data.getTotalCivilianDeaths();
+        totalKillerGames = data.getTotalKillerGames();
+        totalKillerWins = data.getTotalKillerWins();
+        totalKillerKills = data.getTotalKillerKills();
+        totalKillerDeaths = data.getTotalKillerDeaths();
+        totalNeutralGames = data.getTotalNeutralGames();
+        totalNeutralWins = data.getTotalNeutralWins();
+        totalNeutralKills = data.getTotalNeutralKills();
+        totalNeutralDeaths = data.getTotalNeutralDeaths();
+        totalSheriffGames = data.getTotalSheriffGames();
+        totalSheriffWins = data.getTotalSheriffWins();
+        totalSheriffKills = data.getTotalSheriffKills();
+        totalSheriffDeaths = data.getTotalSheriffDeaths();
 
         // 应用角色统计数据
         data.getRoleStats().forEach((roleIdStr, roleData) -> {
