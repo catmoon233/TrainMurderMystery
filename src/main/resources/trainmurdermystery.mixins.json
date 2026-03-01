@@ -27,6 +27,7 @@
     "network.ServerListFixMixin",
     "network.ServerPlayNetworkHandlerMixin",
     "server.DecServerJoinPlayer",
+    "server.MaxPlayerAccessor",
     "server.DedicatedPlayerManagerMixin",
     "server.PlayerDiscord",
     "util.EntitySelectorMixin",

@@ -1,5 +1,9 @@
 package dev.doctor4t.trainmurdermystery.client.gui.screen;
 
+import java.util.UUID;
+
+import org.jetbrains.annotations.NotNull;
+
 import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.cca.PlayerStatsComponent;
 import dev.doctor4t.trainmurdermystery.client.TMMClient;
@@ -10,9 +14,6 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
-import org.jetbrains.annotations.NotNull;
- 
-import java.util.UUID;
  
 public class PlayerStatsScreen extends Screen {
     private PlayerStatsComponent stats;
@@ -77,6 +78,7 @@ public class PlayerStatsScreen extends Screen {
                 screenWidth,
                 screenHeight
         );
+        generalStatsPanel.init();
         this.addRenderableWidget(generalStatsPanel);
 
         roleStatsPanel = new RoleStatsPanel(
@@ -106,8 +108,8 @@ public class PlayerStatsScreen extends Screen {
         // 渲染背景（半透明黑色）
         graphics.fillGradient(0, 0, this.width, this.height, 0xC0101010, 0xD0101010);
         // 渲染标题
-        graphics.drawCenteredString(this.font, this.title, this.width / 2, (int)((this.height * 0.3) - 30), 0xFFFFFFFF);
         super.render(graphics, mouseX, mouseY, delta);
+        graphics.drawCenteredString(this.font, this.title, this.width / 2, (int)(32), 0xFFFFFFFF);
     }
 
     @Override

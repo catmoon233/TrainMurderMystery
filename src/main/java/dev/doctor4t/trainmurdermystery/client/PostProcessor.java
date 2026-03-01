@@ -11,48 +11,40 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 
-public class PostProcessor
-{
+public class PostProcessor {
     private float m_time;
     private final RenderTarget m_swapBuffer;
     private final Matrix4f m_orthoMat = new Matrix4f();
     public final List<PostPassEntry> passEntries = new ArrayList<>();
 
-    public PostProcessor()
-    {
+    public PostProcessor() {
         Minecraft mc = Minecraft.getInstance();
-        m_swapBuffer = new TextureTarget(mc.getMainRenderTarget().width, mc.getMainRenderTarget().height, false, Minecraft.ON_OSX);
+        m_swapBuffer = new TextureTarget(mc.getMainRenderTarget().width, mc.getMainRenderTarget().height, false,
+                Minecraft.ON_OSX);
         m_swapBuffer.setClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         updateOrthoMatrix();
     }
 
-    public float getTime()
-    {
+    public float getTime() {
         return m_time;
     }
 
-    public PostPassEntry addPassEntry(String in, String out, Function<PostPass, Boolean> inProcessor, Function<PostPass, Boolean> outProcessor)
-    {
+    public PostPassEntry addPassEntry(String in, String out, Function<PostPass, Boolean> inProcessor,
+            Function<PostPass, Boolean> outProcessor) {
         Minecraft mc = Minecraft.getInstance();
         PostPass inPass;
         PostPass outPass;
-        try
-        {
-            inPass = new PostPass(mc.getResourceManager(), in, mc.getMainRenderTarget(), m_swapBuffer,true);
+        try {
+            inPass = new PostPass(mc.getResourceManager(), in, mc.getMainRenderTarget(), m_swapBuffer, true);
             inPass.setOrthoMatrix(m_orthoMat);
-        }
-        catch (IOException e)
-        {
+        } catch (IOException e) {
             e.printStackTrace();
             return null;
         }
-        try
-        {
+        try {
             outPass = new PostPass(mc.getResourceManager(), out, m_swapBuffer, mc.getMainRenderTarget(), true);
             outPass.setOrthoMatrix(m_orthoMat);
-        }
-        catch (IOException e)
-        {
+        } catch (IOException e) {
             e.printStackTrace();
             return null;
         }
@@ -61,21 +53,18 @@ public class PostProcessor
         return entry;
     }
 
-    public PostPassEntry addSinglePassEntry(String in, Function<PostPass, Boolean> inProcessor)
-    {
+    public PostPassEntry addSinglePassEntry(String in, Function<PostPass, Boolean> inProcessor) {
         return addPassEntry(in, "blit", inProcessor, null);
     }
 
-    public void render(float partialTicks)
-    {
+    public void render(float partialTicks) {
         m_time += partialTicks;
 
         Minecraft mc = Minecraft.getInstance();
-        if (mc.player == null || mc.player.isCreative() || mc.player.isSpectator() )
+        if (mc.player == null || mc.player.isCreative() || mc.player.isSpectator())
             return;
 
-        for (PostPassEntry entry : passEntries)
-        {
+        for (PostPassEntry entry : passEntries) {
             if (entry.getInPass() == null || entry.getOutPass() == null ||
                     entry.getInProcessor() != null && !entry.getInProcessor().apply(entry.getInPass()) ||
                     entry.getOutProcessor() != null && !entry.getOutProcessor().apply(entry.getOutPass()))
@@ -86,56 +75,50 @@ public class PostProcessor
         }
     }
 
-    public void updateOrthoMatrix()
-    {
+    public void updateOrthoMatrix() {
         Minecraft mc = Minecraft.getInstance();
-        m_orthoMat.setOrtho(0.0f, (float)mc.getMainRenderTarget().width, 0.0f, (float)mc.getMainRenderTarget().height, .1f, 1000.0f);
-        for (PostPassEntry entry : passEntries)
-        {
+        m_orthoMat.setOrtho(0.0f, (float) mc.getMainRenderTarget().width, 0.0f, (float) mc.getMainRenderTarget().height,
+                .1f, 1000.0f);
+        for (PostPassEntry entry : passEntries) {
             entry.getInPass().setOrthoMatrix(m_orthoMat);
             entry.getOutPass().setOrthoMatrix(m_orthoMat);
         }
     }
 
-    public void resize(int w, int h)
-    {
-        if (m_swapBuffer != null)
+    public void resize(int w, int h) {
+        if (m_swapBuffer != null) {
             m_swapBuffer.resize(w, h, false);
+        }
         updateOrthoMatrix();
     }
 
-    public class PostPassEntry
-    {
+    public class PostPassEntry {
         private PostPass m_in;
         private PostPass m_out;
         private Function<PostPass, Boolean> m_inProcessor;
         private Function<PostPass, Boolean> m_outProcessor;
 
-        public PostPassEntry(PostPass in, PostPass out, Function<PostPass, Boolean> inProcessor, Function<PostPass, Boolean> outProcessor)
-        {
+        public PostPassEntry(PostPass in, PostPass out, Function<PostPass, Boolean> inProcessor,
+                Function<PostPass, Boolean> outProcessor) {
             m_in = in;
             m_out = out;
             m_inProcessor = inProcessor;
             m_outProcessor = outProcessor;
         }
 
-        public PostPass getInPass()
-        {
+        public PostPass getInPass() {
             return m_in;
         }
 
-        public PostPass getOutPass()
-        {
+        public PostPass getOutPass() {
             return m_out;
         }
 
-        public Function<PostPass, Boolean> getInProcessor()
-        {
+        public Function<PostPass, Boolean> getInProcessor() {
             return m_inProcessor;
         }
 
-        public Function<PostPass, Boolean> getOutProcessor()
-        {
+        public Function<PostPass, Boolean> getOutProcessor() {
             return m_outProcessor;
         }
     }

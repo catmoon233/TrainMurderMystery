@@ -17,6 +17,7 @@ public abstract class MixinGameRenderer
     @Inject(method = "render", at = @At(value = "INVOKE", target = "Lcom/mojang/blaze3d/pipeline/RenderTarget;bindWrite(Z)V"))
     private void render(DeltaTracker deltaTracker, boolean bl, CallbackInfo ci)
     {
+        @SuppressWarnings("resource")
         GameRenderer renderer = (GameRenderer)(Object)this;
 
         if (renderer != null&& bl && renderer.getMinecraft().level != null)
