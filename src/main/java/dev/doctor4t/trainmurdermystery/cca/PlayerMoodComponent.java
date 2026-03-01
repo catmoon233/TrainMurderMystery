@@ -522,7 +522,7 @@ public class PlayerMoodComponent implements RoleComponent, ServerTickingComponen
     }
 
     public static class ExerciseTask implements TrainTask {
-        private int timer;
+        public int timer;
 
         public ExerciseTask(int time) {
             this.timer = time;
