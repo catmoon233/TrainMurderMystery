@@ -7,6 +7,7 @@ import dev.doctor4t.trainmurdermystery.index.TMMItems;
 import dev.doctor4t.trainmurdermystery.item.DerringerItem;
 import dev.doctor4t.trainmurdermystery.item.KnifeItem;
 import dev.doctor4t.trainmurdermystery.item.RevolverItem;
+import dev.doctor4t.trainmurdermystery.item.SniperRifleItem;
 import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -40,6 +41,8 @@ public class CrosshairRenderer {
         if (mainHandStack.is(TMMItems.REVOLVER) && !player.getCooldowns().isOnCooldown(mainHandStack.getItem()) && RevolverItem.getGunTarget(player) instanceof EntityHitResult) {
             target = true;
         } else if (mainHandStack.is(TMMItems.DERRINGER) && !player.getCooldowns().isOnCooldown(mainHandStack.getItem()) && DerringerItem.getGunTarget(player) instanceof EntityHitResult) {
+            target = true;
+        } else if (mainHandStack.is(TMMItems.SNIPER_RIFLE) && !player.getCooldowns().isOnCooldown(mainHandStack.getItem()) && SniperRifleItem.getGunTarget(player) instanceof EntityHitResult) {
             target = true;
         } else if (mainHandStack.is(TMMItems.KNIFE)) {
             ItemCooldowns manager = player.getCooldowns();

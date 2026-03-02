@@ -1,7 +1,16 @@
 package dev.doctor4t.trainmurdermystery.mixin.input;
 
+import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.block.SecurityMonitorBlock;
+import dev.doctor4t.trainmurdermystery.item.SniperRifleItem;
+import dev.doctor4t.trainmurdermystery.util.SniperShootPayload;
+import dev.doctor4t.trainmurdermystery.index.TMMItems;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.MouseHandler;
+import net.minecraft.client.player.LocalPlayer;
+import net.minecraft.world.item.ItemStack;
+import org.lwjgl.glfw.GLFW;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
@@ -28,6 +37,84 @@ public class MouseHandlerMixin {
             // 这里的参数值是原始鼠标移动量，需要进行适当的缩放
             SecurityMonitorBlock.onPlayerRotated(yOffset);
             ci.cancel();
+        }
+    }
+    
+    // 捕获鼠标点击事件用于狙击枪操作
+    @Inject(method = "onPress", at = @At("HEAD"), cancellable = true)
+    public void TMM$onPress(long window, int button, int action, int mods, CallbackInfo ci) {
+        // 只处理左键（button = 0）
+        if (button == GLFW.GLFW_MOUSE_BUTTON_LEFT && action == GLFW.GLFW_PRESS) {
+            // 获取 Minecraft 客户端实例
+            Minecraft client = Minecraft.getInstance();
+            
+            // 检查是否有客户端实例和玩家
+            if (client == null || client.player == null) {
+                return;
+            }
+            
+            LocalPlayer player = client.player;
+            ItemStack mainHandStack = player.getMainHandItem();
+            
+            // 只处理狙击枪
+            if (!mainHandStack.is(TMMItems.SNIPER_RIFLE)) {
+                return;
+            }
+            
+            // 检查是否按下 Shift
+            boolean isShiftKeyDown = (mods & GLFW.GLFW_MOD_SHIFT) != 0;
+            
+            // 检查冷却
+            if (player.getCooldowns().isOnCooldown(TMMItems.SNIPER_RIFLE)) {
+                return;
+            }
+            
+            if (isShiftKeyDown) {
+                // Shift + 左键：安装/卸载倍镜
+                if (SniperRifleItem.hasScopeAttached(mainHandStack)) {
+                    // 已安装倍镜，卸载倍镜
+                    ClientPlayNetworking.send(new SniperShootPayload(SniperShootPayload.Action.UNINSTALL_SCOPE, player.getId()));
+                    player.getCooldowns().addCooldown(TMMItems.SNIPER_RIFLE, 20); // 1秒冷却
+                    ci.cancel(); // 取消默认的攻击行为
+                } else {
+                    // 未安装倍镜，安装倍镜
+                    // 检查是否有倍镜
+                    boolean hasScope = false;
+                    for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
+                        ItemStack invStack = player.getInventory().getItem(i);
+                        if (invStack.is(TMMItems.SCOPE)) {
+                            hasScope = true;
+                            break;
+                        }
+                    }
+                    if (hasScope) {
+                        ClientPlayNetworking.send(new SniperShootPayload(SniperShootPayload.Action.INSTALL_SCOPE, player.getId()));
+                        player.getCooldowns().addCooldown(TMMItems.SNIPER_RIFLE, 20); // 1秒冷却
+                        ci.cancel(); // 取消默认的攻击行为
+                    }
+                }
+            } else {
+                // 左键：装填子弹
+                // 检查子弹数量
+                int currentAmmo = SniperRifleItem.getAmmoCount(mainHandStack);
+                if (currentAmmo < SniperRifleItem.MAX_AMMO) {
+                    // 检查是否有子弹
+                    boolean hasBullet = false;
+                    for (int i = 0; i < player.getInventory().getContainerSize(); i++) {
+                        ItemStack invStack = player.getInventory().getItem(i);
+                        if (invStack.is(TMMItems.MAGNUM_BULLET)) {
+                            hasBullet = true;
+                            break;
+                        }
+                    }
+                    if (hasBullet) {
+                        // 发送装填请求
+                        ClientPlayNetworking.send(new SniperShootPayload(SniperShootPayload.Action.RELOAD, player.getId()));
+                        player.getCooldowns().addCooldown(TMMItems.SNIPER_RIFLE, 100); // 5秒冷却
+                        ci.cancel(); // 取消默认的攻击行为
+                    }
+                }
+            }
         }
     }
 }

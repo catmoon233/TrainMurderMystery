@@ -30,6 +30,7 @@ public class InputHandler {
             return;
         if (client.level == null)
             return;
+        
         if (openVotingScreenKeybind.consumeClick()) {
             // 检查是否处于投票阶段
             final MapVotingComponent mapVotingComponent = MapVotingComponent.KEY.get(client.level);

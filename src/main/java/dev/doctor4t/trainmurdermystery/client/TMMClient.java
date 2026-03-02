@@ -27,6 +27,7 @@ import dev.doctor4t.trainmurdermystery.cca.PlayerMoodComponent;
 import dev.doctor4t.trainmurdermystery.cca.TrainWorldComponent;
 import dev.doctor4t.trainmurdermystery.client.gui.MapDetailsRenderer;
 import dev.doctor4t.trainmurdermystery.client.gui.RoundTextRenderer;
+import dev.doctor4t.trainmurdermystery.client.gui.ScopeOverlayRenderer;
 import dev.doctor4t.trainmurdermystery.client.gui.SecurityCameraHUD;
 import dev.doctor4t.trainmurdermystery.client.gui.StoreRenderer;
 import dev.doctor4t.trainmurdermystery.client.gui.TimeRenderer;
@@ -84,6 +85,8 @@ import dev.doctor4t.trainmurdermystery.util.GunDropPayload;
 import dev.doctor4t.trainmurdermystery.util.HandParticleManager;
 import dev.doctor4t.trainmurdermystery.util.PoisonUtils;
 import dev.doctor4t.trainmurdermystery.util.ShootMuzzleS2CPayload;
+import dev.doctor4t.trainmurdermystery.util.SniperScopeStateS2CPayload;
+import dev.doctor4t.trainmurdermystery.util.SniperShootPayload;
 import dev.doctor4t.trainmurdermystery.util.TaskCompletePayload;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.fabricmc.api.ClientModInitializer;
@@ -395,6 +398,7 @@ public class TMMClient implements ClientModInitializer {
         RemoveStatusBarPayload.registerReceiver();
         TriggerStatusBarPayload.registerReceiver();
         ClientPlayNetworking.registerGlobalReceiver(ShootMuzzleS2CPayload.ID, new ShootMuzzleS2CPayload.Receiver());
+        ClientPlayNetworking.registerGlobalReceiver(SniperScopeStateS2CPayload.TYPE, new SniperScopeStateS2CPayload.Receiver());
         ClientPlayNetworking.registerGlobalReceiver(PoisonUtils.PoisonOverlayPayload.ID,
                 new PoisonUtils.PoisonOverlayPayload.Receiver());
         ClientPlayNetworking.registerGlobalReceiver(GunDropPayload.ID, new GunDropPayload.Receiver());
@@ -486,6 +490,7 @@ public class TMMClient implements ClientModInitializer {
                     Minecraft.getInstance().getWindow().getGuiScaledHeight());
             SecurityCameraHUD.renderCameraFeed(guiGraphics, Minecraft.getInstance().getWindow().getGuiScaledWidth(),
                     Minecraft.getInstance().getWindow().getGuiScaledHeight());
+            ScopeOverlayRenderer.renderScopeOverlay(guiGraphics, deltaTick);
             WaypointHUD.renderHUD(guiGraphics, deltaTick.getRealtimeDeltaTicks());
             AFKRenderer.renderAFKEffects(guiGraphics, deltaTick.getRealtimeDeltaTicks());
 

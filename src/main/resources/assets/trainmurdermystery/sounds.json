@@ -125,6 +125,29 @@
 		],
 		"subtitle": "subtitles.item.revolver.shoot"
 	},
+	"item.sniper_rifle.shoot": {
+		"sounds": [
+			"trainmurdermystery:item/sniper_rifle_shoot"
+		]
+	},
+	"item.sniper_rifle.reload": {
+		"sounds": [
+			"trainmurdermystery:item/sniper_rifle_reload"
+		],
+		"subtitle": "subtitles.item.sniper_rifle.reload"
+	},
+	"item.scope.attach": {
+		"sounds": [
+			"trainmurdermystery:item/scope_attach"
+		],
+		"subtitle": "subtitles.item.scope.attach"
+	},
+	"item.scope.detach": {
+		"sounds": [
+			"trainmurdermystery:item/scope_detach"
+		],
+		"subtitle": "subtitles.item.scope.detach"
+	},
 	"item.derringer.reload": {
 		"sounds": [
 			"trainmurdermystery:item/derringer_reload"

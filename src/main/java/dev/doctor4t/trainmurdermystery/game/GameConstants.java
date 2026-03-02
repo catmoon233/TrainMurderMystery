@@ -144,5 +144,7 @@ public interface GameConstants {
         ResourceLocation POISON = TMM.id("poison");
         ResourceLocation FELL_OUT_OF_TRAIN = TMM.id("fell_out_of_train");
         ResourceLocation ARROW = TMM.id("arrow");
+        ResourceLocation SNIPER_RIFLE = TMM.id("sniper_rifle");
+        ResourceLocation SNIPER_RIFLE_BACKFIRE = TMM.id("sniper_rifle_backfire");
     }
 }

@@ -63,6 +63,12 @@ public interface TMMItems {
                         EQUIPMENT_GROUP);
         Item DERRINGER = registrar.create("derringer", new DerringerItem(new Item.Properties().stacksTo(1)),
                         EQUIPMENT_GROUP);
+        Item SNIPER_RIFLE = registrar.create("sniper_rifle", new SniperRifleItem(new Item.Properties().stacksTo(1)),
+                        EQUIPMENT_GROUP);
+        Item MAGNUM_BULLET = registrar.create("magnum_bullet", new MagnumBulletItem(new Item.Properties().stacksTo(64)),
+                        EQUIPMENT_GROUP);
+        Item SCOPE = registrar.create("scope", new ScopeItem(new Item.Properties().stacksTo(1)),
+                        EQUIPMENT_GROUP);
         Item BODY_BAG = registrar.create("body_bag", new BodyBagItem(new Item.Properties().stacksTo(1)),
                         EQUIPMENT_GROUP);
         Item LETTER = registrar.create("letter", new Item(new Item.Properties().stacksTo(1)), EQUIPMENT_GROUP);
