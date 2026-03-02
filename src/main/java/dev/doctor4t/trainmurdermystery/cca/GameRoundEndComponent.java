@@ -2,6 +2,7 @@ package dev.doctor4t.trainmurdermystery.cca;
 
 import com.mojang.authlib.GameProfile;
 import dev.doctor4t.trainmurdermystery.api.TMMRoles;
+import dev.doctor4t.trainmurdermystery.cca.GameRoundEndComponent.RoundEndData;
 import dev.doctor4t.trainmurdermystery.client.gui.RoleAnnouncementTexts;
 import dev.doctor4t.trainmurdermystery.game.GameFunctions;
 import net.minecraft.core.HolderLookup;
@@ -169,10 +170,20 @@ public class GameRoundEndComponent implements AutoSyncedComponent {
             tag.putString("winner_id", CustomWinnerID);
         }
         if (CustomWinnerTitle != null) {
-            tag.putString("winner_title", Component.Serializer.toJson(CustomWinnerTitle, registryLookup));
+            try {
+                tag.putString("winner_title", Component.Serializer.toJson(CustomWinnerTitle, registryLookup));
+            } catch (Exception e) {
+                e.printStackTrace();
+                tag.putString("winner_title", "[\"ERROR! " + e.getMessage() + "\"]");
+            }
         }
         if (CustomWinnerSubtitle != null) {
-            tag.putString("winner_subtitle", Component.Serializer.toJson(CustomWinnerSubtitle, registryLookup));
+            try {
+                tag.putString("winner_subtitle", Component.Serializer.toJson(CustomWinnerSubtitle, registryLookup));
+            } catch (Exception e) {
+                e.printStackTrace();
+                tag.putString("winner_subtitle", "[\"ERROR! " + e.getMessage() + "\"]");
+            }
         }
         tag.putInt("winner_color", CustomWinnerColor);
         tag.putInt("winstatus", this.winStatus.ordinal());
