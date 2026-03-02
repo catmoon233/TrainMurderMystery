@@ -42,6 +42,7 @@ public interface TMMItems {
                         TMM.id("equipment"));
 
         Item KEY = registrar.create("key", new KeyItem(new Item.Properties().stacksTo(1)), EQUIPMENT_GROUP);
+        Item IRON_DOOR_KEY = registrar.create("iron_door_key", new IronDoorKeyItem(new Item.Properties().stacksTo(1).durability(3)), EQUIPMENT_GROUP);
         Item LOCKPICK = registrar.create("lockpick", new LockpickItem(new Item.Properties().stacksTo(1)),
                         EQUIPMENT_GROUP);
         Item KNIFE = registrar.create("knife", new KnifeItem(new Item.Properties().stacksTo(1)), EQUIPMENT_GROUP);

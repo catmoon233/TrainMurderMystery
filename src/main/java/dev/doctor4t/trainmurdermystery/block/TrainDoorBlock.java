@@ -4,12 +4,14 @@ import dev.doctor4t.trainmurdermystery.block_entity.SmallDoorBlockEntity;
 import dev.doctor4t.trainmurdermystery.cca.TrainWorldComponent;
 import dev.doctor4t.trainmurdermystery.index.TMMItems;
 import dev.doctor4t.trainmurdermystery.index.TMMSounds;
+import dev.doctor4t.trainmurdermystery.item.IronDoorKeyItem;
 import java.util.function.Supplier;
 import net.minecraft.core.BlockPos;
 import net.minecraft.network.chat.Component;
 import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
@@ -32,13 +34,23 @@ public class TrainDoorBlock extends SmallDoorBlock {
             if (player.isCreative() || TrainWorldComponent.KEY.get(world).getSpeed() == 0) {
                 return open(state, world, entity, lowerPos);
             } else {
-                boolean hasLockpick = player.getMainHandItem().is(TMMItems.LOCKPICK);
+                ItemStack mainHandItem = player.getMainHandItem();
+                boolean hasLockpick = mainHandItem.is(TMMItems.LOCKPICK);
+                boolean hasIronDoorKey = mainHandItem.getItem() instanceof IronDoorKeyItem;
 
                 if (entity.isOpen()) {
                     return open(state, world, entity, lowerPos);
                 } else {
                     if (hasLockpick) {
                         world.playSound(null, lowerPos.getX() + .5f, lowerPos.getY() + 1, lowerPos.getZ() + .5f, TMMSounds.ITEM_LOCKPICK_DOOR, SoundSource.BLOCKS, 1f, 1f);
+                        return open(state, world, entity, lowerPos);
+                    } else if (hasIronDoorKey) {
+                        // 扣除铁门钥匙的耐久
+                        if (!player.isCreative()) {
+                            mainHandItem.hurtAndBreak(1, player, player.getEquipmentSlotForItem(mainHandItem));
+                        }
+                        // 播放声音并开门
+                        world.playSound(null, lowerPos.getX() + .5f, lowerPos.getY() + 1, lowerPos.getZ() + .5f, TMMSounds.ITEM_KEY_DOOR, SoundSource.BLOCKS, 1f, 1f);
                         return open(state, world, entity, lowerPos);
                     } else {
                         if (!world.isClientSide) {
