@@ -489,8 +489,13 @@ public class GameReplayManager {
   public void saveReplay() {
     File replayFile = new File(server.getServerDirectory().toFile(), REPLAY_FILE_NAME);
     try (FileWriter writer = new FileWriter(replayFile)) {
-      GSON.toJson(currentReplayData, writer);
-      TMM.LOGGER.info("Game replay saved to {}", replayFile.getAbsolutePath());
+      try {
+        GSON.toJson(currentReplayData, writer);
+        TMM.LOGGER.info("Game replay saved to {}", replayFile.getAbsolutePath());
+
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
     } catch (IOException e) {
       TMM.LOGGER.error("Failed to save game replay", e);
     }
@@ -503,9 +508,14 @@ public class GameReplayManager {
       return null;
     }
     try (FileReader reader = new FileReader(replayFile)) {
-      GameReplayData loadedData = GSON.fromJson(reader, GameReplayData.class);
-      TMM.LOGGER.info("Game replay loaded from {}", replayFile.getAbsolutePath());
-      return loadedData;
+      try {
+        GameReplayData loadedData = GSON.fromJson(reader, GameReplayData.class);
+        TMM.LOGGER.info("Game replay loaded from {}", replayFile.getAbsolutePath());
+        return loadedData;
+      } catch (Exception e) {
+        e.printStackTrace();
+      }
+      return new GameReplayData();
     } catch (IOException e) {
       TMM.LOGGER.error("Failed to load game replay", e);
       return null;
