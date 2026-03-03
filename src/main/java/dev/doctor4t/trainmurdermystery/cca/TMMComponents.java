@@ -48,6 +48,8 @@ public class TMMComponents
                 .end(PlayerAFKComponent::new);
         registry.beginRegistration(Player.class, PlayerSkinsComponent.KEY)
                 .respawnStrategy(RespawnCopyStrategy.ALWAYS_COPY).end(PlayerSkinsComponent::new);
+        registry.beginRegistration(Player.class, PlayerNunchuckComponent.KEY)
+                .respawnStrategy(RespawnCopyStrategy.NEVER_COPY).end(PlayerNunchuckComponent::new);
     }
 
     @Override

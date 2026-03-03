@@ -46,6 +46,11 @@ public class SniperRifleItem extends Item {
         ItemStack stack = user.getItemInHand(hand);
 
         if (world.isClientSide) {
+            // 检查冷却
+            if (user.getCooldowns().isOnCooldown(stack.getItem())) {
+                return InteractionResultHolder.fail(stack);
+            }
+
             final var gameComponent = TMMClient.gameComponent;
             if (gameComponent != null) {
                 final var role = gameComponent.getRole(user);
@@ -137,6 +142,8 @@ public class SniperRifleItem extends Item {
             }
             user.setXRot(user.getXRot() - 4);
             spawnHandParticle();
+            // 客户端设置冷却，防止重复射击
+            user.getCooldowns().addCooldown(stack.getItem(), 80); // 4秒冷却
         }
     }
 
@@ -155,7 +162,7 @@ public class SniperRifleItem extends Item {
 
     public static HitResult getGunTarget(Player user) {
         return SniperProjectileUtil.getSniperHitResult(user,
-                entity -> entity instanceof Player player && GameFunctions.isPlayerAliveAndSurvival(player), 150F);
+                entity -> entity instanceof Player player && GameFunctions.isPlayerAliveAndSurvival(player), 200F);
     }
 
     // 倍镜相关方法

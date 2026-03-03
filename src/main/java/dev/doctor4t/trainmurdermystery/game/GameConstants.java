@@ -56,6 +56,8 @@ public interface GameConstants {
         ITEM_COOLDOWNS.put(TMMItems.BODY_BAG, TMMConfig.bodyBagCooldown * 20);
         ITEM_COOLDOWNS.put(TMMItems.PSYCHO_MODE, TMMConfig.psychoModeCooldown * 20);
         ITEM_COOLDOWNS.put(TMMItems.BLACKOUT, TMMConfig.blackoutCooldown * 20);
+        ITEM_COOLDOWNS.put(TMMItems.NUNCHUCK, 160); // 8秒冷却
+        ITEM_COOLDOWNS.put(TMMItems.SNIPER_RIFLE, 80); // 4秒冷却
 
         TMM.LOGGER.debug("物品冷却时间已重载: 小刀={}秒, 左轮={}秒",
                 TMMConfig.knifeCooldown, TMMConfig.revolverCooldown);
@@ -146,5 +148,6 @@ public interface GameConstants {
         ResourceLocation ARROW = TMM.id("arrow");
         ResourceLocation SNIPER_RIFLE = TMM.id("sniper_rifle");
         ResourceLocation SNIPER_RIFLE_BACKFIRE = TMM.id("sniper_rifle_backfire");
+        ResourceLocation NUNCHUCK = TMM.id("nunchuck_hit");
     }
 }

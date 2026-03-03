@@ -145,6 +145,18 @@ public abstract class PlayerEntityMixin extends LivingEntity implements PlayerSt
 			return;
 		}
 
+		// 双节棍左键和Shift+左键攻击处理
+		if (getMainHandItem().is(TMMItems.NUNCHUCK) && target instanceof Player playerTarget
+				&& GameFunctions.isPlayerAliveAndSurvival(playerTarget)) {
+			dev.doctor4t.trainmurdermystery.util.NunchuckHitPayload payload;
+			boolean isShiftLeftClick = self.isShiftKeyDown();
+			int direction = isShiftLeftClick ? 2 : 1; // Shift+左键=2(向后), 左键=1(向右)
+			payload = new dev.doctor4t.trainmurdermystery.util.NunchuckHitPayload(target.getId(), direction);
+			net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking.send(payload);
+			CrosshairaddonsCompat.onAttack(target);
+			return;
+		}
+
 		if (!GameFunctions.isPlayerAliveAndSurvival(self) || this.getMainHandItem().is(TMMItems.KNIFE)
 				|| IsPlayerPunchable.EVENT.invoker().gotPunchable(target)
 				|| AllowPlayerPunching.EVENT.invoker().allowPunching(self)) {

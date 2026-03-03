@@ -297,6 +297,7 @@ public class TMM implements ModInitializer {
                 dev.doctor4t.trainmurdermystery.network.VoteForMapPayload.CODEC);
         PayloadTypeRegistry.playC2S().register(SecurityCameraExitRequestPayload.ID,
                 SecurityCameraExitRequestPayload.CODEC);
+        PayloadTypeRegistry.playC2S().register(NunchuckHitPayload.ID, NunchuckHitPayload.CODEC);
     }
 
     private void registerGlobalReceivers() {
@@ -316,6 +317,7 @@ public class TMM implements ModInitializer {
             joinVoice(payload, context);
 
         });
+        ServerPlayNetworking.registerGlobalReceiver(NunchuckHitPayload.ID, new NunchuckHitPayload.Receiver());
     }
 
     private void joinVoice(JoinSpecGroupPayload payload, ServerPlayNetworking.Context context) {

@@ -78,6 +78,11 @@ public record SniperShootPayload(Action action, int targetOrShooterId) implement
                     if (SniperRifleItem.getAmmoCount(mainHandStack) <= 0)
                         return;
 
+                    // 设置冷却时间 - 任何射击行为都应该设置冷却
+                    if (!player.isCreative())
+                        player.getCooldowns().addCooldown(mainHandStack.getItem(),
+                                GameConstants.ITEM_COOLDOWNS.getOrDefault(mainHandStack.getItem(), 0));
+
                     // 消耗一颗子弹
                     SniperRifleItem.consumeAmmo(mainHandStack);
 
@@ -86,9 +91,13 @@ public record SniperShootPayload(Action action, int targetOrShooterId) implement
                             TMMSounds.ITEM_SNIPER_RIFLE_SHOOT, SoundSource.MASTER, 10f,
                             1f + player.getRandom().nextFloat() * .1f - .05f);
 
+                    // 发送枪口粒子效果
+                    for (ServerPlayer tracking : PlayerLookup.tracking(player))
+                        PacketTracker.sendToClient(tracking, new ShootMuzzleS2CPayload(player.getId()));
+
                     // 处理目标命中
                     if (player.serverLevel().getEntity(payload.targetOrShooterId()) instanceof Player target
-                            && target.distanceTo(player) < 150.0) {
+                            && target.distanceTo(player) < 200.0) {
                         var game = GameWorldComponent.KEY.get(player.level());
 
                         // 检查角色权限
@@ -129,15 +138,6 @@ public record SniperShootPayload(Action action, int targetOrShooterId) implement
 
                         GameFunctions.killPlayer(target, true, player, GameConstants.DeathReasons.SNIPER_RIFLE);
                     }
-
-                    // 发送枪口粒子效果
-                    for (ServerPlayer tracking : PlayerLookup.tracking(player))
-                        PacketTracker.sendToClient(tracking, new ShootMuzzleS2CPayload(player.getId()));
-
-                    // 设置冷却时间
-                    if (!player.isCreative())
-                        player.getCooldowns().addCooldown(mainHandStack.getItem(),
-                                GameConstants.ITEM_COOLDOWNS.getOrDefault(mainHandStack.getItem(), 0));
                 }
                 case RELOAD -> {
                     if (player.getCooldowns().isOnCooldown(mainHandStack.getItem()))
@@ -166,9 +166,9 @@ public record SniperShootPayload(Action action, int targetOrShooterId) implement
                     player.level().playSound(null, player.getX(), player.getY(), player.getZ(),
                             TMMSounds.ITEM_SNIPER_RIFLE_RELOAD, SoundSource.PLAYERS, 0.5f, 1f);
 
-                    // 设置冷却时间（5秒）
+                    // 设置冷却时间（6秒）
                     if (!player.isCreative())
-                        player.getCooldowns().addCooldown(mainHandStack.getItem(), 100);
+                        player.getCooldowns().addCooldown(mainHandStack.getItem(), 120);
                 }
                 case INSTALL_SCOPE -> {
                     if (player.getCooldowns().isOnCooldown(mainHandStack.getItem()))
