@@ -1,4 +1,4 @@
-package dev.doctor4t.trainmurdermystery.util;
+package dev.doctor4t.trainmurdermystery.network.tmm;
 
 import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.index.tag.TMMItemTags;

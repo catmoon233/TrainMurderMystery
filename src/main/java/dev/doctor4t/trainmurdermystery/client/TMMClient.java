@@ -26,6 +26,7 @@ import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
 import dev.doctor4t.trainmurdermystery.cca.PlayerMoodComponent;
 import dev.doctor4t.trainmurdermystery.cca.TrainWorldComponent;
 import dev.doctor4t.trainmurdermystery.client.gui.MapDetailsRenderer;
+import dev.doctor4t.trainmurdermystery.client.gui.RoleAnnouncementTexts;
 import dev.doctor4t.trainmurdermystery.client.gui.RoundTextRenderer;
 import dev.doctor4t.trainmurdermystery.client.gui.ScopeOverlayRenderer;
 import dev.doctor4t.trainmurdermystery.client.gui.SecurityCameraHUD;
@@ -79,15 +80,15 @@ import dev.doctor4t.trainmurdermystery.network.packet.SyncRoomToPlayerPayload;
 import dev.doctor4t.trainmurdermystery.network.packet.SyncSpecificWaypointVisibilityPacket;
 import dev.doctor4t.trainmurdermystery.network.packet.SyncWaypointVisibilityPacket;
 import dev.doctor4t.trainmurdermystery.network.packet.SyncWaypointsPacket;
-import dev.doctor4t.trainmurdermystery.util.AnnounceEndingPayload;
-import dev.doctor4t.trainmurdermystery.util.AnnounceWelcomePayload;
-import dev.doctor4t.trainmurdermystery.util.GunDropPayload;
+import dev.doctor4t.trainmurdermystery.network.tmm.AnnounceEndingPayload;
+import dev.doctor4t.trainmurdermystery.network.tmm.AnnounceWelcomePayload;
+import dev.doctor4t.trainmurdermystery.network.tmm.GunDropPayload;
+import dev.doctor4t.trainmurdermystery.network.tmm.ShootMuzzleS2CPayload;
+import dev.doctor4t.trainmurdermystery.network.tmm.SniperScopeStateS2CPayload;
+import dev.doctor4t.trainmurdermystery.network.tmm.TaskCompletePayload;
 import dev.doctor4t.trainmurdermystery.util.HandParticleManager;
+import dev.doctor4t.trainmurdermystery.util.MatrixParticleManager;
 import dev.doctor4t.trainmurdermystery.util.PoisonUtils;
-import dev.doctor4t.trainmurdermystery.util.ShootMuzzleS2CPayload;
-import dev.doctor4t.trainmurdermystery.util.SniperScopeStateS2CPayload;
-import dev.doctor4t.trainmurdermystery.util.SniperShootPayload;
-import dev.doctor4t.trainmurdermystery.util.TaskCompletePayload;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.blockrenderlayer.v1.BlockRenderLayerMap;
@@ -397,13 +398,56 @@ public class TMMClient implements ClientModInitializer {
         TriggerScreenEdgeEffectPayload.registerReceiver();
         RemoveStatusBarPayload.registerReceiver();
         TriggerStatusBarPayload.registerReceiver();
-        ClientPlayNetworking.registerGlobalReceiver(ShootMuzzleS2CPayload.ID, new ShootMuzzleS2CPayload.Receiver());
-        ClientPlayNetworking.registerGlobalReceiver(SniperScopeStateS2CPayload.TYPE, new SniperScopeStateS2CPayload.Receiver());
+        ClientPlayNetworking.registerGlobalReceiver(ShootMuzzleS2CPayload.ID, (payload, context) -> {
+            Minecraft client = context.client();
+            client.execute(() -> {
+                if (client.level == null || client.player == null)
+                    return;
+                Entity entity = client.level.getEntity(payload.shooterId());
+                if (!(entity instanceof Player shooter))
+                    return;
+
+                if (shooter.getId() == client.player.getId()
+                        && client.options.getCameraType() == CameraType.FIRST_PERSON)
+                    return;
+                Vec3 muzzlePos = MatrixParticleManager.getMuzzlePosForPlayer(shooter);
+                if (muzzlePos != null)
+                    client.level.addParticle(TMMParticles.GUNSHOT, muzzlePos.x, muzzlePos.y, muzzlePos.z, 0, 0, 0);
+            });
+
+        });
+        ClientPlayNetworking.registerGlobalReceiver(SniperScopeStateS2CPayload.TYPE, (payload, context) -> {
+            context.client().execute(() -> {
+                // 如果倍镜被卸下，退出开镜状态
+                if (!payload.scopeAttached()) {
+                    ScopeOverlayRenderer.setInScopeView(false);
+                }
+            });
+        });
         ClientPlayNetworking.registerGlobalReceiver(PoisonUtils.PoisonOverlayPayload.ID,
                 new PoisonUtils.PoisonOverlayPayload.Receiver());
         ClientPlayNetworking.registerGlobalReceiver(GunDropPayload.ID, new GunDropPayload.Receiver());
-        ClientPlayNetworking.registerGlobalReceiver(AnnounceWelcomePayload.ID, new AnnounceWelcomePayload.Receiver());
-        ClientPlayNetworking.registerGlobalReceiver(AnnounceEndingPayload.ID, new AnnounceEndingPayload.Receiver());
+        ClientPlayNetworking.registerGlobalReceiver(AnnounceWelcomePayload.ID, (payload, context) -> {
+            if (payload.role() == null)
+                return;
+            var res = ResourceLocation.tryParse(payload.role());
+
+            var announcementText = RoleAnnouncementTexts.getFromName(res.getPath());
+            if (announcementText == null) {
+                LoggerFactory.getLogger(this.getClass())
+                        .error("Unable to get announcement Text for '" + res.getPath() + "' (" + res
+                                + "). Available: ");
+                return;
+            }
+            RoundTextRenderer.startWelcome(announcementText, payload.killers(), payload.targets());
+        });
+        ClientPlayNetworking.registerGlobalReceiver(AnnounceEndingPayload.ID, (payload, context) -> {
+            RoundTextRenderer.startEnd();
+            final var gameComponent = TMMClient.gameComponent;
+            if (gameComponent != null) {
+                RoundTextRenderer.lastRole.putAll(gameComponent.getRoles());
+            }
+        });
         ClientPlayNetworking.registerGlobalReceiver(TaskCompletePayload.ID, new TaskCompletePayload.Receiver());
         ClientPlayNetworking.registerGlobalReceiver(ShowStatsPayload.ID, (payload, context) -> {
             UUID targetPlayerUuid = payload.targetPlayerUuid();

@@ -1,4 +1,4 @@
-package dev.doctor4t.trainmurdermystery.util;
+package dev.doctor4t.trainmurdermystery.network.tmm;
 
 import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
@@ -8,7 +8,6 @@ import dev.doctor4t.trainmurdermystery.index.TMMItems;
 import dev.doctor4t.trainmurdermystery.index.TMMSounds;
 import dev.doctor4t.trainmurdermystery.item.SniperRifleItem;
 import dev.doctor4t.trainmurdermystery.network.PacketTracker;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.FriendlyByteBuf;
@@ -20,7 +19,6 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
 
 public record SniperShootPayload(Action action, int targetOrShooterId) implements CustomPacketPayload {
     public static final Type<SniperShootPayload> TYPE = new Type<>(TMM.id("sniper_shoot"));
@@ -51,15 +49,6 @@ public record SniperShootPayload(Action action, int targetOrShooterId) implement
     @Override
     public @NotNull Type<? extends CustomPacketPayload> type() {
         return TYPE;
-    }
-
-    public static class ClientReceiver implements ClientPlayNetworking.PlayPayloadHandler<SniperShootPayload> {
-        @Override
-        public void receive(@NotNull SniperShootPayload payload, ClientPlayNetworking.@NotNull Context context) {
-            context.client().execute(() -> {
-                // 客户端可以在这里添加额外的逻辑，如声音播放等
-            });
-        }
     }
 
     public static class Receiver implements ServerPlayNetworking.PlayPayloadHandler<SniperShootPayload> {

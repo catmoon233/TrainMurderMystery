@@ -3,8 +3,9 @@ package dev.doctor4t.trainmurdermystery.network;
 import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.data.MapConfig;
 import dev.doctor4t.trainmurdermystery.data.ServerMapConfig;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.PlayerLookup;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.FriendlyByteBuf;
@@ -71,6 +72,7 @@ public record SyncMapConfigPayload(List<MapConfig.MapEntry> maps) implements Cus
         PlayerLookup.all(TMM.SERVER).forEach(player -> ServerPlayNetworking.send(player, payload));
     }
 
+    @Environment(EnvType.CLIENT)
     public static void registerReceiver() {
         ClientPlayNetworking.registerGlobalReceiver(ID, (payload, context) -> {
             // 在客户端主线程上更新地图配置

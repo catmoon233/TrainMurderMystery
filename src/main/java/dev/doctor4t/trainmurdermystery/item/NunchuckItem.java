@@ -3,7 +3,7 @@ package dev.doctor4t.trainmurdermystery.item;
 import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
 import dev.doctor4t.trainmurdermystery.client.TMMClient;
 import dev.doctor4t.trainmurdermystery.game.GameFunctions;
-import dev.doctor4t.trainmurdermystery.util.NunchuckHitPayload;
+import dev.doctor4t.trainmurdermystery.network.tmm.NunchuckHitPayload;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;

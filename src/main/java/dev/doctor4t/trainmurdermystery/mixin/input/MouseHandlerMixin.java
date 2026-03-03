@@ -1,9 +1,8 @@
 package dev.doctor4t.trainmurdermystery.mixin.input;
 
-import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.block.SecurityMonitorBlock;
 import dev.doctor4t.trainmurdermystery.item.SniperRifleItem;
-import dev.doctor4t.trainmurdermystery.util.SniperShootPayload;
+import dev.doctor4t.trainmurdermystery.network.tmm.SniperShootPayload;
 import dev.doctor4t.trainmurdermystery.index.TMMItems;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.Minecraft;

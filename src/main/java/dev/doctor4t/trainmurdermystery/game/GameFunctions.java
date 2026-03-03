@@ -83,7 +83,7 @@ import dev.doctor4t.trainmurdermystery.index.TMMSounds;
 import dev.doctor4t.trainmurdermystery.network.BreakArmorPayload;
 import dev.doctor4t.trainmurdermystery.network.CloseUiPayload;
 import dev.doctor4t.trainmurdermystery.network.TriggerScreenEdgeEffectPayload;
-import dev.doctor4t.trainmurdermystery.util.AnnounceEndingPayload;
+import dev.doctor4t.trainmurdermystery.network.tmm.AnnounceEndingPayload;
 import dev.doctor4t.trainmurdermystery.api.replay.ReplayPayload;
 import dev.doctor4t.trainmurdermystery.util.TMMItemUtils;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;

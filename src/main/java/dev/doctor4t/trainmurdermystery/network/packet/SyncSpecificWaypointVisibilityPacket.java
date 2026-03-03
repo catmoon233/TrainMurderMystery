@@ -2,6 +2,8 @@ package dev.doctor4t.trainmurdermystery.network.packet;
 
 import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.client.gui.screen.WaypointHUD;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
@@ -28,6 +30,7 @@ public class SyncSpecificWaypointVisibilityPacket implements CustomPacketPayload
         this.name = name;
     }
 
+    @Environment(EnvType.CLIENT)
     public static void handle(SyncSpecificWaypointVisibilityPacket packet, ClientPlayNetworking.Context context) {
         context.client().execute(() -> {
             if (packet.visible) {

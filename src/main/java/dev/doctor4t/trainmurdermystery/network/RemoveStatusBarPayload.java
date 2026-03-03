@@ -1,8 +1,9 @@
 package dev.doctor4t.trainmurdermystery.network;
 
 import dev.doctor4t.trainmurdermystery.TMM;
-import dev.doctor4t.trainmurdermystery.client.StaminaRenderer;
 import dev.doctor4t.trainmurdermystery.client.StatusBarHUD;
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
@@ -26,6 +27,8 @@ public record RemoveStatusBarPayload(String effect) implements CustomPacketPaylo
         var effectHash = buf.readUtf();
         return new RemoveStatusBarPayload(effectHash);
     }
+
+    @Environment(EnvType.CLIENT)
     public static void registerReceiver() {
         ClientPlayNetworking.registerGlobalReceiver(ID, (payload, context) -> {
             context.client().execute(() -> {

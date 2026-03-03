@@ -3,7 +3,7 @@ package dev.doctor4t.trainmurdermystery.client.gui.screen.ingame;
 import com.mojang.blaze3d.platform.Lighting;
 import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.cca.PlayerNoteComponent;
-import dev.doctor4t.trainmurdermystery.util.NoteEditPayload;
+import dev.doctor4t.trainmurdermystery.network.tmm.NoteEditPayload;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;

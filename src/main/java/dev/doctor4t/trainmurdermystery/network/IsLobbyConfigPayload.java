@@ -1,10 +1,5 @@
 package dev.doctor4t.trainmurdermystery.network;
 
-import dev.doctor4t.trainmurdermystery.block.SecurityMonitorBlock;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.minecraft.client.CameraType;
-import net.minecraft.client.Minecraft;
-import net.minecraft.core.BlockPos;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
