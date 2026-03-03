@@ -117,18 +117,12 @@ public record NunchuckHitPayload(int targetId, int direction) implements CustomP
 
             // 如果应该击杀，执行击杀
             if (shouldKill) {
-                // 参考狙击枪的实现：清除双节棍并掉落左轮手枪
-                if (!attacker.isCreative()) {
-                    attacker.getInventory().clearOrCountMatchingItems((s) -> s.is(TMMItems.NUNCHUCK), 1, attacker.getInventory());
-                    attacker.drop(TMMItems.REVOLVER.getDefaultInstance(), false, false);
-                }
-
                 GameFunctions.killPlayer(target, true, attacker, GameConstants.DeathReasons.NUNCHUCK);
                 targetComponent.clearHitRecord(attacker.getUUID());
 
                 // 设置物品冷却
                 if (!attacker.isCreative()) {
-                    attacker.getCooldowns().addCooldown(TMMItems.NUNCHUCK, 8 * 20); // 8秒
+                    attacker.getCooldowns().addCooldown(TMMItems.NUNCHUCK, 3 * 20); // 3秒
                 }
             } else {
                 // 不击杀的情况下，设置较短的冷却
