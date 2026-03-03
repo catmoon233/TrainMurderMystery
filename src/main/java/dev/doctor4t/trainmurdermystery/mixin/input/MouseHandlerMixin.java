@@ -61,7 +61,7 @@ public class MouseHandlerMixin {
             }
             
             // 检查是否按下 Shift
-            boolean isShiftKeyDown = (mods & GLFW.GLFW_MOD_SHIFT) != 0;
+            boolean isShiftKeyDown = player.isShiftKeyDown();
             
             // 检查冷却
             if (player.getCooldowns().isOnCooldown(TMMItems.SNIPER_RIFLE)) {
