@@ -262,8 +262,8 @@ public class GameFunctions {
                 player.displayClientMessage(
                         Component.translatable("game.start_error.not_enough_players", gameMode.minPlayerCount), true);
             }
+            isStartingGame = false;
         }
-        // isStartingGame = false;
     }
 
     public static void stopGame(ServerLevel world) {
