@@ -83,6 +83,7 @@ public class ServerTaskInfoClasses {
             if (TMMConfig.verboseTrainResetLogs) {
                 TMM.LOGGER.info("Resetting train " + areas.mapName);
             }
+            GameFunctions.resetPoints.clear();
             backupMinPos = BlockPos.containing(areas.getResetTemplateArea().getMinPosition());
             backupMaxPos = BlockPos.containing(areas.getResetTemplateArea().getMaxPosition());
             backupTrainBox = BoundingBox.fromCorners(backupMinPos, backupMaxPos);
@@ -95,7 +96,9 @@ public class ServerTaskInfoClasses {
             int xSize = trainBox.maxX() - trainBox.minX();
             int zSize = trainBox.maxZ() - trainBox.minZ();
             int flatSize = xSize * zSize;
-            MAX_RESET_PER = 500 / flatSize;
+            if (flatSize <= 0)
+                flatSize = 10000;
+            MAX_RESET_PER = 10000 / flatSize;
             if (MAX_RESET_PER < 1)
                 MAX_RESET_PER = 1;
             this.totalProgress = trainBox.maxY() - trainBox.minY() + 1;
@@ -113,23 +116,52 @@ public class ServerTaskInfoClasses {
                 List<GameFunctions.BlockInfo> list2 = Lists.newArrayList();
                 List<GameFunctions.BlockInfo> list3 = Lists.newArrayList();
                 Deque<BlockPos> deque = Lists.newLinkedList();
-                int nowY = backupTrainBox.minY() + this.progress;
+                int nowY = backupTrainBox.maxY() - this.progress;
 
                 BoundingBox copyAreas = BoundingBox
                         .fromCorners(new BlockPos(backupTrainBox.minX(), nowY, backupTrainBox.minZ()),
                                 new BlockPos(backupTrainBox.maxX(), nowY, backupTrainBox.maxZ()));
-                                
-                serverWorld.getBlockTicks().copyAreaFrom(serverWorld.getBlockTicks(), copyAreas, offsetBlockPos);
+                BlockCopyUtils.copyAreaWithoutUpdates(serverWorld, copyAreas, offsetBlockPos);
+                // serverWorld.getBlockTicks().copyAreaFrom(serverWorld.getBlockTicks(),
+                // copyAreas, offsetBlockPos);
 
                 for (int k = backupTrainBox.minZ(); k <= backupTrainBox.maxZ(); k++) {
                     {
                         for (int m = backupTrainBox.minX(); m <= backupTrainBox.maxX(); m++) {
+
                             BlockPos blockPos6 = new BlockPos(m, nowY, k);
                             BlockPos blockPos7 = blockPos6.offset(offsetBlockPos);
                             BlockInWorld cachedBlockPosition = new BlockInWorld(serverWorld, blockPos6, true);
                             BlockState blockState = cachedBlockPosition.getState();
 
                             BlockEntity blockEntity = serverWorld.getBlockEntity(blockPos6);
+                            if (blockState.getBlock() instanceof SmallDoorBlock) {
+                                GameFunctions.resetPoints.add(blockPos7);
+                            } else if (blockState.getBlock() instanceof TrimmedBedBlock) {
+                                if (blockState.getValue(TrimmedBedBlock.PART).equals(BedPart.HEAD)) {
+                                    GameFunctions.resetPoints.add(blockPos7);
+                                }
+                            } else if (blockState.getBlock() instanceof FoodPlatterBlock) {
+                                GameFunctions.resetPoints.add(blockPos7);
+
+                            } else if (blockState.getBlock() instanceof LecternBlock) {
+                                if (serverWorld.getBlockEntity(blockPos7) instanceof LecternBlockEntity) {
+                                    GameFunctions.resetPoints.add(blockPos7);
+                                }
+                            } else if (blockState.getBlock() instanceof SprinklerBlock) {
+                                GameFunctions.resetPoints.add(blockPos7);
+                            } else if (blockState.getBlock() instanceof NeonPillarBlock) {
+                                GameFunctions.resetPoints.add(blockPos7);
+                            } else if (blockState.getBlock() instanceof NeonTubeBlock) {
+                                GameFunctions.resetPoints.add(blockPos7);
+                            } else if (blockState.getBlock() instanceof NeonTubeBlock) {
+                                GameFunctions.resetPoints.add(blockPos7);
+                            } else if (blockState.getBlock() instanceof ToggleableFacingLightBlock) {
+                                GameFunctions.resetPoints.add(blockPos7);
+                            } else if (blockState.getBlock() instanceof VentHatchBlock) {
+                                GameFunctions.resetPoints.add(blockPos7);
+                            }
+
                             if (blockEntity != null) {
                                 BlockEntityInfo blockEntityInfo = new BlockEntityInfo(
                                         blockEntity.saveCustomOnly(serverWorld.registryAccess()),
@@ -156,11 +188,11 @@ public class ServerTaskInfoClasses {
                 for (GameFunctions.BlockInfo blockInfo : list5) {
                     BlockEntity blockEntity3 = serverWorld.getBlockEntity(blockInfo.pos());
                     Clearable.tryClear(blockEntity3);
-                    serverWorld.setBlock(blockInfo.pos(), Blocks.BARRIER.defaultBlockState(), Block.UPDATE_CLIENTS);
+                    serverWorld.setBlock(blockInfo.pos(), Blocks.BARRIER.defaultBlockState(), 0);
                 }
 
                 for (GameFunctions.BlockInfo blockInfo2 : list4) {
-                    if (serverWorld.setBlock(blockInfo2.pos(), blockInfo2.state(), Block.UPDATE_CLIENTS)) {
+                    if (serverWorld.setBlock(blockInfo2.pos(), blockInfo2.state(), 0)) {
                     }
                 }
 
@@ -172,7 +204,7 @@ public class ServerTaskInfoClasses {
                         blockEntity4.setChanged();
                     }
 
-                    serverWorld.setBlock(blockInfo2x.pos(), blockInfo2x.state(), Block.UPDATE_CLIENTS);
+                    serverWorld.setBlock(blockInfo2x.pos(), blockInfo2x.state(), 0);
                 }
             }
         }
@@ -199,7 +231,7 @@ public class ServerTaskInfoClasses {
                             Component
                                     .translatable("message.tmm.reseting",
                                             String.format("%.0f", (this.progress / (float) this.totalProgress) * 100))
-                                    .withStyle(ChatFormatting.GOLD),
+                                    .withStyle(ChatFormatting.YELLOW),
                             true);
                 });
             }
@@ -216,11 +248,14 @@ public class ServerTaskInfoClasses {
                         Component
                                 .translatable("message.tmm.reseting",
                                         "100")
-                                .withStyle(ChatFormatting.GOLD),
+                                .withStyle(ChatFormatting.YELLOW),
                         true);
             });
-            TMM.LOGGER.info("RESETING MAP FINISHED. STARTING THE GAME.");
-            GameFunctions.trueStartGame(this.serverWorld, this.gameMode, this.time);
+            TMM.LOGGER.info("RESETING MAP FINISHED. STARTING RESET TASK BLOCKS.");
+            // GameFunctions.trueStartGame(this.serverWorld, this.gameMode, this.time);
+            var task = new ServerTaskInfoClasses.OnlySomeBlockResetTask(GameFunctions.resetPoints, serverWorld,
+                    gameMode, time);
+            GameFunctions.serverTaskQueue.addLast(task);
         }
     }
 

@@ -219,7 +219,9 @@ public class GameFunctions {
     public static void registerEventForServerTickForDoingResetTasks() {
         ServerTickEvents.START_SERVER_TICK.register(server -> {
             if (!serverTaskQueue.isEmpty()) {
-                for (var task : serverTaskQueue) {
+                int size = serverTaskQueue.size();
+                for (int i = 0; i < size; i++) {
+                    var task = serverTaskQueue.get(i);
                     if (!task.finished && task.onTick(server)) {
                         task.finished = true;
                         if (!task.cancelled)
@@ -261,7 +263,7 @@ public class GameFunctions {
                         Component.translatable("game.start_error.not_enough_players", gameMode.minPlayerCount), true);
             }
         }
-        isStartingGame = false;
+        // isStartingGame = false;
     }
 
     public static void stopGame(ServerLevel world) {
@@ -279,6 +281,7 @@ public class GameFunctions {
     }
 
     public static void initializeGame(ServerLevel serverWorld) {
+        isStartingGame = false;
 
         GameWorldComponent gameComponent = GameWorldComponent.KEY.get(serverWorld);
         // AreasWorldComponent areasWorldComponent =
