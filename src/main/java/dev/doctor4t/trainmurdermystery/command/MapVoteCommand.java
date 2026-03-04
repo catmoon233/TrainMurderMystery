@@ -3,6 +3,7 @@ package dev.doctor4t.trainmurdermystery.command;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import dev.doctor4t.trainmurdermystery.data.ServerMapConfig;
+import dev.doctor4t.trainmurdermystery.game.GameFunctions;
 import dev.doctor4t.trainmurdermystery.network.ShowSelectedMapUIPayload;
 import dev.doctor4t.trainmurdermystery.voting.MapVotingManager;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -16,12 +17,18 @@ public class MapVoteCommand {
                 Commands.literal("tmm:votemap")
                         .requires(source -> source.hasPermission(2))
                         .executes(context -> startVoting(context.getSource(), 60 * 20)) // 默认60秒
-                        .then(Commands.argument("time", IntegerArgumentType.integer(10 * 20, 300 * 20)) // 时间范围10-300秒
+                        .then(Commands.argument("time",
+                                IntegerArgumentType.integer(10 * 20, 300 * 20)) // 时间范围10-300秒
                                 .executes(context -> startVoting(context.getSource(),
-                                        IntegerArgumentType.getInteger(context, "time")))));
+                                        IntegerArgumentType.getInteger(context,
+                                                "time")))));
     }
 
     private static int startVoting(CommandSourceStack source, int time) {
+        if (GameFunctions.isStartingGame) {
+            source.sendFailure(Component.literal("Game has started! You cannot open map voting screen!"));
+            return 0;
+        }
         MapVotingManager votingManager = MapVotingManager.getInstance();
 
         if (votingManager.isVotingActive()) {
@@ -32,7 +39,7 @@ public class MapVoteCommand {
         votingManager.startVoting(time);
         String mapconfigs = ShowSelectedMapUIPayload
                 .convertServerMapConfigToString(ServerMapConfig.getInstance(source.getServer()));
-                
+
         source.getServer().getPlayerList().getPlayers().forEach(
                 serverPlayer -> {
                     ServerPlayNetworking.send(serverPlayer,

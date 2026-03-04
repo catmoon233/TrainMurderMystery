@@ -80,8 +80,6 @@ public class MapResetManager {
                         GameFunctions.resetPoints.add(blockPos6);
                     } else if (blockState.getBlock() instanceof NeonTubeBlock) {
                         GameFunctions.resetPoints.add(blockPos6);
-                    } else if (blockState.getBlock() instanceof NeonTubeBlock) {
-                        GameFunctions.resetPoints.add(blockPos6);
                     } else if (blockState.getBlock() instanceof ToggleableFacingLightBlock) {
                         GameFunctions.resetPoints.add(blockPos6);
                     } else if (blockState.getBlock() instanceof VentHatchBlock) {
