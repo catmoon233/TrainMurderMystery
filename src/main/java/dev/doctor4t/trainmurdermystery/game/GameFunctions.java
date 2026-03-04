@@ -574,7 +574,7 @@ public class GameFunctions {
         GameFunctions.WinStatus winStatus = roundEnd.getWinStatus();
 
         // 修复4: 检查是否为恋人胜利
-        boolean isLoversWin = roundEnd.CustomWinnerID != null && roundEnd.CustomWinnerID.equals("lovers");
+        boolean isLoversWin = winStatus == WinStatus.LOVERS;
 
         for (ServerPlayer player : world.players()) {
             PlayerStatsComponent stats = PlayerStatsComponent.KEY.get(player);
@@ -623,6 +623,12 @@ public class GameFunctions {
                     break;
                 case NIAN_SHOU:
                     if (playerRole.identifier().getPath().equals("nianshou")) {
+                        isWinner = true;
+                    }
+                    break;
+                case LOVERS:
+                    if (roundEnd.CustomWinnerPlayers != null
+                            && roundEnd.CustomWinnerPlayers.contains(player.getUUID())) {
                         isWinner = true;
                     }
                     break;
@@ -1515,7 +1521,7 @@ public class GameFunctions {
     }
 
     public enum WinStatus {
-        NOT_MODIFY, NONE, KILLERS, PASSENGERS, TIME, LOOSE_END, GAMBLER, RECORDER, NO_PLAYER, NIAN_SHOU,
+        NOT_MODIFY, NONE, KILLERS, PASSENGERS, TIME, LOOSE_END, GAMBLER, RECORDER, NO_PLAYER, NIAN_SHOU, LOVERS,
         CUSTOM_COMPONENT, CUSTOM
     }
 }
