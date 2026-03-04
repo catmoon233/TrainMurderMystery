@@ -72,7 +72,7 @@ public class WorldBlackoutComponent implements AutoSyncedComponent, ServerTickin
             BlockState state = this.world.getBlockState(pos);
             if (!state.hasProperty(BlockStateProperties.LIT) || !state.hasProperty(TMMProperties.ACTIVE))
                 continue;
-            TMM.LOGGER.info(pos.toShortString());
+            // TMM.LOGGER.info(pos.toShortString());
 
             int duration = GameConstants.getBlackoutMinDuration() + this.world.random
                     .nextInt(GameConstants.getBlackoutMaxDuration() - GameConstants.getBlackoutMinDuration());
