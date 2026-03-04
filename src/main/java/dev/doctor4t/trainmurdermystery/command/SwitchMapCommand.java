@@ -2,10 +2,14 @@ package dev.doctor4t.trainmurdermystery.command;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.context.CommandContext;
+
 import dev.doctor4t.trainmurdermystery.cca.AreasWorldComponent;
 import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
 import dev.doctor4t.trainmurdermystery.command.argument.MapLoadArgumentType;
+import dev.doctor4t.trainmurdermystery.game.GameFunctions;
 import dev.doctor4t.trainmurdermystery.game.MapManager;
+import dev.doctor4t.trainmurdermystery.game.MapResetManager;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.Component;
@@ -14,27 +18,54 @@ import net.minecraft.server.level.ServerLevel;
 import java.util.List;
 
 public class SwitchMapCommand {
-  // todo 随机炸了 修一下
   public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
     dispatcher.register(
         Commands.literal("tmm:switchmap")
             .requires(source -> source.hasPermission(2))
+            .then(Commands.literal("scan")
+                .executes(SwitchMapCommand::executeScan))
             .then(Commands.literal("load")
-                .then(Commands.argument("mapName", MapLoadArgumentType.string())
-                    .executes(context -> executeLoad(context.getSource(),
-                        StringArgumentType.getString(context, "mapName")))))
+                .then(Commands.argument("mapName",
+                    MapLoadArgumentType.string())
+                    .executes(context -> executeLoad(
+                        context.getSource(),
+                        StringArgumentType
+                            .getString(context,
+                                "mapName")))))
             .then(Commands.literal("save")
-                .then(Commands.argument("mapName", MapLoadArgumentType.string())
-                    .executes(context -> executeSave(context.getSource(),
-                        StringArgumentType.getString(context, "mapName")))))
+                .then(Commands.argument("mapName",
+                    MapLoadArgumentType.string())
+                    .executes(context -> executeSave(
+                        context.getSource(),
+                        StringArgumentType
+                            .getString(context,
+                                "mapName")))))
             .then(Commands.literal("list")
                 .executes(context -> executeList(context.getSource())))
             .then(Commands.literal("random")
-                .executes(context -> executeRandom(context.getSource())))
+                .executes(context -> executeRandom(
+                    context.getSource())))
             .executes(context -> {
               // 没有参数时，显示当前地图信息
               return showCurrentMap(context.getSource());
             }));
+  }
+
+  private static int executeScan(CommandContext<CommandSourceStack> context) {
+    try {
+      ServerLevel serverLevel = context.getSource().getLevel();
+      AreasWorldComponent areas = AreasWorldComponent.KEY.get(serverLevel);
+      MapResetManager.scanArea(serverLevel, areas);
+      MapResetManager.saveArea(serverLevel);
+      context.getSource().sendSuccess(() -> Component.literal(
+          "Scanned Successfully! Found " + GameFunctions.resetPoints.size() + " blocks should be reseted!"), true);
+    } catch (Exception e) {
+      e.printStackTrace();
+      context.getSource().sendSuccess(() -> Component.literal(
+          "Scanned Failed! " + e.getMessage()), true);
+      return 0;
+    }
+    return 1;
   }
 
   private static int executeLoad(CommandSourceStack source, String mapName) {
@@ -144,7 +175,8 @@ public class SwitchMapCommand {
     // 显示当前配置信息
     source.sendSuccess(
         () -> Component
-            .literal("Spawn Pos: " + areas.getSpawnPos().pos.x() + ", " + areas.getSpawnPos().pos.y() + ", "
+            .literal("Spawn Pos: " + areas.getSpawnPos().pos.x() + ", "
+                + areas.getSpawnPos().pos.y() + ", "
                 + areas.getSpawnPos().pos.z())
             .withStyle(style -> style.withColor(0x00FFFF)),
         false);

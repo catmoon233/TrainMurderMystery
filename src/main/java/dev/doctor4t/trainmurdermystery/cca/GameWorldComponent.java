@@ -412,17 +412,17 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
         }
 
         AreasWorldComponent areas = AreasWorldComponent.KEY.get(serverWorld);
-
-        // attempt to reset the play area
-        if (--ticksUntilNextResetAttempt == 0) {
-            if (GameFunctions.tryResetTrain(serverWorld)) {
-                queueTrainReset();
-            } else {
-                // GameFunctions.getAllTaskPoints(serverWorld);
-                ticksUntilNextResetAttempt = -1;
-                OnTrainAreaHaveReseted.EVENT.invoker().onWorldHaveReseted(serverWorld);
-            }
-        }
+        // 重置移动到游戏开始前
+        // // attempt to reset the play area
+        // if (--ticksUntilNextResetAttempt == 0) {
+        //     if (GameFunctions.tryResetTrain(serverWorld)) {
+        //         queueTrainReset();
+        //     } else {
+        //         // GameFunctions.getAllTaskPoints(serverWorld);
+        //         ticksUntilNextResetAttempt = -1;
+        //         OnTrainAreaHaveReseted.EVENT.invoker().onWorldHaveReseted(serverWorld);
+        //     }
+        // }
 
         // if not running and spectators or not in lobby reset them
         if (serverWorld.getServer().getTickCount() % 20 == 0) {

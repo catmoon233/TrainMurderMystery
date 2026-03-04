@@ -160,6 +160,7 @@ public class TMM implements ModInitializer {
                 return InteractionResult.SUCCESS;
             return InteractionResult.PASS;
         });
+        GameFunctions.registerEventForServerTickForDoingResetTasks();
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
             SERVER = server;
             GAME = new MurderGameMode(TMM.id("murder"));

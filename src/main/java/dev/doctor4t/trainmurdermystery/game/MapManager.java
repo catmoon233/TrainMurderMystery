@@ -174,6 +174,7 @@ public class MapManager {
             FileReader reader = new FileReader(mapConfigFile);
             JsonObject jsonObject = JsonParser.parseReader(reader).getAsJsonObject();
             reader.close();
+            areas.mapName = mapName;
             if (jsonObject.has("noReset")) {
                 areas.noReset = jsonObject.get("noReset").getAsBoolean();
             } else {
@@ -373,7 +374,7 @@ public class MapManager {
                     AtomicBoolean isAvailable = new AtomicBoolean(false);
                     first.ifPresent(
                             a -> {
-                                isAvailable.set(!a.canSelect ||first.get().maxCount >= serverWorld.players().size());
+                                isAvailable.set(!a.canSelect || first.get().maxCount >= serverWorld.players().size());
                             });
                     return isAvailable.get();
                 });

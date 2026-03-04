@@ -114,6 +114,7 @@ public class AreasWorldComponent implements AutoSyncedComponent {
     public boolean canJump = false;
     public boolean canSwim = false;
     public boolean noReset = false;
+    public String mapName = null;
 
     public PosWithOrientation getSpawnPos() {
         return spawnPos;

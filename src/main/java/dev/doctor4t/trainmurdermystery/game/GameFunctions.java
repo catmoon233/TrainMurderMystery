@@ -86,6 +86,7 @@ import dev.doctor4t.trainmurdermystery.network.TriggerScreenEdgeEffectPayload;
 import dev.doctor4t.trainmurdermystery.network.tmm.AnnounceEndingPayload;
 import dev.doctor4t.trainmurdermystery.api.replay.ReplayPayload;
 import dev.doctor4t.trainmurdermystery.util.TMMItemUtils;
+import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.fabricmc.loader.impl.util.log.Log;
 import net.fabricmc.loader.impl.util.log.LogCategory;
@@ -128,6 +129,9 @@ import net.minecraft.world.phys.Vec3;
 
 public class GameFunctions {
     public static HashMap<BlockPos, Integer> taskBlocks = new HashMap<>();
+    public static ArrayList<BlockPos> resetPoints = new ArrayList<>();
+    public static ArrayList<ServerTaskInfoClasses.ServerTaskInfo> serverTaskQueue = new ArrayList<>();
+    public static boolean isStartingGame = false;
 
     public static void limitPlayerToBox(ServerPlayer player, AABB box) {
         Vec3 playerPos = player.position();
@@ -184,7 +188,50 @@ public class GameFunctions {
         }
     }
 
+    public static void executeCommand(CommandSourceStack source, String command) {
+        try {
+            source.getServer().getCommands().performPrefixedCommand(source, command);
+        } catch (Exception e) {
+            Log.warn(LogCategory.GENERAL, "Failed to execute: " + command + ", error: " + e.getMessage());
+        }
+    }
+
     public static void startGame(ServerLevel world, GameMode gameMode, int time) {
+        if (TMM.isLobby || isStartingGame)
+            return;
+        isStartingGame = true;
+        MapResetManager.loadArea(world);
+        AreasWorldComponent areas = AreasWorldComponent.KEY.get(world);
+        if (areas.noReset) {
+            TMM.LOGGER.info("NO RESET MAP!");
+            trueStartGame(world, gameMode, time);
+            return;
+        }
+        if (TMMConfig.enableAutoTrainReset) {
+            var task = new ServerTaskInfoClasses.AutoTrainResetTask(areas, world, gameMode, time);
+            serverTaskQueue.add(task);
+        } else {
+            var task = new ServerTaskInfoClasses.OnlySomeBlockResetTask(resetPoints, world, gameMode, time);
+            serverTaskQueue.add(task);
+        }
+    }
+
+    public static void registerEventForServerTickForDoingResetTasks() {
+        ServerTickEvents.START_SERVER_TICK.register(server -> {
+            if (!serverTaskQueue.isEmpty()) {
+                for (var task : serverTaskQueue) {
+                    if (!task.finished && task.onTick(server)) {
+                        task.finished = true;
+                        if (!task.cancelled)
+                            task.onFinished();
+                    }
+                }
+                serverTaskQueue.removeIf((t) -> t.finished || t.cancelled);
+            }
+        });
+    }
+
+    public static void trueStartGame(ServerLevel world, GameMode gameMode, int time) {
         if (TMM.isLobby)
             return;
         executeFunction(world.getServer().createCommandSourceStack(), "harpymodloader:early_start_game");
@@ -214,6 +261,7 @@ public class GameFunctions {
                         Component.translatable("game.start_error.not_enough_players", gameMode.minPlayerCount), true);
             }
         }
+        isStartingGame = false;
     }
 
     public static void stopGame(ServerLevel world) {
@@ -415,8 +463,8 @@ public class GameFunctions {
         gameComponent.clearRoleMap();
         GameTimeComponent.KEY.get(serverWorld).reset();
 
-        // reset train
-        gameComponent.queueTrainReset();
+        // reset train 已经提前重置
+        // gameComponent.queueTrainReset();
 
         // select rooms
         Collections.shuffle(players);
@@ -507,6 +555,7 @@ public class GameFunctions {
 
     public static void finalizeGame(ServerLevel world) {
         // CustomWinnerPlayers.clear();
+        serverTaskQueue.clear();
         GameRoundEndComponent roundEnd = GameRoundEndComponent.KEY.get(world);
         roundEnd.CustomWinnerPlayers.clear();
         RoleMethodDispatcher.onEndGame(world);
@@ -553,7 +602,7 @@ public class GameFunctions {
                     if (GameWorldComponent.isKillerTeamRoleStatic(playerRole) && !playerRole.isInnocent()) {
                         // String roleidentifier = playerRole.identifier().getPath();
                         // 魔术师不算胜利
-                            isWinner = true;
+                        isWinner = true;
                     }
                     break;
                 case LOOSE_END:

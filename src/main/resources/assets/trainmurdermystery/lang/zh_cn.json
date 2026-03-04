@@ -1,4 +1,7 @@
 {
+  "============ 重置 ===========": "",
+  "message.tmm.reseting": "重置地图中 %s%%",
+  "========================": "",
   "warning.narrator": "请不要尝试使用复述功能作弊！此功能已被禁用！",
   "multiplayer.disconnect.mod_whitelist.modlist_mismatch": "客户端模组列表与与服务端要求不匹配。\n请您执行以下操作，或向服务器管理员求助：\n",
   "multiplayer.disconnect.mod_whitelist.misc.to_install": "\n安装模组\"%s\"。",
@@ -45,8 +48,8 @@
   "Purchase Failed": "购买失败",
   "Role Weights:": "角色权重：",
   "Server is reserved to doctor4t supporters.": "该服务器仅供doctor4t支持者使用",
-  "announcement.tip.can_jump":"在这张地图里，你可以跳跃",
-  "announcement.tip.cant_jump":"在这张地图里，你无法跳跃",
+  "announcement.tip.can_jump": "在这张地图里，你可以跳跃",
+  "announcement.tip.cant_jump": "在这张地图里，你无法跳跃",
   "announcement.goal.civilian": "注意安全，在旅程结束前设法生存",
   "announcement.goal.killer": "在时间耗尽前，消灭一名乘客以获胜",
   "announcement.goal.vigilante": "消灭所有凶手并保护平民",
@@ -813,7 +816,7 @@
   "skin.knife.neptune_knife": "海神之刃",
   "skin.knife.colorful_folding_knife": "多彩折叠刀",
   "skin.knife.edge_knife": "锋刃刀",
-  "message.kick.outdated_client":"你的客户端版本已经过时了！服务端版本%s，你的版本%s",
-  "message.death_reason.null":"很抱歉，无法获取到你的死亡信息。这可能出现了一些错误。",
-  "message.death_reason.prefix":"[你的死因] %s"
+  "message.kick.outdated_client": "你的客户端版本已经过时了！服务端版本%s，你的版本%s",
+  "message.death_reason.null": "很抱歉，无法获取到你的死亡信息。这可能出现了一些错误。",
+  "message.death_reason.prefix": "[你的死因] %s"
 }
