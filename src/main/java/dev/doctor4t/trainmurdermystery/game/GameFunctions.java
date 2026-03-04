@@ -74,6 +74,7 @@ import dev.doctor4t.trainmurdermystery.event.OnPlayerKilledPlayer;
 import dev.doctor4t.trainmurdermystery.event.OnPlayerKilledPlayerIdentifier;
 import dev.doctor4t.trainmurdermystery.event.OnShieldBroken;
 import dev.doctor4t.trainmurdermystery.event.OnTeammateKilledTeammate;
+import dev.doctor4t.trainmurdermystery.event.OnTrainAreaHaveReseted;
 import dev.doctor4t.trainmurdermystery.event.ShouldDropOnDeath;
 import dev.doctor4t.trainmurdermystery.index.TMMBlocks;
 import dev.doctor4t.trainmurdermystery.index.TMMDataComponentTypes;
@@ -236,6 +237,7 @@ public class GameFunctions {
     public static void trueStartGame(ServerLevel world, GameMode gameMode, int time) {
         if (TMM.isLobby)
             return;
+        resetEntities(world);
         executeFunction(world.getServer().createCommandSourceStack(), "harpymodloader:early_start_game");
         executeFunction(world.getServer().createCommandSourceStack(),
                 "harpymodloader:early_start_game_" + MapManager.last_start_map);
@@ -350,7 +352,7 @@ public class GameFunctions {
         // --- 结束新增统计数据更新逻辑 ---
         executeFunction(serverWorld.getServer().createCommandSourceStack(),
                 "harpymodloader:start_game_" + MapManager.last_start_map);
-
+        OnTrainAreaHaveReseted.EVENT.invoker().onWorldHaveReseted(serverWorld);
     }
 
     public static Vec3 getSpawnPos(AreasWorldComponent areas, int room) {
@@ -1231,22 +1233,26 @@ public class GameFunctions {
             }
 
             // discard all player bodies and items
-            for (PlayerBodyEntity body : serverWorld.getEntities(TMMEntities.PLAYER_BODY,
-                    playerBodyEntity -> true)) {
-                body.discard();
-            }
-            for (ItemEntity item : serverWorld.getEntities(EntityType.ITEM, playerBodyEntity -> true)) {
-                item.discard();
-            }
-            for (FirecrackerEntity entity : serverWorld.getEntities(TMMEntities.FIRECRACKER, entity -> true))
-                entity.discard();
-            for (NoteEntity entity : serverWorld.getEntities(TMMEntities.NOTE, entity -> true))
-                entity.discard();
+            resetEntities(serverWorld);
 
             TMM.LOGGER.info("Train reset successful.");
             return false;
         }
         return false;
+    }
+
+    private static void resetEntities(ServerLevel serverWorld) {
+        for (PlayerBodyEntity body : serverWorld.getEntities(TMMEntities.PLAYER_BODY,
+                playerBodyEntity -> true)) {
+            body.discard();
+        }
+        for (ItemEntity item : serverWorld.getEntities(EntityType.ITEM, playerBodyEntity -> true)) {
+            item.discard();
+        }
+        for (FirecrackerEntity entity : serverWorld.getEntities(TMMEntities.FIRECRACKER, entity -> true))
+            entity.discard();
+        for (NoteEntity entity : serverWorld.getEntities(TMMEntities.NOTE, entity -> true))
+            entity.discard();
     }
 
     @SuppressWarnings("deprecation")

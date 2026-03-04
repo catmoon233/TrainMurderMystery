@@ -28,7 +28,6 @@ import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.phys.AABB;
 
 public class WorldBlackoutComponent implements AutoSyncedComponent, ServerTickingComponent {
     public static final ComponentKey<WorldBlackoutComponent> KEY = ComponentRegistry.getOrCreate(TMM.id("blackout"),
@@ -67,28 +66,20 @@ public class WorldBlackoutComponent implements AutoSyncedComponent, ServerTickin
     }
 
     public boolean triggerBlackout() {
-        AreasWorldComponent areas = AreasWorldComponent.KEY.get(world);
-
-        AABB area = areas.getPlayArea();
         if (this.ticks > 0)
             return false;
-        for (int x = (int) area.minX; x <= (int) area.maxX; x++) {
-            for (int y = (int) area.minY; y <= (int) area.maxY; y++) {
-                for (int z = (int) area.minZ; z <= (int) area.maxZ; z++) {
-                    BlockPos pos = new BlockPos(x, y, z);
-                    BlockState state = this.world.getBlockState(pos);
-                    if (!state.hasProperty(BlockStateProperties.LIT) || !state.hasProperty(TMMProperties.ACTIVE))
-                        continue;
-                    int duration = GameConstants.getBlackoutMinDuration() + this.world.random
-                            .nextInt(GameConstants.getBlackoutMaxDuration() - GameConstants.getBlackoutMinDuration());
-                    if (duration > this.ticks)
-                        this.ticks = duration;
-                    BlackoutDetails detail = new BlackoutDetails(pos, duration,
-                            state.getValue(BlockStateProperties.LIT));
-                    detail.init(this.world);
-                    this.blackouts.add(detail);
-                }
-            }
+        for (var pos : GameFunctions.resetPoints) {
+            BlockState state = this.world.getBlockState(pos);
+            if (!state.hasProperty(BlockStateProperties.LIT) || !state.hasProperty(TMMProperties.ACTIVE))
+                continue;
+            int duration = GameConstants.getBlackoutMinDuration() + this.world.random
+                    .nextInt(GameConstants.getBlackoutMaxDuration() - GameConstants.getBlackoutMinDuration());
+            if (duration > this.ticks)
+                this.ticks = duration;
+            BlackoutDetails detail = new BlackoutDetails(pos, duration,
+                    state.getValue(BlockStateProperties.LIT));
+            detail.init(this.world);
+            this.blackouts.add(detail);
         }
         if (this.world instanceof ServerLevel serverWorld) {
             for (ServerPlayer player : serverWorld.players()) {

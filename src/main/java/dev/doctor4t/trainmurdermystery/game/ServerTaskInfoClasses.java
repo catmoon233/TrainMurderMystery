@@ -1,7 +1,6 @@
 package dev.doctor4t.trainmurdermystery.game;
 
 import java.util.ArrayList;
-import java.util.Deque;
 import java.util.List;
 
 import com.google.common.collect.Lists;
@@ -69,7 +68,7 @@ public class ServerTaskInfoClasses {
         private ServerLevel serverWorld;
         private GameMode gameMode;
         private int time;
-        private int MAX_RESET_PER = 1;
+        private int MAX_RESET_PER = 1; // 每 tick 处理的 chunk 数，每块已约 5000
         BlockPos backupMinPos;
         BlockPos backupMaxPos;
         BoundingBox backupTrainBox;
@@ -78,7 +77,9 @@ public class ServerTaskInfoClasses {
         BoundingBox trainBox;
         int totalProgress = 0;
         BlockPos offsetBlockPos;
+        List<BoundingBox> resetChunks; // ← 新增：预计算的分块列表
 
+        // ── 构造器 ─────────────────────────────────────────────────────────────
         public AutoTrainResetTask(AreasWorldComponent areas, ServerLevel world, GameMode gameMode, int gameStartTime) {
             if (TMMConfig.verboseTrainResetLogs) {
                 TMM.LOGGER.info("Resetting train " + areas.mapName);
@@ -93,15 +94,13 @@ public class ServerTaskInfoClasses {
             offsetBlockPos = new BlockPos(
                     trainBox.minX() - backupTrainBox.minX(), trainBox.minY() - backupTrainBox.minY(),
                     trainBox.minZ() - backupTrainBox.minZ());
-            int xSize = trainBox.maxX() - trainBox.minX();
-            int zSize = trainBox.maxZ() - trainBox.minZ();
-            int flatSize = xSize * zSize;
-            if (flatSize <= 0)
-                flatSize = 10000;
-            MAX_RESET_PER = 10000 / flatSize;
-            if (MAX_RESET_PER < 1)
-                MAX_RESET_PER = 1;
-            this.totalProgress = trainBox.maxY() - trainBox.minY() + 1;
+
+            // ── 预计算三维分块（替换原来的 MAX_RESET_PER 逻辑）──────────────
+            resetChunks = buildChunks(backupTrainBox, 5000);
+            this.totalProgress = resetChunks.size();
+            // MAX_RESET_PER 保留为 1：每块已接近 5000，通常无需一次处理多块
+            // 若区域极小可自动合并（buildChunks 保证至少 1 块）
+
             this.area = areas;
             this.progress = 0;
             this.serverWorld = world;
@@ -109,32 +108,51 @@ public class ServerTaskInfoClasses {
             this.time = gameStartTime;
         }
 
+        // ── 预计算三维分块 ──────────────────────────────────────────────────
+        private static List<BoundingBox> buildChunks(BoundingBox box, int target) {
+            List<BoundingBox> chunks = new ArrayList<>();
+
+            int xLen = box.maxX() - box.minX() + 1;
+            int yLen = box.maxY() - box.minY() + 1;
+            int zLen = box.maxZ() - box.minZ() + 1;
+
+            // 按体积比例计算各轴 chunk 尺寸，使每块体积 ≈ target
+            double scale = Math.cbrt((double) target / ((double) xLen * yLen * zLen));
+            int cx = Math.max(1, Math.min(xLen, (int) Math.ceil(xLen * scale)));
+            int cy = Math.max(1, Math.min(yLen, (int) Math.ceil(yLen * scale)));
+            int cz = Math.max(1, Math.min(zLen, (int) Math.ceil(zLen * scale)));
+
+            // 从 maxY 到 minY（保持原来从顶向下的顺序）
+            for (int y = box.maxY(); y >= box.minY(); y -= cy) {
+                int yMin = Math.max(box.minY(), y - cy + 1);
+                for (int x = box.minX(); x <= box.maxX(); x += cx) {
+                    int xMax = Math.min(box.maxX(), x + cx - 1);
+                    for (int z = box.minZ(); z <= box.maxZ(); z += cz) {
+                        int zMax = Math.min(box.maxZ(), z + cz - 1);
+                        chunks.add(BoundingBox.fromCorners(
+                                new BlockPos(x, yMin, z),
+                                new BlockPos(xMax, y, zMax)));
+                    }
+                }
+            }
+            return chunks;
+        }
+
+        // ── resetBlock：按 chunk 索引推进 ──────────────────────────────────
         public void resetBlock() {
             for (int i = 0; i < MAX_RESET_PER && this.progress < this.totalProgress; i++, this.progress++) {
+                BoundingBox chunk = resetChunks.get(this.progress);
 
-                List<GameFunctions.BlockInfo> list = Lists.newArrayList();
-                List<GameFunctions.BlockInfo> list2 = Lists.newArrayList();
-                List<GameFunctions.BlockInfo> list3 = Lists.newArrayList();
-                Deque<BlockPos> deque = Lists.newLinkedList();
-                int nowY = backupTrainBox.maxY() - this.progress;
+                BlockCopyUtils.copyLayer(serverWorld, chunk, offsetBlockPos);
 
-                BoundingBox copyAreas = BoundingBox
-                        .fromCorners(new BlockPos(backupTrainBox.minX(), nowY, backupTrainBox.minZ()),
-                                new BlockPos(backupTrainBox.maxX(), nowY, backupTrainBox.maxZ()));
-                BlockCopyUtils.copyAreaWithoutUpdates(serverWorld, copyAreas, offsetBlockPos);
-                // serverWorld.getBlockTicks().copyAreaFrom(serverWorld.getBlockTicks(),
-                // copyAreas, offsetBlockPos);
-
-                for (int k = backupTrainBox.minZ(); k <= backupTrainBox.maxZ(); k++) {
-                    {
-                        for (int m = backupTrainBox.minX(); m <= backupTrainBox.maxX(); m++) {
-
-                            BlockPos blockPos6 = new BlockPos(m, nowY, k);
+                // 特殊方块扫描：加 Y 轴循环，其余结构不变
+                for (int y = chunk.minY(); y <= chunk.maxY(); y++) { // ← 新增 Y 循环
+                    for (int k = chunk.minZ(); k <= chunk.maxZ(); k++) {
+                        for (int m = chunk.minX(); m <= chunk.maxX(); m++) {
+                            BlockPos blockPos6 = new BlockPos(m, y, k);
                             BlockPos blockPos7 = blockPos6.offset(offsetBlockPos);
                             BlockInWorld cachedBlockPosition = new BlockInWorld(serverWorld, blockPos6, true);
                             BlockState blockState = cachedBlockPosition.getState();
-
-                            BlockEntity blockEntity = serverWorld.getBlockEntity(blockPos6);
                             if (blockState.getBlock() instanceof SmallDoorBlock) {
                                 GameFunctions.resetPoints.add(blockPos7);
                             } else if (blockState.getBlock() instanceof TrimmedBedBlock) {
@@ -143,7 +161,6 @@ public class ServerTaskInfoClasses {
                                 }
                             } else if (blockState.getBlock() instanceof FoodPlatterBlock) {
                                 GameFunctions.resetPoints.add(blockPos7);
-
                             } else if (blockState.getBlock() instanceof LecternBlock) {
                                 if (serverWorld.getBlockEntity(blockPos7) instanceof LecternBlockEntity) {
                                     GameFunctions.resetPoints.add(blockPos7);
@@ -161,54 +178,13 @@ public class ServerTaskInfoClasses {
                             } else if (blockState.getBlock() instanceof VentHatchBlock) {
                                 GameFunctions.resetPoints.add(blockPos7);
                             }
-
-                            if (blockEntity != null) {
-                                BlockEntityInfo blockEntityInfo = new BlockEntityInfo(
-                                        blockEntity.saveCustomOnly(serverWorld.registryAccess()),
-                                        blockEntity.components());
-                                list2.add(new GameFunctions.BlockInfo(blockPos7, blockState, blockEntityInfo));
-                                deque.addLast(blockPos6);
-                            } else if (!blockState.isSolidRender(serverWorld, blockPos6)
-                                    && !blockState.isCollisionShapeFullBlock(serverWorld, blockPos6)) {
-                                list3.add(new GameFunctions.BlockInfo(blockPos7, blockState, null));
-                                deque.addFirst(blockPos6);
-                            } else {
-                                list.add(new GameFunctions.BlockInfo(blockPos7, blockState, null));
-                                deque.addLast(blockPos6);
-                            }
                         }
                     }
-                }
-                List<GameFunctions.BlockInfo> list4 = Lists.newArrayList();
-                list4.addAll(list);
-                list4.addAll(list2);
-                list4.addAll(list3);
-                List<GameFunctions.BlockInfo> list5 = Lists.reverse(list4);
-
-                for (GameFunctions.BlockInfo blockInfo : list5) {
-                    BlockEntity blockEntity3 = serverWorld.getBlockEntity(blockInfo.pos());
-                    Clearable.tryClear(blockEntity3);
-                    serverWorld.setBlock(blockInfo.pos(), Blocks.BARRIER.defaultBlockState(), 0);
-                }
-
-                for (GameFunctions.BlockInfo blockInfo2 : list4) {
-                    if (serverWorld.setBlock(blockInfo2.pos(), blockInfo2.state(), 0)) {
-                    }
-                }
-
-                for (GameFunctions.BlockInfo blockInfo2x : list2) {
-                    BlockEntity blockEntity4 = serverWorld.getBlockEntity(blockInfo2x.pos());
-                    if (blockInfo2x.blockEntityInfo() != null && blockEntity4 != null) {
-                        blockEntity4.loadCustomOnly(blockInfo2x.blockEntityInfo().nbt(), serverWorld.registryAccess());
-                        blockEntity4.setComponents(blockInfo2x.blockEntityInfo().components());
-                        blockEntity4.setChanged();
-                    }
-
-                    serverWorld.setBlock(blockInfo2x.pos(), blockInfo2x.state(), 0);
                 }
             }
         }
 
+        // ── onTick 不变 ────────────────────────────────────────────────────
         @Override
         public boolean onTick(MinecraftServer server) {
             count++;
@@ -220,12 +196,9 @@ public class ServerTaskInfoClasses {
             if (this.progress >= this.totalProgress) {
                 return true;
             }
-            this.resetBlock();
 
             if (count % 10 == 1) {
-                // 1s
                 TMM.LOGGER.info("RESETING MAP: {}/{}", this.progress, this.totalProgress);
-
                 this.serverWorld.players().forEach((p) -> {
                     p.displayClientMessage(
                             Component
@@ -235,6 +208,8 @@ public class ServerTaskInfoClasses {
                             true);
                 });
             }
+            this.resetBlock();
+
             if (this.progress >= this.totalProgress) {
                 return true;
             }
@@ -253,7 +228,8 @@ public class ServerTaskInfoClasses {
             });
             TMM.LOGGER.info("RESETING MAP FINISHED. STARTING RESET TASK BLOCKS.");
             // GameFunctions.trueStartGame(this.serverWorld, this.gameMode, this.time);
-            var task = new ServerTaskInfoClasses.OnlySomeBlockResetTask(GameFunctions.resetPoints, serverWorld,
+            var task = new ServerTaskInfoClasses.OnlySomeBlockResetTask(GameFunctions.resetPoints,
+                    serverWorld,
                     gameMode, time);
             GameFunctions.serverTaskQueue.addLast(task);
         }
@@ -284,6 +260,7 @@ public class ServerTaskInfoClasses {
             ServerLevel serverWorld = this.world;
             ArrayList<GameFunctions.BlockInfo> list3 = new ArrayList<>(); // 仅更新方块状态
             ArrayList<GameFunctions.BlockInfo> list2 = new ArrayList<>();
+            // ArrayList<GameFunctions.BlockInfo> list_Doorlike = new ArrayList<>();
             for (int i = 0; i <= MAX_RESET_PER && this.progress < this.totalProgress; i++, this.progress++) {
                 BlockPos blockPos6 = blocks.get(this.progress);
                 BlockPos blockPos7 = blockPos6;
@@ -387,12 +364,13 @@ public class ServerTaskInfoClasses {
             list6.addAll(list4);
             list6.addAll(list3);
             List<GameFunctions.BlockInfo> list5 = Lists.reverse(list6);
-
+            // list_Doorlike
             // Clear only the door locations with barrier blocks
             for (GameFunctions.BlockInfo blockInfo : list5) {
                 BlockEntity blockEntity3 = serverWorld.getBlockEntity(blockInfo.pos());
                 Clearable.tryClear(blockEntity3);
             }
+
             for (GameFunctions.BlockInfo blockInfo : list4) {
                 serverWorld.setBlock(blockInfo.pos(), Blocks.BARRIER.defaultBlockState(), Block.UPDATE_CLIENTS);
             }
@@ -417,9 +395,11 @@ public class ServerTaskInfoClasses {
                 }
 
             }
+
             for (GameFunctions.BlockInfo blockInfo2x : list5) {
                 serverWorld.blockUpdated(blockInfo2x.pos(), blockInfo2x.state().getBlock());
             }
+
         }
 
         @Override
