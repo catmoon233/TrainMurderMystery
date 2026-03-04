@@ -2,6 +2,9 @@ package dev.doctor4t.trainmurdermystery.command;
 
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
+
+import dev.doctor4t.trainmurdermystery.TMM;
+import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
 import dev.doctor4t.trainmurdermystery.data.ServerMapConfig;
 import dev.doctor4t.trainmurdermystery.game.GameFunctions;
 import dev.doctor4t.trainmurdermystery.network.ShowSelectedMapUIPayload;
@@ -26,6 +29,11 @@ public class MapVoteCommand {
 
     private static int startVoting(CommandSourceStack source, int time) {
         if (GameFunctions.isStartingGame) {
+            source.sendFailure(Component.literal("Game is starting! You cannot open map voting screen!"));
+            return 0;
+        }
+        GameWorldComponent gameWorldComponent = GameWorldComponent.KEY.get(source.getLevel());
+        if (gameWorldComponent.isRunning()) {
             source.sendFailure(Component.literal("Game has started! You cannot open map voting screen!"));
             return 0;
         }
