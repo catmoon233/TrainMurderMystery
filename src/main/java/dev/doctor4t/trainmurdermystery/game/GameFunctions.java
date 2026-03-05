@@ -132,6 +132,7 @@ public class GameFunctions {
     public static HashMap<BlockPos, Integer> taskBlocks = new HashMap<>();
     public static ArrayList<BlockPos> resetPoints = new ArrayList<>();
     public static ArrayList<ServerTaskInfoClasses.ServerTaskInfo> serverTaskQueue = new ArrayList<>();
+    public static ArrayList<ServerTaskInfoClasses.ServerTaskInfo> serverAsynTaskLists = new ArrayList<>();
     public static boolean isStartingGame = false;
 
     public static void limitPlayerToBox(ServerPlayer player, AABB box) {
@@ -200,6 +201,9 @@ public class GameFunctions {
     public static void startGame(ServerLevel world, GameMode gameMode, int time) {
         if (TMM.isLobby || isStartingGame)
             return;
+        if (GameWorldComponent.KEY.get(world).isRunning()) {
+            return;
+        }
         isStartingGame = true;
         MapResetManager.loadArea(world);
         AreasWorldComponent areas = AreasWorldComponent.KEY.get(world);
@@ -220,8 +224,9 @@ public class GameFunctions {
     public static void registerEventForServerTickForDoingResetTasks() {
         ServerTickEvents.START_SERVER_TICK.register(server -> {
             if (!serverTaskQueue.isEmpty()) {
-                int size = serverTaskQueue.size();
-                for (int i = 0; i < size; i++) {
+                // int size = serverTaskQueue.size();
+                int i = 0;
+                {
                     var task = serverTaskQueue.get(i);
                     if (!task.finished && task.onTick(server)) {
                         task.finished = true;
@@ -230,6 +235,18 @@ public class GameFunctions {
                     }
                 }
                 serverTaskQueue.removeIf((t) -> t.finished || t.cancelled);
+            }
+            if (!serverAsynTaskLists.isEmpty()) {
+                int size = serverAsynTaskLists.size();
+                for (int i = 0; i < size; i++) {
+                    var task = serverAsynTaskLists.get(i);
+                    if (!task.finished && task.onTick(server)) {
+                        task.finished = true;
+                        if (!task.cancelled)
+                            task.onFinished();
+                    }
+                }
+                serverAsynTaskLists.removeIf((t) -> t.finished || t.cancelled);
             }
         });
     }
