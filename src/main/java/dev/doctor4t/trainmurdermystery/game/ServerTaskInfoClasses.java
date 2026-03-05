@@ -434,7 +434,20 @@ public class ServerTaskInfoClasses {
 
         @Override
         public void onFinished() {
-            this.world.players().forEach((p) -> {
+            
+            if (shouldStartGame) {
+                TMM.LOGGER.info("RESETING MAP FINISHED. STARTING THE GAME.");
+                GameFunctions.trueStartGame(this.world, this.gameMode, this.time);
+                // 
+                this.world.players().forEach((p) -> {
+                p.displayClientMessage(
+                        Component
+                                .translatable("message.tmm.starting")
+                                .withStyle(ChatFormatting.GREEN),
+                        true);
+            });
+            }else{
+                this.world.players().forEach((p) -> {
                 p.displayClientMessage(
                         Component
                                 .translatable("message.tmm.reseting",
@@ -442,9 +455,6 @@ public class ServerTaskInfoClasses {
                                 .withStyle(ChatFormatting.GOLD),
                         true);
             });
-            if (shouldStartGame) {
-                TMM.LOGGER.info("RESETING MAP FINISHED. STARTING THE GAME.");
-                GameFunctions.trueStartGame(this.world, this.gameMode, this.time);
             }
         }
     }

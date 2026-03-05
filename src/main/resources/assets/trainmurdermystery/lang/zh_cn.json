@@ -1,6 +1,7 @@
 {
   "============ 重置 ===========": "",
   "message.tmm.reseting": "重置地图中 %s%%",
+  "message.tmm.starting": "游戏开始！",
   "========================": "",
   "warning.narrator": "请不要尝试使用复述功能作弊！此功能已被禁用！",
   "multiplayer.disconnect.mod_whitelist.modlist_mismatch": "客户端模组列表与与服务端要求不匹配。\n请您执行以下操作，或向服务器管理员求助：\n",
