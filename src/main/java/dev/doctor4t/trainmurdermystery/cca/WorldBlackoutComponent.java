@@ -44,6 +44,7 @@ public class WorldBlackoutComponent implements AutoSyncedComponent, ServerTickin
         for (BlackoutDetails detail : this.blackouts)
             detail.end(this.world);
         this.blackouts.clear();
+        this.ticks = 0;
     }
 
     @Override
