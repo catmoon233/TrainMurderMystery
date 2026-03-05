@@ -414,13 +414,13 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
         // 重置移动到游戏开始前
         // // attempt to reset the play area
         // if (--ticksUntilNextResetAttempt == 0) {
-        //     if (GameFunctions.tryResetTrain(serverWorld)) {
-        //         queueTrainReset();
-        //     } else {
-        //         // GameFunctions.getAllTaskPoints(serverWorld);
-        //         ticksUntilNextResetAttempt = -1;
-        //         OnTrainAreaHaveReseted.EVENT.invoker().onWorldHaveReseted(serverWorld);
-        //     }
+        // if (GameFunctions.tryResetTrain(serverWorld)) {
+        // queueTrainReset();
+        // } else {
+        // // GameFunctions.getAllTaskPoints(serverWorld);
+        // ticksUntilNextResetAttempt = -1;
+        // OnTrainAreaHaveReseted.EVENT.invoker().onWorldHaveReseted(serverWorld);
+        // }
         // }
 
         // if not running and spectators or not in lobby reset them
@@ -516,10 +516,17 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
                         GameFunctions.initializeGame(serverWorld);
                     if (this.getGameStatus() == GameStatus.STOPPING)
                         GameFunctions.finalizeGame(serverWorld);
+                } else {
+                    if (this.getGameStatus() == GameStatus.STARTING)
+                        this.setGameStatus(GameStatus.ACTIVE);
+                    if (this.getGameStatus() == GameStatus.STOPPING)
+                        this.setGameStatus(GameStatus.INACTIVE);
                 }
             }
         } else if (this.getGameStatus() == GameStatus.ACTIVE || this.getGameStatus() == GameStatus.INACTIVE) {
             this.setFade(fade - 1);
+        } else if (this.fade != 0) {
+            this.fade = 0;
         }
 
         if (this.isRunning()) {
