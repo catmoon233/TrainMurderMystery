@@ -22,13 +22,13 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.InventoryMenu;
-import net.minecraft.world.item.ItemStack;
 
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
 public class LimitedInventoryScreen extends LimitedHandledScreen<InventoryMenu> {
+    
     public static final ResourceLocation BACKGROUND_TEXTURE = TMM.id("textures/gui/container/limited_inventory.png");
     public static final @NotNull ResourceLocation ID = TMM.id("textures/gui/game.png");
     public final LocalPlayer player;

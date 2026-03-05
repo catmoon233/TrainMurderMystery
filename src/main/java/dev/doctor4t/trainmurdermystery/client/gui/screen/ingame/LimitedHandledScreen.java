@@ -12,6 +12,8 @@ import org.lwjgl.glfw.GLFW;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
+
 import net.minecraft.ChatFormatting;
 import net.minecraft.Util;
 import net.minecraft.client.gui.GuiGraphics;
@@ -32,6 +34,7 @@ public abstract class LimitedHandledScreen<T extends AbstractContainerMenu> exte
     protected int backgroundWidth = 176;
     protected int backgroundHeight = 32;
     protected final T handler;
+    public static ArrayList<Predicate<ItemStack>> NotAllowItemTakePredicates = new ArrayList<>();
     @Nullable
     protected Slot focusedSlot;
     @Nullable
@@ -167,18 +170,23 @@ public abstract class LimitedHandledScreen<T extends AbstractContainerMenu> exte
         ItemCooldowns cooldowns = minecraft.player.getCooldowns();
         ItemCooldowns.CooldownInstance cooldownInstance = cooldowns.cooldowns.get(itemStack.getItem());
         if (cooldownInstance != null) {
-            tooltips.add(Component.translatable("item.trainmurdermystery.limited_inventory.cooldown",(int)(( cooldownInstance.endTime - cooldowns.tickCount) / 20)).withStyle(ChatFormatting.GRAY));
+            tooltips.add(Component
+                    .translatable("item.trainmurdermystery.limited_inventory.cooldown",
+                            (int) ((cooldownInstance.endTime - cooldowns.tickCount) / 20))
+                    .withStyle(ChatFormatting.GRAY));
         }
 
         int nameWidth = this.font.width(itemStack.getHoverName().getString());
         int tooltipWidth = 0;
         for (Component text : tooltips) {
             int newWidth = this.font.width(text.getString());
-            if (newWidth > tooltipWidth) tooltipWidth = newWidth;
+            if (newWidth > tooltipWidth)
+                tooltipWidth = newWidth;
         }
         context.renderTooltip(this.font, name, itemStack.getTooltipImage(), this.x + 76 - (nameWidth / 2), this.y - 2);
         if (tooltipWidth > 0)
-            context.renderTooltip(this.font, tooltips, itemStack.getTooltipImage(), this.x + 76 - (tooltipWidth / 2), this.y + 50);
+            context.renderTooltip(this.font, tooltips, itemStack.getTooltipImage(), this.x + 76 - (tooltipWidth / 2),
+                    this.y + 50);
     }
 
     protected List<Component> getTooltipFromItem(ItemStack stack) {
@@ -203,7 +211,8 @@ public abstract class LimitedHandledScreen<T extends AbstractContainerMenu> exte
         boolean bl2 = slot == this.touchDragSlotStart && !this.touchDragStack.isEmpty() && !this.touchIsRightClickDrag;
         ItemStack itemStack2 = this.handler.getCarried();
         String string = null;
-        if (slot == this.touchDragSlotStart && !this.touchDragStack.isEmpty() && this.touchIsRightClickDrag && !itemStack.isEmpty()) {
+        if (slot == this.touchDragSlotStart && !this.touchDragStack.isEmpty() && this.touchIsRightClickDrag
+                && !itemStack.isEmpty()) {
             itemStack = itemStack.copyWithCount(itemStack.getCount() / 2);
         } else if (this.cursorDragging && this.cursorDragSlots.contains(slot) && !itemStack2.isEmpty()) {
             if (this.cursorDragSlots.size() == 1) {
@@ -214,7 +223,8 @@ public abstract class LimitedHandledScreen<T extends AbstractContainerMenu> exte
                 bl = true;
                 int k = Math.min(itemStack2.getMaxStackSize(), slot.getMaxStackSize(itemStack2));
                 int l = slot.getItem().isEmpty() ? 0 : slot.getItem().getCount();
-                int m = AbstractContainerMenu.getQuickCraftPlaceCount(this.cursorDragSlots, this.heldButtonType, itemStack2) + l;
+                int m = AbstractContainerMenu.getQuickCraftPlaceCount(this.cursorDragSlots, this.heldButtonType,
+                        itemStack2) + l;
                 if (m > k) {
                     m = k;
                     string = ChatFormatting.YELLOW.toString() + k;
@@ -268,7 +278,8 @@ public abstract class LimitedHandledScreen<T extends AbstractContainerMenu> exte
                     ItemStack itemStack2 = slot.getItem();
                     int i = itemStack2.isEmpty() ? 0 : itemStack2.getCount();
                     int j = Math.min(itemStack.getMaxStackSize(), slot.getMaxStackSize(itemStack));
-                    int k = Math.min(AbstractContainerMenu.getQuickCraftPlaceCount(this.cursorDragSlots, this.heldButtonType, itemStack) + i, j);
+                    int k = Math.min(AbstractContainerMenu.getQuickCraftPlaceCount(this.cursorDragSlots,
+                            this.heldButtonType, itemStack) + i, j);
                     this.draggedStackRemainder -= k - i;
                 }
             }
@@ -292,10 +303,12 @@ public abstract class LimitedHandledScreen<T extends AbstractContainerMenu> exte
         if (super.mouseClicked(mouseX, mouseY, button)) {
             return true;
         } else {
-            boolean bl = this.minecraft.options.keyPickItem.matchesMouse(button) && this.minecraft.gameMode.hasInfiniteItems();
+            boolean bl = this.minecraft.options.keyPickItem.matchesMouse(button)
+                    && this.minecraft.gameMode.hasInfiniteItems();
             Slot slot = this.getSlotAt(mouseX, mouseY);
             long l = Util.getMillis();
-            this.doubleClicking = this.lastClickedSlot == slot && l - this.lastButtonClickTime < 250L && this.lastClickedButton == button;
+            this.doubleClicking = this.lastClickedSlot == slot && l - this.lastButtonClickTime < 250L
+                    && this.lastClickedButton == button;
             this.cancelNextRelease = false;
             if (button != 0 && button != GLFW.GLFW_MOUSE_BUTTON_RIGHT && !bl) {
                 this.onMouseClick(button);
@@ -315,7 +328,7 @@ public abstract class LimitedHandledScreen<T extends AbstractContainerMenu> exte
 
                 if (k != -1) {
                     if (this.minecraft.options.touchscreen().get()) {
-                        if (slot != null && slot.hasItem()) {
+                        if (slot != null && slot.hasItem() && !isItemTakeBlocked(slot.getItem())) {
                             this.touchDragSlotStart = slot;
                             this.touchDragStack = ItemStack.EMPTY;
                             this.touchIsRightClickDrag = button == GLFW.GLFW_MOUSE_BUTTON_RIGHT;
@@ -371,7 +384,8 @@ public abstract class LimitedHandledScreen<T extends AbstractContainerMenu> exte
     }
 
     protected boolean isClickOutsideBounds(double mouseX, double mouseY, int left, int top, int button) {
-        return mouseX < (double) left || mouseY < (double) top || mouseX >= (double) (left + this.backgroundWidth) || mouseY >= (double) (top + this.backgroundHeight);
+        return mouseX < (double) left || mouseY < (double) top || mouseX >= (double) (left + this.backgroundWidth)
+                || mouseY >= (double) (top + this.backgroundHeight);
     }
 
     @Override
@@ -384,13 +398,16 @@ public abstract class LimitedHandledScreen<T extends AbstractContainerMenu> exte
                     if (slot != this.touchDragSlotStart && !this.touchDragSlotStart.getItem().isEmpty()) {
                         this.touchDragStack = this.touchDragSlotStart.getItem().copy();
                     }
-                } else if (this.touchDragStack.getCount() > 1 && slot != null && AbstractContainerMenu.canItemQuickReplace(slot, this.touchDragStack, false)) {
+                } else if (this.touchDragStack.getCount() > 1 && slot != null
+                        && AbstractContainerMenu.canItemQuickReplace(slot, this.touchDragStack, false)) {
                     long l = Util.getMillis();
                     if (this.touchHoveredSlot == slot) {
                         if (l - this.touchDropTimer > 500L) {
-                            this.onMouseClick(this.touchDragSlotStart, this.touchDragSlotStart.index, 0, ClickType.PICKUP);
+                            this.onMouseClick(this.touchDragSlotStart, this.touchDragSlotStart.index, 0,
+                                    ClickType.PICKUP);
                             this.onMouseClick(slot, slot.index, 1, ClickType.PICKUP);
-                            this.onMouseClick(this.touchDragSlotStart, this.touchDragSlotStart.index, 0, ClickType.PICKUP);
+                            this.onMouseClick(this.touchDragSlotStart, this.touchDragSlotStart.index, 0,
+                                    ClickType.PICKUP);
                             this.touchDropTimer = l + 750L;
                             this.touchDragStack.shrink(1);
                         }
@@ -423,8 +440,8 @@ public abstract class LimitedHandledScreen<T extends AbstractContainerMenu> exte
         if (slot != null) {
             k = slot.index;
         }
-
-        if (this.doubleClicking && slot != null && button == 0 && this.handler.canTakeItemForPickAll(ItemStack.EMPTY, slot)) {
+        if (this.doubleClicking && slot != null && button == 0
+                && this.handler.canTakeItemForPickAll(ItemStack.EMPTY, slot)) {
             this.onMouseClick(slot, k, button, ClickType.PICKUP_ALL);
 
             this.doubleClicking = false;
@@ -450,12 +467,14 @@ public abstract class LimitedHandledScreen<T extends AbstractContainerMenu> exte
 
                     boolean bl2 = AbstractContainerMenu.canItemQuickReplace(slot, this.touchDragStack, false);
                     if (k != GLFW.GLFW_KEY_UNKNOWN && !this.touchDragStack.isEmpty() && bl2) {
-                        this.onMouseClick(this.touchDragSlotStart, this.touchDragSlotStart.index, button, ClickType.PICKUP);
+                        this.onMouseClick(this.touchDragSlotStart, this.touchDragSlotStart.index, button,
+                                ClickType.PICKUP);
                         this.onMouseClick(slot, k, 0, ClickType.PICKUP);
                         if (this.handler.getCarried().isEmpty()) {
                             this.touchDropReturningStack = ItemStack.EMPTY;
                         } else {
-                            this.onMouseClick(this.touchDragSlotStart, this.touchDragSlotStart.index, button, ClickType.PICKUP);
+                            this.onMouseClick(this.touchDragSlotStart, this.touchDragSlotStart.index, button,
+                                    ClickType.PICKUP);
                             this.touchDropX = Mth.floor(mouseX - (double) i);
                             this.touchDropY = Mth.floor(mouseY - (double) j);
                             this.touchDropOriginSlot = this.touchDragSlotStart;
@@ -473,13 +492,16 @@ public abstract class LimitedHandledScreen<T extends AbstractContainerMenu> exte
                     this.endTouchDrag();
                 }
             } else if (this.cursorDragging && !this.cursorDragSlots.isEmpty()) {
-                this.onMouseClick(null, -999, AbstractContainerMenu.getQuickcraftMask(0, this.heldButtonType), ClickType.QUICK_CRAFT);
+                this.onMouseClick(null, -999, AbstractContainerMenu.getQuickcraftMask(0, this.heldButtonType),
+                        ClickType.QUICK_CRAFT);
 
                 for (Slot slot2x : this.cursorDragSlots) {
-                    this.onMouseClick(slot2x, slot2x.index, AbstractContainerMenu.getQuickcraftMask(1, this.heldButtonType), ClickType.QUICK_CRAFT);
+                    this.onMouseClick(slot2x, slot2x.index,
+                            AbstractContainerMenu.getQuickcraftMask(1, this.heldButtonType), ClickType.QUICK_CRAFT);
                 }
 
-                this.onMouseClick(null, -999, AbstractContainerMenu.getQuickcraftMask(2, this.heldButtonType), ClickType.QUICK_CRAFT);
+                this.onMouseClick(null, -999, AbstractContainerMenu.getQuickcraftMask(2, this.heldButtonType),
+                        ClickType.QUICK_CRAFT);
             } else if (!this.handler.getCarried().isEmpty()) {
                 if (this.minecraft.options.keyPickItem.matchesMouse(button)) {
                     this.onMouseClick(slot, k, button, ClickType.CLONE);
@@ -511,18 +533,39 @@ public abstract class LimitedHandledScreen<T extends AbstractContainerMenu> exte
         int j = this.y;
         pointX -= i;
         pointY -= j;
-        return pointX >= (double) (x - 1) && pointX < (double) (x + width + 1) && pointY >= (double) (y - 1) && pointY < (double) (y + height + 1);
+        return pointX >= (double) (x - 1) && pointX < (double) (x + width + 1) && pointY >= (double) (y - 1)
+                && pointY < (double) (y + height + 1);
     }
 
     /**
-     * @see net.minecraft.world.inventory.AbstractContainerMenu#clicked(int, int, net.minecraft.world.inventory.ClickType, net.minecraft.world.entity.player.Player)
+     * 判断某个物品是否被 NotAllowItemTakePredicates 中的任意谓词拦截。
+     */
+    protected boolean isItemTakeBlocked(ItemStack stack) {
+        if (stack.isEmpty() || NotAllowItemTakePredicates.isEmpty())
+            return false;
+        for (Predicate<ItemStack> predicate : NotAllowItemTakePredicates) {
+            if (predicate.test(stack))
+                return true;
+        }
+        return false;
+    }
+
+    /**
+     * @see net.minecraft.world.inventory.AbstractContainerMenu#clicked(int, int,
+     *      net.minecraft.world.inventory.ClickType,
+     *      net.minecraft.world.entity.player.Player)
      */
     protected void onMouseClick(Slot slot, int slotId, int button, ClickType actionType) {
         if (slot != null) {
             slotId = slot.index;
+            // 当玩家尝试拿起槽位中的物品时，检查谓词
+            if (!slot.getItem().isEmpty() && isItemTakeBlocked(slot.getItem())) {
+                return;
+            }
         }
 
-        this.minecraft.gameMode.handleInventoryMouseClick(this.handler.containerId, slotId, button, actionType, this.minecraft.player);
+        this.minecraft.gameMode.handleInventoryMouseClick(this.handler.containerId, slotId, button, actionType,
+                this.minecraft.player);
     }
 
     protected void onSlotChangedState(int slotId, int handlerId, boolean newState) {
