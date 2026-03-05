@@ -7,12 +7,12 @@ import net.minecraft.resources.ResourceLocation;
 import org.ladysnake.cca.api.v3.component.ComponentKey;
 
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class TMMRoles {
-    public static final Map<ResourceLocation, Role> ROLES = new LinkedHashMap<>();
+    public static final Map<ResourceLocation, Role> ROLES = new HashMap<>();
     public static final List<ComponentKey<? extends RoleComponent>> COMPONENT_KEYS = new ArrayList<>();
     public static final Role DISCOVERY_CIVILIAN = registerRole(
             new NoramlRole(TMM.id("discovery_civilian"), 0x36E51B, true, false, Role.MoodType.NONE, -1, true));
