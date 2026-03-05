@@ -385,7 +385,8 @@ public class ServerTaskInfoClasses {
 
             // Place the doors back
             for (GameFunctions.BlockInfo blockInfo2 : list4) {
-                if (serverWorld.setBlock(blockInfo2.pos(), blockInfo2.state(), Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE)) {
+                if (serverWorld.setBlock(blockInfo2.pos(), blockInfo2.state(),
+                        Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE)) {
                     mx++;
                     serverWorld.getLightEngine().checkBlock(blockInfo2.pos());
                 }
@@ -402,6 +403,7 @@ public class ServerTaskInfoClasses {
             }
             for (GameFunctions.BlockInfo blockInfo2x : list5) {
                 serverWorld.blockUpdated(blockInfo2x.pos(), blockInfo2x.state().getBlock());
+                serverWorld.getLightEngine().checkBlock(blockInfo2x.pos());
             }
         }
 
@@ -432,27 +434,27 @@ public class ServerTaskInfoClasses {
 
         @Override
         public void onFinished() {
-            
+
             if (shouldStartGame) {
                 TMM.LOGGER.info("RESETING MAP FINISHED. STARTING THE GAME.");
                 GameFunctions.trueStartGame(this.world, this.gameMode, this.time);
-                // 
+                //
                 this.world.players().forEach((p) -> {
-                p.displayClientMessage(
-                        Component
-                                .translatable("message.tmm.starting")
-                                .withStyle(ChatFormatting.GREEN),
-                        true);
-            });
-            }else{
+                    p.displayClientMessage(
+                            Component
+                                    .translatable("message.tmm.starting")
+                                    .withStyle(ChatFormatting.GREEN),
+                            true);
+                });
+            } else {
                 this.world.players().forEach((p) -> {
-                p.displayClientMessage(
-                        Component
-                                .translatable("message.tmm.reseting",
-                                        "100")
-                                .withStyle(ChatFormatting.GOLD),
-                        true);
-            });
+                    p.displayClientMessage(
+                            Component
+                                    .translatable("message.tmm.reseting",
+                                            "100")
+                                    .withStyle(ChatFormatting.GOLD),
+                            true);
+                });
             }
         }
     }
