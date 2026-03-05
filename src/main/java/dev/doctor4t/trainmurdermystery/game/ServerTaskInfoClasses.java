@@ -66,6 +66,7 @@ public class ServerTaskInfoClasses {
         AreasWorldComponent area;
         int count = 0;
         private ServerLevel serverWorld;
+        public boolean shouldStartGame = true;
         private GameMode gameMode;
         private int time;
         private int MAX_RESET_PER = 1; // 每 tick 处理的 chunk 数，每块已约 5000
@@ -226,13 +227,15 @@ public class ServerTaskInfoClasses {
                                 .withStyle(ChatFormatting.YELLOW),
                         true);
             });
-            TMM.LOGGER.info("RESETING MAP FINISHED. STARTING RESET TASK BLOCKS.");
-            // GameFunctions.trueStartGame(this.serverWorld, this.gameMode, this.time);
-            var task = new ServerTaskInfoClasses.OnlySomeBlockResetTask(GameFunctions.resetPoints,
-                    serverWorld,
-                    gameMode, time);
-            GameFunctions.serverTaskQueue.addLast(task);
-            MapResetManager.saveArea(serverWorld);
+            if (shouldStartGame) {
+                TMM.LOGGER.info("RESETING MAP FINISHED. STARTING RESET TASK BLOCKS.");
+                // GameFunctions.trueStartGame(this.serverWorld, this.gameMode, this.time);
+                var task = new ServerTaskInfoClasses.OnlySomeBlockResetTask(GameFunctions.resetPoints,
+                        serverWorld,
+                        gameMode, time);
+                GameFunctions.serverTaskQueue.addLast(task);
+                MapResetManager.saveArea(serverWorld);
+            }
         }
     }
 
@@ -243,6 +246,7 @@ public class ServerTaskInfoClasses {
         int count = 0;
         private ServerLevel world;
         private GameMode gameMode;
+        public boolean shouldStartGame = true;
         private int time;
         private final int MAX_RESET_PER = 500;
 
@@ -438,8 +442,10 @@ public class ServerTaskInfoClasses {
                                 .withStyle(ChatFormatting.GOLD),
                         true);
             });
-            TMM.LOGGER.info("RESETING MAP FINISHED. STARTING THE GAME.");
-            GameFunctions.trueStartGame(this.world, this.gameMode, this.time);
+            if (shouldStartGame) {
+                TMM.LOGGER.info("RESETING MAP FINISHED. STARTING THE GAME.");
+                GameFunctions.trueStartGame(this.world, this.gameMode, this.time);
+            }
         }
     }
 }

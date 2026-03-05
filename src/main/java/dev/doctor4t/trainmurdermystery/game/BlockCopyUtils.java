@@ -40,6 +40,7 @@ public class BlockCopyUtils {
                     BlockPos dstPos = srcPos.offset(offset);
                     BlockState state = level.getBlockState(srcPos);
                     level.setBlock(dstPos, state, Block.UPDATE_CLIENTS | Block.UPDATE_KNOWN_SHAPE);
+                    level.getLightEngine().checkBlock(dstPos);
                 }
             }
         }
