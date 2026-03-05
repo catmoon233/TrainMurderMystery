@@ -1,19 +1,18 @@
 package dev.doctor4t.trainmurdermystery.api;
 
 import dev.doctor4t.trainmurdermystery.TMM;
-import dev.doctor4t.trainmurdermystery.client.gui.RoleAnnouncementTexts;
 import dev.doctor4t.trainmurdermystery.game.GameConstants;
 import net.minecraft.resources.ResourceLocation;
 
-import org.antlr.v4.misc.OrderedHashMap;
 import org.ladysnake.cca.api.v3.component.ComponentKey;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 public class TMMRoles {
-    public static final Map<ResourceLocation, Role> ROLES = new OrderedHashMap<>();
+    public static final Map<ResourceLocation, Role> ROLES = new LinkedHashMap<>();
     public static final List<ComponentKey<? extends RoleComponent>> COMPONENT_KEYS = new ArrayList<>();
     public static final Role DISCOVERY_CIVILIAN = registerRole(
             new NoramlRole(TMM.id("discovery_civilian"), 0x36E51B, true, false, Role.MoodType.NONE, -1, true));
