@@ -17,7 +17,6 @@ import net.minecraft.world.item.ItemStack;
 
 public class ShopContent {
     public static List<ShopEntry> defaultEntries = new ArrayList<>();
-
     public static void register(){
         {
             defaultEntries.add(new ShopEntry(TMMItems.KNIFE.getDefaultInstance(), TMMConfig.knifePrice, ShopEntry.Type.WEAPON));

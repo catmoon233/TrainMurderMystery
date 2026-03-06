@@ -33,6 +33,10 @@ public class ShopEntry {
         this.type = type;
     }
 
+    public boolean canBuy(@NotNull Player player) {
+        return true;
+    }
+
     public boolean onBuy(@NotNull Player player) {
         return insertStackInFreeSlot(player, this.stack.copy());
     }

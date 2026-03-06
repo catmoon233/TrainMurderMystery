@@ -26,7 +26,8 @@ import org.ladysnake.cca.api.v3.component.tick.ServerTickingComponent;
 import java.util.List;
 
 public class PlayerShopComponent implements RoleComponent, ServerTickingComponent, ClientTickingComponent {
-    public static final ComponentKey<PlayerShopComponent> KEY = ComponentRegistry.getOrCreate(TMM.id("shop"), PlayerShopComponent.class);
+    public static final ComponentKey<PlayerShopComponent> KEY = ComponentRegistry.getOrCreate(TMM.id("shop"),
+            PlayerShopComponent.class);
     private final Player player;
     public int balance = 0;
 
@@ -48,8 +49,9 @@ public class PlayerShopComponent implements RoleComponent, ServerTickingComponen
         this.balance = 0;
         this.sync();
     }
+
     @Override
-    public void clear(){
+    public void clear() {
         reset();
     }
 
@@ -70,34 +72,45 @@ public class PlayerShopComponent implements RoleComponent, ServerTickingComponen
     }
 
     public void tryBuy(int index) {
-        if (index < 0 || index >= getShopEntries().size()) return;
+        if (index < 0 || index >= getShopEntries().size())
+            return;
         ShopEntry entry = getShopEntries().get(index);
         if (FabricLoader.getInstance().isDevelopmentEnvironment() && this.balance < entry.price())
             this.balance = entry.price() * 10;
-        if (this.balance >= entry.price() && !this.player.getCooldowns().isOnCooldown(entry.stack().getItem()) && entry.onBuy(this.player)) {
+        if (this.balance >= entry.price() && !this.player.getCooldowns().isOnCooldown(entry.stack().getItem())
+                && entry.canBuy(this.player) && entry.onBuy(this.player)) {
             this.balance -= entry.price();
             if (this.player instanceof ServerPlayer player) {
-                player.connection.send(new ClientboundSoundPacket(BuiltInRegistries.SOUND_EVENT.wrapAsHolder(TMMSounds.UI_SHOP_BUY), SoundSource.PLAYERS, player.getX(), player.getY(), player.getZ(), 1.0f, 0.9f + this.player.getRandom().nextFloat() * 0.2f, player.getRandom().nextLong()));
-                TMM.REPLAY_MANAGER.recordStoreBuy(player.getUUID(), BuiltInRegistries.ITEM.getKey(entry.stack().getItem()), entry.stack().getCount(), entry.price());
+                player.connection.send(
+                        new ClientboundSoundPacket(BuiltInRegistries.SOUND_EVENT.wrapAsHolder(TMMSounds.UI_SHOP_BUY),
+                                SoundSource.PLAYERS, player.getX(), player.getY(), player.getZ(), 1.0f,
+                                0.9f + this.player.getRandom().nextFloat() * 0.2f, player.getRandom().nextLong()));
+                TMM.REPLAY_MANAGER.recordStoreBuy(player.getUUID(),
+                        BuiltInRegistries.ITEM.getKey(entry.stack().getItem()), entry.stack().getCount(),
+                        entry.price());
             }
         } else {
             this.player.displayClientMessage(Component.literal("购买失败").withStyle(ChatFormatting.DARK_RED), true);
             if (this.player instanceof ServerPlayer player) {
-                player.connection.send(new ClientboundSoundPacket(BuiltInRegistries.SOUND_EVENT.wrapAsHolder(TMMSounds.UI_SHOP_BUY_FAIL), SoundSource.PLAYERS, player.getX(), player.getY(), player.getZ(), 1.0f, 0.9f + this.player.getRandom().nextFloat() * 0.2f, player.getRandom().nextLong()));
+                player.connection.send(new ClientboundSoundPacket(
+                        BuiltInRegistries.SOUND_EVENT.wrapAsHolder(TMMSounds.UI_SHOP_BUY_FAIL), SoundSource.PLAYERS,
+                        player.getX(), player.getY(), player.getZ(), 1.0f,
+                        0.9f + this.player.getRandom().nextFloat() * 0.2f, player.getRandom().nextLong()));
             }
         }
         this.sync();
     }
+
     public static boolean isPlayerAliveAndSurvival(Player player) {
         return player != null && !player.isSpectator() && !player.isCreative();
     }
+
     private @NotNull List<ShopEntry> getShopEntries() {
         final var gameWorldComponent = GameWorldComponent.KEY.get(player.level());
         final var role = gameWorldComponent.getRole(player);
-        if (gameWorldComponent!=null && role!=null && isPlayerAliveAndSurvival( player)) {
+        if (gameWorldComponent != null && role != null && isPlayerAliveAndSurvival(player)) {
             final var shopEntries = ShopContent.getShopEntries(
-                    role.getIdentifier()
-            );
+                    role.getIdentifier());
             if (!shopEntries.isEmpty()) {
                 return shopEntries;
             }
@@ -119,7 +132,8 @@ public class PlayerShopComponent implements RoleComponent, ServerTickingComponen
     }
 
     public static boolean useBlackout(@NotNull Player player) {
-        player.getCooldowns().addCooldown(TMMItems.BLACKOUT, GameConstants.ITEM_COOLDOWNS.getOrDefault(TMMItems.BLACKOUT, 0));
+        player.getCooldowns().addCooldown(TMMItems.BLACKOUT,
+                GameConstants.ITEM_COOLDOWNS.getOrDefault(TMMItems.BLACKOUT, 0));
         boolean triggered = WorldBlackoutComponent.KEY.get(player.level()).triggerBlackout();
         if (triggered) {
             TMM.REPLAY_MANAGER.recordSkillUsed(player.getUUID(), BuiltInRegistries.ITEM.getKey(TMMItems.BLACKOUT));
@@ -128,7 +142,8 @@ public class PlayerShopComponent implements RoleComponent, ServerTickingComponen
     }
 
     public static boolean usePsychoMode(@NotNull Player player) {
-        player.getCooldowns().addCooldown(TMMItems.PSYCHO_MODE, GameConstants.ITEM_COOLDOWNS.getOrDefault(TMMItems.PSYCHO_MODE, 0));
+        player.getCooldowns().addCooldown(TMMItems.PSYCHO_MODE,
+                GameConstants.ITEM_COOLDOWNS.getOrDefault(TMMItems.PSYCHO_MODE, 0));
         boolean started = PlayerPsychoComponent.KEY.get(player).startPsycho();
         if (started) {
             TMM.REPLAY_MANAGER.recordSkillUsed(player.getUUID(), BuiltInRegistries.ITEM.getKey(TMMItems.PSYCHO_MODE));
