@@ -242,10 +242,6 @@ public class TMM implements ModInitializer {
     private void registerServerPlayConnectionEvents() {
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
             GameWorldComponent gameWorldComponent = GameWorldComponent.KEY.get(handler.player.level());
-            if (gameWorldComponent.getGameStatus() == GameWorldComponent.GameStatus.ACTIVE) {
-                // gameWorldComponent.removePlayer(handler.player); // Removed as method does
-                // not exist
-            }
             if (REPLAY_MANAGER != null) {
                 var role = gameWorldComponent.getRole(handler.player);
                 if (role != null) {
@@ -256,10 +252,6 @@ public class TMM implements ModInitializer {
         });
         ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
             GameWorldComponent gameWorldComponent = GameWorldComponent.KEY.get(handler.player.level());
-            if (gameWorldComponent.getGameStatus() == GameWorldComponent.GameStatus.ACTIVE) {
-                // gameWorldComponent.removePlayer(handler.player); // Removed as method does
-                // not exist
-            }
             if (REPLAY_MANAGER != null) {
                 var role = gameWorldComponent.getRole(handler.player);
                 if (role != null) {
