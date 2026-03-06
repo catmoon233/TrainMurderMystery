@@ -252,8 +252,8 @@ public class GameFunctions {
     public static void trueStartGame(ServerLevel world, GameMode gameMode, int time) {
         if (TMM.isLobby)
             return;
-        // 延迟1s
-        serverAsynTaskLists.add(new ServerTaskInfoClasses.SchedulerTask(20, () -> {
+        // 延迟5s
+        serverAsynTaskLists.add(new ServerTaskInfoClasses.SchedulerTask(100, () -> {
             resetEntities(world);
         }));
         executeFunction(world.getServer().createCommandSourceStack(), "harpymodloader:early_start_game");
