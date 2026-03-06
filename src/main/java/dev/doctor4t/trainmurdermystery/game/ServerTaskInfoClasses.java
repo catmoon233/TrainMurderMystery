@@ -458,4 +458,26 @@ public class ServerTaskInfoClasses {
             }
         }
     }
+
+    public static class SchedulerTask extends ServerTaskInfo {
+        public int timeleft;
+        public Runnable func;
+
+        public SchedulerTask(int time, Runnable task) {
+            this.timeleft = time;
+            this.func = task;
+        }
+
+        public boolean onTick(MinecraftServer server) {
+            if (timeleft > 0) {
+                timeleft--;
+                return false;
+            }
+            return true;
+        }
+
+        public void onFinished() {
+            func.run();
+        }
+    }
 }

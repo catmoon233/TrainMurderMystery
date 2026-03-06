@@ -252,7 +252,10 @@ public class GameFunctions {
     public static void trueStartGame(ServerLevel world, GameMode gameMode, int time) {
         if (TMM.isLobby)
             return;
-        resetEntities(world);
+        // 延迟1s
+        serverAsynTaskLists.add(new ServerTaskInfoClasses.SchedulerTask(20, () -> {
+            resetEntities(world);
+        }));
         executeFunction(world.getServer().createCommandSourceStack(), "harpymodloader:early_start_game");
         executeFunction(world.getServer().createCommandSourceStack(),
                 "harpymodloader:early_start_game_" + MapManager.last_start_map);
@@ -574,7 +577,6 @@ public class GameFunctions {
     public static ArrayList<Predicate<Entry<Player, String>>> CustomWinnersPredicates = new ArrayList<>();
 
     public static void finalizeGame(ServerLevel world) {
-        // CustomWinnerPlayers.clear();
         serverTaskQueue.clear();
         GameRoundEndComponent roundEnd = GameRoundEndComponent.KEY.get(world);
         roundEnd.CustomWinnerPlayers.clear();
@@ -719,13 +721,7 @@ public class GameFunctions {
 
         trainComponent.setTimeOfDay(TrainWorldComponent.TimeOfDay.NOON);
 
-        // discard all player bodies
-        for (PlayerBodyEntity body : world.getEntities(TMMEntities.PLAYER_BODY, playerBodyEntity -> true))
-            body.discard();
-        for (FirecrackerEntity entity : world.getEntities(TMMEntities.FIRECRACKER, entity -> true))
-            entity.discard();
-        for (NoteEntity entity : world.getEntities(TMMEntities.NOTE, entity -> true))
-            entity.discard();
+       resetEntities(world);
 
         // reset all players
         for (ServerPlayer player : world.players()) {

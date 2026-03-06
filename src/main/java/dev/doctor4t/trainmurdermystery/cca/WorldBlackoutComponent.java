@@ -8,7 +8,6 @@ import dev.doctor4t.trainmurdermystery.index.TMMSounds;
 import org.jetbrains.annotations.NotNull;
 import org.ladysnake.cca.api.v3.component.ComponentKey;
 import org.ladysnake.cca.api.v3.component.ComponentRegistry;
-import org.ladysnake.cca.api.v3.component.sync.AutoSyncedComponent;
 import org.ladysnake.cca.api.v3.component.tick.ServerTickingComponent;
 
 import java.util.ArrayList;
@@ -29,12 +28,12 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 
-public class WorldBlackoutComponent implements AutoSyncedComponent, ServerTickingComponent {
+public class WorldBlackoutComponent implements ServerTickingComponent {
     public static final ComponentKey<WorldBlackoutComponent> KEY = ComponentRegistry.getOrCreate(TMM.id("blackout"),
             WorldBlackoutComponent.class);
     private final Level world;
-    private final List<BlackoutDetails> blackouts = new ArrayList<>();
-    private int ticks = 0;
+    public final List<BlackoutDetails> blackouts = new ArrayList<>();
+    public int blackOutRemainingTicks = 0;
 
     public WorldBlackoutComponent(Level world) {
         this.world = world;
@@ -44,7 +43,7 @@ public class WorldBlackoutComponent implements AutoSyncedComponent, ServerTickin
         for (BlackoutDetails detail : this.blackouts)
             detail.end(this.world);
         this.blackouts.clear();
-        this.ticks = 0;
+        this.blackOutRemainingTicks = 0;
     }
 
     @Override
@@ -58,16 +57,16 @@ public class WorldBlackoutComponent implements AutoSyncedComponent, ServerTickin
                 i--;
             }
         }
-        if (this.ticks > 0)
-            this.ticks--;
+        if (this.blackOutRemainingTicks > 0)
+            this.blackOutRemainingTicks--;
     }
 
     public boolean isBlackoutActive() {
-        return this.ticks > 0;
+        return this.blackOutRemainingTicks > 0;
     }
 
     public boolean triggerBlackout() {
-        if (this.ticks > 0)
+        if (this.blackOutRemainingTicks > 0)
             return false;
         for (var pos : GameFunctions.resetPoints) {
             BlockState state = this.world.getBlockState(pos);
@@ -76,8 +75,8 @@ public class WorldBlackoutComponent implements AutoSyncedComponent, ServerTickin
 
             int duration = GameConstants.getBlackoutMinDuration() + this.world.random
                     .nextInt(GameConstants.getBlackoutMaxDuration() - GameConstants.getBlackoutMinDuration());
-            if (duration > this.ticks)
-                this.ticks = duration;
+            if (duration > this.blackOutRemainingTicks)
+                this.blackOutRemainingTicks = duration;
             BlackoutDetails detail = new BlackoutDetails(pos, duration,
                     state.getValue(BlockStateProperties.LIT));
             detail.init(this.world);
@@ -187,10 +186,5 @@ public class WorldBlackoutComponent implements AutoSyncedComponent, ServerTickin
             tag.putBoolean("original", this.original);
             return tag;
         }
-    }
-
-    @Override
-    public boolean shouldSyncWith(ServerPlayer sp) {
-        return false;
     }
 }
