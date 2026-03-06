@@ -578,6 +578,8 @@ public class GameFunctions {
 
     public static void finalizeGame(ServerLevel world) {
         serverTaskQueue.clear();
+        serverAsynTaskLists.clear();
+        isStartingGame = false;
         GameRoundEndComponent roundEnd = GameRoundEndComponent.KEY.get(world);
         roundEnd.CustomWinnerPlayers.clear();
         RoleMethodDispatcher.onEndGame(world);
@@ -721,7 +723,7 @@ public class GameFunctions {
 
         trainComponent.setTimeOfDay(TrainWorldComponent.TimeOfDay.NOON);
 
-       resetEntities(world);
+        resetEntities(world);
 
         // reset all players
         for (ServerPlayer player : world.players()) {
