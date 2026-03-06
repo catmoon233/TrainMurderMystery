@@ -48,6 +48,11 @@ public class WorldBlackoutComponent implements ServerTickingComponent {
 
     @Override
     public void serverTick() {
+        if (!world.isClientSide){
+            if (world.getServer().tickRateManager().isFrozen()){
+                return;
+            }
+        }
         for (int i = 0; i < this.blackouts.size(); i++) {
             BlackoutDetails detail = this.blackouts.get(i);
             detail.tick(this.world);

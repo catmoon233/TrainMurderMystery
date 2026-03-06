@@ -33,6 +33,11 @@ public class GameTimeComponent implements AutoSyncedComponent, CommonTickingComp
     }
     @Override
     public void tick() {
+        if (!world.isClientSide){
+            if (world.getServer().tickRateManager().isFrozen()){
+                return;
+            }
+        }
         if (!GameWorldComponent.KEY.get(this.world).isRunning()) return;
         if (this.time <= 0) return;
         this.time--;

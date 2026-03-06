@@ -144,6 +144,7 @@ public class PlayerMoodComponent implements RoleComponent, ServerTickingComponen
 
     @Override
     public void serverTick() {
+
         GameWorldComponent gameWorldComponent = GameWorldComponent.KEY.get(this.player.level());
         if (!gameWorldComponent.isRunning() || !GameFunctions.isPlayerAliveAndSurvival(this.player))
             return;
