@@ -7,7 +7,6 @@ import dev.doctor4t.trainmurdermystery.api.Role;
 import dev.doctor4t.trainmurdermystery.api.TMMRoles;
 import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
 import dev.doctor4t.trainmurdermystery.cca.GameRoundEndComponent;
-import dev.doctor4t.trainmurdermystery.cca.GameRoundEndComponent.RoundEndData;
 import dev.doctor4t.trainmurdermystery.game.GameFunctions;
 import dev.doctor4t.trainmurdermystery.game.GameFunctions.WinStatus;
 import net.minecraft.ChatFormatting;
@@ -94,6 +93,11 @@ public class GameReplayManager {
     ReplayEventTypes.EventType eventType = mapEventType(dataEvent.getType());
     ReplayEventTypes.EventDetails details = switch (dataEvent.getType()) {
       // 主要事件
+      case PLAYER_JOIN, PLAYER_LEAVE -> {
+        String message = dataEvent.getMessage();
+        var ply = dataEvent.getSourcePlayer();
+        yield new ReplayEventTypes.PlayerJoinLeaveDetails(ply, message);
+      }
       case PLAYER_KILL -> {
         String itemUsed = dataEvent.getItemUsed();
         if (itemUsed == null)
@@ -203,6 +207,7 @@ public class GameReplayManager {
       case ARMOR_BREAK -> {
         yield new ReplayEventTypes.ArmorBreakDetails(dataEvent.getSourcePlayer());
       }
+      
       case CHANGE_ROLE -> {
         String[] str_arr = dataEvent.getMessage().split("===");
 

@@ -1,5 +1,11 @@
 package dev.doctor4t.trainmurdermystery.api.replay;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+
 import dev.doctor4t.trainmurdermystery.api.replay.ReplayEventTypes.ArmorBreakDetails;
 import dev.doctor4t.trainmurdermystery.api.replay.ReplayEventTypes.BlackoutEventDetails;
 import dev.doctor4t.trainmurdermystery.api.replay.ReplayEventTypes.ChangeRoleDetails;
@@ -8,6 +14,7 @@ import dev.doctor4t.trainmurdermystery.api.replay.ReplayEventTypes.GrenadeThrown
 import dev.doctor4t.trainmurdermystery.api.replay.ReplayEventTypes.ItemUsedDetails;
 import dev.doctor4t.trainmurdermystery.api.replay.ReplayEventTypes.LockpickAttemptDetails;
 import dev.doctor4t.trainmurdermystery.api.replay.ReplayEventTypes.MoodChangeDetails;
+import dev.doctor4t.trainmurdermystery.api.replay.ReplayEventTypes.PlayerJoinLeaveDetails;
 import dev.doctor4t.trainmurdermystery.api.replay.ReplayEventTypes.PlayerKillDetails;
 import dev.doctor4t.trainmurdermystery.api.replay.ReplayEventTypes.PlayerPoisonedDetails;
 import dev.doctor4t.trainmurdermystery.api.replay.ReplayEventTypes.PlayerRevivalDetails;
@@ -22,11 +29,6 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
 
 public class GameReplayData {
     private int playerCount;
@@ -203,6 +205,10 @@ public class GameReplayData {
         } else if (event.details() instanceof ArmorBreakDetails ambd) {
             sourcePlayer = ambd.playerUuid();
             // message = ;
+        } else if (event.details() instanceof PlayerJoinLeaveDetails pd) {
+            sourcePlayer = pd.player();
+            message = pd.scoreboardName();
+            // message = ;
         }
 
         Component sourceName = sourcePlayer != null ? manager.getPlayerName(sourcePlayer)
@@ -252,10 +258,17 @@ public class GameReplayData {
                     yield Component.translatable("tmm.replay.event.player_join", sourceName)
                             .withStyle(ChatFormatting.GRAY);
                 } else {
-                    yield Component
-                            .translatable("tmm.replay.event.player_join",
-                                    Component.translatable("tmm.replay.event.unknown_player"))
-                            .withStyle(ChatFormatting.GRAY);
+                    if (message != null) {
+                        yield Component
+                                .translatable("tmm.replay.event.player_join",
+                                        Component.literal(message).withStyle(ChatFormatting.GRAY))
+                                .withStyle(ChatFormatting.GRAY);
+                    } else {
+                        yield Component
+                                .translatable("tmm.replay.event.player_join",
+                                        Component.translatable("tmm.replay.event.unknown_player"))
+                                .withStyle(ChatFormatting.GRAY);
+                    }
                 }
             }
             case PLAYER_LEAVE -> {
@@ -263,10 +276,17 @@ public class GameReplayData {
                     yield Component.translatable("tmm.replay.event.player_leave", sourceName)
                             .withStyle(ChatFormatting.GRAY);
                 } else {
-                    yield Component
-                            .translatable("tmm.replay.event.player_leave",
-                                    Component.translatable("tmm.replay.event.unknown_player"))
-                            .withStyle(ChatFormatting.GRAY);
+                    if (message != null) {
+                        yield Component
+                                .translatable("tmm.replay.event.player_leave",
+                                        Component.literal(message).withStyle(ChatFormatting.GRAY))
+                                .withStyle(ChatFormatting.GRAY);
+                    } else {
+                        yield Component
+                                .translatable("tmm.replay.event.player_leave",
+                                        Component.translatable("tmm.replay.event.unknown_player"))
+                                .withStyle(ChatFormatting.GRAY);
+                    }
                 }
             }
             case DOOR_LOCK -> {

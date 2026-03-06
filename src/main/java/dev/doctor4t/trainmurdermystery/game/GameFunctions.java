@@ -16,7 +16,6 @@ import java.util.UUID;
 import java.util.function.Predicate;
 import java.util.function.UnaryOperator;
 
-import dev.doctor4t.trainmurdermystery.api.replay.GameReplay;
 import dev.doctor4t.trainmurdermystery.api.replay.GameReplayData;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -85,7 +84,6 @@ import dev.doctor4t.trainmurdermystery.network.BreakArmorPayload;
 import dev.doctor4t.trainmurdermystery.network.CloseUiPayload;
 import dev.doctor4t.trainmurdermystery.network.TriggerScreenEdgeEffectPayload;
 import dev.doctor4t.trainmurdermystery.network.tmm.AnnounceEndingPayload;
-import dev.doctor4t.trainmurdermystery.api.replay.ReplayPayload;
 import dev.doctor4t.trainmurdermystery.util.TMMItemUtils;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
@@ -767,10 +765,10 @@ public class GameFunctions {
     public static void resetPlayerAfterGame(ServerPlayer player) {
         resetPlayer(player);
         ServerPlayNetworking.send(player, new AnnounceEndingPayload());
-        GameReplay replay = TMM.REPLAY_MANAGER.getCurrentReplay();
-        if (replay != null) {
-            ServerPlayNetworking.send(player, new ReplayPayload(replay));
-        }
+        // GameReplay replay = TMM.REPLAY_MANAGER.getCurrentReplay();
+        // if (replay != null) {
+        // ServerPlayNetworking.send(player, new ReplayPayload(replay));
+        // }
         player.removeVehicle();
 
         AreasWorldComponent.PosWithOrientation spawnPos = AreasWorldComponent.KEY.get(player.level()).getSpawnPos();

@@ -37,6 +37,10 @@ public class ReplayEventTypes {
         /* 用于自定义事件 */ CUSTOM_EVENT
     }
 
+    public record PlayerJoinLeaveDetails(UUID player, String scoreboardName)
+            implements EventDetails {
+    }
+
     public record PlayerKillDetails(UUID killerUuid, UUID victimUuid, ResourceLocation deathReason)
             implements EventDetails {
     }
@@ -85,6 +89,7 @@ public class ReplayEventTypes {
     // 手榴弹投掷事件详情
     public record GrenadeThrownDetails(UUID playerUuid, BlockPos position) implements EventDetails {
     }
+
     // 手榴弹投掷事件详情
     public record ArmorBreakDetails(UUID playerUuid) implements EventDetails {
     }

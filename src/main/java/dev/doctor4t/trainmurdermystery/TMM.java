@@ -240,6 +240,20 @@ public class TMM implements ModInitializer {
     }
 
     private void registerServerPlayConnectionEvents() {
+        ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> {
+            GameWorldComponent gameWorldComponent = GameWorldComponent.KEY.get(handler.player.level());
+            if (gameWorldComponent.getGameStatus() == GameWorldComponent.GameStatus.ACTIVE) {
+                // gameWorldComponent.removePlayer(handler.player); // Removed as method does
+                // not exist
+            }
+            if (REPLAY_MANAGER != null) {
+                var role = gameWorldComponent.getRole(handler.player);
+                if (role != null) {
+                    REPLAY_MANAGER.addEvent(GameReplayData.EventType.PLAYER_JOIN, handler.player.getUUID(), null, null,
+                            handler.player.getScoreboardName());
+                }
+            }
+        });
         ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {
             GameWorldComponent gameWorldComponent = GameWorldComponent.KEY.get(handler.player.level());
             if (gameWorldComponent.getGameStatus() == GameWorldComponent.GameStatus.ACTIVE) {
@@ -247,8 +261,11 @@ public class TMM implements ModInitializer {
                 // not exist
             }
             if (REPLAY_MANAGER != null) {
-                REPLAY_MANAGER.addEvent(GameReplayData.EventType.PLAYER_LEAVE, handler.player.getUUID(), null, null,
-                        null);
+                var role = gameWorldComponent.getRole(handler.player);
+                if (role != null) {
+                    REPLAY_MANAGER.addEvent(GameReplayData.EventType.PLAYER_LEAVE, handler.player.getUUID(), null, null,
+                            handler.player.getScoreboardName());
+                }
             }
         });
     }
@@ -277,7 +294,8 @@ public class TMM implements ModInitializer {
         PayloadTypeRegistry.playS2C().register(TriggerStatusBarPayload.ID, TriggerStatusBarPayload.CODEC);
         PayloadTypeRegistry.playS2C().register(BreakArmorPayload.ID, BreakArmorPayload.CODEC);
         PayloadTypeRegistry.playS2C().register(ShootMuzzleS2CPayload.ID, ShootMuzzleS2CPayload.CODEC);
-        PayloadTypeRegistry.playS2C().register(SniperScopeStateS2CPayload.TYPE, SniperScopeStateS2CPayload.STREAM_CODEC);
+        PayloadTypeRegistry.playS2C().register(SniperScopeStateS2CPayload.TYPE,
+                SniperScopeStateS2CPayload.STREAM_CODEC);
         PayloadTypeRegistry.playS2C().register(PoisonUtils.PoisonOverlayPayload.ID,
                 PoisonUtils.PoisonOverlayPayload.CODEC);
         PayloadTypeRegistry.playS2C().register(GunDropPayload.ID, GunDropPayload.CODEC);
@@ -300,7 +318,6 @@ public class TMM implements ModInitializer {
                 dev.doctor4t.trainmurdermystery.network.packet.SyncSpecificWaypointVisibilityPacket.ID,
                 dev.doctor4t.trainmurdermystery.network.packet.SyncSpecificWaypointVisibilityPacket.CODEC);
         PayloadTypeRegistry.playC2S().register(KnifeStabPayload.ID, KnifeStabPayload.CODEC);
-        PayloadTypeRegistry.playC2S().register(ReplayPayload.ID, ReplayPayload.CODEC);
         PayloadTypeRegistry.playC2S().register(GunShootPayload.ID, GunShootPayload.CODEC);
         PayloadTypeRegistry.playC2S().register(SniperShootPayload.TYPE, SniperShootPayload.STREAM_CODEC);
         PayloadTypeRegistry.playC2S().register(StoreBuyPayload.ID, StoreBuyPayload.CODEC);
