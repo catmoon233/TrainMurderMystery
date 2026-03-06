@@ -91,6 +91,8 @@ public class PlayerPsychoComponent implements RoleComponent, ServerTickingCompon
     }
 
     public boolean startPsycho() {
+        if (this.psychoTicks > 0)
+            return false;
         if (ShopEntry.insertStackInFreeSlot(this.player, new ItemStack(TMMItems.BAT))) {
             this.setPsychoTicks(GameConstants.getPsychoTimer());
             this.setArmour(GameConstants.getPsychoModeArmour());
