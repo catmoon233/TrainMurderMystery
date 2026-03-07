@@ -35,13 +35,17 @@ public abstract class CanRightClickMixin extends LivingEntity implements DataSyn
         // 这里可以添加其他允许的方块
         );
     }
-
+    private static final Set<String> CANNOT_INTERACT_IDS = Set.of(
+            "supplementaries:fire_pit",
+            "supplementaries:item_shelf");
     // 原版工作方块集合
     private static final Set<Block> VANILLA_WORKSTATIONS = Set.of(
             Blocks.CRAFTING_TABLE,
             Blocks.FURNACE,
             Blocks.BLAST_FURNACE,
             Blocks.SMOKER,
+            Blocks.CAMPFIRE,
+            Blocks.SOUL_CAMPFIRE,
             Blocks.CARTOGRAPHY_TABLE,
             Blocks.FLETCHING_TABLE,
             Blocks.SMITHING_TABLE,
@@ -134,7 +138,9 @@ public abstract class CanRightClickMixin extends LivingEntity implements DataSyn
         if (VANILLA_WORKSTATIONS.contains(block)) {
             return false;
         }
-
+        if (CANNOT_INTERACT_IDS.contains(BuiltInRegistries.BLOCK.getKey(block).toString())) {
+            return false;
+        }
         // 检查是否为TMM模组的方块
         // ResourceLocation blockId = level().registryAccess()
         // .registryOrThrow(Registries.BLOCK)
