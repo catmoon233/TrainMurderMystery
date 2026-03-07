@@ -29,6 +29,16 @@ public abstract class Role {
     private ResourceLocation identifier;
     private boolean canSeeCoin = true;
     private boolean canUseInstinct = false;
+    private int occupiedRoleCount = 1;
+
+    public int getOccupiedRoleCount() {
+        return this.occupiedRoleCount;
+    }
+
+    public Role setOccupiedRoleCount(int occupiedRoleCount) {
+        this.occupiedRoleCount = occupiedRoleCount;
+        return this;
+    }
 
     public Role setCanUseInstinct(boolean canUseInstinct) {
         this.canUseInstinct = canUseInstinct;
