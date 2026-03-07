@@ -234,8 +234,8 @@ public class ServerTaskInfoClasses {
                         serverWorld,
                         gameMode, time);
                 GameFunctions.serverTaskQueue.addLast(task);
-                MapResetManager.saveArea(serverWorld);
             }
+            MapResetManager.saveArea(serverWorld);
         }
     }
 
