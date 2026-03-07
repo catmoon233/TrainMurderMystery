@@ -129,7 +129,7 @@ public class BartenderPlayerComponent implements RoleComponent, ServerTickingCom
                 }
             }
         }
-        if (++tick_ % 60 == 0) {
+        if (++tick_ % 200 == 0) { // 10s
             shouldSync = true;
         }
         if (shouldSync) {
@@ -162,15 +162,18 @@ public class BartenderPlayerComponent implements RoleComponent, ServerTickingCom
     }
 
     public void writeToNbt(@NotNull CompoundTag tag, HolderLookup.Provider registryLookup) {
-        ListTag targetListTag = new ListTag();
-        for (var ent : this.glowTicks.entrySet()) {
-            CompoundTag targetTag = new CompoundTag();
-            targetTag.putInt("type", ent.getKey());
-            targetTag.putInt("time", ent.getValue());
-            targetListTag.add(targetTag);
+        if (!this.glowTicks.isEmpty()) {
+            ListTag targetListTag = new ListTag();
+            for (var ent : this.glowTicks.entrySet()) {
+                CompoundTag targetTag = new CompoundTag();
+                targetTag.putInt("type", ent.getKey());
+                targetTag.putInt("time", ent.getValue());
+                targetListTag.add(targetTag);
+            }
+            tag.put("glowTicks", targetListTag);
         }
-        tag.put("glowTicks", targetListTag);
-        tag.putInt("armor", this.armor);
+        if (this.armor > 0)
+            tag.putInt("armor", this.armor);
     }
 
     public void readFromNbt(@NotNull CompoundTag tag, HolderLookup.Provider registryLookup) {
