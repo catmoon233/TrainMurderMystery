@@ -19,7 +19,7 @@ public class SkinsNetworkSyncCommand {
      * 注册命令
      */
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
-        dispatcher.register(Commands.literal("skinsync")
+        dispatcher.register(Commands.literal("tmm:skinsync")
                 .requires((p) -> p.hasPermission(2))
                 .then(Commands.literal("config")
                         .then(Commands.literal("stop").executes((ctx) -> {
