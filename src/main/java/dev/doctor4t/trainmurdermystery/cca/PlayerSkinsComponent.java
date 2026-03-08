@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public class PlayerSkinsComponent implements AutoSyncedComponent, ServerTickingComponent {
     private static final Logger logger = LoggerFactory.getLogger(PlayerSkinsComponent.class);
@@ -178,6 +179,7 @@ public class PlayerSkinsComponent implements AutoSyncedComponent, ServerTickingC
      * 检查指定物品类型的皮肤是否已解锁
      */
     public boolean isSkinUnlockedForItemType(String itemTypeName, String skinName) {
+        if (Objects.equals(skinName, "default"))return true;
         String normalizedItemName = normalizeItemName(itemTypeName);
         Map<String, Boolean> skinsForItem = unlockedSkins.get(normalizedItemName);
         return skinsForItem != null && skinsForItem.getOrDefault(skinName, false);
