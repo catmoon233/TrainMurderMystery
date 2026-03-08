@@ -2,6 +2,7 @@ package dev.doctor4t.trainmurdermystery.item;
 
 import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.cca.GameWorldComponent;
+import dev.doctor4t.trainmurdermystery.cca.PlayerSkinsComponent;
 import dev.doctor4t.trainmurdermystery.compat.CrosshairaddonsCompat;
 import dev.doctor4t.trainmurdermystery.game.GameFunctions;
 import dev.doctor4t.trainmurdermystery.index.TMMDataComponentTypes;
@@ -94,9 +95,9 @@ public class KnifeItem extends Item implements ItemWithSkin {
     public void inventoryTick(ItemStack itemStack, Level level, Entity entity, int i, boolean bl) {
         super.inventoryTick(itemStack, level, entity, i, bl);
         if (entity instanceof Player player) {
-            if (itemStack.get(TMMDataComponentTypes.OWNER) == null) {
+            if (itemStack.get(TMMDataComponentTypes.SKIN) == null) {
                 // 使用玩家的CCA组件来获取和设置皮肤
-                itemStack.set(TMMDataComponentTypes.OWNER, player.getUUID().toString());
+                itemStack.set(TMMDataComponentTypes.SKIN, PlayerSkinsComponent.KEY.get( player).getEquippedSkinForItemType(BuiltInRegistries.ITEM.getKey(this).toString()));
             }
         }
     }

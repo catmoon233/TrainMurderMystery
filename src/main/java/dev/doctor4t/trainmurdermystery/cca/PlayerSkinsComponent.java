@@ -99,7 +99,7 @@ public class PlayerSkinsComponent implements AutoSyncedComponent, ServerTickingC
      * 获取当前装备的皮肤名称
      */
     public String getEquippedSkin(ItemStack itemStack) {
-        String itemName = itemStack.getItem().toString().toLowerCase();
+        String itemName = BuiltInRegistries.ITEM.getKey(itemStack.getItem()).toString().toLowerCase();
         return equippedSkins.getOrDefault(itemName, "default");
     }
 

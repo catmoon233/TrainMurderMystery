@@ -30,21 +30,11 @@ public interface TMMCosmetics {
                 }
             }
         // 获取物品的owner NBT数据，如果没有则使用默认UUID
-        UUID owner = UUID.fromString(
-                itemStack.getOrDefault(TMMDataComponentTypes.OWNER, "98eaa37f-7712-4809-b709-504d3be0b6ef"));
-        // random uuid
-        String itemName = BuiltInRegistries.ITEM.getKey(itemStack.getItem()).toString();
-        AtomicReference<String> skinName = new AtomicReference<>("default");
-        Minecraft.getInstance().level.players().stream()
-                .filter(player -> player.getUUID().equals(owner))
-                .findFirst()
-                .ifPresent(player -> {
-                    if (KEY.get(player).getEquippedSkins().containsKey(itemName)) {
-                        skinName.set(KEY.get(player).getEquippedSkins().get(itemName));
-                    }
-                });
+        String skin =
+                itemStack.getOrDefault(TMMDataComponentTypes.SKIN, "default");
 
-        return skinName.get();
+
+        return skin;
 
     }
 

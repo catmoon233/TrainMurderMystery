@@ -3,6 +3,7 @@ package dev.doctor4t.trainmurdermystery.client.model;
 
 
 import dev.doctor4t.trainmurdermystery.index.TMMCosmetics;
+import dev.doctor4t.trainmurdermystery.index.TMMDataComponentTypes;
 import dev.doctor4t.trainmurdermystery.item.KnifeItem;
 import dev.doctor4t.trainmurdermystery.util.SkinManager;
 import net.fabricmc.fabric.api.renderer.v1.render.RenderContext;
@@ -79,7 +80,10 @@ public class KnifeModel implements UnbakedModel, BakedModel {
         var variant = mode.firstPerson() || IN_HAND.contains(mode) ? KnifeModelLoadingPlugin.Variant.IN_HAND : KnifeModelLoadingPlugin.Variant.DEFAULT;
         
         // 从玩家的CCA组件获取皮肤，而不是仅依赖TMMCosmetics
-        String skinName = getSkinFromPlayerComponent(stack);
+        String skinName = stack.get(TMMDataComponentTypes.SKIN);
+        if (skinName == null) {
+            skinName = getSkinFromPlayerComponent(stack);
+        }
         var skin = KnifeItem.Skin.fromString(skinName);
 
         bakedModels[skin.ordinal()][variant.ordinal()].emitItemQuads(stack, randomSupplier, context);
