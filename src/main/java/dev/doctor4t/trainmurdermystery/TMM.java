@@ -70,7 +70,7 @@ import java.util.Optional;
 import java.util.function.Predicate;
 
 public class TMM implements ModInitializer {
-    public static final String modPacketVersion = "0.1.2";
+    public static final String modPacketVersion = "0.1.3";
     public static final String MOD_ID = "trainmurdermystery";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
     public static MinecraftServer SERVER;
