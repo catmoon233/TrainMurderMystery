@@ -24,7 +24,7 @@ public class ScopeOverlayRenderer {
         int screenHeight = client.getWindow().getGuiScaledHeight();
         int centerX = screenWidth / 2;
         int centerY = screenHeight / 2;
-        int scopeRadius = Math.min(screenWidth, screenHeight) / 2;
+        int viewRadius = Math.min(screenWidth, screenHeight) / 3; // 可视区域半径
 
         context.pose().pushPose();
 
@@ -33,18 +33,24 @@ public class ScopeOverlayRenderer {
         RenderSystem.enableBlend();
         RenderSystem.defaultBlendFunc();
 
-        // 渲染边缘黑色遮蔽（四个角落，中间留空）
-        int margin = 50; // 倍镜圆圈半径外的黑色遮蔽宽度
-        int viewRadius = Math.min(screenWidth, screenHeight) / 3; // 可视区域半径
+        // 渲染圆形蒙版（四周遮蔽，中间圆形空白）
+        int margin = 10; // 额外边距确保完全覆盖
+        int coverRadius = Math.max(screenWidth, screenHeight) / 2 + margin;
         
-        // 上边缘
+        // 使用多个矩形覆盖四个角落和边缘，形成圆形遮蔽
+        // 上部分
         context.fill(0, 0, screenWidth, centerY - viewRadius, 0xFF000000);
-        // 下边缘
+        // 下部分
         context.fill(0, centerY + viewRadius, screenWidth, screenHeight, 0xFF000000);
-        // 左边缘
-        context.fill(0, centerY - viewRadius, centerX - viewRadius, centerY + viewRadius, 0xFF000000);
-        // 右边缘
-        context.fill(centerX + viewRadius, centerY - viewRadius, screenWidth, centerY + viewRadius, 0xFF000000);
+        
+        // 左右部分（上下已被覆盖，只需覆盖中间）
+        for (int y = centerY - viewRadius; y <= centerY + viewRadius; y++) {
+            int xOffset = (int) Math.sqrt(viewRadius * viewRadius - (y - centerY) * (y - centerY));
+            // 左边
+            context.fill(0, y, centerX - xOffset, y + 1, 0xFF000000);
+            // 右边
+            context.fill(centerX + xOffset, y, screenWidth, y + 1, 0xFF000000);
+        }
 
         // 渲染倍镜准星（十字线）
         int crosshairThickness = 2;
