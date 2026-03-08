@@ -238,12 +238,16 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
         return getRole(player) != null && getRole(player).isInnocent();
     }
 
-    public void clearRoleMap() {
+    public void clearRoleMap(boolean syncRoles) {
         if (roleWorldComponent == null) {
             roleWorldComponent = RoleWorldComponent.KEY.get(world);
         }
-        roleWorldComponent.clearRoleMap();
+        roleWorldComponent.clearRoleMap(syncRoles);
         setPsychosActive(0);
+    }
+
+    public void clearRoleMap() {
+        this.clearRoleMap(true);
     }
 
     public void queueTrainReset() {
