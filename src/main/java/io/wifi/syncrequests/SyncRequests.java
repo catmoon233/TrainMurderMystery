@@ -10,22 +10,22 @@ import org.jetbrains.annotations.Nullable;
 
 public class SyncRequests {
     public String url_root;
-    public String key;
+    public String pswKey;
 
     private static final HttpClient CLIENT = HttpClient.newHttpClient();
 
     public SyncRequests(String url, String key) {
         this.url_root = url;
-        this.key = key;
+        this.pswKey = key;
     }
 
     public Boolean setValue(UUID playerUUID, @Nullable String key, String value) {
         String uuidStr = playerUUID.toString();
         String reqUrl = url_root;
         if (key != null)
-            reqUrl = reqUrl + "/set/" + key + "/" + uuidStr + "/" + key;
+            reqUrl = reqUrl + "/set/" + pswKey + "/" + uuidStr + "/" + key;
         else
-            reqUrl = reqUrl + "/set/" + key + "/" + uuidStr;
+            reqUrl = reqUrl + "/set/" + pswKey + "/" + uuidStr;
         try {
             return sendPost(reqUrl, value);
         } catch (Exception e) {
@@ -38,9 +38,9 @@ public class SyncRequests {
         String uuidStr = playerUUID.toString();
         String reqUrl = url_root;
         if (key != null)
-            reqUrl = reqUrl + "/get/" + key + "/" + uuidStr + "/" + key;
+            reqUrl = reqUrl + "/get/" + pswKey + "/" + uuidStr + "/" + key;
         else
-            reqUrl = reqUrl + "/get/" + key + "/" + uuidStr;
+            reqUrl = reqUrl + "/get/" + pswKey + "/" + uuidStr;
         try {
             return sendGet(reqUrl);
         } catch (Exception e) {
