@@ -181,6 +181,7 @@ public class RoleWorldComponent implements AutoSyncedComponent {
     public void readFromNbt(@NotNull CompoundTag nbtCompound, HolderLookup.Provider wrapperLookup) {
         // this.lockedToSupporters = nbtCompound.getBoolean("LockedToSupporters");
         // this.enableWeights = nbtCompound.getBoolean("EnableWeights");
+        TMM.LOGGER.info("Sync ROLES");
         this.roles.clear();
 
         if (nbtCompound.contains("roles", CompoundTag.TAG_COMPOUND)) {

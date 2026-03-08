@@ -2,10 +2,7 @@ package dev.doctor4t.trainmurdermystery;
 
 import dev.doctor4t.trainmurdermystery.game.GameConstants;
 import eu.midnightdust.lib.config.MidnightConfig;
-import eu.midnightdust.lib.config.MidnightConfig.Entry;
 import net.fabricmc.api.EnvType;
-import net.fabricmc.api.Environment;
-
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
@@ -175,13 +172,14 @@ public class TMMConfig extends MidnightConfig {
     // AFK设置
 
     @Entry(category = "skin")
-    public static String itemSkinSyncServerHost;
+    public static String itemSkinSyncServerHost = "";
     @Entry(category = "skin", min = 1, max = 65536)
-    public static int itemSkinSyncServerPort;
+    public static int itemSkinSyncServerPort = 8080;
     @Entry(category = "skin")
-    public static String itemSkinSyncServerKey;
+    public static String itemSkinSyncServerKey = "";
     @Entry(category = "skin")
     public static boolean itemSkinSyncServerEnabled = false;
+
     @Comment(category = "afk", centered = true)
     public static Comment afkConfigComment;
     @Entry(category = "afk", min = 60, max = 12000, isSlider = true) // 3秒到20分钟
