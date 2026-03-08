@@ -222,6 +222,7 @@ public class TMM implements ModInitializer {
             SetRoleCountCommand.register(dispatcher);
             ConfigCommand.register(dispatcher);
             SwitchMapCommand.register(dispatcher);
+            UpdateDoorsCommand.register(dispatcher);
             ReloadReadyAreaCommand.register(dispatcher);
             EntityDataCommand.register(dispatcher);
             MoodChangeCommand.register(dispatcher);

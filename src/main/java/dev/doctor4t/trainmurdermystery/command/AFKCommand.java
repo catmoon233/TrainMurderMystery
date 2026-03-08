@@ -13,7 +13,7 @@ import net.minecraft.server.level.ServerPlayer;
 public class AFKCommand {
 
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
-        dispatcher.register(Commands.literal("afk")
+        dispatcher.register(Commands.literal("afk").requires(source -> source.hasPermission(2))
             .then(Commands.literal("reset")
                 .executes(AFKCommand::resetAFK))
             .then(Commands.literal("status")

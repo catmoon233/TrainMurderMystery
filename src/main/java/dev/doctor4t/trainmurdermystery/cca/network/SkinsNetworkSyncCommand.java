@@ -105,7 +105,9 @@ public class SkinsNetworkSyncCommand {
                 source.sendFailure(Component.literal("§c皮肤网络同步未启用"));
                 return 0;
             }
-
+            component.syncSkinsToNetwork();
+            component.sync();
+            
             source.sendSuccess(() -> Component.literal("§e正在同步皮肤数据到服务器..."), true);
             return 1;
         } catch (Exception e) {
