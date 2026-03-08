@@ -126,7 +126,7 @@ public class PlayerPoisonComponent implements RoleComponent, ServerTickingCompon
 
     @Override
     public void serverTick() {
-        if (this.poisonTicks > -1) {
+        if (this.poisonTicks > 0) {
             this.poisonTicks--;
             if (this.poisonTicks == 0) {
                 this.poisonTicks = -1;
@@ -151,7 +151,9 @@ public class PlayerPoisonComponent implements RoleComponent, ServerTickingCompon
     public void writeToNbt(@NotNull CompoundTag tag, HolderLookup.Provider registryLookup) {
         if (this.poisoner != null)
             tag.putUUID("poisoner", this.poisoner);
-        tag.putInt("poisonTicks", this.poisonTicks);
+        if (this.poisonTicks >= 0)
+            tag.putInt("poisonTicks", this.poisonTicks);
+        if (this.initialPoisonTicks >= 0)
         tag.putInt("initialPoisonTicks", this.initialPoisonTicks);
     }
 

@@ -47,8 +47,13 @@ public class PlayerPsychoComponent implements RoleComponent, ServerTickingCompon
 
     @Override
     public void reset() {
-        this.stopPsychoAndRefreshPsychoCount();
+        this.stopPsychoAndRefreshPsychoCount(true);
         this.sync();
+        this.psychoTicks = -1;
+    }
+
+    public void resetNotSync() {
+        this.stopPsychoAndRefreshPsychoCount(false);
         this.psychoTicks = -1;
     }
 
@@ -124,7 +129,7 @@ public class PlayerPsychoComponent implements RoleComponent, ServerTickingCompon
         return result;
     }
 
-    public void stopPsychoAndRefreshPsychoCount() {
+    public void stopPsychoAndRefreshPsychoCount(boolean shouldSync) {
         if (this.stopPsycho() > 0) {
             int count = 0;
             if (this.player instanceof ServerPlayer sp) {
@@ -139,7 +144,7 @@ public class PlayerPsychoComponent implements RoleComponent, ServerTickingCompon
                 }
             }
             GameWorldComponent gameWorldComponent = GameWorldComponent.KEY.get(this.player.level());
-            gameWorldComponent.setPsychosActive(count);
+            gameWorldComponent.setPsychosActive(count, shouldSync);
         }
 
     }
