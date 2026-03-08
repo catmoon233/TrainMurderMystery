@@ -61,11 +61,11 @@ public class PlayerSkinsComponent implements AutoSyncedComponent, ServerTickingC
      * @param host 服务器主机地址
      * @param port 服务器端口
      */
-    public void initializeNetworkSync(String host, int port) {
+    public void initializeNetworkSync(String host, int port, String key) {
 
         try {
             String baseUrl = "http://" + host + ":" + port;
-            this.syncRequests = new SyncRequests(baseUrl);
+            this.syncRequests = new SyncRequests(baseUrl, key);
             this.isNetworkSyncEnabled = true;
             logger.info("玩家 {} 的皮肤网络同步已启用 (SyncRequests): {}", this.player.getName().getString(), baseUrl);
         } catch (Exception e) {

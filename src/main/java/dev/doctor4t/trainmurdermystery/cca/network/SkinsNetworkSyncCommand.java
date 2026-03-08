@@ -192,7 +192,8 @@ public class SkinsNetworkSyncCommand {
             
             String host = SkinsNetworkSyncInitializer.getNetworkHost();
             int port = SkinsNetworkSyncInitializer.getNetworkPort();
-            component.initializeNetworkSync(host, port);
+            String key = SkinsNetworkSyncInitializer.getNetworkKey();
+            component.initializeNetworkSync(host, port, key);
             component.sync();
             
             source.sendSuccess(() -> Component.literal("§a皮肤网络同步已启用"), true);

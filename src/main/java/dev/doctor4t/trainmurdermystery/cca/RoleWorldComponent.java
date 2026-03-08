@@ -40,17 +40,27 @@ public class RoleWorldComponent implements AutoSyncedComponent {
         this.addRole(player.getUUID(), role);
     }
 
-    public void addRole(UUID player, Role role) {
+    public void addRole(UUID player, Role role, boolean sync) {
         if (player == null) {
             return;
         }
         this.roles.put(player, role);
-        this.sync();
+        if (sync)
+            this.sync();
+    }
+
+    public void addRole(UUID player, Role role) {
+        this.addRole(player, role, true);
     }
 
     public void resetRole(Role role) {
+        this.resetRole(role, true);
+    }
+
+    public void resetRole(Role role, boolean sync) {
         roles.entrySet().removeIf(entry -> entry.getValue() == role);
-        this.sync();
+        if (sync)
+            this.sync();
     }
 
     public void sync() {
@@ -171,6 +181,7 @@ public class RoleWorldComponent implements AutoSyncedComponent {
     public void readFromNbt(@NotNull CompoundTag nbtCompound, HolderLookup.Provider wrapperLookup) {
         // this.lockedToSupporters = nbtCompound.getBoolean("LockedToSupporters");
         // this.enableWeights = nbtCompound.getBoolean("EnableWeights");
+        this.roles.clear();
 
         if (nbtCompound.contains("roles", CompoundTag.TAG_COMPOUND)) {
             var roleInfoCompund = nbtCompound.getCompound("roles");
@@ -190,8 +201,7 @@ public class RoleWorldComponent implements AutoSyncedComponent {
 
                     Role role = getRoleFromPath(rolePath);
                     if (role != null) {
-                        TMM.LOGGER.info("Roles:" + role.identifier().toString());
-                        this.roles.clear();
+                        // TMM.LOGGER.info("Roles:" + role.identifier().toString());
                         this.roles.putIfAbsent(playerUid, role);
                     }
                 }

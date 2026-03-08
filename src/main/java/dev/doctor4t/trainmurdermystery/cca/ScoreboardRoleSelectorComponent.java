@@ -145,7 +145,7 @@ public class ScoreboardRoleSelectorComponent implements AutoSyncedComponent {
             }
         }
         for (var uuid : killers) {
-            gameComponent.addRole(uuid, TMMRoles.KILLER);
+            gameComponent.addRole(uuid, TMMRoles.KILLER, false);
             var player = world.getPlayerByUUID(uuid);
             if (player != null) {
                 PlayerShopComponent.KEY.get(player).setBalance(GameConstants.getMoneyStart());
@@ -171,7 +171,7 @@ public class ScoreboardRoleSelectorComponent implements AutoSyncedComponent {
             if (player instanceof ServerPlayer serverPlayer && players.contains(serverPlayer)
                     && !gameComponent.canUseKillerFeatures(player)) {
                 player.addItem(new ItemStack(TMMItems.REVOLVER));
-                gameComponent.addRole(player, TMMRoles.VIGILANTE);
+                gameComponent.addRole(player, TMMRoles.VIGILANTE, false);
                 vigilanteCount--;
                 this.vigilanteRounds.put(player.getUUID(), this.vigilanteRounds.getOrDefault(player.getUUID(), 1) + 1);
             }
@@ -204,7 +204,7 @@ public class ScoreboardRoleSelectorComponent implements AutoSyncedComponent {
         }
         for (var player : vigilantes) {
             player.addItem(new ItemStack(TMMItems.REVOLVER));
-            gameComponent.addRole(player, TMMRoles.VIGILANTE);
+            gameComponent.addRole(player, TMMRoles.VIGILANTE, false);
         }
     }
 
