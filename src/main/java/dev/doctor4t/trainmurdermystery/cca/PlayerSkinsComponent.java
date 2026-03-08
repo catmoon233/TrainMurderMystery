@@ -36,7 +36,7 @@ public class PlayerSkinsComponent implements AutoSyncedComponent, ServerTickingC
     // HTTP 网络同步管理器
     private SyncRequests syncRequests;
     private long lastNetworkSync = 0;
-    private static final long NETWORK_SYNC_INTERVAL = 5000; // 每 5 秒同步一次到网络
+    private static final long NETWORK_SYNC_INTERVAL = 20000; // 每 20 秒同步一次到网络
     private boolean isNetworkSyncEnabled = false;
 
     public PlayerSkinsComponent(Player player) {
@@ -90,7 +90,7 @@ public class PlayerSkinsComponent implements AutoSyncedComponent, ServerTickingC
             long currentTime = System.currentTimeMillis();
             if (currentTime - this.lastNetworkSync >= NETWORK_SYNC_INTERVAL) {
                 this.lastNetworkSync = currentTime;
-                this.syncSkinsToNetwork();
+                this.pullSkinsFromNetwork();
             }
         }
     }
@@ -282,7 +282,7 @@ public class PlayerSkinsComponent implements AutoSyncedComponent, ServerTickingC
     /**
      * 将皮肤数据异步同步到 HTTP 网络服务器
      */
-    private void syncSkinsToNetwork() {
+    public void syncSkinsToNetwork() {
         if (!this.isNetworkSyncEnabled || this.syncRequests == null) {
             return;
         }

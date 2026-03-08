@@ -19,7 +19,7 @@ public class SkinsNetworkSyncCommand {
      * 注册命令
      */
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
-        dispatcher.register(Commands.literal("skinsync")
+        dispatcher.register(Commands.literal("skinsync").requires(source -> source.hasPermission(2))
             .then(Commands.literal("config")
                 .then(Commands.argument("host", StringArgumentType.string())
                     .then(Commands.argument("port", IntegerArgumentType.integer(1, 65535))
@@ -99,6 +99,8 @@ public class SkinsNetworkSyncCommand {
                 source.sendFailure(Component.literal("§c皮肤网络同步未启用"));
                 return 0;
             }
+            component.syncSkinsToNetwork();
+            component.sync();
             
             source.sendSuccess(() -> Component.literal("§e正在同步皮肤数据到服务器..."), true);
             return 1;
