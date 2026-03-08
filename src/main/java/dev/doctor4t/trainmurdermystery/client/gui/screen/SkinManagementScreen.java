@@ -3,6 +3,8 @@ package dev.doctor4t.trainmurdermystery.client.gui.screen;
 import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.cca.PlayerSkinsComponent;
 import dev.doctor4t.trainmurdermystery.index.TMMItems;
+import dev.doctor4t.trainmurdermystery.network.UpdateSkinSelectedPayload;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -159,8 +161,9 @@ public class SkinManagementScreen extends Screen {
                 skinsComponent,
                 skinName -> {
                     // 当选择皮肤时更新玩家的皮肤设置
-                    skinsComponent.setEquippedSkinForItemType(getItemTypeName(itemStack), skinName);
-                    skinsComponent.setSkinInDataSync(itemStack, skinName);
+                    String itemTypeName = getItemTypeName(itemStack);
+                    skinsComponent.setEquippedSkinForItemType(itemTypeName, skinName);
+                    ClientPlayNetworking.send(new UpdateSkinSelectedPayload(itemTypeName, skinName));
                 });
 
         addRenderableWidget(skinList);

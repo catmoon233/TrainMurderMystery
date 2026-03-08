@@ -31,12 +31,15 @@ public abstract class KnifeTooltipMixin extends Item {
         }
 
         String skinName = "default";
-        if (player != null) {
-            PlayerSkinsComponent skinsComponent = PlayerSkinsComponent.KEY.get(player);
-            skinName = skinsComponent.getSkinFromDataSync(itemStack);
-        } else {
-            // 回退到原来的实现
-            skinName = TMMCosmetics.getSkin(itemStack);
+        skinName = TMMCosmetics.getSkin(itemStack);
+        if (skinName.equals("default")) {
+            if (player != null) {
+                PlayerSkinsComponent skinsComponent = PlayerSkinsComponent.KEY.get(player);
+                skinName = skinsComponent.getSkinFromDataSync(itemStack);
+            } else {
+                skinName = "default";
+
+            }
         }
         KnifeItem.Skin skin = KnifeItem.Skin.fromString(skinName);
 

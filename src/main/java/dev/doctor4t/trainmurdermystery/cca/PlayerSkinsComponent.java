@@ -3,6 +3,7 @@ package dev.doctor4t.trainmurdermystery.cca;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import dev.doctor4t.trainmurdermystery.TMM;
+import dev.doctor4t.trainmurdermystery.TMMConfig;
 import io.wifi.syncrequests.SyncRequests;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -20,6 +21,7 @@ import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public class PlayerSkinsComponent implements AutoSyncedComponent, ServerTickingComponent {
     private static final Logger logger = LoggerFactory.getLogger(PlayerSkinsComponent.class);
@@ -99,7 +101,7 @@ public class PlayerSkinsComponent implements AutoSyncedComponent, ServerTickingC
      * 获取当前装备的皮肤名称
      */
     public String getEquippedSkin(ItemStack itemStack) {
-        String itemName = itemStack.getItem().toString().toLowerCase();
+        String itemName = BuiltInRegistries.ITEM.getKey(itemStack.getItem()).toString().toLowerCase();
         return equippedSkins.getOrDefault(itemName, "default");
     }
 
@@ -178,6 +180,7 @@ public class PlayerSkinsComponent implements AutoSyncedComponent, ServerTickingC
      * 检查指定物品类型的皮肤是否已解锁
      */
     public boolean isSkinUnlockedForItemType(String itemTypeName, String skinName) {
+        if (Objects.equals(skinName, "default"))return true;
         String normalizedItemName = normalizeItemName(itemTypeName);
         Map<String, Boolean> skinsForItem = unlockedSkins.get(normalizedItemName);
         return skinsForItem != null && skinsForItem.getOrDefault(skinName, false);
@@ -327,6 +330,7 @@ public class PlayerSkinsComponent implements AutoSyncedComponent, ServerTickingC
      * 从网络服务器异步拉取皮肤数据
      */
     public void pullSkinsFromNetwork() {
+        if (!TMMConfig.itemSkinSyncServerEnabled)return;
         if (!this.isNetworkSyncEnabled || this.syncRequests == null) {
             return;
         }
