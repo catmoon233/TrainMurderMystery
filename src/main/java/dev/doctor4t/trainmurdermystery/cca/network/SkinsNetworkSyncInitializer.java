@@ -36,6 +36,9 @@ public class SkinsNetworkSyncInitializer {
             if (TMMConfig.itemSkinSyncServerEnabled) {
                 setNetworkServer(TMMConfig.itemSkinSyncServerHost, TMMConfig.itemSkinSyncServerPort,
                         TMMConfig.itemSkinSyncServerKey);
+                isEnabled = true;
+            } else {
+                isEnabled = false;
             }
         });
         ServerPlayConnectionEvents.DISCONNECT.register((handler, server) -> {

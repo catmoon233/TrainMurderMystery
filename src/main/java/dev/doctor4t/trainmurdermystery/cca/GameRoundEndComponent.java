@@ -2,7 +2,6 @@ package dev.doctor4t.trainmurdermystery.cca;
 
 import com.mojang.authlib.GameProfile;
 import dev.doctor4t.trainmurdermystery.api.TMMRoles;
-import dev.doctor4t.trainmurdermystery.cca.GameRoundEndComponent.RoundEndData;
 import dev.doctor4t.trainmurdermystery.client.gui.RoleAnnouncementTexts;
 import dev.doctor4t.trainmurdermystery.game.GameFunctions;
 import net.minecraft.core.HolderLookup;

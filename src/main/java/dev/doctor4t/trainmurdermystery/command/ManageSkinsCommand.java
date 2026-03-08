@@ -85,7 +85,7 @@ public class ManageSkinsCommand {
                     "Removed skin '" + skin + "' for item type '" + item + "' from " + player.getName().getString()),
                     true);
             skinsComponent.syncSkinsToClient();
-            skinsComponent.syncSkinsToNetwork();
+            // skinsComponent.syncSkinsToNetwork();
             successes++;
         }
 
