@@ -58,16 +58,16 @@ public class NunchuckItem extends Item {
     }
 
     public static Player getTargetPlayer(Player user) {
-        // 在前方7格内找到最近的玩家
+        // 在前方4格内找到最近的玩家
         Vec3 start = user.getEyePosition();
         Vec3 look = user.getLookAngle();
-        Vec3 end = start.add(look.scale(7.0));
+        Vec3 end = start.add(look.scale(4.0));
 
         HitResult hitResult = ProjectileUtil.getHitResultOnViewVector(user,
                 entity -> entity instanceof Player player &&
                         GameFunctions.isPlayerAliveAndSurvival(player) &&
                         player != user,
-                7.0F);
+                4.0F);
 
         if (hitResult instanceof EntityHitResult entityHitResult &&
                 entityHitResult.getEntity() instanceof Player target) {

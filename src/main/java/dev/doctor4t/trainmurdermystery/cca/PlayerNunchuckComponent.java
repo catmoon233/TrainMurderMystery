@@ -24,7 +24,9 @@ public class PlayerNunchuckComponent implements AutoSyncedComponent, ServerTicki
             TMM.id("player_nunchuck"), PlayerNunchuckComponent.class);
 
     public final Player player;
-    private final Map<UUID, HitRecord> hitRecords = new HashMap<>();
+    private final Map<UUID, HitRecord> hitRecords = new HashMap<>(); // 记录被该玩家击打的记录
+    private AttackRecord attackRecord = null; // 记录该玩家使用双节棍的记录
+    private final Map<Integer, Long> moveCooldowns = new HashMap<>(); // 记录每个招式的使用时间 (direction -> last use time)
 
     public PlayerNunchuckComponent(Player player) {
         this.player = player;
@@ -86,11 +88,73 @@ public class PlayerNunchuckComponent implements AutoSyncedComponent, ServerTicki
         KEY.sync(this.player);
     }
 
+    /**
+     * 记录该玩家使用双节棍
+     */
+    public void recordAttack() {
+        long currentTime = ((net.minecraft.server.level.ServerPlayer) player).serverLevel().getGameTime();
+        attackRecord = new AttackRecord();
+        attackRecord.lastAttackTime = currentTime;
+        attackRecord.attackCount = 1;
+        KEY.sync(this.player);
+    }
+
+    /**
+     * 增加攻击次数
+     */
+    public void incrementAttackCount() {
+        if (attackRecord != null) {
+            attackRecord.attackCount++;
+            attackRecord.lastAttackTime = ((net.minecraft.server.level.ServerPlayer) player).serverLevel().getGameTime();
+            KEY.sync(this.player);
+        }
+    }
+
+    /**
+     * 获取攻击记录
+     */
+    public AttackRecord getAttackRecord() {
+        return attackRecord;
+    }
+
+    /**
+     * 检查是否需要在攻击后重置攻击记录（因为连续3次了）
+     */
+    public void resetAttackRecord() {
+        attackRecord = null;
+        KEY.sync(this.player);
+    }
+
+    /**
+     * 检查某个招式是否在冷却中
+     * @param direction 招式方向 (0: 向左, 1: 向右, 2: 向后, 3: 向前)
+     * @param cooldownTicks 冷却时间（ticks）
+     * @return true 如果在冷却中
+     */
+    public boolean isMoveOnCooldown(int direction, long cooldownTicks) {
+        Long lastUseTime = moveCooldowns.get(direction);
+        if (lastUseTime == null) {
+            return false;
+        }
+        long currentTime = ((net.minecraft.server.level.ServerPlayer) player).serverLevel().getGameTime();
+        return currentTime - lastUseTime < cooldownTicks;
+    }
+
+    /**
+     * 记录某个招式的使用时间
+     * @param direction 招式方向
+     */
+    public void recordMoveUse(int direction) {
+        long currentTime = ((net.minecraft.server.level.ServerPlayer) player).serverLevel().getGameTime();
+        moveCooldowns.put(direction, currentTime);
+        KEY.sync(this.player);
+    }
+
     @Override
     public void serverTick() {
-        // 清理超过6秒的记录 (6秒 = 120 ticks)
+        // 清理超过7秒的记录 (7秒 = 140 ticks)
         long currentTime = ((net.minecraft.server.level.ServerPlayer) player).serverLevel().getGameTime();
-        long timeout = 120; // 6 seconds in ticks
+        long timeout = 140; // 7 seconds in ticks
 
         hitRecords.entrySet().removeIf(entry -> {
             HitRecord record = entry.getValue();
@@ -98,6 +162,18 @@ public class PlayerNunchuckComponent implements AutoSyncedComponent, ServerTicki
                 return true;
             }
             return false;
+        });
+
+        // 清理攻击者的攻击记录
+        if (attackRecord != null) {
+            if (currentTime - attackRecord.lastAttackTime > timeout) {
+                attackRecord = null;
+            }
+        }
+
+        // 清理招式冷却记录
+        moveCooldowns.entrySet().removeIf(entry -> {
+            return currentTime - entry.getValue() > timeout;
         });
 
         if (!hitRecords.isEmpty() && currentTime % 20 == 0) {
@@ -118,6 +194,21 @@ public class PlayerNunchuckComponent implements AutoSyncedComponent, ServerTicki
             recordsTag.put(entry.getKey().toString(), recordTag);
         }
         tag.put("hit_records", recordsTag);
+
+        // 保存攻击记录
+        if (attackRecord != null) {
+            CompoundTag attackTag = new CompoundTag();
+            attackTag.putLong("last_attack_time", attackRecord.lastAttackTime);
+            attackTag.putInt("attack_count", attackRecord.attackCount);
+            tag.put("attack_record", attackTag);
+        }
+
+        // 保存招式冷却记录
+        CompoundTag moveCooldownsTag = new CompoundTag();
+        for (Map.Entry<Integer, Long> entry : moveCooldowns.entrySet()) {
+            moveCooldownsTag.putLong(String.valueOf(entry.getKey()), entry.getValue());
+        }
+        tag.put("move_cooldowns", moveCooldownsTag);
     }
 
     @Override
@@ -136,6 +227,22 @@ public class PlayerNunchuckComponent implements AutoSyncedComponent, ServerTicki
                 hitRecords.put(UUID.fromString(key), record);
             }
         }
+
+        // 读取攻击记录
+        if (tag.contains("attack_record", Tag.TAG_COMPOUND)) {
+            CompoundTag attackTag = tag.getCompound("attack_record");
+            attackRecord = new AttackRecord();
+            attackRecord.lastAttackTime = attackTag.getLong("last_attack_time");
+            attackRecord.attackCount = attackTag.getInt("attack_count");
+        }
+
+        // 读取招式冷却记录
+        if (tag.contains("move_cooldowns", Tag.TAG_COMPOUND)) {
+            CompoundTag moveCooldownsTag = tag.getCompound("move_cooldowns");
+            for (String key : moveCooldownsTag.getAllKeys()) {
+                moveCooldowns.put(Integer.parseInt(key), moveCooldownsTag.getLong(key));
+            }
+        }
     }
 
     public static class HitRecord {
@@ -144,5 +251,10 @@ public class PlayerNunchuckComponent implements AutoSyncedComponent, ServerTicki
         public boolean nearBlock; // 是否在方块侧面
         public long lastHitTime;
         public int hitCount;
+    }
+
+    public static class AttackRecord {
+        public long lastAttackTime;
+        public int attackCount;
     }
 }

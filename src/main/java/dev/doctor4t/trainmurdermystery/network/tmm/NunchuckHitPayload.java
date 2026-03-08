@@ -52,7 +52,7 @@ public record NunchuckHitPayload(int targetId, int direction) implements CustomP
 
         // 检查距离
         double distance = attacker.distanceTo(target);
-        if (distance > 7.0) {
+        if (distance > 4.0) {
             return;
         }
 
@@ -68,13 +68,41 @@ public record NunchuckHitPayload(int targetId, int direction) implements CustomP
             return;
         }
 
+        // 获取攻击者的双节棍组件
+        PlayerNunchuckComponent attackerComponent = PlayerNunchuckComponent.KEY.get(attacker);
+        PlayerNunchuckComponent.AttackRecord attackRecord = attackerComponent.getAttackRecord();
+
+        // 检查该招式是否在7秒冷却中
+        if (attackerComponent.isMoveOnCooldown(direction_, 140)) {
+            return; // 招式在冷却中，不允许使用
+        }
+
+        boolean shouldApplyCooldown = false;
+        int cooldownTicks = 15; // 默认0.75秒冷却
+
+        // 检查攻击者是否在7秒内连续使用3次
+        if (attackRecord != null) {
+            if (attackRecord.attackCount >= 3) {
+                shouldApplyCooldown = true;
+                cooldownTicks = 5 * 20; // 5秒冷却
+                attackerComponent.resetAttackRecord();
+            } else {
+                attackerComponent.incrementAttackCount();
+            }
+        } else {
+            attackerComponent.recordAttack();
+        }
+
+        // 记录该招式的使用时间
+        attackerComponent.recordMoveUse(direction_);
+
         // 播放声音
         attacker.level().playSound(null, attacker.getX(), attacker.getEyeY(), attacker.getZ(),
                 TMMSounds.ITEM_REVOLVER_CLICK, SoundSource.PLAYERS, 1.0f, 1.0f);
 
         // 执行击退
         Vec3 knockbackDir = NunchuckItem.getKnockbackDirection(attacker, direction_);
-        double knockbackStrength = 1.0;
+        double knockbackStrength = 0.5;
         target.setDeltaMovement(knockbackDir.scale(knockbackStrength));
         target.hurtMarked = true;
 
@@ -117,12 +145,16 @@ public record NunchuckHitPayload(int targetId, int direction) implements CustomP
 
             // 设置物品冷却
             if (!attacker.isCreative()) {
-                attacker.getCooldowns().addCooldown(TMMItems.NUNCHUCK, 3 * 20); // 3秒
+                attacker.getCooldowns().addCooldown(TMMItems.NUNCHUCK, 12 * 20); // 12秒
             }
         } else {
             // 不击杀的情况下，设置较短的冷却
             if (!attacker.isCreative()) {
-                attacker.getCooldowns().addCooldown(TMMItems.NUNCHUCK, 20); // 1秒
+                if (shouldApplyCooldown) {
+                    attacker.getCooldowns().addCooldown(TMMItems.NUNCHUCK, cooldownTicks);
+                } else {
+                    attacker.getCooldowns().addCooldown(TMMItems.NUNCHUCK, 15); // 0.75秒
+                }
             }
         }
     }
