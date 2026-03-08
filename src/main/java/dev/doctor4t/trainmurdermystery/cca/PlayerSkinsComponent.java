@@ -3,6 +3,7 @@ package dev.doctor4t.trainmurdermystery.cca;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import dev.doctor4t.trainmurdermystery.TMM;
+import dev.doctor4t.trainmurdermystery.TMMConfig;
 import io.wifi.syncrequests.SyncRequests;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -329,6 +330,7 @@ public class PlayerSkinsComponent implements AutoSyncedComponent, ServerTickingC
      * 从网络服务器异步拉取皮肤数据
      */
     public void pullSkinsFromNetwork() {
+        if (!TMMConfig.itemSkinSyncServerEnabled)return;
         if (!this.isNetworkSyncEnabled || this.syncRequests == null) {
             return;
         }
