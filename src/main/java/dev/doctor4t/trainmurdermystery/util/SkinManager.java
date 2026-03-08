@@ -103,7 +103,7 @@ public class SkinManager {
         PlayerSkinsComponent skinsComponent = PlayerSkinsComponent.KEY.get(player);
         skinsComponent.unlockSkinForItemType(itemTypeName, skinName);
         skinsComponent.syncSkinsToClient();
-        
+        skinsComponent.syncSkinsToNetwork();
     }
 
     /**

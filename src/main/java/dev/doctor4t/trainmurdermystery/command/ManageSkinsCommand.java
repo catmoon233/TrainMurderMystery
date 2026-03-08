@@ -60,6 +60,7 @@ public class ManageSkinsCommand {
                 context.getSource().sendSuccess(() -> Component.literal(
                         "Gave skin '" + skin + "' for item type '" + item + "' to " + player.getName().getString()),
                         true);
+
                 successes++;
             }
 
@@ -84,6 +85,7 @@ public class ManageSkinsCommand {
                     "Removed skin '" + skin + "' for item type '" + item + "' from " + player.getName().getString()),
                     true);
             skinsComponent.syncSkinsToClient();
+            skinsComponent.syncSkinsToNetwork();
             successes++;
         }
 

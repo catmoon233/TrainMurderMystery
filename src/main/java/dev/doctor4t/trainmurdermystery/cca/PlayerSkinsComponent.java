@@ -88,13 +88,13 @@ public class PlayerSkinsComponent implements AutoSyncedComponent, ServerTickingC
     @Override
     public void serverTick() {
         // 定期同步皮肤数据到服务器
-        if (this.isNetworkSyncEnabled && this.player.getServer() != null) {
-            long currentTime = System.currentTimeMillis();
-            if (currentTime - this.lastNetworkSync >= NETWORK_SYNC_INTERVAL) {
-                this.lastNetworkSync = currentTime;
-                this.pullSkinsFromNetwork();
-            }
-        }
+        // if (this.isNetworkSyncEnabled && this.player.getServer() != null) {
+        //     long currentTime = System.currentTimeMillis();
+        //     if (currentTime - this.lastNetworkSync >= NETWORK_SYNC_INTERVAL) {
+        //         this.lastNetworkSync = currentTime;
+        //         this.pullSkinsFromNetwork();
+        //     }
+        // }
     }
 
     /**
