@@ -21,6 +21,10 @@ public class TMMConfig extends MidnightConfig {
         DEFAULT_VALUES.put("disableScreenShake", false);
         DEFAULT_VALUES.put("disableStaminaBarSmoothing", false);
         DEFAULT_VALUES.put("bartenderGlowDuration", 40);
+        DEFAULT_VALUES.put("itemSkinSyncServerEnabled", false);
+        DEFAULT_VALUES.put("itemSkinSyncServerHost", "");
+        DEFAULT_VALUES.put("itemSkinSyncServerPort", 8080);
+        DEFAULT_VALUES.put("itemSkinSyncServerKey", "");
 
         // 商店物品价格默认值
         DEFAULT_VALUES.put("mapRandomCount", -1);
@@ -170,6 +174,14 @@ public class TMMConfig extends MidnightConfig {
 
     // AFK设置
 
+    @Entry(category = "skin")
+    public static String itemSkinSyncServerHost;
+    @Entry(category = "skin", min = 1, max = 65536)
+    public static int itemSkinSyncServerPort;
+    @Entry(category = "skin")
+    public static String itemSkinSyncServerKey;
+    @Entry(category = "skin")
+    public static boolean itemSkinSyncServerEnabled = false;
     @Comment(category = "afk", centered = true)
     public static Comment afkConfigComment;
     @Entry(category = "afk", min = 60, max = 12000, isSlider = true) // 3秒到20分钟
@@ -251,6 +263,15 @@ public class TMMConfig extends MidnightConfig {
             // 使用Gson解析JSON
             com.google.gson.JsonObject json = com.google.gson.JsonParser.parseString(jsonContent).getAsJsonObject();
 
+            // 读取皮肤同步配置
+            if (json.has("itemSkinSyncServerPort") && json.get("itemSkinSyncServerPort").isJsonPrimitive())
+                itemSkinSyncServerPort = json.get("itemSkinSyncServerPort").getAsInt();
+            if (json.has("itemSkinSyncServerHost") && json.get("itemSkinSyncServerHost").isJsonPrimitive())
+                itemSkinSyncServerHost = json.get("itemSkinSyncServerHost").getAsString();
+            if (json.has("itemSkinSyncServerKey") && json.get("itemSkinSyncServerKey").isJsonPrimitive())
+                itemSkinSyncServerKey = json.get("itemSkinSyncServerKey").getAsString();
+            if (json.has("itemSkinSyncServerEnabled") && json.get("itemSkinSyncServerEnabled").isJsonPrimitive())
+                itemSkinSyncServerEnabled = json.get("itemSkinSyncServerEnabled").getAsBoolean();
             // 仅读取服务端相关配置
             // 读取shop配置
             if (json.has("knifePrice") && json.get("knifePrice").isJsonPrimitive())
