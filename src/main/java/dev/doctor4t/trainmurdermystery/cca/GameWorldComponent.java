@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
+import java.util.Map.Entry;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -42,6 +43,7 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
     private boolean canJump = false;
     private boolean lockedToSupporters = false;
     private boolean enableWeights = false;
+    HashMap<String, Role> pathToRole = new HashMap<>();
 
     public boolean isJumpAvailable() {
         return canJump;
@@ -320,12 +322,32 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
         return true;
     }
 
+    public void reloadPathToRole() {
+        pathToRole.clear();
+        for (var r : TMMRoles.ROLES.entrySet()) {
+            var role = r.getValue();
+            pathToRole.putIfAbsent(role.identifier().getPath(), role);
+        }
+    }
+
+    public @Nullable Role getRoleFromPath(String path) {
+        if (pathToRole.containsKey(path)) {
+            return pathToRole.get(path);
+        } else {
+            reloadPathToRole();
+            if (pathToRole.containsKey(path)) {
+                return pathToRole.get(path);
+            }
+        }
+        return null;
+    }
+
     @Override
     public void readFromNbt(@NotNull CompoundTag nbtCompound, HolderLookup.Provider wrapperLookup) {
         // this.lockedToSupporters = nbtCompound.getBoolean("LockedToSupporters");
         // this.enableWeights = nbtCompound.getBoolean("EnableWeights");
         this.canJump = nbtCompound.getBoolean("canJump");
-        this.syncRole = nbtCompound.getBoolean("SyncRole");
+        // this.syncRole = nbtCompound.getBoolean("SyncRole");
         // if (!syncRole) {
         this.gameMode = TMMGameModes.GAME_MODES.get(ResourceLocation.parse(nbtCompound.getString("GameMode")));
         this.gameStatus = GameStatus.valueOf(nbtCompound.getString("GameStatus"));
@@ -340,15 +362,34 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
             this.looseEndWinner = null;
         }
         // }else {
-        for (Role role : TMMRoles.ROLES.values()) {
-            this.setRoles(uuidListFromNbt(nbtCompound, role.identifier().toString()), role);
-            // }
-            this.setSyncRole(false);
-        }
 
+        if (nbtCompound.contains("roles", CompoundTag.TAG_COMPOUND)) {
+            var roleInfoCompund = nbtCompound.getCompound("roles");
+            var keys = roleInfoCompund.getAllKeys();
+            for (var p_name : keys) {
+                if (roleInfoCompund.contains(p_name, CompoundTag.TAG_STRING)) {
+                    String rolePath = roleInfoCompund.getString(p_name);
+                    UUID playerUid = null;
+                    try {
+                        playerUid = UUID.fromString(p_name);
+                    } catch (Exception e) {
+
+                    }
+
+                    if (playerUid == null)
+                        continue;
+
+                    Role role = getRoleFromPath(rolePath);
+                    if (role != null) {
+                        this.roles.clear();
+                        this.roles.putIfAbsent(playerUid, role);
+                    }
+                }
+            }
+        }
     }
 
-    private ArrayList<UUID> uuidListFromNbt(CompoundTag nbtCompound, String listName) {
+    public ArrayList<UUID> uuidListFromNbt(CompoundTag nbtCompound, String listName) {
         ArrayList<UUID> ret = new ArrayList<>();
         for (Tag e : nbtCompound.getList(listName, Tag.TAG_INT_ARRAY)) {
             ret.add(NbtUtils.loadUUID(e));
@@ -360,7 +401,7 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
     public void writeToNbt(@NotNull CompoundTag nbtCompound, HolderLookup.Provider wrapperLookup) {
         // nbtCompound.putBoolean("LockedToSupporters", lockedToSupporters);
         // nbtCompound.putBoolean("EnableWeights", enableWeights);
-        nbtCompound.putBoolean("SyncRole", syncRole);
+        // nbtCompound.putBoolean("SyncRole", syncRole);
         nbtCompound.putBoolean("canJump", canJump);
         // if (!this.syncRole) {
         nbtCompound.putString("GameMode", this.gameMode != null ? this.gameMode.identifier.toString() : "");
@@ -375,15 +416,29 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
         // nbtCompound.putFloat("BackfireChance", backfireChance);
         // }
         // else {
-        for (Role role : TMMRoles.ROLES.values()) {
-            nbtCompound.put(role.identifier().toString(), nbtFromUuidList(getAllWithRole(role)));
+        syncRole = true;
+        if (syncRole) {
+            var roleInfoCompund = new CompoundTag();
+            for (Entry<UUID, Role> info : roles.entrySet()) {
+                UUID pUuid = info.getKey();
+                if (pUuid == null)
+                    continue;
+                String keyName = pUuid.toString();
+                Role role = info.getValue();
+                if (role == null)
+                    continue;
+                String roleId = role.identifier().getPath();
+                roleInfoCompund.putString(keyName, roleId);
+            }
+            nbtCompound.put("roles", roleInfoCompund);
+            this.setSyncRole(false);
         }
-        this.setSyncRole(false);
+
         // }
 
     }
 
-    private ListTag nbtFromUuidList(List<UUID> list) {
+    public ListTag nbtFromUuidList(List<UUID> list) {
         ListTag ret = new ListTag();
         for (UUID player : list) {
             ret.add(NbtUtils.createUUID(player));
