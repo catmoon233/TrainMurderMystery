@@ -198,6 +198,23 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
         return roleWorldComponent.getRole(uuid);
     }
 
+    /**
+     * No Neutrals!
+     * 
+     * @return
+     */
+    public List<UUID> getAllKillerPlayers() {
+        if (roleWorldComponent == null) {
+            roleWorldComponent = RoleWorldComponent.KEY.get(world);
+        }
+        return roleWorldComponent.getAllKillerPlayers();
+    }
+
+    /**
+     * Include Neutrals!
+     * 
+     * @return
+     */
     public List<UUID> getAllKillerTeamPlayers() {
         if (roleWorldComponent == null) {
             roleWorldComponent = RoleWorldComponent.KEY.get(world);

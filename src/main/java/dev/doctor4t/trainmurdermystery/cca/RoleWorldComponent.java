@@ -108,7 +108,18 @@ public class RoleWorldComponent implements AutoSyncedComponent {
     public List<UUID> getAllKillerTeamPlayers() {
         List<UUID> ret = new ArrayList<>();
         roles.forEach((uuid, playerRole) -> {
-            if (isKillerTeamRole(playerRole)) {
+            if ((isKillerTeamRole(playerRole))) {
+                ret.add(uuid);
+            }
+        });
+
+        return ret;
+    }
+
+    public List<UUID> getAllKillerPlayers() {
+        List<UUID> ret = new ArrayList<>();
+        roles.forEach((uuid, playerRole) -> {
+            if ((playerRole.canUseKiller() && !playerRole.isNeutrals())) {
                 ret.add(uuid);
             }
         });

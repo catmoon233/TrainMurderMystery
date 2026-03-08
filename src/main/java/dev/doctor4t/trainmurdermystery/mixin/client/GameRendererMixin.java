@@ -32,7 +32,7 @@ public class GameRendererMixin {
     public void modifyFov(net.minecraft.client.Camera camera, float partialTick, boolean bobbing, CallbackInfoReturnable<Double> cir) {
         if (ScopeOverlayRenderer.isInScopeView()) {
             double original = cir.getReturnValue();
-            cir.setReturnValue(original / 3.0); // 开镜时将FOV缩小到原来的1/3，实现拉近视角效果
+            cir.setReturnValue(original / 3d); // 开镜时将FOV缩小到原来的1/3，实现拉近视角效果
         }
     }
 }
