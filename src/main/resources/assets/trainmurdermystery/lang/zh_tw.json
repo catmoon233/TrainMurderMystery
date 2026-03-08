@@ -487,7 +487,7 @@
   "item.trainmurdermystery.scope": "倍鏡",
   "item.trainmurdermystery.scope.tooltip": "用於狙擊槍的瞄準鏡\n手上拿著狙擊槍，潛行後按下滑鼠左鍵安裝到狙擊槍（不打開物品欄）",
   "item.trainmurdermystery.sniper_rifle": "狙擊槍",
-  "item.trainmurdermystery.sniper_rifle.tooltip": "射程150格的遠程武器\n左鍵裝填子彈，潛行後按下滑鼠左鍵安裝/卸載倍鏡\n右鍵瞄準射擊",
+  "item.trainmurdermystery.sniper_rifle.tooltip": "射程150格的遠程武器\n左鍵裝填子彈，潛行後按下滑鼠左鍵安裝/卸載倍鏡\n蹲下右鍵瞄準\n不蹲下右鍵射擊",
   "item.trainmurdermystery.sniper_rifle.ammo": "子彈: %s / %s",
   "item.trainmurdermystery.sniper_rifle.scope": "倍鏡: %s",
   "item.trainmurdermystery.sniper_rifle.scope.installed": "已安裝",
