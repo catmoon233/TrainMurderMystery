@@ -20,6 +20,7 @@ public class SkinsNetworkSyncCommand {
      */
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(Commands.literal("skinsync")
+                .requires((p) -> p.hasPermission(2))
                 .then(Commands.literal("config")
                         .then(Commands.literal("stop").executes((ctx) -> {
                             SkinsNetworkSyncInitializer.isEnabled = false;
@@ -107,7 +108,7 @@ public class SkinsNetworkSyncCommand {
             }
             component.syncSkinsToNetwork();
             component.sync();
-            
+
             source.sendSuccess(() -> Component.literal("§e正在同步皮肤数据到服务器..."), true);
             return 1;
         } catch (Exception e) {
