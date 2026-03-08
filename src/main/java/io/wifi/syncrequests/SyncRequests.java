@@ -1,15 +1,13 @@
 package io.wifi.syncrequests;
 
-import java.net.URI;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.UUID;
 
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.CloseableHttpClient;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.util.EntityUtils;
 import org.jetbrains.annotations.Nullable;
 
 public class SyncRequests {
@@ -66,27 +64,62 @@ public class SyncRequests {
         }
     }
 
-    public static String sendGet(String URL) throws Exception {
-        try (CloseableHttpClient client = HttpClients.createDefault()) {
-            URI uri = URI.create(URL);
-            HttpGet request = new HttpGet(uri);
-            // request.setHeader("Accept", "application/json");
-            String response = client.execute(request,
-                    httpResponse -> EntityUtils.toString(httpResponse.getEntity(), StandardCharsets.UTF_8));
-            return response;
+    public static String sendGet(String urlString) throws Exception {
+        URL url = new URL(urlString);
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        
+        try {
+            connection.setRequestMethod("GET");
+            connection.setConnectTimeout(5000);
+            connection.setReadTimeout(5000);
+            connection.setRequestProperty("Accept", "text/plain");
+            
+            int responseCode = connection.getResponseCode();
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(connection.getInputStream(), StandardCharsets.UTF_8));
+                StringBuilder response = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    response.append(line);
+                }
+                reader.close();
+                return response.toString();
+            } else {
+                System.err.println("GET request failed with response code: " + responseCode);
+                return null;
+            }
+        } finally {
+            connection.disconnect();
         }
     }
 
-    public static boolean sendPost(String url, String textBody) throws Exception {
-        try (CloseableHttpClient client = HttpClients.createDefault()) {
-            HttpPost request = new HttpPost(url);
-            request.setHeader("Content-Type", "text/plain; charset=UTF-8");
-            request.setEntity(new StringEntity(textBody, StandardCharsets.UTF_8));
-
-            String response = client.execute(request,
-                    httpResponse -> EntityUtils.toString(httpResponse.getEntity(), StandardCharsets.UTF_8));
-            // System.out.println("POST Response: " + response);
-            return true;
+    public static boolean sendPost(String urlString, String textBody) throws Exception {
+        URL url = new URL(urlString);
+        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+        
+        try {
+            connection.setRequestMethod("POST");
+            connection.setDoOutput(true);
+            connection.setConnectTimeout(5000);
+            connection.setReadTimeout(5000);
+            connection.setRequestProperty("Content-Type", "text/plain; charset=UTF-8");
+            connection.setRequestProperty("Accept", "text/plain");
+            
+            try (OutputStream os = connection.getOutputStream()) {
+                byte[] input = textBody.getBytes(StandardCharsets.UTF_8);
+                os.write(input, 0, input.length);
+            }
+            
+            int responseCode = connection.getResponseCode();
+            if (responseCode == HttpURLConnection.HTTP_OK) {
+                return true;
+            } else {
+                System.err.println("POST request failed with response code: " + responseCode);
+                return false;
+            }
+        } finally {
+            connection.disconnect();
         }
     }
 }
