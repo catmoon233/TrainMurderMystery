@@ -14,7 +14,7 @@ public class SkinsNetworkSyncInitializer {
     private static final Logger logger = LoggerFactory.getLogger(SkinsNetworkSyncInitializer.class);
     
     // 网络服务器配置
-    public static String NETWORK_HOST = "http://exmaple.com/";
+    public static String NETWORK_HOST = "exmaple.com";
     public static int NETWORK_PORT = 80;
     public static String NETWORK_KEY = "";
     
