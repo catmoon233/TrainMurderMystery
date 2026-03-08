@@ -145,7 +145,7 @@ public record NunchuckHitPayload(int targetId, int direction) implements CustomP
 
             // 设置物品冷却
             if (!attacker.isCreative()) {
-                attacker.getCooldowns().addCooldown(TMMItems.NUNCHUCK, 12 * 20); // 12秒
+                attacker.getCooldowns().addCooldown(TMMItems.NUNCHUCK, 7 * 20); // 7秒
             }
         } else {
             // 不击杀的情况下，设置较短的冷却
@@ -153,7 +153,7 @@ public record NunchuckHitPayload(int targetId, int direction) implements CustomP
                 if (shouldApplyCooldown) {
                     attacker.getCooldowns().addCooldown(TMMItems.NUNCHUCK, cooldownTicks);
                 } else {
-                    attacker.getCooldowns().addCooldown(TMMItems.NUNCHUCK, 15); // 0.75秒
+                    attacker.getCooldowns().addCooldown(TMMItems.NUNCHUCK, 15); 
                 }
             }
         }
