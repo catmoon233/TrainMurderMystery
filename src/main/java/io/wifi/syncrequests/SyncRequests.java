@@ -17,7 +17,6 @@ public class SyncRequests {
 
     public SyncRequests(String url) {
         this.url_root = url;
-        this.url_root = "rm.aurorian.cn:25569";
     }
 
     /**
