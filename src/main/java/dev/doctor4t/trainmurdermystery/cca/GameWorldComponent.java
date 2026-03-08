@@ -238,12 +238,12 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
         return getRole(player) != null && getRole(player).isInnocent();
     }
 
-    public void clearRoleMap(boolean syncRoles) {
+    public void clearRoleMap(boolean sync) {
         if (roleWorldComponent == null) {
             roleWorldComponent = RoleWorldComponent.KEY.get(world);
         }
-        roleWorldComponent.clearRoleMap(syncRoles);
-        setPsychosActive(0);
+        roleWorldComponent.clearRoleMap(sync);
+        setPsychosActive(0, sync);
     }
 
     public void clearRoleMap() {
@@ -267,8 +267,13 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
     }
 
     public int setPsychosActive(int psychosActive) {
+        return this.setPsychosActive(psychosActive, true);
+    }
+
+    public int setPsychosActive(int psychosActive, boolean sync) {
         this.psychosActive = Math.max(0, psychosActive);
-        this.sync();
+        if (sync)
+            this.sync();
         return this.psychosActive;
     }
 
@@ -327,10 +332,13 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
     public void readFromNbt(@NotNull CompoundTag nbtCompound, HolderLookup.Provider wrapperLookup) {
         // this.lockedToSupporters = nbtCompound.getBoolean("LockedToSupporters");
         // this.enableWeights = nbtCompound.getBoolean("EnableWeights");
-        this.canJump = nbtCompound.getBoolean("canJump");
+        this.canJump = nbtCompound.contains("canJump") ? nbtCompound.getBoolean("canJump") : false;
         // this.syncRole = nbtCompound.getBoolean("SyncRole");
         // if (!syncRole) {
-        this.gameMode = TMMGameModes.GAME_MODES.get(ResourceLocation.parse(nbtCompound.getString("GameMode")));
+        if (nbtCompound.contains("GameMode"))
+            this.gameMode = TMMGameModes.GAME_MODES.get(ResourceLocation.parse(nbtCompound.getString("GameMode")));
+        else
+            this.gameMode = null;
         this.gameStatus = GameStatus.valueOf(nbtCompound.getString("GameStatus"));
 
         this.fade = nbtCompound.getInt("Fade");
@@ -358,9 +366,11 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
         // nbtCompound.putBoolean("LockedToSupporters", lockedToSupporters);
         // nbtCompound.putBoolean("EnableWeights", enableWeights);
         // nbtCompound.putBoolean("SyncRole", syncRole);
-        nbtCompound.putBoolean("canJump", canJump);
+        if (canJump)
+            nbtCompound.putBoolean("canJump", canJump);
         // if (!this.syncRole) {
-        nbtCompound.putString("GameMode", this.gameMode != null ? this.gameMode.identifier.toString() : "");
+        if (this.gameMode != null)
+            nbtCompound.putString("GameMode", this.gameMode.identifier.toString());
         nbtCompound.putString("GameStatus", this.gameStatus.toString());
 
         nbtCompound.putInt("Fade", fade);
