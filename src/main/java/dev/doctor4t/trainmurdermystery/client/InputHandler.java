@@ -1,12 +1,15 @@
 package dev.doctor4t.trainmurdermystery.client;
 
 import dev.doctor4t.trainmurdermystery.cca.MapVotingComponent;
+import dev.doctor4t.trainmurdermystery.client.gui.ScopeOverlayRenderer;
 import dev.doctor4t.trainmurdermystery.client.gui.screen.MapSelectorScreen;
+import dev.doctor4t.trainmurdermystery.index.TMMItems;
 import dev.doctor4t.trainmurdermystery.voting.MapVotingManager;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.world.item.ItemStack;
 import org.lwjgl.glfw.GLFW;
 
 public class InputHandler {
@@ -30,7 +33,15 @@ public class InputHandler {
             return;
         if (client.level == null)
             return;
-        
+
+        // 检查玩家是否持有狙击枪，如果不持有则关闭瞄准镜
+        if (ScopeOverlayRenderer.isInScopeView() && client.player != null) {
+            ItemStack mainHandItem = client.player.getMainHandItem();
+            if (!mainHandItem.is(TMMItems.SNIPER_RIFLE)) {
+                ScopeOverlayRenderer.setInScopeView(false);
+            }
+        }
+
         if (openVotingScreenKeybind.consumeClick()) {
             // 检查是否处于投票阶段
             final MapVotingComponent mapVotingComponent = MapVotingComponent.KEY.get(client.level);
