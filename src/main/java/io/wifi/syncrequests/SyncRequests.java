@@ -30,9 +30,9 @@ public class SyncRequests {
         String uuidStr = playerUUID.toString();
         String reqUrl = url_root;
         if (key != null)
-            reqUrl = reqUrl + "/" + uuidStr + "/" + key;
+            reqUrl = reqUrl +"/set/" + uuidStr + "/" + key;
         else
-            reqUrl = reqUrl + "/" + uuidStr;
+            reqUrl = reqUrl + "/set/" + uuidStr;
         try {
             return sendPost(reqUrl, value);
         } catch (Exception e) {
@@ -52,9 +52,9 @@ public class SyncRequests {
         String uuidStr = playerUUID.toString();
         String reqUrl = url_root;
         if (key != null)
-            reqUrl = reqUrl + "/" + uuidStr + "/" + key;
+            reqUrl = reqUrl + "/get/" + uuidStr + "/" + key;
         else
-            reqUrl = reqUrl + "/" + uuidStr;
+            reqUrl = reqUrl + "/get/" + uuidStr;
 
         try {
             return sendGet(reqUrl);
