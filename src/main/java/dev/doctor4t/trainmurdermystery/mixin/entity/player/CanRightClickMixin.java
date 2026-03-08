@@ -122,7 +122,8 @@ public abstract class CanRightClickMixin extends LivingEntity implements DataSyn
     private boolean shouldPreventInteraction(Block block) {
         if (TMM.isLobby)
             return false;
-        return !isAllowedBlock(block) || cantClickItems.contains(BuiltInRegistries.BLOCK.getKey(block).toString());
+        return !isAllowedBlock(block) || cantClickItems.contains(BuiltInRegistries.BLOCK.getKey(block).toString())
+                || CANNOT_INTERACT_IDS.contains(BuiltInRegistries.BLOCK.getKey(block).toString());
     }
 
     /**
