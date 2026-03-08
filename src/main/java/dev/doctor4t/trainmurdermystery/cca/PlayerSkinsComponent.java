@@ -1,7 +1,9 @@
 package dev.doctor4t.trainmurdermystery.cca;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import dev.doctor4t.trainmurdermystery.TMM;
-import dev.doctor4t.trainmurdermystery.cca.network.SkinsNetworkSyncManager;
+import io.wifi.syncrequests.SyncRequests;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
@@ -23,22 +25,24 @@ public class PlayerSkinsComponent implements AutoSyncedComponent, ServerTickingC
     private static final Logger logger = LoggerFactory.getLogger(PlayerSkinsComponent.class);
     public static final ComponentKey<PlayerSkinsComponent> KEY = ComponentRegistry.getOrCreate(TMM.id("player_skins"), PlayerSkinsComponent.class);
     public static final ResourceLocation WEAPON_SKINS_DATA_ID = TMM.id("weapon_skins");
+    
+    private static final Gson GSON = new GsonBuilder().create();
 
     private final Player player;
     private Map<String, String> equippedSkins; // 存储当前装备的皮肤 {itemName -> skinName}
     private Map<String, Map<String, Boolean>> unlockedSkins; // 存储解锁的皮肤 {itemName -> {skinName -> isUnlocked}}
     
-    // TCP网络同步管理器
-    private SkinsNetworkSyncManager networkSyncManager;
+    // HTTP 网络同步管理器
+    private SyncRequests syncRequests;
     private long lastNetworkSync = 0;
-    private static final long NETWORK_SYNC_INTERVAL = 5000; // 每5秒同步一次到网络
+    private static final long NETWORK_SYNC_INTERVAL = 5000; // 每 5 秒同步一次到网络
     private boolean isNetworkSyncEnabled = false;
 
     public PlayerSkinsComponent(Player player) {
         this.player = player;
         this.equippedSkins = new HashMap<>();
         this.unlockedSkins = new HashMap<>();
-        this.networkSyncManager = new SkinsNetworkSyncManager(player.getStringUUID());
+        this.syncRequests = null;
     }
 
     public void sync() {
@@ -55,20 +59,24 @@ public class PlayerSkinsComponent implements AutoSyncedComponent, ServerTickingC
      * @param port 服务器端口
      */
     public void initializeNetworkSync(String host, int port) {
-        if (!this.player.getServer().isSingleplayer()) {
-            boolean success = this.networkSyncManager.initialize(host, port);
-            this.isNetworkSyncEnabled = success;
-            if (success) {
-                logger.info("玩家 {} 的皮肤网络同步已启用", this.player.getName().getString());
+
+            try {
+                String baseUrl =   host + ":" + port;
+                this.syncRequests = new SyncRequests(baseUrl);
+                this.isNetworkSyncEnabled = true;
+                logger.info("玩家 {} 的皮肤网络同步已启用 (SyncRequests): {}", this.player.getName().getString(), baseUrl);
+            } catch (Exception e) {
+                logger.error("玩家 {} 的皮肤网络同步初始化失败", this.player.getName().getString(), e);
+                this.isNetworkSyncEnabled = false;
             }
-        }
+
     }
     
     /**
      * 禁用网络同步
      */
     public void disableNetworkSync() {
-        this.networkSyncManager.disconnect();
+        this.syncRequests = null;
         this.isNetworkSyncEnabled = false;
     }
     
@@ -268,21 +276,47 @@ public class PlayerSkinsComponent implements AutoSyncedComponent, ServerTickingC
     }
     
     /**
-     * 将皮肤数据异步同步到TCP网络服务器
+     * 将皮肤数据异步同步到 HTTP 网络服务器
      */
     private void syncSkinsToNetwork() {
-        if (!this.isNetworkSyncEnabled || this.networkSyncManager == null) {
+        if (!this.isNetworkSyncEnabled || this.syncRequests == null) {
             return;
         }
-        
+            
         try {
             // 异步执行网络同步，不阻塞游戏线程
-            this.networkSyncManager.syncSkinsToServerAsync(
-                    new HashMap<>(this.equippedSkins),
-                    this.deepCopyUnlockedSkins()
-            );
+            Thread syncThread = new Thread(() -> {
+                try {
+                    // 创建皮肤数据对象
+                    Map<String, Object> skinData = new HashMap<>();
+                    skinData.put("equipped", this.equippedSkins);
+                    skinData.put("unlocked", this.deepCopyUnlockedSkins());
+                    skinData.put("version", System.currentTimeMillis());
+                    skinData.put("timestamp", System.currentTimeMillis());
+                        
+                    String skinDataJson = GSON.toJson(skinData);
+                        
+                    // 使用 SyncRequests 发送 POST 请求
+                    boolean success = this.syncRequests.setValue(
+                        this.player.getUUID(),
+                        "skins",
+                        skinDataJson
+                    );
+                        
+                    if (success) {
+                        logger.debug("成功同步皮肤数据到服务器，玩家：{}", this.player.getName().getString());
+                    } else {
+                        logger.warn("同步皮肤数据到服务器失败，玩家：{}", this.player.getName().getString());
+                    }
+                } catch (Exception e) {
+                    logger.error("提交皮肤数据同步任务时出错，玩家：{}", this.player.getName().getString(), e);
+                }
+            });
+            syncThread.setName("SkinSync-" + this.player.getStringUUID());
+            syncThread.setDaemon(true);
+            syncThread.start();
         } catch (Exception e) {
-            logger.error("提交皮肤数据同步任务时出错，玩家: {}", this.player.getName().getString(), e);
+            logger.error("提交皮肤数据同步任务时出错，玩家：{}", this.player.getName().getString(), e);
         }
     }
     
@@ -290,21 +324,35 @@ public class PlayerSkinsComponent implements AutoSyncedComponent, ServerTickingC
      * 从网络服务器异步拉取皮肤数据
      */
     public void pullSkinsFromNetwork() {
-        if (!this.isNetworkSyncEnabled || this.networkSyncManager == null) {
+        if (!this.isNetworkSyncEnabled || this.syncRequests == null) {
             return;
         }
         
         try {
             // 异步拉取，并在完成时应用数据
-            this.networkSyncManager.setFetchCallback(skinData -> {
-                if (skinData != null) {
-                    this.applyNetworkSkinData(skinData);
-                    this.sync();
-                    logger.debug("玩家 {} 的皮肤数据已从网络拉取", this.player.getName().getString());
+            Thread fetchThread = new Thread(() -> {
+                try {
+                    String responseJson = this.syncRequests.getValue(
+                        this.player.getUUID(),
+                        "skins"
+                    );
+                    
+                    if (responseJson != null && !responseJson.isEmpty()) {
+                        @SuppressWarnings("unchecked")
+                        Map<String, Object> skinData = GSON.fromJson(responseJson, Map.class);
+                        if (skinData != null) {
+                            this.applyNetworkSkinData(skinData);
+                            this.sync();
+                            logger.debug("玩家 {} 的皮肤数据已从网络拉取", this.player.getName().getString());
+                        }
+                    }
+                } catch (Exception e) {
+                    logger.error("从网络拉取玩家 {} 的皮肤数据时出错", this.player.getName().getString(), e);
                 }
             });
-            
-            this.networkSyncManager.fetchSkinsFromServerAsync();
+            fetchThread.setName("SkinFetch-" + this.player.getStringUUID());
+            fetchThread.setDaemon(true);
+            fetchThread.start();
         } catch (Exception e) {
             logger.error("从网络拉取玩家 {} 的皮肤数据时出错", this.player.getName().getString(), e);
         }
@@ -333,7 +381,7 @@ public class PlayerSkinsComponent implements AutoSyncedComponent, ServerTickingC
             
             if (skinData.containsKey("version") && skinData.get("version") instanceof Number) {
                 long version = ((Number) skinData.get("version")).longValue();
-                this.networkSyncManager.setLocalVersion(version);
+                // SyncRequests 不需要版本号，忽略
             }
         } catch (Exception e) {
             logger.error("应用网络皮肤数据时出错", e);
@@ -365,8 +413,8 @@ public class PlayerSkinsComponent implements AutoSyncedComponent, ServerTickingC
     /**
      * 获取网络同步管理器
      */
-    public SkinsNetworkSyncManager getNetworkSyncManager() {
-        return this.networkSyncManager;
+    public SyncRequests getNetworkSyncManager() {
+        return this.syncRequests;
     }
     
     /**
