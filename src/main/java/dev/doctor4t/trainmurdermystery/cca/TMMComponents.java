@@ -16,6 +16,7 @@ public class TMMComponents
     public void registerWorldComponentFactories(@NotNull WorldComponentFactoryRegistry registry) {
         registry.register(TrainWorldComponent.KEY, TrainWorldComponent::new);
         registry.register(GameWorldComponent.KEY, GameWorldComponent::new);
+        registry.register(RoleWorldComponent.KEY, RoleWorldComponent::new);
         registry.register(AreasWorldComponent.KEY, AreasWorldComponent::new);
         registry.register(WorldBlackoutComponent.KEY, WorldBlackoutComponent::new);
         registry.register(GameTimeComponent.KEY, GameTimeComponent::new);

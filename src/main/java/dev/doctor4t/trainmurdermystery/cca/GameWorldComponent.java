@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
-import java.util.Map.Entry;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -18,7 +17,6 @@ import dev.doctor4t.trainmurdermystery.TMM;
 import dev.doctor4t.trainmurdermystery.api.GameMode;
 import dev.doctor4t.trainmurdermystery.api.Role;
 import dev.doctor4t.trainmurdermystery.api.TMMGameModes;
-import dev.doctor4t.trainmurdermystery.api.TMMRoles;
 import dev.doctor4t.trainmurdermystery.game.GameConstants;
 import dev.doctor4t.trainmurdermystery.game.GameFunctions;
 import net.minecraft.core.BlockPos;
@@ -40,10 +38,10 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
     public static final ComponentKey<GameWorldComponent> KEY = ComponentRegistry.getOrCreate(TMM.id("game"),
             GameWorldComponent.class);
     private final Level world;
+    private RoleWorldComponent roleWorldComponent = null;
     private boolean canJump = false;
     private boolean lockedToSupporters = false;
     private boolean enableWeights = false;
-    HashMap<String, Role> pathToRole = new HashMap<>();
 
     public boolean isJumpAvailable() {
         return canJump;
@@ -83,8 +81,6 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
 
     private GameStatus gameStatus = GameStatus.INACTIVE;
     public int fade = 0;
-
-    private final HashMap<UUID, Role> roles = new HashMap<>();
 
     public int ticksUntilNextResetAttempt = -1;
 
@@ -139,97 +135,77 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
     }
 
     public void addRole(Player player, Role role) {
-        if (player == null) {
-            return;
-        }
         this.addRole(player.getUUID(), role);
-        this.setSyncRole(true);
-        this.sync();
-        this.setSyncRole(false);
     }
 
     public void addRole(UUID player, Role role) {
-        if (player == null) {
-            return;
+        if (roleWorldComponent == null) {
+            roleWorldComponent = RoleWorldComponent.KEY.get(world);
         }
-        this.roles.put(player, role);
-        this.setSyncRole(true);
-        this.sync();
-        this.setSyncRole(false);
+        roleWorldComponent.addRole(player, role);
     }
 
     public void resetRole(Role role) {
-        roles.entrySet().removeIf(entry -> entry.getValue() == role);
+        if (roleWorldComponent == null) {
+            roleWorldComponent = RoleWorldComponent.KEY.get(world);
+        }
+        roleWorldComponent.resetRole(role);
     }
 
     public void setRoles(List<UUID> players, Role role) {
-        if (players == null) {
-            return;
+        if (roleWorldComponent == null) {
+            roleWorldComponent = RoleWorldComponent.KEY.get(world);
         }
-        this.setSyncRole(true);
-        resetRole(role);
-
-        for (UUID player : players) {
-            if (player == null)
-                continue;
-            addRole(player, role);
-        }
-        this.sync();
-        this.setSyncRole(false);
+        roleWorldComponent.setRoles(players, role);
     }
 
     public HashMap<UUID, Role> getRoles() {
-        return roles;
+        if (roleWorldComponent == null) {
+            roleWorldComponent = RoleWorldComponent.KEY.get(world);
+        }
+        return roleWorldComponent.getRoles();
     }
 
     public Role getRole(Player player) {
-        if (player == null) {
-            return null;
+        if (roleWorldComponent == null) {
+            roleWorldComponent = RoleWorldComponent.KEY.get(world);
         }
-        return getRole(player.getUUID());
+        return roleWorldComponent.getRole(player);
     }
 
     public @Nullable Role getRole(UUID uuid) {
-        if (uuid == null) {
-            return null;
+        if (roleWorldComponent == null) {
+            roleWorldComponent = RoleWorldComponent.KEY.get(world);
         }
-        return roles.get(uuid);
+        return roleWorldComponent.getRole(uuid);
     }
 
     public List<UUID> getAllKillerTeamPlayers() {
-        List<UUID> ret = new ArrayList<>();
-        roles.forEach((uuid, playerRole) -> {
-            if (playerRole.canUseKiller()) {
-                ret.add(uuid);
-            }
-        });
-
-        return ret;
+        if (roleWorldComponent == null) {
+            roleWorldComponent = RoleWorldComponent.KEY.get(world);
+        }
+        return roleWorldComponent.getAllKillerTeamPlayers();
     }
 
     public List<UUID> getAllWithRole(Role role) {
-        List<UUID> ret = new ArrayList<>();
-        roles.forEach((uuid, playerRole) -> {
-            if (playerRole == role) {
-                ret.add(uuid);
-            }
-        });
-
-        return ret;
+        if (roleWorldComponent == null) {
+            roleWorldComponent = RoleWorldComponent.KEY.get(world);
+        }
+        return roleWorldComponent.getAllWithRole(role);
     }
 
     public boolean isRole(@NotNull Player player, Role role) {
-        if (player == null) {
-            return role == null;
+        if (roleWorldComponent == null) {
+            roleWorldComponent = RoleWorldComponent.KEY.get(world);
         }
-        return isRole(player.getUUID(), role);
+        return roleWorldComponent.isRole(player, role);
     }
 
     public boolean isRole(@NotNull UUID uuid, Role role) {
-        if (uuid == null) {
-            return role == null;
+        if (roleWorldComponent == null) {
+            roleWorldComponent = RoleWorldComponent.KEY.get(world);
         }
-        return this.roles.get(uuid) == role;
+        return roleWorldComponent.isRole(uuid, role);
     }
 
     public boolean isNeutralForKiller(@NotNull Player player) {
@@ -245,7 +221,10 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
     }
 
     public void clearRoleMap() {
-        this.roles.clear();
+        if (roleWorldComponent == null) {
+            roleWorldComponent = RoleWorldComponent.KEY.get(world);
+        }
+        roleWorldComponent.clearRoleMap();
         setPsychosActive(0);
     }
 
@@ -322,26 +301,6 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
         return true;
     }
 
-    public void reloadPathToRole() {
-        pathToRole.clear();
-        for (var r : TMMRoles.ROLES.entrySet()) {
-            var role = r.getValue();
-            pathToRole.putIfAbsent(role.identifier().getPath(), role);
-        }
-    }
-
-    public @Nullable Role getRoleFromPath(String path) {
-        if (pathToRole.containsKey(path)) {
-            return pathToRole.get(path);
-        } else {
-            reloadPathToRole();
-            if (pathToRole.containsKey(path)) {
-                return pathToRole.get(path);
-            }
-        }
-        return null;
-    }
-
     @Override
     public void readFromNbt(@NotNull CompoundTag nbtCompound, HolderLookup.Provider wrapperLookup) {
         // this.lockedToSupporters = nbtCompound.getBoolean("LockedToSupporters");
@@ -362,31 +321,6 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
             this.looseEndWinner = null;
         }
         // }else {
-
-        if (nbtCompound.contains("roles", CompoundTag.TAG_COMPOUND)) {
-            var roleInfoCompund = nbtCompound.getCompound("roles");
-            var keys = roleInfoCompund.getAllKeys();
-            for (var p_name : keys) {
-                if (roleInfoCompund.contains(p_name, CompoundTag.TAG_STRING)) {
-                    String rolePath = roleInfoCompund.getString(p_name);
-                    UUID playerUid = null;
-                    try {
-                        playerUid = UUID.fromString(p_name);
-                    } catch (Exception e) {
-
-                    }
-
-                    if (playerUid == null)
-                        continue;
-
-                    Role role = getRoleFromPath(rolePath);
-                    if (role != null) {
-                        this.roles.clear();
-                        this.roles.putIfAbsent(playerUid, role);
-                    }
-                }
-            }
-        }
     }
 
     public ArrayList<UUID> uuidListFromNbt(CompoundTag nbtCompound, String listName) {
@@ -416,23 +350,6 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
         // nbtCompound.putFloat("BackfireChance", backfireChance);
         // }
         // else {
-        syncRole = true;
-        if (syncRole) {
-            var roleInfoCompund = new CompoundTag();
-            for (Entry<UUID, Role> info : roles.entrySet()) {
-                UUID pUuid = info.getKey();
-                if (pUuid == null)
-                    continue;
-                String keyName = pUuid.toString();
-                Role role = info.getValue();
-                if (role == null)
-                    continue;
-                String roleId = role.identifier().getPath();
-                roleInfoCompund.putString(keyName, roleId);
-            }
-            nbtCompound.put("roles", roleInfoCompund);
-            this.setSyncRole(false);
-        }
 
         // }
 
@@ -561,6 +478,9 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
     }
 
     private void tickCommon() {
+        if (roleWorldComponent == null) {
+            roleWorldComponent = RoleWorldComponent.KEY.get(world);
+        }
         // fade and start / stop game
         if (this.getGameStatus() == GameStatus.STARTING || this.getGameStatus() == GameStatus.STOPPING) {
             this.setFade(fade + 1);
