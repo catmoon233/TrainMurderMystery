@@ -64,6 +64,12 @@ public class RoleWorldComponent implements AutoSyncedComponent {
     }
 
     public void sync() {
+        // TMM.LOGGER.info("Sync ROLES");
+        // try {
+        // throw new Exception("Hello, world!");
+        // } catch (Exception e) {
+        // e.printStackTrace();
+        // }
         KEY.sync(this.world);
     }
 
@@ -147,6 +153,12 @@ public class RoleWorldComponent implements AutoSyncedComponent {
         return getRole(player) != null && getRole(player).isInnocent();
     }
 
+    public void clearRoleMap(boolean sync) {
+        this.roles.clear();
+        if (sync)
+            this.sync();
+    }
+
     public void clearRoleMap() {
         this.roles.clear();
         this.sync();
@@ -175,57 +187,6 @@ public class RoleWorldComponent implements AutoSyncedComponent {
             }
         }
         return null;
-    }
-
-    @Override
-    public void readFromNbt(@NotNull CompoundTag nbtCompound, HolderLookup.Provider wrapperLookup) {
-        // this.lockedToSupporters = nbtCompound.getBoolean("LockedToSupporters");
-        // this.enableWeights = nbtCompound.getBoolean("EnableWeights");
-        TMM.LOGGER.info("Sync ROLES");
-        this.roles.clear();
-
-        if (nbtCompound.contains("roles", CompoundTag.TAG_COMPOUND)) {
-            var roleInfoCompund = nbtCompound.getCompound("roles");
-            Set<String> keys = roleInfoCompund.getAllKeys();
-            for (var p_name : keys) {
-                if (roleInfoCompund.contains(p_name, CompoundTag.TAG_STRING)) {
-                    String rolePath = roleInfoCompund.getString(p_name);
-                    UUID playerUid = null;
-                    try {
-                        playerUid = UUID.fromString(p_name);
-                    } catch (Exception e) {
-
-                    }
-
-                    if (playerUid == null)
-                        continue;
-
-                    Role role = getRoleFromPath(rolePath);
-                    if (role != null) {
-                        // TMM.LOGGER.info("Roles:" + role.identifier().toString());
-                        this.roles.putIfAbsent(playerUid, role);
-                    }
-                }
-            }
-        }
-    }
-
-    @Override
-    public void writeToNbt(@NotNull CompoundTag nbtCompound, HolderLookup.Provider wrapperLookup) {
-        var roleInfoCompund = new CompoundTag();
-        for (Entry<UUID, Role> info : roles.entrySet()) {
-            UUID pUuid = info.getKey();
-            if (pUuid == null)
-                continue;
-            String keyName = pUuid.toString();
-            Role role = info.getValue();
-            if (role == null)
-                continue;
-            String roleId = role.identifier().getPath();
-            roleInfoCompund.putString(keyName, roleId);
-        }
-        nbtCompound.put("roles", roleInfoCompund);
-
     }
 
     public boolean canSeeKillerTeammate(Player player) {
@@ -263,5 +224,56 @@ public class RoleWorldComponent implements AutoSyncedComponent {
         if (role.isNeutralForKiller())
             return true;
         return false;
+    }
+
+    @Override
+    public void readFromNbt(@NotNull CompoundTag nbtCompound, HolderLookup.Provider wrapperLookup) {
+        // this.lockedToSupporters = nbtCompound.getBoolean("LockedToSupporters");
+        // this.enableWeights = nbtCompound.getBoolean("EnableWeights");
+        this.roles.clear();
+
+        if (nbtCompound.contains("roles", CompoundTag.TAG_COMPOUND)) {
+            var roleInfoCompund = nbtCompound.getCompound("roles");
+            Set<String> keys = roleInfoCompund.getAllKeys();
+            for (var p_name : keys) {
+                if (roleInfoCompund.contains(p_name, CompoundTag.TAG_STRING)) {
+                    String rolePath = roleInfoCompund.getString(p_name);
+                    UUID playerUid = null;
+                    try {
+                        playerUid = UUID.fromString(p_name);
+                    } catch (Exception e) {
+
+                    }
+
+                    if (playerUid == null)
+                        continue;
+
+                    Role role = getRoleFromPath(rolePath);
+                    if (role != null) {
+                        // TMM.LOGGER.info("Roles:" + role.identifier().toString());
+                        this.roles.putIfAbsent(playerUid, role);
+                    }
+                }
+            }
+        }
+    }
+
+    @Override
+    public void writeToNbt(@NotNull CompoundTag nbtCompound, HolderLookup.Provider wrapperLookup) {
+        if (this.roles.isEmpty())
+            return;
+        var roleInfoCompund = new CompoundTag();
+        for (Entry<UUID, Role> info : roles.entrySet()) {
+            UUID pUuid = info.getKey();
+            if (pUuid == null)
+                continue;
+            String keyName = pUuid.toString();
+            Role role = info.getValue();
+            if (role == null)
+                continue;
+            String roleId = role.identifier().getPath();
+            roleInfoCompund.putString(keyName, roleId);
+        }
+        nbtCompound.put("roles", roleInfoCompund);
     }
 }

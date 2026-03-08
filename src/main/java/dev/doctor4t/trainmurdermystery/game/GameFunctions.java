@@ -483,7 +483,7 @@ public class GameFunctions {
             for (Item item : copy)
                 serverPlayerEntity.getCooldowns().removeCooldown(item);
         }
-        gameComponent.clearRoleMap();
+        gameComponent.clearRoleMap(true);
         GameTimeComponent.KEY.get(serverWorld).reset();
 
         // reset train 已经提前重置
