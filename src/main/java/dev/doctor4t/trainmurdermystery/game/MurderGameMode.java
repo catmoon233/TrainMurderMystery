@@ -23,7 +23,7 @@ public class MurderGameMode extends GameMode {
             GameWorldComponent gameComponent) {
         // civilian base role, replaced for selected killers and vigilantes
         for (ServerPlayer player : players) {
-            gameComponent.addRole(player, TMMRoles.CIVILIAN);
+            gameComponent.addRole(player, TMMRoles.CIVILIAN, false);
         }
 
         // select roles
@@ -48,6 +48,7 @@ public class MurderGameMode extends GameMode {
             ServerPlayNetworking.send(player,
                     new AnnounceWelcomePayload(roleId, killerCount, players.size() - killerCount));
         }
+        gameWorldComponent.syncRoles();
     }
 
     @Override

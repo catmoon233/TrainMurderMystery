@@ -14,9 +14,11 @@ import org.jetbrains.annotations.Nullable;
 
 public class SyncRequests {
     public String url_root;
+    public String key;
 
-    public SyncRequests(String url) {
+    public SyncRequests(String url, String key) {
         this.url_root = url;
+        this.key = key;
     }
 
     /**
@@ -30,9 +32,9 @@ public class SyncRequests {
         String uuidStr = playerUUID.toString();
         String reqUrl = url_root;
         if (key != null)
-            reqUrl = reqUrl +"/set/" + uuidStr + "/" + key;
+            reqUrl = reqUrl + "/set/" + key + "/" + uuidStr + "/" + key;
         else
-            reqUrl = reqUrl + "/set/" + uuidStr;
+            reqUrl = reqUrl + "/set/" + key + "/" + uuidStr;
         try {
             return sendPost(reqUrl, value);
         } catch (Exception e) {
@@ -52,9 +54,9 @@ public class SyncRequests {
         String uuidStr = playerUUID.toString();
         String reqUrl = url_root;
         if (key != null)
-            reqUrl = reqUrl + "/get/" + uuidStr + "/" + key;
+            reqUrl = reqUrl + "/get/" + key + "/" + uuidStr + "/" + key;
         else
-            reqUrl = reqUrl + "/get/" + uuidStr;
+            reqUrl = reqUrl + "/get/" + key + "/" + uuidStr;
 
         try {
             return sendGet(reqUrl);

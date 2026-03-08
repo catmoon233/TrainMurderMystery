@@ -138,6 +138,24 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
         this.addRole(player.getUUID(), role);
     }
 
+    public void addRole(Player player, Role role, boolean sync) {
+        this.addRole(player.getUUID(), role, sync);
+    }
+
+    public void syncRoles() {
+        if (roleWorldComponent == null) {
+            roleWorldComponent = RoleWorldComponent.KEY.get(world);
+        }
+        roleWorldComponent.sync();
+    }
+
+    public void addRole(UUID player, Role role, boolean sync) {
+        if (roleWorldComponent == null) {
+            roleWorldComponent = RoleWorldComponent.KEY.get(world);
+        }
+        roleWorldComponent.addRole(player, role, sync);
+    }
+
     public void addRole(UUID player, Role role) {
         if (roleWorldComponent == null) {
             roleWorldComponent = RoleWorldComponent.KEY.get(world);

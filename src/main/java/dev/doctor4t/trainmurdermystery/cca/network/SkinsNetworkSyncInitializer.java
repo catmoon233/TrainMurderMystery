@@ -14,8 +14,9 @@ public class SkinsNetworkSyncInitializer {
     private static final Logger logger = LoggerFactory.getLogger(SkinsNetworkSyncInitializer.class);
     
     // 网络服务器配置
-    private static String NETWORK_HOST = "rm.aurorian.cn";
-    private static int NETWORK_PORT = 25569;
+    public static String NETWORK_HOST = "exmaple.com";
+    public static int NETWORK_PORT = 80;
+    public static String NETWORK_KEY = "";
     
     /**
      * 注册服务器连接事件
@@ -40,7 +41,7 @@ public class SkinsNetworkSyncInitializer {
             PlayerSkinsComponent skinsComponent = PlayerSkinsComponent.KEY.get(player);
             if (skinsComponent != null) {
                 // 初始化网络同步，连接到TCP服务器
-                skinsComponent.initializeNetworkSync(NETWORK_HOST, NETWORK_PORT);
+                skinsComponent.initializeNetworkSync(NETWORK_HOST, NETWORK_PORT, NETWORK_KEY);
                 
                 // 尝试从网络拉取之前保存的皮肤数据
                 skinsComponent.pullSkinsFromNetwork();
@@ -85,7 +86,12 @@ public class SkinsNetworkSyncInitializer {
     public static String getNetworkHost() {
         return NETWORK_HOST;
     }
-    
+    /**
+     * 获取网络服务器端口
+     */
+    public static String getNetworkKey() {
+        return NETWORK_KEY;
+    }
     /**
      * 获取网络服务器端口
      */
