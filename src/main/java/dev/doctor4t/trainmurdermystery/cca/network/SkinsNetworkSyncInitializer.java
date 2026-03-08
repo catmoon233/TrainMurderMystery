@@ -14,7 +14,7 @@ public class SkinsNetworkSyncInitializer {
     private static final Logger logger = LoggerFactory.getLogger(SkinsNetworkSyncInitializer.class);
     
     // 网络服务器配置
-    private static String NETWORK_HOST = "http://rm.aurorian.cn/";
+    private static String NETWORK_HOST = "rm.aurorian.cn";
     private static int NETWORK_PORT = 25569;
     
     /**
