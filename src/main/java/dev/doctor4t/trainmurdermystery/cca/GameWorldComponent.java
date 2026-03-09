@@ -44,7 +44,7 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
     private boolean enableWeights = false;
 
     /**
-     * 这里的技能指的部分职业。（亡命徒模式）
+     * 这里的技能指的部分职业（难民词条）
      */
     public boolean isSkillAvailable = false;
 
