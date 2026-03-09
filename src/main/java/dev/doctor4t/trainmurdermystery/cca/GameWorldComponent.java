@@ -594,7 +594,7 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
         return false;
     }
 
-    public boolean isKillerTeam(Player player) {
+    public boolean isKillerTeam(UUID player) {
         if (player != null) {
             var role = this.getRole(player);
             if (role == null)
@@ -603,6 +603,13 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
                 return true;
             if (role.isNeutralForKiller())
                 return true;
+        }
+        return false;
+    }
+
+    public boolean isKillerTeam(Player player) {
+        if (player != null) {
+            return isKillerTeam(player.getUUID());
         }
         return false;
     }
