@@ -371,7 +371,8 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
 
         this.fade = nbtCompound.getInt("Fade");
         this.psychosActive = nbtCompound.getInt("PsychosActive");
-
+        this.isSkillAvailable = nbtCompound.contains("isSkillAvailable") ? nbtCompound.getBoolean("isSkillAvailable")
+                : false;
         // this.backfireChance = nbtCompound.getFloat("BackfireChance");
         if (nbtCompound.contains("LooseEndWinner")) {
             this.looseEndWinner = nbtCompound.getUUID("LooseEndWinner");
@@ -396,6 +397,8 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
         // nbtCompound.putBoolean("SyncRole", syncRole);
         if (canJump)
             nbtCompound.putBoolean("canJump", canJump);
+        if (isSkillAvailable)
+            nbtCompound.putBoolean("isSkillAvailable", isSkillAvailable);
         // if (!this.syncRole) {
         if (this.gameMode != null)
             nbtCompound.putString("GameMode", this.gameMode.identifier.toString());
