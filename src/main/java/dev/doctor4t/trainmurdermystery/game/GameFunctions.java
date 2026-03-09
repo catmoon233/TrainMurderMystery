@@ -65,6 +65,7 @@ import dev.doctor4t.trainmurdermystery.event.AfterShieldAllowPlayerDeathWithKill
 import dev.doctor4t.trainmurdermystery.event.AllowPlayerDeath;
 import dev.doctor4t.trainmurdermystery.event.AllowPlayerDeathWithKiller;
 import dev.doctor4t.trainmurdermystery.event.EarlyKillPlayer;
+import dev.doctor4t.trainmurdermystery.event.OnGameEnd;
 import dev.doctor4t.trainmurdermystery.event.OnGameTrueStarted;
 import dev.doctor4t.trainmurdermystery.event.OnGiveKillerBalance;
 import dev.doctor4t.trainmurdermystery.event.OnPlayerDeath;
@@ -591,6 +592,7 @@ public class GameFunctions {
         world.setDayTime(Level.TICKS_PER_DAY / 2);
         world.getGameRules().getRule(GameRules.RULE_DAYLIGHT).set(false, world.getServer());
         gameComponent.getGameMode().finalizeGame(world, gameComponent);
+        OnGameEnd.EVENT.invoker().onGameEnd(world, gameComponent);
         TMM.REPLAY_MANAGER.finalizeReplay(roundEnd.getWinStatus(), roundEnd);
 
         // --- 新增统计数据更新逻辑 (胜利/失败) ---
