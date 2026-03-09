@@ -3,6 +3,8 @@ package dev.doctor4t.trainmurdermystery.cca.network;
 import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.arguments.StringArgumentType;
+
+import dev.doctor4t.trainmurdermystery.TMMConfig;
 import dev.doctor4t.trainmurdermystery.cca.PlayerSkinsComponent;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -24,6 +26,8 @@ public class SkinsNetworkSyncCommand {
                 .then(Commands.literal("config")
                         .then(Commands.literal("stop").executes((ctx) -> {
                             SkinsNetworkSyncInitializer.isEnabled = false;
+                            PlayerSkinsComponent.disableGlobalNetworkSync();
+                            TMMConfig.itemSkinSyncServerEnabled = false;
                             return 1;
                         }))
                         .then(Commands.argument("host", StringArgumentType.string())

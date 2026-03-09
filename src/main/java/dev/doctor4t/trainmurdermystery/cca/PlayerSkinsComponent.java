@@ -36,7 +36,7 @@ public class PlayerSkinsComponent implements AutoSyncedComponent, ServerTickingC
     private Map<String, Map<String, Boolean>> unlockedSkins; // 存储解锁的皮肤 {itemName -> {skinName -> isUnlocked}}
 
     // HTTP 网络同步管理器
-    private static SyncRequests syncRequests = null;
+    public static SyncRequests syncRequests = null;
     // private long lastNetworkSync = 0;
     // private static final long NETWORK_SYNC_INTERVAL = 20000; // 每 20 秒同步一次到网络
     private boolean isNetworkSyncEnabled = false;
@@ -79,10 +79,15 @@ public class PlayerSkinsComponent implements AutoSyncedComponent, ServerTickingC
     }
 
     /**
+     * 禁用全局网络同步
+     */
+    public static void disableGlobalNetworkSync() {
+        syncRequests = null;
+    }
+    /**
      * 禁用网络同步
      */
     public void disableNetworkSync() {
-        syncRequests = null;
         this.isNetworkSyncEnabled = false;
     }
 
