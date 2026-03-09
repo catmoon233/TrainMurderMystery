@@ -42,6 +42,10 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
     private boolean canJump = false;
     private boolean lockedToSupporters = false;
     private boolean enableWeights = false;
+
+    /**
+     * 这里的技能指的部分职业。（亡命徒模式）
+     */
     public boolean isSkillAvailable = false;
 
     public void enableSkillsAndSync() {
