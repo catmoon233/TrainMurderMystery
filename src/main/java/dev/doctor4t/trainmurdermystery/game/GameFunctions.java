@@ -583,7 +583,6 @@ public class GameFunctions {
         serverAsynTaskLists.clear();
         isStartingGame = false;
         GameRoundEndComponent roundEnd = GameRoundEndComponent.KEY.get(world);
-        roundEnd.CustomWinnerPlayers.clear();
         RoleMethodDispatcher.onEndGame(world);
         GameWorldComponent gameComponent = GameWorldComponent.KEY.get(world);
         // var areasWorldComponent = AreasWorldComponent.KEY.get(world);
@@ -735,6 +734,8 @@ public class GameFunctions {
         }
 
         // reset game component
+        roundEnd.CustomWinnerPlayers.clear();
+
         GameTimeComponent.KEY.get(world).reset();
         gameComponent.clearRoleMap();
         gameComponent.setGameStatus(GameWorldComponent.GameStatus.INACTIVE);
