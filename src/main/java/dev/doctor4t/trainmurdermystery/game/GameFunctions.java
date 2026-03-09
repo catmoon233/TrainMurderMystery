@@ -132,7 +132,6 @@ public class GameFunctions {
     public static ArrayList<ServerTaskInfoClasses.ServerTaskInfo> serverTaskQueue = new ArrayList<>();
     public static ArrayList<ServerTaskInfoClasses.ServerTaskInfo> serverAsynTaskLists = new ArrayList<>();
     public static boolean isStartingGame = false;
-    public static boolean isSkillAvailable = false;
 
     public static void limitPlayerToBox(ServerPlayer player, AABB box) {
         Vec3 playerPos = player.position();
@@ -303,9 +302,9 @@ public class GameFunctions {
 
     public static void initializeGame(ServerLevel serverWorld) {
         isStartingGame = false;
-        isSkillAvailable = true;
 
         GameWorldComponent gameComponent = GameWorldComponent.KEY.get(serverWorld);
+        gameComponent.isSkillAvailable = true;
         // AreasWorldComponent areasWorldComponent =
         // AreasWorldComponent.KEY.get(serverWorld);
 
@@ -582,12 +581,12 @@ public class GameFunctions {
         serverTaskQueue.clear();
         serverAsynTaskLists.clear();
         isStartingGame = false;
-        isSkillAvailable = false;
         GameRoundEndComponent roundEnd = GameRoundEndComponent.KEY.get(world);
         roundEnd.CustomWinnerPlayers.clear();
         RoleMethodDispatcher.onEndGame(world);
         GameWorldComponent gameComponent = GameWorldComponent.KEY.get(world);
         // var areasWorldComponent = AreasWorldComponent.KEY.get(world);
+        gameComponent.isSkillAvailable = false;
 
         world.setDayTime(Level.TICKS_PER_DAY / 2);
         world.getGameRules().getRule(GameRules.RULE_DAYLIGHT).set(false, world.getServer());

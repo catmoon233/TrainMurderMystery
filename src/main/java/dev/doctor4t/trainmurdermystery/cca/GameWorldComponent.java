@@ -42,6 +42,17 @@ public class GameWorldComponent implements AutoSyncedComponent, ServerTickingCom
     private boolean canJump = false;
     private boolean lockedToSupporters = false;
     private boolean enableWeights = false;
+    public boolean isSkillAvailable = false;
+
+    public void enableSkillsAndSync() {
+        isSkillAvailable = true;
+        sync();
+    }
+
+    public void disableSkillsAndSync() {
+        isSkillAvailable = false;
+        sync();
+    }
 
     public boolean isJumpAvailable() {
         return canJump;
