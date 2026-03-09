@@ -132,6 +132,7 @@ public class GameFunctions {
     public static ArrayList<ServerTaskInfoClasses.ServerTaskInfo> serverTaskQueue = new ArrayList<>();
     public static ArrayList<ServerTaskInfoClasses.ServerTaskInfo> serverAsynTaskLists = new ArrayList<>();
     public static boolean isStartingGame = false;
+    public static boolean isSkillAvailable = false;
 
     public static void limitPlayerToBox(ServerPlayer player, AABB box) {
         Vec3 playerPos = player.position();
@@ -302,6 +303,7 @@ public class GameFunctions {
 
     public static void initializeGame(ServerLevel serverWorld) {
         isStartingGame = false;
+        isSkillAvailable = true;
 
         GameWorldComponent gameComponent = GameWorldComponent.KEY.get(serverWorld);
         // AreasWorldComponent areasWorldComponent =
@@ -580,6 +582,7 @@ public class GameFunctions {
         serverTaskQueue.clear();
         serverAsynTaskLists.clear();
         isStartingGame = false;
+        isSkillAvailable = false;
         GameRoundEndComponent roundEnd = GameRoundEndComponent.KEY.get(world);
         roundEnd.CustomWinnerPlayers.clear();
         RoleMethodDispatcher.onEndGame(world);

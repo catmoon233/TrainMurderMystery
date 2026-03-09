@@ -39,7 +39,7 @@ public class LooseEndsGameMode extends GameMode {
     }
 
     public LooseEndsGameMode(ResourceLocation identifier) {
-        super(identifier, 60, 2);
+        super(identifier, 120, 2);
     }
 
     @Override
