@@ -437,12 +437,14 @@ public class PlayerMoodComponent implements RoleComponent, ServerTickingComponen
             this.timer = time;
         }
 
+        public void setTimer(int time) {
+            this.timer = time;
+        }
+
         @Override
         public void tick(@NotNull Player player) {
-
             if (player.containerMenu instanceof LecternMenu && this.timer > 0) {
                 this.timer--;
-
             }
         }
 
