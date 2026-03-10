@@ -451,7 +451,7 @@
   "item.trainmurdermystery.note": "Note",
   "item.trainmurdermystery.note.tooltip": "Write a message and pin it for others to see\nSneak use to write a message, then use on wall or floor to place\nInvisible when held",
   "item.trainmurdermystery.nunchuck": "Nunchuck",
-  "item.trainmurdermystery.nunchuck.tooltip": "Left click to knockback left, right click to knockback right, Shift+left click to knockback backward\n3 block knockback range, 4 block attack range\nKnockback enemy against a block then attack again to kill instantly\nHit 3 times within 6 seconds to kill\nAfter kill, nunchuck disappears and revolver drops, 8 second cooldown",
+  "item.trainmurdermystery.nunchuck.tooltip": "Left click to knockback left, right click to knockback right, Shift+left click to knockback backward\n3 block knockback range, 5 block attack range\nKnockback enemy against a block then attack again to kill instantly\nHit 3 times within 6 seconds to kill\nAfter kill, nunchuck disappears and revolver drops, 8 second cooldown",
   "item.trainmurdermystery.old_fashioned": "Old Fashioned",
   "item.trainmurdermystery.poison_vial": "Poison Vial",
   "item.trainmurdermystery.poison_vial.tooltip": "Sneak into food or drink to poison the next person who takes it",

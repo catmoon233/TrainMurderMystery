@@ -52,7 +52,7 @@ public record NunchuckHitPayload(int targetId, int direction) implements CustomP
 
         // 检查距离
         double distance = attacker.distanceTo(target);
-        if (distance > 4.0) {
+        if (distance > 5.0) {
             return;
         }
 
