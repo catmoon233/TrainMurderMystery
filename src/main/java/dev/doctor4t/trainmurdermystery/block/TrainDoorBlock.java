@@ -2,6 +2,7 @@ package dev.doctor4t.trainmurdermystery.block;
 
 import dev.doctor4t.trainmurdermystery.block_entity.SmallDoorBlockEntity;
 import dev.doctor4t.trainmurdermystery.cca.TrainWorldComponent;
+import dev.doctor4t.trainmurdermystery.event.AllowPlayerOpenLockedDoor;
 import dev.doctor4t.trainmurdermystery.index.TMMItems;
 import dev.doctor4t.trainmurdermystery.index.TMMSounds;
 import dev.doctor4t.trainmurdermystery.item.IronDoorKeyItem;
@@ -24,14 +25,20 @@ public class TrainDoorBlock extends SmallDoorBlock {
     }
 
     @Override
-    protected InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player player, BlockHitResult hit) {
+    protected InteractionResult useWithoutItem(BlockState state, Level world, BlockPos pos, Player player,
+            BlockHitResult hit) {
+
         BlockPos lowerPos = state.getValue(HALF) == DoubleBlockHalf.LOWER ? pos : pos.below();
         if (world.getBlockEntity(lowerPos) instanceof SmallDoorBlockEntity entity) {
             if (entity.isBlasted()) {
                 return InteractionResult.PASS;
             }
-
-            if (player.isCreative() || TrainWorldComponent.KEY.get(world).getSpeed() == 0) {
+            boolean requiresKey = !entity.getKeyName().isEmpty();
+            if (requiresKey)
+                super.useWithoutItem(state, world, pos, player, hit);
+            if (player.isCreative()
+                    || AllowPlayerOpenLockedDoor.EVENT.invoker().allowOpen(player)
+                    || TrainWorldComponent.KEY.get(world).getSpeed() == 0) {
                 return open(state, world, entity, lowerPos);
             } else {
                 ItemStack mainHandItem = player.getMainHandItem();
@@ -42,7 +49,8 @@ public class TrainDoorBlock extends SmallDoorBlock {
                     return open(state, world, entity, lowerPos);
                 } else {
                     if (hasLockpick) {
-                        world.playSound(null, lowerPos.getX() + .5f, lowerPos.getY() + 1, lowerPos.getZ() + .5f, TMMSounds.ITEM_LOCKPICK_DOOR, SoundSource.BLOCKS, 1f, 1f);
+                        world.playSound(null, lowerPos.getX() + .5f, lowerPos.getY() + 1, lowerPos.getZ() + .5f,
+                                TMMSounds.ITEM_LOCKPICK_DOOR, SoundSource.BLOCKS, 1f, 1f);
                         return open(state, world, entity, lowerPos);
                     } else if (hasIronDoorKey) {
                         // 扣除铁门钥匙的耐久
@@ -50,11 +58,13 @@ public class TrainDoorBlock extends SmallDoorBlock {
                             mainHandItem.hurtAndBreak(1, player, player.getEquipmentSlotForItem(mainHandItem));
                         }
                         // 播放声音并开门
-                        world.playSound(null, lowerPos.getX() + .5f, lowerPos.getY() + 1, lowerPos.getZ() + .5f, TMMSounds.ITEM_KEY_DOOR, SoundSource.BLOCKS, 1f, 1f);
+                        world.playSound(null, lowerPos.getX() + .5f, lowerPos.getY() + 1, lowerPos.getZ() + .5f,
+                                TMMSounds.ITEM_KEY_DOOR, SoundSource.BLOCKS, 1f, 1f);
                         return open(state, world, entity, lowerPos);
                     } else {
                         if (!world.isClientSide) {
-                            world.playSound(null, lowerPos.getX() + .5f, lowerPos.getY() + 1, lowerPos.getZ() + .5f, TMMSounds.BLOCK_DOOR_LOCKED, SoundSource.BLOCKS, 1f, 1f);
+                            world.playSound(null, lowerPos.getX() + .5f, lowerPos.getY() + 1, lowerPos.getZ() + .5f,
+                                    TMMSounds.BLOCK_DOOR_LOCKED, SoundSource.BLOCKS, 1f, 1f);
                             player.displayClientMessage(Component.translatable("tip.door.locked"), true);
                         }
                         return InteractionResult.FAIL;
