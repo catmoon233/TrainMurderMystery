@@ -74,7 +74,6 @@ public class InGameHudMixin {
         if (player == null)
             return;
         CrosshairRenderer.renderCrosshair(this.minecraft, player, context, tickCounter);
-
     }
 
     @WrapMethod(method = "renderPlayerHealth")
