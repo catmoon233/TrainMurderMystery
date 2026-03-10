@@ -34,8 +34,9 @@ public class TrainDoorBlock extends SmallDoorBlock {
                 return InteractionResult.PASS;
             }
             boolean requiresKey = !entity.getKeyName().isEmpty();
-            if (requiresKey)
-                super.useWithoutItem(state, world, pos, player, hit);
+            if (requiresKey){
+                return super.useWithoutItem(state, world, pos, player, hit);
+            }
             if (player.isCreative()
                     || AllowPlayerOpenLockedDoor.EVENT.invoker().allowOpen(player)
                     || TrainWorldComponent.KEY.get(world).getSpeed() == 0) {
